@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreStudentRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user()?->hasRole('super_admin')
+            || $this->user()?->hasRole('admin');
+    }
+
+    public function rules(): array
+    {
+        return [
+            'user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')->where(function ($query) {
+                    $query->whereIn('role_id', function ($subQuery) {
+                        $subQuery->select('id')
+                            ->from('roles')
+                            ->where('name', 'student');
+                    });
+                }),
+                Rule::unique('students', 'user_id'),
+            ],
+            'class_room_id' => [
+                'required',
+                'integer',
+                Rule::exists('class_rooms', 'id'),
+            ],
+            'teacher_id' => [
+                'required',
+                'integer',
+                Rule::exists('teacher_profiles', 'id'),
+            ],
+            'name' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+            'student_number' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('students', 'student_number'),
+            ],
+            'gender' => [
+                'nullable',
+                Rule::in(['male', 'female']),
+            ],
+            'birth_date' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
+            'status' => [
+                'required',
+                Rule::in(['active', 'inactive', 'graduated']),
+            ],
+            'parent_ids' => [
+                'nullable',
+                'array',
+            ],
+            'parent_ids.*' => [
+                'integer',
+                Rule::exists('parent_profiles', 'id'),
+            ],
+            'parent_relations' => [
+                'nullable',
+                'array',
+            ],
+            'parent_relations.*' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'user_id' => 'akun santri',
+            'class_room_id' => 'kelas',
+            'teacher_id' => 'guru pembimbing',
+            'name' => 'nama santri',
+            'student_number' => 'nomor santri',
+            'gender' => 'gender',
+            'birth_date' => 'tanggal lahir',
+            'status' => 'status',
+            'parent_ids' => 'orangtua/wali',
+            'parent_relations' => 'relasi orangtua/wali',
+        ];
+    }
+}

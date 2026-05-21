@@ -1,0 +1,74 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\ClassRoom;
+use App\Models\ParentProfile;
+use App\Models\Program;
+use App\Models\Student;
+use App\Models\TeacherProfile;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+
+class CoreDataSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $program = Program::updateOrCreate(
+            ['name' => 'Tahfizh Reguler'],
+            [
+                'description' => 'Program tahfizh reguler untuk santri aktif.',
+                'status' => 'active',
+            ]
+        );
+
+        $classRoom = ClassRoom::updateOrCreate(
+            ['name' => 'Kelas A - Juz 30'],
+            [
+                'program_id' => $program->id,
+                'level' => 'Pemula',
+            ]
+        );
+
+        $teacherUser = User::where('email', 'guru@hafizplus.test')->firstOrFail();
+
+        $teacherProfile = TeacherProfile::updateOrCreate(
+            ['user_id' => $teacherUser->id],
+            [
+                'employee_number' => 'GURU-001',
+                'phone' => '081111111111',
+            ]
+        );
+
+        $parentUser = User::where('email', 'orangtua@hafizplus.test')->firstOrFail();
+
+        $parentProfile = ParentProfile::updateOrCreate(
+            ['user_id' => $parentUser->id],
+            [
+                'phone' => '082222222222',
+                'address' => 'Alamat testing orangtua HafizPlus',
+            ]
+        );
+
+        $studentUser = User::where('email', 'santri@hafizplus.test')->firstOrFail();
+
+        $student = Student::updateOrCreate(
+            ['student_number' => 'SNT-001'],
+            [
+                'user_id' => $studentUser->id,
+                'class_room_id' => $classRoom->id,
+                'teacher_id' => $teacherProfile->id,
+                'name' => 'Santri HafizPlus',
+                'gender' => 'male',
+                'birth_date' => '2012-01-15',
+                'status' => 'active',
+            ]
+        );
+
+        $parentProfile->students()->syncWithoutDetaching([
+            $student->id => [
+                'relation' => 'ayah',
+            ],
+        ]);
+    }
+}
