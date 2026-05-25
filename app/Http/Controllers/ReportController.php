@@ -2,261 +2,210 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Student;
-use App\Models\Surah;
-use App\Models\TeacherProfile;
-use App\Models\User;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use App\Services\UserAccessService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, UserAccessService $accessService): View
     {
         $user = $request->user();
+        $visibleStudentIds = $accessService->visibleStudentIds($user);
 
-        $hafalanQuery = $this->filteredHafalanQuery($request, $user);
-        $murajaahQuery = $this->filteredMurajaahQuery($request, $user);
+        $students = Student::query()
+            ->with(['classRoom', 'program'])
+            ->whereIn('id', $visibleStudentIds)
+            ->orderBy('name')
+            ->get();
 
-        $hafalanRecords = (clone $hafalanQuery)
-            ->latest('submitted_at')
-            ->latest()
-            ->paginate(10, ['*'], 'hafalan_page')
-            ->withQueryString();
+        $selectedStudent = null;
+        $hafalanRecords = collect();
+        $murajaahRecords = collect();
+        $hafalanTargets = collect();
 
-        $murajaahRecords = (clone $murajaahQuery)
-            ->latest('reviewed_at')
-            ->latest()
-            ->paginate(10, ['*'], 'murajaah_page')
-            ->withQueryString();
+        if ($request->filled('student_id')) {
+            $selectedStudent = Student::query()
+                ->with(['classRoom', 'program', 'teacher.user', 'parents.user'])
+                ->whereIn('id', $visibleStudentIds)
+                ->findOrFail($request->student_id);
+
+            Gate::authorize('view', $selectedStudent);
+
+            $hafalanRecords = HafalanRecord::query()
+                ->with(['surah', 'teacher.user'])
+                ->where('student_id', $selectedStudent->id)
+                ->latest('submitted_at')
+                ->latest()
+                ->get();
+
+            $murajaahRecords = MurajaahRecord::query()
+                ->with(['surah', 'teacher.user'])
+                ->where('student_id', $selectedStudent->id)
+                ->latest('reviewed_at')
+                ->latest()
+                ->get();
+
+            $hafalanTargets = HafalanTarget::query()
+                ->with(['surah', 'teacher.user'])
+                ->where('student_id', $selectedStudent->id)
+                ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
+                ->orderBy('target_date')
+                ->get();
+        }
 
         $summary = [
-            'total_hafalan' => (clone $hafalanQuery)->count(),
-            'total_murajaah' => (clone $murajaahQuery)->count(),
-
-            'hafalan_passed' => (clone $hafalanQuery)
-                ->where('status', 'passed')
-                ->count(),
-
-            'murajaah_passed' => (clone $murajaahQuery)
-                ->where('status', 'passed')
-                ->count(),
-
-            'hafalan_need_attention' => (clone $hafalanQuery)
-                ->whereIn('status', ['repeat', 'needs_improvement'])
-                ->count(),
-
-            'murajaah_need_attention' => (clone $murajaahQuery)
-                ->whereIn('status', ['repeat', 'needs_improvement'])
-                ->count(),
-
-            'average_hafalan_score' => round((float) (clone $hafalanQuery)
-                ->whereNotNull('score')
-                ->avg('score'), 2),
-
-            'average_murajaah_score' => round((float) (clone $murajaahQuery)
-                ->whereNotNull('overall_score')
-                ->avg('overall_score'), 2),
+            'total_students' => $students->count(),
+            'total_hafalan' => $hafalanRecords->count(),
+            'total_murajaah' => $murajaahRecords->count(),
+            'active_targets' => $hafalanTargets->where('status', 'active')->count(),
+            'completed_targets' => $hafalanTargets->where('status', 'completed')->count(),
+            'average_hafalan_score' => round((float) $hafalanRecords->avg('score'), 2),
+            'average_murajaah_score' => round((float) $murajaahRecords->avg('overall_score'), 2),
         ];
 
-        return view('reports.index', array_merge(
-            [
-                'hafalanRecords' => $hafalanRecords,
-                'murajaahRecords' => $murajaahRecords,
-                'summary' => $summary,
-            ],
-            $this->filterData($user)
+        return view('reports.index', compact(
+            'students',
+            'selectedStudent',
+            'hafalanRecords',
+            'murajaahRecords',
+            'hafalanTargets',
+            'summary'
         ));
     }
 
-    public function exportCsv(Request $request): StreamedResponse
+    public function student(Student $student): View
     {
-        $user = $request->user();
+        Gate::authorize('view', $student);
 
-        $hafalanRecords = $this->filteredHafalanQuery($request, $user)
+        $student->load(['classRoom', 'program', 'teacher.user', 'parents.user']);
+
+        $hafalanRecords = HafalanRecord::query()
+            ->with(['surah', 'teacher.user'])
+            ->where('student_id', $student->id)
             ->latest('submitted_at')
             ->latest()
             ->get();
 
-        $murajaahRecords = $this->filteredMurajaahQuery($request, $user)
+        $murajaahRecords = MurajaahRecord::query()
+            ->with(['surah', 'teacher.user'])
+            ->where('student_id', $student->id)
             ->latest('reviewed_at')
             ->latest()
             ->get();
 
-        $fileName = 'laporan-hafizplus-' . now()->format('Ymd-His') . '.csv';
+        $hafalanTargets = HafalanTarget::query()
+            ->with(['surah', 'teacher.user'])
+            ->where('student_id', $student->id)
+            ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
+            ->orderBy('target_date')
+            ->get();
 
-        return response()->streamDownload(function () use ($hafalanRecords, $murajaahRecords) {
+        $summary = [
+            'total_hafalan' => $hafalanRecords->count(),
+            'total_murajaah' => $murajaahRecords->count(),
+            'active_targets' => $hafalanTargets->where('status', 'active')->count(),
+            'completed_targets' => $hafalanTargets->where('status', 'completed')->count(),
+            'average_hafalan_score' => round((float) $hafalanRecords->avg('score'), 2),
+            'average_murajaah_score' => round((float) $murajaahRecords->avg('overall_score'), 2),
+        ];
+
+        return view('reports.student', compact(
+            'student',
+            'hafalanRecords',
+            'murajaahRecords',
+            'hafalanTargets',
+            'summary'
+        ));
+    }
+
+    public function exportCsv(Request $request, UserAccessService $accessService): StreamedResponse
+    {
+        $user = $request->user();
+        $visibleStudentIds = $accessService->visibleStudentIds($user);
+
+        $studentId = $request->integer('student_id');
+
+        if ($studentId > 0) {
+            abort_unless($visibleStudentIds->contains($studentId), 403);
+        }
+
+        $fileName = 'hafizplus-report-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($visibleStudentIds, $studentId) {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
-                'Tipe',
-                'Tanggal',
-                'Nama Santri',
-                'Nomor Santri',
-                'Program',
+                'Jenis',
+                'Santri',
                 'Kelas',
-                'Guru',
                 'Surah',
-                'Rentang Ayat',
-                'Jenis/Nilai',
+                'Ayat Mulai',
+                'Ayat Akhir',
                 'Status',
+                'Nilai',
+                'Tanggal',
+                'Guru',
                 'Catatan',
             ]);
 
-            foreach ($hafalanRecords as $record) {
-                fputcsv($handle, [
-                    'Hafalan',
-                    $record->submitted_at?->format('Y-m-d'),
-                    $record->student?->name,
-                    $record->student?->student_number,
-                    $record->student?->classRoom?->program?->name,
-                    $record->student?->classRoom?->name,
-                    $record->teacher?->user?->name,
-                    $record->surah?->name_latin,
-                    $record->ayah_start . ' - ' . $record->ayah_end,
-                    $record->submission_type_label . ' / ' . ($record->score ?? '-'),
-                    $record->status_label,
-                    $record->notes,
-                ]);
-            }
+            HafalanRecord::query()
+                ->with(['student.classRoom', 'surah', 'teacher.user'])
+                ->whereIn('student_id', $visibleStudentIds)
+                ->when($studentId > 0, fn ($query) => $query->where('student_id', $studentId))
+                ->orderBy('student_id')
+                ->orderBy('submitted_at')
+                ->chunkById(100, function ($records) use ($handle) {
+                    foreach ($records as $record) {
+                        fputcsv($handle, [
+                            'Hafalan',
+                            $record->student?->name,
+                            $record->student?->classRoom?->name,
+                            $record->surah?->name_latin,
+                            $record->ayah_start,
+                            $record->ayah_end,
+                            $record->status_label ?? $record->status,
+                            $record->score,
+                            $record->submitted_at?->format('Y-m-d'),
+                            $record->teacher?->user?->name,
+                            $record->notes,
+                        ]);
+                    }
+                });
 
-            foreach ($murajaahRecords as $record) {
-                fputcsv($handle, [
-                    'Murajaah',
-                    $record->reviewed_at?->format('Y-m-d'),
-                    $record->student?->name,
-                    $record->student?->student_number,
-                    $record->student?->classRoom?->program?->name,
-                    $record->student?->classRoom?->name,
-                    $record->teacher?->user?->name,
-                    $record->surah?->name_latin,
-                    $record->ayah_start . ' - ' . $record->ayah_end,
-                    'Overall: ' . ($record->overall_score ?? '-')
-                        . ' | Kelancaran: ' . ($record->fluency_score ?? '-')
-                        . ' | Tajwid: ' . ($record->tajwid_score ?? '-')
-                        . ' | Makhraj: ' . ($record->makhraj_score ?? '-'),
-                    $record->status_label,
-                    $record->notes,
-                ]);
-            }
+            MurajaahRecord::query()
+                ->with(['student.classRoom', 'surah', 'teacher.user'])
+                ->whereIn('student_id', $visibleStudentIds)
+                ->when($studentId > 0, fn ($query) => $query->where('student_id', $studentId))
+                ->orderBy('student_id')
+                ->orderBy('reviewed_at')
+                ->chunkById(100, function ($records) use ($handle) {
+                    foreach ($records as $record) {
+                        fputcsv($handle, [
+                            'Murajaah',
+                            $record->student?->name,
+                            $record->student?->classRoom?->name,
+                            $record->surah?->name_latin,
+                            $record->ayah_start,
+                            $record->ayah_end,
+                            $record->status_label ?? $record->status,
+                            $record->overall_score,
+                            $record->reviewed_at?->format('Y-m-d'),
+                            $record->teacher?->user?->name,
+                            $record->notes,
+                        ]);
+                    }
+                });
 
             fclose($handle);
         }, $fileName, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv',
         ]);
-    }
-
-    private function filteredHafalanQuery(Request $request, User $user): Builder
-    {
-        return HafalanRecord::query()
-            ->with([
-                'student.classRoom.program',
-                'teacher.user',
-                'surah',
-            ])
-            ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                $teacherId = $user->teacherProfile?->id;
-
-                $query->where('teacher_id', $teacherId);
-            })
-            ->when($request->filled('student_id'), function ($query) use ($request) {
-                $query->where('student_id', $request->integer('student_id'));
-            })
-            ->when($request->filled('teacher_id') && ! $request->user()->hasRole('teacher'), function ($query) use ($request) {
-                $query->where('teacher_id', $request->integer('teacher_id'));
-            })
-            ->when($request->filled('class_room_id'), function ($query) use ($request) {
-                $query->whereHas('student', function ($studentQuery) use ($request) {
-                    $studentQuery->where('class_room_id', $request->integer('class_room_id'));
-                });
-            })
-            ->when($request->filled('surah_id'), function ($query) use ($request) {
-                $query->where('surah_id', $request->integer('surah_id'));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->string('status')->toString());
-            })
-            ->when($request->filled('date_from'), function ($query) use ($request) {
-                $query->whereDate('submitted_at', '>=', $request->date('date_from'));
-            })
-            ->when($request->filled('date_to'), function ($query) use ($request) {
-                $query->whereDate('submitted_at', '<=', $request->date('date_to'));
-            });
-    }
-
-    private function filteredMurajaahQuery(Request $request, User $user): Builder
-    {
-        return MurajaahRecord::query()
-            ->with([
-                'student.classRoom.program',
-                'teacher.user',
-                'surah',
-            ])
-            ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                $teacherId = $user->teacherProfile?->id;
-
-                $query->where('teacher_id', $teacherId);
-            })
-            ->when($request->filled('student_id'), function ($query) use ($request) {
-                $query->where('student_id', $request->integer('student_id'));
-            })
-            ->when($request->filled('teacher_id') && ! $request->user()->hasRole('teacher'), function ($query) use ($request) {
-                $query->where('teacher_id', $request->integer('teacher_id'));
-            })
-            ->when($request->filled('class_room_id'), function ($query) use ($request) {
-                $query->whereHas('student', function ($studentQuery) use ($request) {
-                    $studentQuery->where('class_room_id', $request->integer('class_room_id'));
-                });
-            })
-            ->when($request->filled('surah_id'), function ($query) use ($request) {
-                $query->where('surah_id', $request->integer('surah_id'));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->string('status')->toString());
-            })
-            ->when($request->filled('date_from'), function ($query) use ($request) {
-                $query->whereDate('reviewed_at', '>=', $request->date('date_from'));
-            })
-            ->when($request->filled('date_to'), function ($query) use ($request) {
-                $query->whereDate('reviewed_at', '<=', $request->date('date_to'));
-            });
-    }
-
-    private function filterData(User $user): array
-    {
-        $studentsQuery = Student::query()
-            ->with(['classRoom.program', 'teacher.user'])
-            ->where('status', 'active')
-            ->orderBy('name');
-
-        if ($user->hasRole('teacher')) {
-            $studentsQuery->where('teacher_id', $user->teacherProfile?->id);
-        }
-
-        return [
-            'students' => $studentsQuery->get(),
-
-            'classRooms' => ClassRoom::query()
-                ->with('program')
-                ->orderBy('name')
-                ->get(),
-
-            'teachers' => TeacherProfile::query()
-                ->with('user')
-                ->whereHas('user', function ($query) {
-                    $query->where('status', 'active');
-                })
-                ->get()
-                ->sortBy(fn (TeacherProfile $teacher) => $teacher->user?->name),
-
-            'surahs' => Surah::query()
-                ->orderBy('number')
-                ->get(),
-        ];
     }
 }

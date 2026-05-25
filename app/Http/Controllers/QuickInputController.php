@@ -2,96 +2,106 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreHafalanRecordRequest;
-use App\Http\Requests\StoreMurajaahRecordRequest;
 use App\Models\HafalanRecord;
 use App\Models\MurajaahRecord;
 use App\Models\Student;
 use App\Models\Surah;
-use App\Models\User;
+use App\Services\UserAccessService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class QuickInputController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, UserAccessService $accessService): View
     {
-        $user = $request->user();
+        Gate::authorize('create', HafalanRecord::class);
 
-        $students = $this->accessibleStudents($user);
-        $studentIds = $students->pluck('id');
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        return view('quick-inputs.index', [
-            'students' => $students,
-            'surahs' => Surah::query()
-                ->orderBy('number')
-                ->get([
-                    'id',
-                    'number',
-                    'name_latin',
-                    'total_ayah',
-                ]),
+        $students = Student::query()
+            ->with(['classRoom', 'program'])
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
-            'latestHafalanRecords' => HafalanRecord::query()
-                ->with([
-                    'student.classRoom.program',
-                    'teacher.user',
-                    'surah',
-                ])
-                ->when(
-                    $studentIds->isNotEmpty(),
-                    fn ($query) => $query->whereIn('student_id', $studentIds),
-                    fn ($query) => $query->whereRaw('1 = 0')
-                )
-                ->latest('submitted_at')
-                ->latest()
-                ->limit(8)
-                ->get(),
+        $surahs = Surah::query()
+            ->orderBy('number')
+            ->get();
 
-            'latestMurajaahRecords' => MurajaahRecord::query()
-                ->with([
-                    'student.classRoom.program',
-                    'teacher.user',
-                    'surah',
-                ])
-                ->when(
-                    $studentIds->isNotEmpty(),
-                    fn ($query) => $query->whereIn('student_id', $studentIds),
-                    fn ($query) => $query->whereRaw('1 = 0')
-                )
-                ->latest('reviewed_at')
-                ->latest()
-                ->limit(8)
-                ->get(),
-        ]);
+        $latestHafalanRecords = HafalanRecord::query()
+            ->with(['student', 'surah', 'teacher.user'])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->latest('submitted_at')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $latestMurajaahRecords = MurajaahRecord::query()
+            ->with(['student', 'surah', 'teacher.user'])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->latest('reviewed_at')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('quick-inputs.index', compact(
+            'students',
+            'surahs',
+            'latestHafalanRecords',
+            'latestMurajaahRecords'
+        ));
     }
 
-    public function storeHafalan(StoreHafalanRecordRequest $request): RedirectResponse
+    public function storeHafalan(Request $request, UserAccessService $accessService): RedirectResponse
     {
-        $validated = $request->validated();
+        Gate::authorize('create', HafalanRecord::class);
 
-        $student = Student::query()->findOrFail($validated['student_id']);
-        $teacherId = $this->resolveTeacherId($request->user(), $student);
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        if (! $teacherId) {
-            return back()
-                ->withInput()
-                ->with('error', 'Santri ini belum memiliki guru pembimbing.');
-        }
+        $validator = Validator::make($request->all(), [
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'surah_id' => ['required', 'integer', 'exists:surahs,id'],
+            'ayah_start' => ['required', 'integer', 'min:1'],
+            'ayah_end' => ['required', 'integer', 'min:1', 'gte:ayah_start'],
+            'submission_type' => ['required', Rule::in(['new', 'continuation', 'revision'])],
+            'score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'status' => ['required', Rule::in(['passed', 'repeat', 'needs_improvement'])],
+            'submitted_at' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $validator->after(function ($validator) use ($request, $visibleStudentIds) {
+            if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
+                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+            }
+
+            $surah = Surah::find($request->input('surah_id'));
+
+            if ($surah && (int) $request->input('ayah_end') > (int) $surah->total_ayah) {
+                $validator->errors()->add('ayah_end', "Ayat akhir tidak boleh melebihi {$surah->total_ayah}.");
+            }
+        });
+
+        $validated = $validator->validate();
+
+        $student = Student::findOrFail($validated['student_id']);
 
         HafalanRecord::create([
             'student_id' => $student->id,
-            'teacher_id' => $teacherId,
+            'teacher_id' => $this->resolveTeacherId($request, $student),
             'surah_id' => $validated['surah_id'],
             'ayah_start' => $validated['ayah_start'],
             'ayah_end' => $validated['ayah_end'],
             'submission_type' => $validated['submission_type'],
             'score' => $validated['score'] ?? null,
             'status' => $validated['status'],
+            'submitted_at' => $validated['submitted_at'],
             'notes' => $validated['notes'] ?? null,
-            'submitted_at' => $validated['submitted_at'] ?? now()->toDateString(),
         ]);
 
         return redirect()
@@ -99,22 +109,45 @@ class QuickInputController extends Controller
             ->with('success', 'Setoran hafalan berhasil disimpan.');
     }
 
-    public function storeMurajaah(StoreMurajaahRecordRequest $request): RedirectResponse
+    public function storeMurajaah(Request $request, UserAccessService $accessService): RedirectResponse
     {
-        $validated = $request->validated();
+        Gate::authorize('create', MurajaahRecord::class);
 
-        $student = Student::query()->findOrFail($validated['student_id']);
-        $teacherId = $this->resolveTeacherId($request->user(), $student);
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        if (! $teacherId) {
-            return back()
-                ->withInput()
-                ->with('error', 'Santri ini belum memiliki guru pembimbing.');
-        }
+        $validator = Validator::make($request->all(), [
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'surah_id' => ['required', 'integer', 'exists:surahs,id'],
+            'ayah_start' => ['required', 'integer', 'min:1'],
+            'ayah_end' => ['required', 'integer', 'min:1', 'gte:ayah_start'],
+            'fluency_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'tajwid_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'makhraj_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'overall_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'status' => ['required', Rule::in(['passed', 'repeat', 'needs_improvement'])],
+            'reviewed_at' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $validator->after(function ($validator) use ($request, $visibleStudentIds) {
+            if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
+                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+            }
+
+            $surah = Surah::find($request->input('surah_id'));
+
+            if ($surah && (int) $request->input('ayah_end') > (int) $surah->total_ayah) {
+                $validator->errors()->add('ayah_end', "Ayat akhir tidak boleh melebihi {$surah->total_ayah}.");
+            }
+        });
+
+        $validated = $validator->validate();
+
+        $student = Student::findOrFail($validated['student_id']);
 
         MurajaahRecord::create([
             'student_id' => $student->id,
-            'teacher_id' => $teacherId,
+            'teacher_id' => $this->resolveTeacherId($request, $student),
             'surah_id' => $validated['surah_id'],
             'ayah_start' => $validated['ayah_start'],
             'ayah_end' => $validated['ayah_end'],
@@ -123,8 +156,8 @@ class QuickInputController extends Controller
             'makhraj_score' => $validated['makhraj_score'] ?? null,
             'overall_score' => $validated['overall_score'] ?? null,
             'status' => $validated['status'],
+            'reviewed_at' => $validated['reviewed_at'],
             'notes' => $validated['notes'] ?? null,
-            'reviewed_at' => $validated['reviewed_at'] ?? now()->toDateString(),
         ]);
 
         return redirect()
@@ -132,43 +165,11 @@ class QuickInputController extends Controller
             ->with('success', 'Murajaah berhasil disimpan.');
     }
 
-    private function accessibleStudents(User $user): Collection
+    private function resolveTeacherId(Request $request, Student $student): ?int
     {
-        if ($user->hasRole('teacher')) {
-            $teacherId = $user->teacherProfile?->id;
+        $user = $request->user();
 
-            if (! $teacherId) {
-                return collect();
-            }
-
-            return Student::query()
-                ->with([
-                    'classRoom.program',
-                    'teacher.user',
-                ])
-                ->where('teacher_id', $teacherId)
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get();
-        }
-
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return Student::query()
-                ->with([
-                    'classRoom.program',
-                    'teacher.user',
-                ])
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get();
-        }
-
-        return collect();
-    }
-
-    private function resolveTeacherId(User $user, Student $student): ?int
-    {
-        if ($user->hasRole('teacher')) {
+        if ($user?->hasRole('teacher')) {
             return $user->teacherProfile?->id;
         }
 

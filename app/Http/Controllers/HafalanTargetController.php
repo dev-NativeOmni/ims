@@ -2,123 +2,183 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreHafalanTargetRequest;
-use App\Http\Requests\UpdateHafalanTargetRequest;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
-use App\Models\User;
+use App\Services\UserAccessService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class HafalanTargetController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, UserAccessService $accessService): View
     {
-        $user = $request->user();
+        Gate::authorize('viewAny', HafalanTarget::class);
 
-        $query = $this->filteredTargetQuery($request, $user);
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        $targets = (clone $query)
+        $targets = HafalanTarget::query()
+            ->with(['student.classRoom', 'surah', 'teacher.user'])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->when($request->filled('student_id'), function ($query) use ($request, $visibleStudentIds) {
+                if ($visibleStudentIds->contains((int) $request->student_id)) {
+                    $query->where('student_id', $request->student_id);
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            })
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
+            ->when($request->filled('surah_id'), fn ($query) => $query->where('surah_id', $request->surah_id))
+            ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
             ->orderBy('target_date')
             ->latest()
-            ->paginate(12)
+            ->paginate(15)
             ->withQueryString();
 
-        $summary = [
-            'total' => (clone $query)->count(),
-            'active' => (clone $query)->where('status', 'active')->count(),
-            'completed' => (clone $query)->where('status', 'completed')->count(),
-            'missed' => (clone $query)->where('status', 'missed')->count(),
-            'overdue' => (clone $query)
-                ->where('status', 'active')
-                ->whereDate('target_date', '<', today())
-                ->count(),
-        ];
+        $students = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->orderBy('name')
+            ->get();
 
-        return view('hafalan-targets.index', array_merge(
-            [
-                'targets' => $targets,
-                'summary' => $summary,
-            ],
-            $this->filterData($user)
-        ));
+        $surahs = Surah::query()
+            ->orderBy('number')
+            ->get();
+
+        return view('hafalan-targets.index', compact('targets', 'students', 'surahs'));
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, UserAccessService $accessService): View
     {
-        return view('hafalan-targets.create', $this->filterData($request->user()));
+        Gate::authorize('create', HafalanTarget::class);
+
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
+
+        $students = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $surahs = Surah::query()
+            ->orderBy('number')
+            ->get();
+
+        return view('hafalan-targets.create', compact('students', 'surahs'));
     }
 
-    public function store(StoreHafalanTargetRequest $request): RedirectResponse
+    public function store(Request $request, UserAccessService $accessService): RedirectResponse
     {
-        $validated = $request->validated();
+        Gate::authorize('create', HafalanTarget::class);
 
-        HafalanTarget::create(
-            $this->targetPayload($validated, $request->user())
-        );
+        $validated = $this->validateTarget($request, $accessService);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        HafalanTarget::create([
+            'student_id' => $student->id,
+            'teacher_id' => $this->resolveTeacherId($request, $student),
+            'surah_id' => $validated['surah_id'],
+            'ayah_start' => $validated['ayah_start'],
+            'ayah_end' => $validated['ayah_end'],
+            'target_date' => $validated['target_date'],
+            'status' => $validated['status'] ?? 'active',
+            'completed_at' => ($validated['status'] ?? 'active') === 'completed'
+                ? ($validated['completed_at'] ?? now())
+                : null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
 
         return redirect()
             ->route('hafalan-targets.index')
-            ->with('success', 'Target hafalan berhasil dibuat.');
+            ->with('success', 'Target hafalan berhasil ditambahkan.');
     }
 
-    public function show(Request $request, HafalanTarget $hafalanTarget): View
+    public function show(HafalanTarget $hafalanTarget): View
     {
-        $this->authorizeTargetAccess($request->user(), $hafalanTarget);
+        Gate::authorize('view', $hafalanTarget);
 
-        $hafalanTarget->load([
-            'student.classRoom.program',
-            'student.teacher.user',
-            'teacher.user',
-            'surah',
-        ]);
+        $hafalanTarget->load(['student.classRoom', 'student.program', 'surah', 'teacher.user']);
 
         return view('hafalan-targets.show', [
+            'hafalanTarget' => $hafalanTarget,
             'target' => $hafalanTarget,
         ]);
     }
 
-    public function edit(Request $request, HafalanTarget $hafalanTarget): View
+    public function edit(Request $request, HafalanTarget $hafalanTarget, UserAccessService $accessService): View
     {
-        $this->authorizeTargetAccess($request->user(), $hafalanTarget);
+        Gate::authorize('update', $hafalanTarget);
 
-        $hafalanTarget->load([
-            'student.classRoom.program',
-            'teacher.user',
-            'surah',
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
+
+        $students = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $surahs = Surah::query()
+            ->orderBy('number')
+            ->get();
+
+        return view('hafalan-targets.edit', [
+            'hafalanTarget' => $hafalanTarget,
+            'target' => $hafalanTarget,
+            'students' => $students,
+            'surahs' => $surahs,
         ]);
-
-        return view('hafalan-targets.edit', array_merge(
-            [
-                'target' => $hafalanTarget,
-            ],
-            $this->filterData($request->user())
-        ));
     }
 
-    public function update(
-        UpdateHafalanTargetRequest $request,
-        HafalanTarget $hafalanTarget
-    ): RedirectResponse {
-        $this->authorizeTargetAccess($request->user(), $hafalanTarget);
+    public function update(Request $request, HafalanTarget $hafalanTarget, UserAccessService $accessService): RedirectResponse
+    {
+        Gate::authorize('update', $hafalanTarget);
 
-        $validated = $request->validated();
+        $validated = $this->validateTarget($request, $accessService);
 
-        $hafalanTarget->update(
-            $this->targetPayload($validated, $request->user(), $hafalanTarget)
-        );
+        $student = Student::findOrFail($validated['student_id']);
+
+        $status = $validated['status'] ?? $hafalanTarget->status;
+
+        $hafalanTarget->update([
+            'student_id' => $student->id,
+            'teacher_id' => $this->resolveTeacherId($request, $student),
+            'surah_id' => $validated['surah_id'],
+            'ayah_start' => $validated['ayah_start'],
+            'ayah_end' => $validated['ayah_end'],
+            'target_date' => $validated['target_date'],
+            'status' => $status,
+            'completed_at' => $status === 'completed'
+                ? ($validated['completed_at'] ?? $hafalanTarget->completed_at ?? now())
+                : null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
 
         return redirect()
             ->route('hafalan-targets.index')
             ->with('success', 'Target hafalan berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, HafalanTarget $hafalanTarget): RedirectResponse
+    public function complete(HafalanTarget $hafalanTarget): RedirectResponse
     {
-        $this->authorizeTargetAccess($request->user(), $hafalanTarget);
+        Gate::authorize('update', $hafalanTarget);
+
+        $hafalanTarget->update([
+            'status' => 'completed',
+            'completed_at' => $hafalanTarget->completed_at ?? now(),
+        ]);
+
+        return redirect()
+            ->route('hafalan-targets.index')
+            ->with('success', 'Target hafalan berhasil ditandai selesai.');
+    }
+
+    public function destroy(HafalanTarget $hafalanTarget): RedirectResponse
+    {
+        Gate::authorize('delete', $hafalanTarget);
 
         $hafalanTarget->delete();
 
@@ -127,136 +187,44 @@ class HafalanTargetController extends Controller
             ->with('success', 'Target hafalan berhasil dihapus.');
     }
 
-    public function complete(Request $request, HafalanTarget $hafalanTarget): RedirectResponse
+    private function validateTarget(Request $request, UserAccessService $accessService): array
     {
-        $this->authorizeTargetAccess($request->user(), $hafalanTarget);
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        if ($hafalanTarget->status === 'completed') {
-            return back()->with('error', 'Target ini sudah ditandai selesai.');
-        }
-
-        $hafalanTarget->update([
-            'status' => 'completed',
-            'completed_at' => now(),
+        $validator = Validator::make($request->all(), [
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'surah_id' => ['required', 'integer', 'exists:surahs,id'],
+            'ayah_start' => ['required', 'integer', 'min:1'],
+            'ayah_end' => ['required', 'integer', 'min:1', 'gte:ayah_start'],
+            'target_date' => ['required', 'date'],
+            'status' => ['nullable', Rule::in(['active', 'completed', 'cancelled'])],
+            'completed_at' => ['nullable', 'date'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        return back()->with('success', 'Target hafalan berhasil ditandai selesai.');
+        $validator->after(function ($validator) use ($request, $visibleStudentIds) {
+            if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
+                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+            }
+
+            $surah = Surah::find($request->input('surah_id'));
+
+            if ($surah && (int) $request->input('ayah_end') > (int) $surah->total_ayah) {
+                $validator->errors()->add('ayah_end', "Ayat akhir tidak boleh melebihi {$surah->total_ayah}.");
+            }
+        });
+
+        return $validator->validate();
     }
 
-    private function filteredTargetQuery(Request $request, User $user)
+    private function resolveTeacherId(Request $request, Student $student): ?int
     {
-        return HafalanTarget::query()
-            ->with([
-                'student.classRoom.program',
-                'teacher.user',
-                'surah',
-            ])
-            ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                $query->where('teacher_id', $user->teacherProfile?->id ?? 0);
-            })
-            ->when($request->filled('student_id'), function ($query) use ($request) {
-                $query->where('student_id', $request->integer('student_id'));
-            })
-            ->when($request->filled('surah_id'), function ($query) use ($request) {
-                $query->where('surah_id', $request->integer('surah_id'));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->string('status')->toString());
-            })
-            ->when($request->filled('date_from'), function ($query) use ($request) {
-                $query->whereDate('target_date', '>=', $request->date('date_from'));
-            })
-            ->when($request->filled('date_to'), function ($query) use ($request) {
-                $query->whereDate('target_date', '<=', $request->date('date_to'));
-            });
-    }
+        $user = $request->user();
 
-    private function filterData(User $user): array
-    {
-        $studentsQuery = Student::query()
-            ->with([
-                'classRoom.program',
-                'teacher.user',
-            ])
-            ->where('status', 'active')
-            ->whereNotNull('teacher_id')
-            ->orderBy('name');
-
-        if ($user->hasRole('teacher')) {
-            $studentsQuery->where('teacher_id', $user->teacherProfile?->id ?? 0);
+        if ($user?->hasRole('teacher')) {
+            return $user->teacherProfile?->id;
         }
 
-        return [
-            'students' => $studentsQuery->get(),
-            'surahs' => Surah::query()
-                ->orderBy('number')
-                ->get(),
-        ];
-    }
-
-    private function targetPayload(
-        array $validated,
-        User $user,
-        ?HafalanTarget $target = null
-    ): array {
-        $student = Student::findOrFail($validated['student_id']);
-
-        $payload = Arr::only($validated, [
-            'student_id',
-            'surah_id',
-            'ayah_start',
-            'ayah_end',
-            'target_date',
-            'status',
-            'notes',
-        ]);
-
-        $payload['teacher_id'] = $this->resolveTeacherId($user, $student);
-
-        if (($payload['status'] ?? null) === 'completed') {
-            $payload['completed_at'] = $target?->completed_at ?? now();
-        }
-
-        if (($payload['status'] ?? null) !== 'completed') {
-            $payload['completed_at'] = null;
-        }
-
-        return $payload;
-    }
-
-    private function resolveTeacherId(User $user, Student $student): int
-    {
-        if ($user->hasRole('teacher')) {
-            $teacherId = $user->teacherProfile?->id;
-
-            abort_if(
-                ! $teacherId || (int) $student->teacher_id !== (int) $teacherId,
-                403,
-                'Guru hanya boleh mengelola target santri bimbingannya.'
-            );
-
-            return (int) $teacherId;
-        }
-
-        abort_if(
-            ! $student->teacher_id,
-            422,
-            'Santri belum memiliki guru pembimbing.'
-        );
-
-        return (int) $student->teacher_id;
-    }
-
-    private function authorizeTargetAccess(User $user, HafalanTarget $target): void
-    {
-        if (! $user->hasRole('teacher')) {
-            return;
-        }
-
-        abort_if(
-            (int) $target->teacher_id !== (int) ($user->teacherProfile?->id ?? 0),
-            403,
-            'Guru hanya boleh mengakses target santri bimbingannya.'
-        );
+        return $student->teacher_id;
     }
 }
