@@ -1,6 +1,16 @@
 @php
     $user = auth()->user();
-    $unreadNotificationCount = $user?->unreadSystemNotifications()->count() ?? 0;
+
+    $isAdmin = $user?->hasAnyRole(['super_admin', 'admin']) ?? false;
+    $canManageRecords = $user?->hasAnyRole(['super_admin', 'admin', 'teacher']) ?? false;
+
+    $hasNotificationsRoute = \Illuminate\Support\Facades\Route::has('system-notifications.index');
+
+    $unreadNotificationCount = 0;
+
+    if ($user && method_exists($user, 'unreadSystemNotifications')) {
+        $unreadNotificationCount = $user->unreadSystemNotifications()->count();
+    }
 @endphp
 
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
@@ -13,12 +23,12 @@
                     </a>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-4 lg:space-x-6 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('*.dashboard')">
                         Dashboard
                     </x-nav-link>
 
-                    @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin'))
+                    @if ($isAdmin)
                         <x-nav-link :href="route('programs.index')" :active="request()->routeIs('programs.*')">
                             Program
                         </x-nav-link>
@@ -40,7 +50,7 @@
                         </x-nav-link>
                     @endif
 
-                    @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('teacher'))
+                    @if ($canManageRecords)
                         <x-nav-link :href="route('quick-inputs.index')" :active="request()->routeIs('quick-inputs.*')">
                             Input Cepat
                         </x-nav-link>
@@ -62,19 +72,21 @@
                         </x-nav-link>
                     @endif
 
-                    <x-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
-                        <span class="inline-flex items-center gap-1">
-                            Notifikasi
+                    @if ($hasNotificationsRoute)
+                        <x-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
+                            <span class="inline-flex items-center gap-1">
+                                Notifikasi
 
-                            @if ($unreadNotificationCount > 0)
-                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold text-white">
-                                    {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
-                                </span>
-                            @endif
-                        </span>
-                    </x-nav-link>
+                                @if ($unreadNotificationCount > 0)
+                                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold text-white">
+                                        {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
+                                    </span>
+                                @endif
+                            </span>
+                        </x-nav-link>
+                    @endif
 
-                    @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin'))
+                    @if ($isAdmin)
                         <x-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">
                             Audit
                         </x-nav-link>
@@ -85,7 +97,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-600 bg-white hover:text-gray-800 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -101,12 +113,14 @@
                             Profil
                         </x-dropdown-link>
 
-                        <x-dropdown-link :href="route('system-notifications.index')">
-                            Notifikasi
-                            @if ($unreadNotificationCount > 0)
-                                ({{ $unreadNotificationCount }})
-                            @endif
-                        </x-dropdown-link>
+                        @if ($hasNotificationsRoute)
+                            <x-dropdown-link :href="route('system-notifications.index')">
+                                Notifikasi
+                                @if ($unreadNotificationCount > 0)
+                                    ({{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }})
+                                @endif
+                            </x-dropdown-link>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -122,7 +136,7 @@
 
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out">
+                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{ 'hidden': open, 'inline-flex': ! open }"
                               class="inline-flex"
@@ -148,7 +162,7 @@
                 Dashboard
             </x-responsive-nav-link>
 
-            @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin'))
+            @if ($isAdmin)
                 <x-responsive-nav-link :href="route('programs.index')" :active="request()->routeIs('programs.*')">
                     Program
                 </x-responsive-nav-link>
@@ -170,7 +184,7 @@
                 </x-responsive-nav-link>
             @endif
 
-            @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('teacher'))
+            @if ($canManageRecords)
                 <x-responsive-nav-link :href="route('quick-inputs.index')" :active="request()->routeIs('quick-inputs.*')">
                     Input Cepat
                 </x-responsive-nav-link>
@@ -192,14 +206,16 @@
                 </x-responsive-nav-link>
             @endif
 
-            <x-responsive-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
-                Notifikasi
-                @if ($unreadNotificationCount > 0)
-                    ({{ $unreadNotificationCount }})
-                @endif
-            </x-responsive-nav-link>
+            @if ($hasNotificationsRoute)
+                <x-responsive-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
+                    Notifikasi
+                    @if ($unreadNotificationCount > 0)
+                        ({{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }})
+                    @endif
+                </x-responsive-nav-link>
+            @endif
 
-            @if (auth()->user()?->hasRole('super_admin') || auth()->user()?->hasRole('admin'))
+            @if ($isAdmin)
                 <x-responsive-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">
                     Audit
                 </x-responsive-nav-link>
@@ -211,7 +227,7 @@
                 <div class="font-medium text-base text-gray-800">
                     {{ Auth::user()->name }}
                 </div>
-                <div class="font-medium text-sm text-gray-500">
+                <div class="font-medium text-sm text-gray-600">
                     {{ Auth::user()->email }}
                 </div>
             </div>
@@ -220,6 +236,15 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     Profil
                 </x-responsive-nav-link>
+
+                @if ($hasNotificationsRoute)
+                    <x-responsive-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
+                        Notifikasi
+                        @if ($unreadNotificationCount > 0)
+                            ({{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }})
+                        @endif
+                    </x-responsive-nav-link>
+                @endif
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

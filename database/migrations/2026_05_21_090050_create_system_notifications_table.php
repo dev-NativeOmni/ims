@@ -15,27 +15,18 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->string('type', 80);
-            $table->string('severity', 30)->default('info');
-
+            $table->string('type')->default('general');
             $table->string('title');
-            $table->text('message');
-
-            $table->string('source_type', 120)->nullable();
-            $table->unsignedBigInteger('source_id')->nullable();
-
+            $table->text('message')->nullable();
             $table->string('action_url')->nullable();
-
-            $table->string('unique_hash', 64)->unique();
+            $table->json('data')->nullable();
 
             $table->timestamp('read_at')->nullable();
-
             $table->timestamps();
 
             $table->index(['user_id', 'read_at']);
-            $table->index(['user_id', 'type']);
-            $table->index(['type', 'severity']);
-            $table->index(['source_type', 'source_id']);
+            $table->index(['user_id', 'created_at']);
+            $table->index('type');
         });
     }
 

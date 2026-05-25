@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'role_id',
         'name',
         'email',
         'password',
-        'phone',
         'status',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -32,7 +33,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role_id' => 'integer',
         ];
     }
 
@@ -41,34 +41,29 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    public function teacherProfile(): HasMany|BelongsTo
+    public function teacherProfile(): HasOne
     {
         return $this->hasOne(TeacherProfile::class);
     }
 
-    public function parentProfile(): HasMany|BelongsTo
+    public function parentProfile(): HasOne
     {
         return $this->hasOne(ParentProfile::class);
     }
 
-    public function studentProfile(): HasMany|BelongsTo
+    public function studentProfile(): HasOne
     {
         return $this->hasOne(Student::class);
     }
 
-    public function systemNotifications(): HasMany
+    public function internalNotifications(): HasMany
     {
-        return $this->hasMany(SystemNotification::class);
+        return $this->hasMany(InternalNotification::class);
     }
 
-    public function unreadSystemNotifications(): HasMany
+    public function unreadInternalNotifications(): HasMany
     {
-        return $this->systemNotifications()->whereNull('read_at');
-    }
-
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
+        return $this->internalNotifications()->unread();
     }
 
     public function hasRole(string $role): bool
@@ -81,52 +76,17 @@ class User extends Authenticatable
         return in_array($this->role?->name, $roles, true);
     }
 
-    public function roleName(): ?string
+    public function isActive(): bool
     {
-        return $this->role?->name;
+        return $this->status === 'active';
+    }
+    public function systemNotifications(): HasMany
+    {
+        return $this->hasMany(SystemNotification::class);
     }
 
-    public function roleDisplayName(): ?string
+    public function unreadSystemNotifications(): HasMany
     {
-        return $this->role?->display_name ?? $this->role?->name;
+        return $this->systemNotifications()->whereNull('read_at');
     }
-
-    public function accessibleStudentIds(): Collection
-    {
-        if ($this->hasAnyRole(['super_admin', 'admin'])) {
-            return Student::query()
-                ->pluck('id');
-        }
-
-        if ($this->hasRole('teacher')) {
-            $teacherId = $this->teacherProfile?->id;
-
-            if (! $teacherId) {
-                return collect();
-            }
-
-            return Student::query()
-                ->where('teacher_id', $teacherId)
-                ->pluck('id');
-        }
-
-        if ($this->hasRole('parent')) {
-            $parent = $this->parentProfile;
-
-            if (! $parent) {
-                return collect();
-            }
-
-            return $parent->students()
-                ->pluck('students.id');
-        }
-
-        if ($this->hasRole('student')) {
-            $studentId = $this->studentProfile?->id;
-
-            return $studentId ? collect([$studentId]) : collect();
-        }
-
-        return collect();
     }
-}

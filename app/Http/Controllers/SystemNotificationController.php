@@ -3,59 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\SystemNotification;
-use App\Services\InternalNotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class SystemNotificationController extends Controller
 {
-    public function __construct(
-        private readonly InternalNotificationService $notificationService
-    ) {
-        //
-    }
-
     public function index(Request $request): View
     {
-        $user = $request->user();
-
-        $notifications = $user->systemNotifications()
+        $notifications = $request->user()
+            ->systemNotifications()
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
+        $unreadCount = $request->user()
+            ->unreadSystemNotifications()
+            ->count();
+
         return view('system-notifications.index', [
             'notifications' => $notifications,
-            'summary' => [
-                'total' => $user->systemNotifications()->count(),
-                'unread' => $user->unreadSystemNotifications()->count(),
-                'target_overdue' => $user->systemNotifications()->where('type', 'target_overdue')->count(),
-                'hafalan_attention' => $user->systemNotifications()->where('type', 'hafalan_attention')->count(),
-                'murajaah_attention' => $user->systemNotifications()->where('type', 'murajaah_attention')->count(),
-            ],
+            'unreadCount' => $unreadCount,
         ]);
     }
 
-    public function refresh(Request $request): RedirectResponse
+    public function markAsRead(Request $request, SystemNotification $systemNotification): RedirectResponse
     {
-        $created = $this->notificationService->generateForUser($request->user());
-
-        return redirect()
-            ->route('system-notifications.index')
-            ->with('success', $created . ' notifikasi baru berhasil dibuat.');
-    }
-
-    public function markAsRead(
-        Request $request,
-        SystemNotification $systemNotification
-    ): RedirectResponse {
-        abort_if(
-            (int) $systemNotification->user_id !== (int) $request->user()->id,
-            403
-        );
+        $this->ensureOwner($request, $systemNotification);
 
         $systemNotification->markAsRead();
+
+        if ($systemNotification->action_url) {
+            return redirect()->to($systemNotification->action_url);
+        }
 
         return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
     }
@@ -66,22 +46,26 @@ class SystemNotificationController extends Controller
             ->unreadSystemNotifications()
             ->update([
                 'read_at' => now(),
+                'updated_at' => now(),
             ]);
 
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 
-    public function destroy(
-        Request $request,
-        SystemNotification $systemNotification
-    ): RedirectResponse {
-        abort_if(
-            (int) $systemNotification->user_id !== (int) $request->user()->id,
-            403
-        );
+    public function destroy(Request $request, SystemNotification $systemNotification): RedirectResponse
+    {
+        $this->ensureOwner($request, $systemNotification);
 
         $systemNotification->delete();
 
         return back()->with('success', 'Notifikasi berhasil dihapus.');
+    }
+
+    private function ensureOwner(Request $request, SystemNotification $systemNotification): void
+    {
+        abort_unless(
+            (int) $systemNotification->user_id === (int) $request->user()->id,
+            403
+        );
     }
 }
