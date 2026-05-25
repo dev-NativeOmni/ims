@@ -16,7 +16,8 @@ use Illuminate\Support\Collection;
 class DashboardService
 {
     public function __construct(
-        private readonly HafalanProgressService $progressService
+        private readonly StudentProgressService $studentProgressService,
+        private readonly StudentMotivationService $studentMotivationService
     ) {
         //
     }
@@ -80,17 +81,6 @@ class DashboardService
                 ])
                 ->count(),
 
-            'latest_targets' => HafalanTarget::query()
-                ->with([
-                    'student.classRoom.program',
-                    'teacher.user',
-                    'surah',
-                ])
-                ->orderBy('target_date')
-                ->latest()
-                ->limit(8)
-                ->get(),
-
             'latest_hafalan_records' => HafalanRecord::query()
                 ->with([
                     'student.classRoom.program',
@@ -99,7 +89,7 @@ class DashboardService
                 ])
                 ->latest('submitted_at')
                 ->latest()
-                ->limit(5)
+                ->limit(8)
                 ->get(),
 
             'latest_murajaah_records' => MurajaahRecord::query()
@@ -110,7 +100,18 @@ class DashboardService
                 ])
                 ->latest('reviewed_at')
                 ->latest()
-                ->limit(5)
+                ->limit(8)
+                ->get(),
+
+            'latest_targets' => HafalanTarget::query()
+                ->with([
+                    'student.classRoom.program',
+                    'teacher.user',
+                    'surah',
+                ])
+                ->orderBy('target_date')
+                ->latest()
+                ->limit(8)
                 ->get(),
 
             'students_progress' => $this->studentsProgress($activeStudents)->take(10),
@@ -124,29 +125,24 @@ class DashboardService
         if (! $teacher) {
             return [
                 'teacher' => null,
+                'students' => collect(),
+                'students_progress' => collect(),
                 'total_students' => 0,
-                'hafalan_today' => 0,
-                'murajaah_today' => 0,
                 'active_targets' => 0,
                 'overdue_targets' => 0,
-                'completed_targets' => 0,
-                'hafalan_need_attention' => 0,
-                'murajaah_need_attention' => 0,
                 'latest_targets' => collect(),
                 'latest_hafalan_records' => collect(),
                 'latest_murajaah_records' => collect(),
-                'students_progress' => collect(),
             ];
         }
 
         $today = now()->toDateString();
 
-        $students = Student::query()
+        $students = $teacher->students()
             ->with([
                 'classRoom.program',
                 'teacher.user',
             ])
-            ->where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
@@ -155,17 +151,9 @@ class DashboardService
 
         return [
             'teacher' => $teacher,
+            'students' => $students,
+            'students_progress' => $this->studentsProgress($students),
             'total_students' => $students->count(),
-
-            'hafalan_today' => HafalanRecord::query()
-                ->whereIn('student_id', $studentIds)
-                ->whereDate('submitted_at', $today)
-                ->count(),
-
-            'murajaah_today' => MurajaahRecord::query()
-                ->whereIn('student_id', $studentIds)
-                ->whereDate('reviewed_at', $today)
-                ->count(),
 
             'active_targets' => HafalanTarget::query()
                 ->whereIn('student_id', $studentIds)
@@ -176,27 +164,6 @@ class DashboardService
                 ->whereIn('student_id', $studentIds)
                 ->where('status', 'active')
                 ->whereDate('target_date', '<', $today)
-                ->count(),
-
-            'completed_targets' => HafalanTarget::query()
-                ->whereIn('student_id', $studentIds)
-                ->where('status', 'completed')
-                ->count(),
-
-            'hafalan_need_attention' => HafalanRecord::query()
-                ->whereIn('student_id', $studentIds)
-                ->whereIn('status', [
-                    'repeat',
-                    'needs_improvement',
-                ])
-                ->count(),
-
-            'murajaah_need_attention' => MurajaahRecord::query()
-                ->whereIn('student_id', $studentIds)
-                ->whereIn('status', [
-                    'repeat',
-                    'needs_improvement',
-                ])
                 ->count(),
 
             'latest_targets' => HafalanTarget::query()
@@ -220,7 +187,7 @@ class DashboardService
                 ->whereIn('student_id', $studentIds)
                 ->latest('submitted_at')
                 ->latest()
-                ->limit(5)
+                ->limit(8)
                 ->get(),
 
             'latest_murajaah_records' => MurajaahRecord::query()
@@ -232,10 +199,8 @@ class DashboardService
                 ->whereIn('student_id', $studentIds)
                 ->latest('reviewed_at')
                 ->latest()
-                ->limit(5)
+                ->limit(8)
                 ->get(),
-
-            'students_progress' => $this->studentsProgress($students),
         ];
     }
 
@@ -248,6 +213,7 @@ class DashboardService
                 'parent' => null,
                 'children' => collect(),
                 'children_progress' => collect(),
+                'children_motivation' => collect(),
                 'total_children' => 0,
                 'active_targets' => 0,
                 'overdue_targets' => 0,
@@ -274,6 +240,7 @@ class DashboardService
             'parent' => $parent,
             'children' => $children,
             'children_progress' => $this->studentsProgress($children),
+            'children_motivation' => $this->studentsMotivation($children),
             'total_children' => $children->count(),
 
             'active_targets' => HafalanTarget::query()
@@ -332,86 +299,149 @@ class DashboardService
         if (! $student) {
             return [
                 'student' => null,
-                'summary' => null,
+                'progress' => [],
+                'summary' => [],
+                'motivation' => [],
                 'active_targets' => collect(),
                 'overdue_targets' => collect(),
+                'latest_targets' => collect(),
                 'latest_hafalan_records' => collect(),
                 'latest_murajaah_records' => collect(),
             ];
         }
 
         $student->load([
+            'user',
             'classRoom.program',
             'teacher.user',
             'parents.user',
         ]);
 
         $today = now()->toDateString();
+        $progress = $this->studentProgressService->calculate($student);
+
+        $activeTargets = HafalanTarget::query()
+            ->with([
+                'surah',
+                'teacher.user',
+            ])
+            ->where('student_id', $student->id)
+            ->where('status', 'active')
+            ->orderBy('target_date')
+            ->get();
+
+        $overdueTargets = HafalanTarget::query()
+            ->with([
+                'surah',
+                'teacher.user',
+            ])
+            ->where('student_id', $student->id)
+            ->where('status', 'active')
+            ->whereDate('target_date', '<', $today)
+            ->orderBy('target_date')
+            ->get();
+
+        $latestTargets = HafalanTarget::query()
+            ->with([
+                'surah',
+                'teacher.user',
+            ])
+            ->where('student_id', $student->id)
+            ->orderBy('target_date')
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        $latestHafalanRecords = HafalanRecord::query()
+            ->with([
+                'teacher.user',
+                'surah',
+            ])
+            ->where('student_id', $student->id)
+            ->latest('submitted_at')
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        $latestMurajaahRecords = MurajaahRecord::query()
+            ->with([
+                'teacher.user',
+                'surah',
+            ])
+            ->where('student_id', $student->id)
+            ->latest('reviewed_at')
+            ->latest()
+            ->limit(8)
+            ->get();
 
         return [
             'student' => $student,
-            'summary' => $this->progressService->summary($student),
-
-            'active_targets' => HafalanTarget::query()
-                ->with([
-                    'surah',
-                    'teacher.user',
-                ])
-                ->where('student_id', $student->id)
-                ->where('status', 'active')
-                ->orderBy('target_date')
-                ->get(),
-
-            'overdue_targets' => HafalanTarget::query()
-                ->with([
-                    'surah',
-                    'teacher.user',
-                ])
-                ->where('student_id', $student->id)
-                ->where('status', 'active')
-                ->whereDate('target_date', '<', $today)
-                ->orderBy('target_date')
-                ->get(),
-
-            'latest_hafalan_records' => $student->hafalanRecords()
-                ->with([
-                    'teacher.user',
-                    'surah',
-                ])
-                ->latest('submitted_at')
-                ->latest()
-                ->limit(8)
-                ->get(),
-
-            'latest_murajaah_records' => $student->murajaahRecords()
-                ->with([
-                    'teacher.user',
-                    'surah',
-                ])
-                ->latest('reviewed_at')
-                ->latest()
-                ->limit(8)
-                ->get(),
+            'progress' => $progress,
+            'summary' => $this->progressAliases($student, $progress),
+            'motivation' => $this->studentMotivationService->build($student, $progress),
+            'active_targets' => $activeTargets,
+            'overdue_targets' => $overdueTargets,
+            'latest_targets' => $latestTargets,
+            'latest_hafalan_records' => $latestHafalanRecords,
+            'latest_murajaah_records' => $latestMurajaahRecords,
         ];
     }
 
     private function studentsProgress(Collection $students): Collection
     {
-        return $students->map(function (Student $student) {
-            return [
-                'student' => $student,
-                'memorized_ayah_count' => $this->progressService->memorizedAyahCount($student),
-                'progress_percentage' => $this->progressService->progressPercentage($student),
-                'active_target_count' => HafalanTarget::query()
-                    ->where('student_id', $student->id)
-                    ->where('status', 'active')
-                    ->count(),
-                'overdue_target_count' => HafalanTarget::query()
-                    ->where('student_id', $student->id)
-                    ->where('status', 'active')
-                    ->whereDate('target_date', '<', now()->toDateString())
-                    ->count(),
-            ];
-        })->sortByDesc('progress_percentage')->values();
+        return $students
+            ->map(function (Student $student) {
+                $progress = $this->studentProgressService->calculate($student);
+
+                return $this->progressAliases($student, $progress);
+            })
+            ->sortByDesc('progress_percentage')
+            ->values();
+    }
+
+    private function studentsMotivation(Collection $students): Collection
+    {
+        return $students
+            ->map(function (Student $student) {
+                $progress = $this->studentProgressService->calculate($student);
+
+                return [
+                    'student' => $student,
+                    'progress' => $progress,
+                    'motivation' => $this->studentMotivationService->build($student, $progress),
+                ];
+            })
+            ->values();
+    }
+
+    private function progressAliases(Student $student, array $progress): array
+    {
+        $progressPercent = (float) ($progress['progress_percent'] ?? 0);
+        $memorizedAyahs = (int) ($progress['memorized_ayahs'] ?? 0);
+        $totalQuranAyahs = (int) ($progress['total_quran_ayahs'] ?? 6236);
+
+        return array_merge($progress, [
+            'student' => $student,
+            'student_id' => $student->id,
+            'student_name' => $student->name,
+            'student_number' => $student->student_number,
+            'class_room_name' => $student->classRoom?->name,
+            'program_name' => $student->classRoom?->program?->name,
+
+            'memorized_ayah_count' => $memorizedAyahs,
+            'total_ayah_count' => $totalQuranAyahs,
+            'progress_percentage' => $progressPercent,
+
+            'memorized_ayahs' => $memorizedAyahs,
+            'total_quran_ayahs' => $totalQuranAyahs,
+            'progress_percent' => $progressPercent,
+
+            'total_hafalan_records' => (int) ($progress['total_hafalan_records'] ?? 0),
+            'total_murajaah_records' => (int) ($progress['total_murajaah_records'] ?? 0),
+            'active_targets' => (int) ($progress['active_targets'] ?? 0),
+            'overdue_targets' => (int) ($progress['overdue_targets'] ?? 0),
+            'average_hafalan_score' => (float) ($progress['average_hafalan_score'] ?? 0),
+            'average_murajaah_score' => (float) ($progress['average_murajaah_score'] ?? 0),
+        ]);
     }
 }

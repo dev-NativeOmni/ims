@@ -1,174 +1,262 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-1">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div>
+            <h2 class="text-xl font-semibold leading-tight text-gray-900">
                 Dashboard Santri
             </h2>
-            <p class="text-sm text-gray-500">
-                Lihat target, progres hafalan, dan riwayat murajaah.
+            <p class="mt-1 text-sm text-gray-600">
+                Ringkasan progres hafalan, target, murajaah, dan motivasi.
             </p>
         </div>
     </x-slot>
 
     @php
         $student = data_get($stats, 'student');
-        $summary = data_get($stats, 'summary');
+        $progress = data_get($stats, 'progress', data_get($stats, 'summary', []));
+        $motivation = data_get($stats, 'motivation', []);
         $activeTargets = collect(data_get($stats, 'active_targets', []));
         $overdueTargets = collect(data_get($stats, 'overdue_targets', []));
+        $latestTargets = collect(data_get($stats, 'latest_targets', []));
         $latestHafalanRecords = collect(data_get($stats, 'latest_hafalan_records', []));
         $latestMurajaahRecords = collect(data_get($stats, 'latest_murajaah_records', []));
-        $progressPercentage = data_get($summary, 'progress_percentage', 0);
+
+        $progressPercent = (float) data_get($progress, 'progress_percent', data_get($progress, 'progress_percentage', 0));
+        $progressWidth = min(100, max(0, $progressPercent));
     @endphp
 
     <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             @if (! $student)
-                <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-5">
-                    Akun santri ini belum terhubung ke data santri. Hubungi admin.
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+                    Profil santri belum terhubung dengan akun ini.
                 </div>
             @else
-                <div class="bg-white rounded-xl shadow-sm border p-6">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">{{ $student->name }}</h3>
-                            <p class="text-sm text-gray-500">
-                                {{ $student->classRoom?->name ?? '-' }}
-                                @if ($student->classRoom?->program)
-                                    · {{ $student->classRoom->program->name }}
-                                @endif
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                Guru: {{ $student->teacher?->user?->name ?? '-' }}
-                            </p>
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                        <h3 class="text-base font-semibold text-gray-900">
+                            Profil Santri
+                        </h3>
+
+                        <dl class="mt-4 space-y-3 text-sm">
+                            <div>
+                                <dt class="text-gray-500">Nama</dt>
+                                <dd class="font-semibold text-gray-900">{{ $student->name }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-gray-500">Nomor Santri</dt>
+                                <dd class="font-semibold text-gray-900">{{ $student->student_number ?? '-' }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-gray-500">Kelas</dt>
+                                <dd class="font-semibold text-gray-900">{{ $student->classRoom?->name ?? '-' }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-gray-500">Program</dt>
+                                <dd class="font-semibold text-gray-900">{{ $student->classRoom?->program?->name ?? '-' }}</dd>
+                            </div>
+
+                            <div>
+                                <dt class="text-gray-500">Guru</dt>
+                                <dd class="font-semibold text-gray-900">{{ $student->teacher?->user?->name ?? '-' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-2">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h3 class="text-base font-semibold text-gray-900">
+                                    Progress Hafalan
+                                </h3>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Progress dihitung dari hafalan lulus.
+                                </p>
+                            </div>
+
+                            <div class="text-left sm:text-right">
+                                <p class="text-4xl font-bold text-gray-900">
+                                    {{ number_format($progressPercent, 2) }}%
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ number_format(data_get($progress, 'memorized_ayahs', data_get($progress, 'memorized_ayah_count', 0))) }}
+                                    /
+                                    {{ number_format(data_get($progress, 'total_quran_ayahs', data_get($progress, 'total_ayah_count', 6236))) }}
+                                    ayat
+                                </p>
+                            </div>
                         </div>
 
-                        <div class="w-full lg:w-96">
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Progress Hafalan</span>
-                                <span class="font-semibold text-gray-900">{{ $progressPercentage }}%</span>
+                        <div class="mt-5 h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                            <div class="h-3 rounded-full bg-emerald-600"
+                                 style="width: {{ $progressWidth }}%">
                             </div>
-                            <div class="w-full bg-gray-100 rounded-full h-3">
-                                <div class="bg-emerald-600 h-3 rounded-full" style="width: {{ min($progressPercentage, 100) }}%"></div>
+                        </div>
+
+                        <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div class="rounded-xl bg-gray-50 p-4">
+                                <p class="text-sm text-gray-500">Setoran Hafalan</p>
+                                <p class="mt-1 text-2xl font-bold text-gray-900">
+                                    {{ number_format(data_get($progress, 'total_hafalan_records', 0)) }}
+                                </p>
                             </div>
-                            <p class="text-xs text-gray-500 mt-2">
-                                {{ data_get($summary, 'memorized_ayah_count', 0) }}
-                                dari
-                                {{ data_get($summary, 'total_ayah_count', 6236) }}
-                                ayat tercatat lulus.
-                            </p>
+
+                            <div class="rounded-xl bg-gray-50 p-4">
+                                <p class="text-sm text-gray-500">Murajaah</p>
+                                <p class="mt-1 text-2xl font-bold text-gray-900">
+                                    {{ number_format(data_get($progress, 'total_murajaah_records', 0)) }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-xl bg-gray-50 p-4">
+                                <p class="text-sm text-gray-500">Target Terlambat</p>
+                                <p class="mt-1 text-2xl font-bold text-red-600">
+                                    {{ number_format(data_get($progress, 'overdue_targets', $overdueTargets->count())) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        @if (Route::has('progress.show'))
+                            <div class="mt-5">
+                                <a href="{{ route('progress.show', $student) }}"
+                                   class="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
+                                    Lihat Detail Progress
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                @include('dashboards.partials.motivation-card', [
+                    'student' => $student,
+                    'progress' => $progress,
+                    'motivation' => $motivation,
+                    'showStudentName' => false,
+                ])
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        <div class="border-b border-gray-200 px-5 py-4">
+                            <h3 class="text-base font-semibold text-gray-900">
+                                Target Aktif
+                            </h3>
+                        </div>
+
+                        <div class="divide-y divide-gray-100">
+                            @forelse ($activeTargets as $target)
+                                <div class="p-5">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="font-semibold text-gray-900">
+                                                {{ $target->surah?->name_latin ?? '-' }}
+                                                · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                            </p>
+                                            <p class="mt-1 text-sm text-gray-500">
+                                                Target: {{ $target->target_date ? \Carbon\Carbon::parse($target->target_date)->format('d M Y') : '-' }}
+                                            </p>
+                                        </div>
+
+                                        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                            Aktif
+                                        </span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="p-5 text-sm text-gray-500">
+                                    Belum ada target aktif.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        <div class="border-b border-gray-200 px-5 py-4">
+                            <h3 class="text-base font-semibold text-gray-900">
+                                Target Terlambat
+                            </h3>
+                        </div>
+
+                        <div class="divide-y divide-gray-100">
+                            @forelse ($overdueTargets as $target)
+                                <div class="p-5">
+                                    <p class="font-semibold text-gray-900">
+                                        {{ $target->surah?->name_latin ?? '-' }}
+                                        · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                    </p>
+                                    <p class="mt-1 text-sm font-semibold text-red-600">
+                                        Lewat dari {{ $target->target_date ? \Carbon\Carbon::parse($target->target_date)->format('d M Y') : '-' }}
+                                    </p>
+                                </div>
+                            @empty
+                                <div class="p-5 text-sm text-gray-500">
+                                    Tidak ada target terlambat.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        <div class="border-b border-gray-200 px-5 py-4">
+                            <h3 class="text-base font-semibold text-gray-900">
+                                Hafalan Terbaru
+                            </h3>
+                        </div>
+
+                        <div class="divide-y divide-gray-100">
+                            @forelse ($latestHafalanRecords as $record)
+                                <div class="p-5">
+                                    <p class="font-semibold text-gray-900">
+                                        {{ $record->surah?->name_latin ?? '-' }}
+                                        · Ayat {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ $record->submitted_at ? \Carbon\Carbon::parse($record->submitted_at)->format('d M Y') : '-' }}
+                                        · Status: {{ $record->status ?? '-' }}
+                                        · Nilai: {{ $record->score !== null ? number_format((float) $record->score, 2) : '-' }}
+                                    </p>
+                                </div>
+                            @empty
+                                <div class="p-5 text-sm text-gray-500">
+                                    Belum ada hafalan.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                        <div class="border-b border-gray-200 px-5 py-4">
+                            <h3 class="text-base font-semibold text-gray-900">
+                                Murajaah Terbaru
+                            </h3>
+                        </div>
+
+                        <div class="divide-y divide-gray-100">
+                            @forelse ($latestMurajaahRecords as $record)
+                                <div class="p-5">
+                                    <p class="font-semibold text-gray-900">
+                                        {{ $record->surah?->name_latin ?? '-' }}
+                                        · Ayat {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ $record->reviewed_at ? \Carbon\Carbon::parse($record->reviewed_at)->format('d M Y') : '-' }}
+                                        · Status: {{ $record->status ?? '-' }}
+                                        · Nilai: {{ $record->overall_score !== null ? number_format((float) $record->overall_score, 2) : '-' }}
+                                    </p>
+                                </div>
+                            @empty
+                                <div class="p-5 text-sm text-gray-500">
+                                    Belum ada murajaah.
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
             @endif
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Total Setoran</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ data_get($summary, 'total_hafalan_records', 0) }}</p>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Total Murajaah</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ data_get($summary, 'total_murajaah_records', 0) }}</p>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Target Aktif</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $activeTargets->count() }}</p>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Target Terlambat</p>
-                    <p class="text-3xl font-bold text-red-600">{{ $overdueTargets->count() }}</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div class="px-5 py-4 border-b">
-                    <h3 class="font-semibold text-gray-900">Target Hafalan Aktif</h3>
-                </div>
-
-                <div class="divide-y">
-                    @forelse ($activeTargets as $target)
-                        <div class="px-5 py-4">
-                            <div class="flex justify-between gap-4">
-                                <div>
-                                    <p class="font-medium text-gray-900">
-                                        {{ $target->surah?->name_latin ?? '-' }} ayat {{ $target->ayah_range }}
-                                    </p>
-                                    <p class="text-sm text-gray-600">
-                                        Guru: {{ $target->teacher?->user?->name ?? '-' }}
-                                    </p>
-                                    @if ($target->notes)
-                                        <p class="text-sm text-gray-500 mt-1">{{ $target->notes }}</p>
-                                    @endif
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-medium">{{ $target->target_date?->format('d M Y') }}</p>
-                                    <p class="text-xs {{ $target->is_overdue ? 'text-red-600' : 'text-gray-500' }}">
-                                        {{ $target->is_overdue ? 'Terlambat' : $target->status_label }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="px-5 py-6 text-center text-gray-500">
-                            Belum ada target aktif.
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-5 py-4 border-b">
-                        <h3 class="font-semibold text-gray-900">Riwayat Hafalan Terbaru</h3>
-                    </div>
-
-                    <div class="divide-y">
-                        @forelse ($latestHafalanRecords as $record)
-                            <div class="px-5 py-4">
-                                <p class="font-medium text-gray-900">
-                                    {{ $record->surah?->name_latin ?? '-' }} ayat {{ $record->ayah_range }}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    {{ $record->submitted_at?->format('d M Y') }} — {{ $record->status_label }}
-                                </p>
-                                @if ($record->notes)
-                                    <p class="text-sm text-gray-500 mt-1">{{ $record->notes }}</p>
-                                @endif
-                            </div>
-                        @empty
-                            <div class="px-5 py-6 text-center text-gray-500">Belum ada hafalan.</div>
-                        @endforelse
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-5 py-4 border-b">
-                        <h3 class="font-semibold text-gray-900">Riwayat Murajaah Terbaru</h3>
-                    </div>
-
-                    <div class="divide-y">
-                        @forelse ($latestMurajaahRecords as $record)
-                            <div class="px-5 py-4">
-                                <p class="font-medium text-gray-900">
-                                    {{ $record->surah?->name_latin ?? '-' }} ayat {{ $record->ayah_range }}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    {{ $record->reviewed_at?->format('d M Y') }} — {{ $record->status_label }}
-                                </p>
-                                @if ($record->notes)
-                                    <p class="text-sm text-gray-500 mt-1">{{ $record->notes }}</p>
-                                @endif
-                            </div>
-                        @empty
-                            <div class="px-5 py-6 text-center text-gray-500">Belum ada murajaah.</div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>
