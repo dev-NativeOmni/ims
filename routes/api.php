@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\HafalanRecordController;
 use App\Http\Controllers\Api\V1\HafalanTargetController;
 use App\Http\Controllers\Api\V1\MurajaahRecordController;
@@ -26,6 +27,23 @@ Route::prefix('v1')
 
             Route::post('/auth/logout', [AuthController::class, 'logout'])
                 ->name('auth.logout');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Dashboard Summary API
+            |--------------------------------------------------------------------------
+            */
+            Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
+                ->name('dashboard.admin');
+
+            Route::get('/dashboard/teacher', [DashboardController::class, 'teacher'])
+                ->name('dashboard.teacher');
+
+            Route::get('/dashboard/parent', [DashboardController::class, 'parent'])
+                ->name('dashboard.parent');
+
+            Route::get('/dashboard/student', [DashboardController::class, 'student'])
+                ->name('dashboard.student');
 
             /*
             |--------------------------------------------------------------------------
