@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\HafalanRecordController;
+use App\Http\Controllers\Api\V1\MurajaahRecordController;
 use App\Http\Controllers\Api\V1\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,5 +40,29 @@ Route::prefix('v1')
             Route::get('/students/{student}', [StudentController::class, 'show'])
                 ->whereNumber('student')
                 ->name('students.show');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hafalan Records Readonly API
+            |--------------------------------------------------------------------------
+            */
+            Route::get('/hafalan-records', [HafalanRecordController::class, 'index'])
+                ->name('hafalan-records.index');
+
+            Route::get('/hafalan-records/{hafalanRecord}', [HafalanRecordController::class, 'show'])
+                ->whereNumber('hafalanRecord')
+                ->name('hafalan-records.show');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Murajaah Records Readonly API
+            |--------------------------------------------------------------------------
+            */
+            Route::get('/murajaah-records', [MurajaahRecordController::class, 'index'])
+                ->name('murajaah-records.index');
+
+            Route::get('/murajaah-records/{murajaahRecord}', [MurajaahRecordController::class, 'show'])
+                ->whereNumber('murajaahRecord')
+                ->name('murajaah-records.show');
         });
     });
