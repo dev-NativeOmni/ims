@@ -9,17 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'role_id',
         'name',
         'email',
         'password',
-        'is_active',
+        'status',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -30,10 +32,8 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean',
         ];
     }
 
@@ -57,27 +57,21 @@ class User extends Authenticatable
         return $this->hasOne(Student::class);
     }
 
-    public function student(): HasOne
-    {
-        return $this->studentProfile();
-    }
-
     public function systemNotifications(): HasMany
     {
         return $this->hasMany(SystemNotification::class);
+    }
+
+    public function createdSystemNotifications(): HasMany
+    {
+        return $this->hasMany(SystemNotification::class, 'created_by');
     }
 
     public function unreadSystemNotifications(): HasMany
     {
         return $this->systemNotifications()
             ->unread()
-            ->published()
-            ->latest();
-    }
-
-    public function createdSystemNotifications(): HasMany
-    {
-        return $this->hasMany(SystemNotification::class, 'created_by');
+            ->published();
     }
 
     public function hasRole(string $role): bool
@@ -92,6 +86,6 @@ class User extends Authenticatable
 
     public function isActive(): bool
     {
-        return (bool) ($this->is_active ?? true);
+        return $this->status === 'active';
     }
 }

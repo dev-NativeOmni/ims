@@ -17,7 +17,10 @@ use App\Policies\HafalanRecordPolicy;
 use App\Policies\HafalanTargetPolicy;
 use App\Policies\MurajaahRecordPolicy;
 use App\Policies\StudentPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +32,22 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | API Rate Limiter
+        |--------------------------------------------------------------------------
+        |
+        | Dipakai oleh middleware throttle:api di routes/api.php.
+        | Tanpa ini, Laravel akan error:
+        | "Rate limiter [api] is not defined"
+        |
+        */
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by(
+                $request->user()?->id ?: $request->ip()
+            );
+        });
+
         /*
         |--------------------------------------------------------------------------
         | Domain Observers
