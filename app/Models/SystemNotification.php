@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class SystemNotification extends Model
 {
@@ -15,6 +16,7 @@ class SystemNotification extends Model
     protected $fillable = [
         'user_id',
         'created_by',
+        'unique_hash',
         'title',
         'message',
         'type',
@@ -36,6 +38,15 @@ class SystemNotification extends Model
             'published_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (SystemNotification $notification) {
+            if (blank($notification->unique_hash)) {
+                $notification->unique_hash = (string) Str::uuid();
+            }
+        });
     }
 
     public function user(): BelongsTo
