@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: HafizPlus 2.0 API v1
+  description: Spesifikasi resmi API v1 HafizPlus 2.0 untuk mobile client dan integrasi eksternal.
+  version: 1.1.0
+servers:
+  - url: http://127.0.0.1:8000/api/v1
+    description: Server Development Lokal
+paths:
+  /auth/login:
+    post:
+      summary: Login User
+      description: Otentikasi menggunakan email dan password untuk mendapatkan Bearer Token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: superadmin@hafizplus.test
+                password:
+                  type: string
+                  format: password
+                  example: password123
+                device_name:
+                  type: string
+                  example: Android Phone
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login Berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '401':
+          description: Kredensial tidak cocok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+        '403':
+          description: Akun tidak aktif
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+  /auth/me:
+    get:
+      summary: Get Profile Aktif
+      description: Mengambil data user yang sedang login beserta informasi token saat ini.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Data berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeSuccessResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+  /auth/tokens:
+    get:
+      summary: List Token Aktif
+      description: Mengambil seluruh daftar token / perangkat aktif yang terhubung dengan akun user.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Berhasil mengambil daftar token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokensListResponse'
+        '401':
+          description: Unauthenticated
+
+  /auth/logout:
+    post:
+      summary: Logout Perangkat Aktif
+      description: Mencabut token yang sedang digunakan saat ini.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Logout berhasil
+
+  /auth/logout-other-devices:
+    post:
+      summary: Logout Perangkat Lain
+      description: Mencabut seluruh token aktif milik user kecuali token yang sedang digunakan saat ini.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Token perangkat lain berhasil dicabut
+
+  /auth/logout-all:
+    post:
+      summary: Logout Semua Perangkat
+      description: Mencabut seluruh token aktif milik user secara keseluruhan.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Semua token berhasil dicabut
+
+  /auth/tokens/{token}:
+    delete:
+      summary: Cabut Token Spesifik
+      description: Mencabut token tertentu berdasarkan ID token.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: ID Token
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Token berhasil dicabut
+        '404':
+          description: Token tidak ditemukan
+
+  /dashboard/admin:
+    get:
+      summary: Dashboard Admin / Super Admin
+      description: Statistik lengkap data santri, kelas, hafalan, dan alerts.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Data dashboard admin
+
+  /dashboard/teacher:
+    get:
+      summary: Dashboard Guru
+      description: Ringkasan bimbingan santri khusus untuk guru yang login.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Data dashboard guru
+
+  /dashboard/parent:
+    get:
+      summary: Dashboard Orangtua
+      description: Ringkasan perkembangan hafalan anak-anak dari wali santri aktif.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Data dashboard orangtua
+
+  /dashboard/student:
+    get:
+      summary: Dashboard Santri
+      description: Ringkasan hafalan pribadi santri aktif.
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Data dashboard santri
+
+  /surahs:
+    get:
+      summary: List Surah Al-Quran
+      description: Mengambil daftar surah Quran dengan filter pencarian dan juz.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Cari berdasarkan nama surah
+        - name: juz
+          in: query
+          schema:
+            type: integer
+          description: Filter berdasarkan Juz (1-30)
+      responses:
+        '200':
+          description: Daftar surah berhasil diambil
+
+  /surahs/{surah}:
+    get:
+      summary: Detail Surah
+      description: Mengambil metadata detail satu surah.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: surah
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Nomor surah (1-114)
+      responses:
+        '200':
+          description: Detail surah berhasil diambil
+        '404':
+          description: Surah tidak ditemukan
+
+  /surahs/{surah}/ayahs:
+    get:
+      summary: Daftar Ayat Surah
+      description: Mengambil daftar seluruh ayat dari surah tertentu.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: surah
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Nomor surah
+      responses:
+        '200':
+          description: Daftar ayat berhasil diambil
+
+  /students:
+    get:
+      summary: List Santri
+      description: Mengambil daftar santri sesuai dengan hak akses visibilitas user.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Cari nama/nomor/email santri
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter status santri (active/inactive)
+      responses:
+        '200':
+          description: Daftar santri berhasil diambil
+
+  /students/{student}:
+    get:
+      summary: Detail Santri
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID Santri
+      responses:
+        '200':
+          description: Detail santri berhasil diambil
+        '404':
+          description: Santri tidak ditemukan
+
+  /students/{student}/progress:
+    get:
+      summary: Progres Al-Quran Santri
+      description: Mengambil ringkasan statistik hafalan, murajaah, dan target santri.
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID Santri
+      responses:
+        '200':
+          description: Progres santri berhasil diambil
+
+  /hafalan-records:
+    get:
+      summary: List Riwayat Hafalan
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: student_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daftar riwayat hafalan
+
+  /hafalan-records/{hafalanRecord}:
+    get:
+      summary: Detail Catatan Hafalan
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: hafalanRecord
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail catatan hafalan
+
+  /murajaah-records:
+    get:
+      summary: List Riwayat Murajaah
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Daftar riwayat murajaah
+
+  /murajaah-records/{murajaahRecord}:
+    get:
+      summary: Detail Catatan Murajaah
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: murajaahRecord
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail catatan murajaah
+
+  /hafalan-targets:
+    get:
+      summary: List Target Hafalan
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: Daftar target hafalan
+
+  /hafalan-targets/{hafalanTarget}:
+    get:
+      summary: Detail Target Hafalan
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: hafalanTarget
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail target hafalan
+
+components:
+  securitySchemes:
+    SanctumAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum Token
+
+  schemas:
+    LoginSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login berhasil.
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+              example: 1|xxxxxxxxxxxxxxx
+            token_type:
+              type: string
+              example: Bearer
+            expires_at:
+              type: string
+              format: date-time
+            expires_in_days:
+              type: integer
+              example: 30
+            user:
+              $ref: '#/components/schemas/User'
+        status_code:
+          type: integer
+          example: 200
+
+    MeSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data user aktif berhasil diambil.
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            current_token:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Android Phone
+                last_used_at:
+                  type: string
+                  format: date-time
+                expires_at:
+                  type: string
+                  format: date-time
+        status_code:
+          type: integer
+          example: 200
+
+    TokensListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Daftar token aktif berhasil diambil.
+        data:
+          type: object
+          properties:
+            tokens:
+              type: array
+              items:
+                $ref: '#/components/schemas/TokenInfo'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Super Admin HafizPlus
+        email:
+          type: string
+          example: superadmin@hafizplus.test
+        status:
+          type: string
+          example: active
+        role:
+          $ref: '#/components/schemas/Role'
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: super_admin
+        display_name:
+          type: string
+          example: Super Admin
+
+    TokenInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: Android Device
+        abilities:
+          type: array
+          items:
+            type: string
+          example: ["*"]
+        is_current:
+          type: boolean
+          example: true
+        is_expired:
+          type: boolean
+          example: false
+        last_used_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    StandardErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Kredensial tidak valid.
+        errors:
+          type: object
+        status_code:
+          type: integer
+          example: 401
