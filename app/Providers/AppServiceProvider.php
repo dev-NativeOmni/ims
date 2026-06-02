@@ -58,7 +58,6 @@ class AppServiceProvider extends ServiceProvider
         TeacherProfile::observe(ModelAuditObserver::class);
         ParentProfile::observe(ModelAuditObserver::class);
         Student::observe(ModelAuditObserver::class);
-        HafalanRecord::observe(ModelAuditObserver::class);
         MurajaahRecord::observe(ModelAuditObserver::class);
         HafalanTarget::observe(ModelAuditObserver::class);
 

@@ -21,6 +21,10 @@ class CheckRole
         }
 
         if (! $user->isActive()) {
+            if ($request->expectsJson()) {
+                abort(403, 'Akun tidak aktif. Silakan hubungi administrator.');
+            }
+
             auth()->logout();
 
             return redirect()

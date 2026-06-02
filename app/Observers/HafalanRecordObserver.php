@@ -74,7 +74,7 @@ class HafalanRecordObserver
             'auditable_type' => $hafalanRecord->getMorphClass(),
             'auditable_id' => $hafalanRecord->getKey(),
             'auditable_label' => $this->makeAuditableLabel($hafalanRecord),
-            'event' => $event,
+            'action' => $event,
             'old_values' => $oldValues,
             'new_values' => $newValues,
             'url' => $runningInConsole ? null : request()->fullUrl(),
