@@ -8,7 +8,17 @@
     @php
         $localPdf = public_path('pdf/quran.pdf');
         $hasLocalPdf = file_exists($localPdf);
-        $pdfUrl = $hasLocalPdf ? asset('pdf/quran.pdf') : 'https://ia800903.us.archive.org/27/items/mushaf-madinah-pdf/mushaf-madinah.pdf';
+        
+        $rawFallbackUrl = 'https://ia800903.us.archive.org/27/items/mushaf-madinah-pdf/mushaf-madinah.pdf';
+        
+        if ($hasLocalPdf) {
+            $pdfUrl = asset('pdf/quran.pdf');
+            $embedUrl = $pdfUrl;
+        } else {
+            $pdfUrl = $rawFallbackUrl;
+            // Wrap in Google Docs Viewer to display the online PDF inline instead of downloading it
+            $embedUrl = 'https://docs.google.com/gview?url=' . urlencode($rawFallbackUrl) . '&embedded=true';
+        }
     @endphp
 
     <div class="py-8">
@@ -105,8 +115,15 @@
                 </div>
 
                 <div class="relative w-full h-[80vh] bg-gray-900 flex items-center justify-center">
-                    <!-- Standard Iframe to render PDF -->
-                    <iframe src="{{ $pdfUrl }}" class="w-full h-full border-0" allow="autoplay"></iframe>
+                    @if($hasLocalPdf)
+                        <!-- Use object & embed tags for local PDF to force browser inline PDF rendering -->
+                        <object data="{{ $embedUrl }}" type="application/pdf" class="w-full h-full border-0">
+                            <iframe src="{{ $embedUrl }}" class="w-full h-full border-0" allow="autoplay"></iframe>
+                        </object>
+                    @else
+                        <!-- Use Google Docs Viewer for online PDF to prevent download popup -->
+                        <iframe src="{{ $embedUrl }}" class="w-full h-full border-0" allow="autoplay"></iframe>
+                    @endif
                 </div>
             </div>
             
