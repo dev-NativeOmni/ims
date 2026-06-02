@@ -16,6 +16,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\QuranPdfController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -205,9 +206,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    Route::get('/quran-pdf', function () {
-        return view('quran.pdf');
-    })->name('quran.pdf');
+    Route::get('/quran-pdf', [QuranPdfController::class, 'index'])
+        ->name('quran.pdf');
+
+    Route::post('/quran-pdf/upload', [QuranPdfController::class, 'upload'])
+        ->middleware('role:super_admin,admin')
+        ->name('quran.pdf.upload');
 });
 
 require __DIR__ . '/auth.php';

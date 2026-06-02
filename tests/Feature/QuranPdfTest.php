@@ -37,4 +37,33 @@ class QuranPdfTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Mushaf Al-Qur\'an Digital');
     }
+
+    public function test_non_admin_cannot_upload_quran_pdf(): void
+    {
+        $studentUser = User::where('username', 'santri')->first();
+        $file = \Illuminate\Http\UploadedFile::fake()->create('custom_quran.pdf', 500, 'application/pdf');
+
+        $response = $this->actingAs($studentUser)->post(route('quran.pdf.upload'), [
+            'pdf_file' => $file,
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_upload_quran_pdf(): void
+    {
+        $superAdmin = User::where('username', 'superadmin')->first();
+        $file = \Illuminate\Http\UploadedFile::fake()->create('custom_quran.pdf', 500, 'application/pdf');
+
+        $response = $this->actingAs($superAdmin)->post(route('quran.pdf.upload'), [
+            'pdf_file' => $file,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertFileExists(public_path('pdf/quran.pdf'));
+
+        @unlink(public_path('pdf/quran.pdf'));
+    }
 }
