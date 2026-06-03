@@ -17,6 +17,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\QuranPdfController;
+use App\Http\Controllers\QuranMushafController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -212,6 +213,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/quran-pdf/config', [QuranPdfController::class, 'updateConfig'])
         ->middleware('role:super_admin,admin')
         ->name('quran.pdf.config');
+
+    Route::get('/mushaf', [QuranMushafController::class, 'index'])
+        ->name('quran.mushaf');
 });
 
 require __DIR__ . '/auth.php';

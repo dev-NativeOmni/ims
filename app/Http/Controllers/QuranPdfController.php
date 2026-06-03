@@ -9,15 +9,9 @@ use Illuminate\Support\Facades\File;
 
 class QuranPdfController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $config = [];
-        $configPath = storage_path('app/quran_settings.json');
-        if (File::exists($configPath)) {
-            $config = json_decode(File::get($configPath), true) ?? [];
-        }
-
-        return view('quran.pdf', compact('config'));
+        return redirect()->route('quran.mushaf');
     }
 
     public function updateConfig(Request $request): RedirectResponse

@@ -34,8 +34,7 @@ class QuranPdfTest extends TestCase
         $this->assertNotNull($studentUser);
 
         $response = $this->actingAs($studentUser)->get(route('quran.pdf'));
-        $response->assertStatus(200);
-        $response->assertSee('Mushaf Al-Qur\'an Digital');
+        $response->assertRedirect(route('quran.mushaf'));
     }
 
     public function test_non_admin_cannot_save_drive_config(): void
@@ -79,5 +78,21 @@ class QuranPdfTest extends TestCase
         } else {
             unlink($configPath);
         }
+    }
+
+    public function test_guest_cannot_access_mushaf(): void
+    {
+        $response = $this->get(route('quran.mushaf'));
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_user_can_access_mushaf(): void
+    {
+        $studentUser = User::where('username', 'santri')->first();
+        $this->assertNotNull($studentUser);
+
+        $response = $this->actingAs($studentUser)->get(route('quran.mushaf'));
+        $response->assertStatus(200);
+        $response->assertSee('Mushaf Al-Qur\'an Interaktif');
     }
 }
