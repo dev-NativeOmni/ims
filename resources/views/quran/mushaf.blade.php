@@ -147,16 +147,17 @@
                             <!-- Reciter -->
                             <div class="flex-grow sm:flex-grow-0 min-w-[150px]">
                                 <select x-model="reciter" 
-                                        @change="saveSettings()"
+                                        @change="reciterChanged()"
                                         :class="{
                                             'bg-gray-50 border-gray-300 text-gray-900': theme === 'light',
                                             'bg-[#fdfbf7] border-[#d4caa7] text-[#4a3c31]': theme === 'sepia',
                                             'bg-[#282830] border-[#3e3e4a] text-white': theme === 'dark'
                                         }"
                                         class="block w-full text-[11px] rounded-xl py-2 px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-semibold">
-                                    <option value="Mishary_Alafasy_128kbps">Mishary Rashid Alafasy</option>
-                                    <option value="Abdul_Basit_Murattal_64kbps">Abdul Basit (Murattal)</option>
-                                    <option value="Ghamadi_40kbps">Saad Al-Ghamdi</option>
+                                    <option value="7">Mishari Rashid al-`Afasy</option>
+                                    <option value="2">AbdulBaset AbdulSamad (Murattal)</option>
+                                    <option value="3">Abdur-Rahman as-Sudais</option>
+                                    <option value="9">Mohamed Siddiq al-Minshawi</option>
                                 </select>
                             </div>
 
@@ -607,7 +608,7 @@
                 verses: [],
                 loading: false,
                 theme: 'light',
-                reciter: 'Mishary_Alafasy_128kbps',
+                reciter: '7',
                 playingVerseId: null,
                 playingAudio: null,
                 autoplay: false,
@@ -746,7 +747,11 @@
                     if (savedTheme) this.theme = savedTheme;
 
                     const savedReciter = localStorage.getItem('mushaf-reciter');
-                    if (savedReciter) this.reciter = savedReciter;
+                    if (savedReciter) {
+                        this.reciter = savedReciter;
+                    } else {
+                        this.reciter = '7';
+                    }
 
                     const savedPage = localStorage.getItem('mushaf-page');
                     if (savedPage) {
@@ -787,6 +792,11 @@
                     localStorage.setItem('mushaf-reciter', this.reciter);
                 },
 
+                reciterChanged() {
+                    this.saveSettings();
+                    this.pageChanged(false);
+                },
+
                 // Page changes
                 pageChanged(autoPlayNextPage = false) {
                     this.loading = true;
@@ -800,7 +810,7 @@
                     this.juz = this.getJuzFromPage(this.page);
 
                     // Fetch Quran.com API v4
-                    fetch(`https://api.quran.com/api/v4/verses/by_page/${this.page}?language=id&words=false&translations=33&fields=text_uthmani`)
+                    fetch(`https://api.quran.com/api/v4/verses/by_page/${this.page}?language=id&words=false&translations=33&fields=text_uthmani&audio=${this.reciter}`)
                         .then(res => {
                             if (!res.ok) throw new Error("Gagal mengambil data ayat");
                             return res.json();
@@ -926,12 +936,12 @@
                         this.playingAudio.pause();
                     }
 
-                    const key = verse.verse_key;
-                    const parts = key.split(':');
-                    const surahNum = String(parts[0]).padStart(3, '0');
-                    const ayahNum = String(parts[1]).padStart(3, '0');
+                    if (!verse.audio || !verse.audio.url) {
+                        alert("Berkas audio tidak tersedia untuk ayat ini.");
+                        return;
+                    }
 
-                    const audioUrl = `https://everyayah.com/data/${this.reciter}/${surahNum}${ayahNum}.mp3`;
+                    const audioUrl = verse.audio.url.startsWith('http') ? verse.audio.url : `https://audio.qurancdn.com/${verse.audio.url}`;
                     this.playingVerseId = verse.id;
 
                     this.playingAudio = new Audio(audioUrl);
