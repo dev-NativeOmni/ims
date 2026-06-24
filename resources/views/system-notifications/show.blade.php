@@ -61,8 +61,8 @@
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Penerima</p>
                         <p class="mt-1 text-sm font-medium text-gray-900">
                             {{ $systemNotification->user?->name ?? '-' }}
-                            @if ($systemNotification->user?->email)
-                                · {{ $systemNotification->user->email }}
+                            @if ($systemNotification->user?->username)
+                                · {{ $systemNotification->user->username }}
                             @endif
                         </p>
                     </div>

@@ -1,0 +1,92 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\Student;
+use App\Models\TeacherProfile;
+use App\Models\ParentProfile;
+use App\Models\ClassRoom;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\UserSeeder;
+use Database\Seeders\CoreDataSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
+
+class StudentParentWebAccessTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed([
+            RoleSeeder::class,
+            UserSeeder::class,
+            CoreDataSeeder::class,
+        ]);
+    }
+
+    public function test_student_visiting_progress_is_redirected_to_their_own_detail_page(): void
+    {
+        $studentUser = User::where('username', 'santri')->first();
+        $student = Student::where('user_id', $studentUser->id)->first();
+
+        $response = $this->actingAs($studentUser)->get('/progress');
+
+        $response->assertRedirect('/progress/' . $student->id);
+    }
+
+    public function test_student_visiting_reports_is_redirected_to_their_own_report_page(): void
+    {
+        $studentUser = User::where('username', 'santri')->first();
+        $student = Student::where('user_id', $studentUser->id)->first();
+
+        $response = $this->actingAs($studentUser)->get('/reports');
+
+        $response->assertRedirect('/reports/student/' . $student->id);
+    }
+
+    public function test_student_cannot_view_another_student_progress(): void
+    {
+        $studentUser = User::where('username', 'santri')->first();
+        
+        // Create another student
+        $student2User = User::factory()->create([
+            'role_id' => $studentUser->role_id,
+            'status' => 'active',
+        ]);
+        $student2 = Student::create([
+            'student_number' => 'SNT-002',
+            'user_id' => $student2User->id,
+            'class_room_id' => ClassRoom::first()->id,
+            'teacher_id' => TeacherProfile::first()->id,
+            'name' => 'Santri Lain',
+            'gender' => 'male',
+            'birth_date' => '2012-01-15',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($studentUser)->get('/progress/' . $student2->id);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_parent_with_one_child_is_redirected_to_their_childs_pages(): void
+    {
+        $parentUser = User::where('username', 'orangtua')->first();
+        $student = Student::where('student_number', 'SNT-001')->first();
+
+        // Verify the parent only has 1 child
+        $parentProfile = ParentProfile::where('user_id', $parentUser->id)->first();
+        $this->assertEquals(1, $parentProfile->students()->count());
+
+        $responseProgress = $this->actingAs($parentUser)->get('/progress');
+        $responseProgress->assertRedirect('/progress/' . $student->id);
+
+        $responseReports = $this->actingAs($parentUser)->get('/reports');
+        $responseReports->assertRedirect('/reports/student/' . $student->id);
+    }
+}

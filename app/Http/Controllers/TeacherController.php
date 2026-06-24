@@ -28,7 +28,7 @@ class TeacherController extends Controller
                         ->orWhere('phone', 'like', "%{$search}%")
                         ->orWhereHas('user', function ($userQuery) use ($search) {
                             $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                                ->orWhere('username', 'like', "%{$search}%");
                         });
                 });
             })
@@ -54,10 +54,9 @@ class TeacherController extends Controller
             $user = User::create([
                 'role_id' => $teacherRole->id,
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+                'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'status' => $validated['status'],
-                'email_verified_at' => now(),
             ]);
 
             TeacherProfile::create([
@@ -96,7 +95,7 @@ class TeacherController extends Controller
         DB::transaction(function () use ($validated, $teacher) {
             $userData = [
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+                'username' => $validated['username'],
                 'status' => $validated['status'],
             ];
 

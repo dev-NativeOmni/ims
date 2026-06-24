@@ -24,11 +24,11 @@ class UpdateParentRequest extends FormRequest
                 'string',
                 'max:150',
             ],
-            'email' => [
+            'username' => [
                 'required',
-                'email',
+                'string',
                 'max:150',
-                Rule::unique('users', 'email')->ignore($userId),
+                Rule::unique('users', 'username')->ignore($userId),
             ],
             'password' => [
                 'nullable',
@@ -56,7 +56,7 @@ class UpdateParentRequest extends FormRequest
     {
         return [
             'name' => 'nama orangtua/wali',
-            'email' => 'email',
+            'username' => 'username',
             'password' => 'password',
             'status' => 'status',
             'phone' => 'nomor telepon',

@@ -21,9 +21,28 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $user = $request->user();
+
+        if ($user->hasRole('student')) {
+            $student = Student::query()->where('user_id', $user->id)->first();
+            if ($student) {
+                return redirect()->route('reports.student', $student);
+            }
+            abort(403, 'Akun santri belum memiliki profil santri.');
+        }
+
+        if ($user->hasRole('parent')) {
+            $visibleStudentIds = $this->visibleStudentIds($user);
+            if ($visibleStudentIds->count() === 1) {
+                $student = Student::query()->find($visibleStudentIds->first());
+                if ($student) {
+                    return redirect()->route('reports.student', $student);
+                }
+            }
+        }
+
         $visibleStudentIds = $this->visibleStudentIds($user);
 
         $hafalanQuery = $this->filteredHafalanQuery($request, $visibleStudentIds);

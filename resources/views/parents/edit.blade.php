@@ -24,11 +24,11 @@
                         </div>
 
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">
-                                Email Login
+                            <label for="username" class="block text-sm font-medium text-gray-700">
+                                Username Login
                             </label>
-                            <input id="email" name="email" type="email" value="{{ old('email', $parent->user?->email) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                            @error('email')
+                            <input id="username" name="username" type="text" value="{{ old('username', $parent->user?->username) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                            @error('username')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

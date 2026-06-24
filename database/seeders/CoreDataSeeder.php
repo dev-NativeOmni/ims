@@ -30,7 +30,7 @@ class CoreDataSeeder extends Seeder
             ]
         );
 
-        $teacherUser = User::where('email', 'guru@hafizplus.test')->firstOrFail();
+        $teacherUser = User::where('username', 'guru')->firstOrFail();
 
         $teacherProfile = TeacherProfile::updateOrCreate(
             ['user_id' => $teacherUser->id],
@@ -40,7 +40,7 @@ class CoreDataSeeder extends Seeder
             ]
         );
 
-        $parentUser = User::where('email', 'orangtua@hafizplus.test')->firstOrFail();
+        $parentUser = User::where('username', 'orangtua')->firstOrFail();
 
         $parentProfile = ParentProfile::updateOrCreate(
             ['user_id' => $parentUser->id],
@@ -50,7 +50,7 @@ class CoreDataSeeder extends Seeder
             ]
         );
 
-        $studentUser = User::where('email', 'santri@hafizplus.test')->firstOrFail();
+        $studentUser = User::where('username', 'santri')->firstOrFail();
 
         $student = Student::updateOrCreate(
             ['student_number' => 'SNT-001'],

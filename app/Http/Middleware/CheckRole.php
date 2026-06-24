@@ -19,6 +19,10 @@ class CheckRole
         // Cek status aktif terlebih dahulu — user nonaktif harus dilogout
         // sebelum dilakukan pemeriksaan role apapun.
         if (! $user->isActive()) {
+            if ($request->expectsJson()) {
+                abort(403, 'Akun tidak aktif. Silakan hubungi administrator.');
+            }
+
             auth()->logout();
 
             return redirect()

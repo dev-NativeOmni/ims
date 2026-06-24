@@ -19,10 +19,12 @@
                 </p>
             </div>
 
-            <a href="{{ route('progress.index') }}"
-               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
-                Kembali ke Progress
-            </a>
+            @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'teacher']) || (auth()->user()->hasRole('parent') && auth()->user()->parentProfile?->students()->count() > 1))
+                <a href="{{ route('progress.index') }}"
+                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                    Kembali ke Progress
+                </a>
+            @endif
         </div>
     </x-slot>
 

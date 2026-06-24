@@ -21,11 +21,11 @@ class StoreParentRequest extends FormRequest
                 'string',
                 'max:150',
             ],
-            'email' => [
+            'username' => [
                 'required',
-                'email',
+                'string',
                 'max:150',
-                Rule::unique('users', 'email'),
+                Rule::unique('users', 'username'),
             ],
             'password' => [
                 'required',
@@ -53,7 +53,7 @@ class StoreParentRequest extends FormRequest
     {
         return [
             'name' => 'nama orangtua/wali',
-            'email' => 'email',
+            'username' => 'username',
             'password' => 'password',
             'status' => 'status',
             'phone' => 'nomor telepon',

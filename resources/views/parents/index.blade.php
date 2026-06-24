@@ -34,7 +34,7 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari nama, email, telepon, alamat"
+                        placeholder="Cari nama, username, telepon, alamat"
                         class="rounded-md border-gray-300 shadow-sm md:w-96"
                     >
 
@@ -70,7 +70,7 @@
                                             {{ $parent->user?->name }}
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            {{ $parent->user?->email }}
+                                            {{ $parent->user?->username }}
                                         </div>
                                     </td>
 

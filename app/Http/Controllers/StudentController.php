@@ -9,10 +9,14 @@ use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentController extends Controller
 {
@@ -199,5 +203,371 @@ class StudentController extends Controller
             ->all();
 
         $student->parents()->sync($syncData);
+    }
+
+    public function export(): StreamedResponse
+    {
+        $students = Student::query()
+            ->with([
+                'user',
+                'classRoom',
+                'teacher.user',
+                'parents.user',
+            ])
+            ->get();
+
+        $fileName = 'daftar-santri-' . now()->format('Ymd-His') . '.xlsx';
+        
+        $tempFile = @tempnam(sys_get_temp_dir(), 'export_xlsx');
+        if (! $tempFile) {
+            abort(500, 'Gagal membuat file sementara.');
+        }
+
+        $headers = [
+            'Nama Santri',
+            'Nomor Induk',
+            'Jenis Kelamin',
+            'Tanggal Lahir',
+            'Status',
+            'Kelas',
+            'Username Guru',
+            'Username Santri',
+            'Username Orangtua',
+            'Hubungan Orangtua',
+        ];
+
+        $data = [];
+        foreach ($students as $student) {
+            $data[] = [
+                $student->name,
+                $student->student_number,
+                $student->gender,
+                $student->birth_date ? $student->birth_date->toDateString() : '',
+                $student->status,
+                $student->classRoom?->name,
+                $student->teacher?->user?->username,
+                $student->user?->username,
+                $student->parents->map(fn($p) => $p->user?->username)->implode(','),
+                $student->parents->map(fn($p) => $p->pivot?->relation)->implode(','),
+            ];
+        }
+
+        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+
+        return response()->streamDownload(function () use ($tempFile) {
+            readfile($tempFile);
+            @unlink($tempFile);
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file' => 'required|file|max:4096',
+        ]);
+
+        $file = $request->file('file');
+        $filePath = $file->getRealPath();
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $rows = [];
+
+        if ($extension === 'xlsx') {
+            try {
+                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+            }
+        } else {
+            // Fallback to CSV parser
+            $handle = fopen($filePath, 'r');
+            if ($handle === false) {
+                return redirect()->back()->with('error', 'Gagal membuka berkas.');
+            }
+
+            // Read the first line to check for sep=; instruction (Excel helper)
+            $firstLine = fgets($handle);
+            $cleanFirstLine = $firstLine !== false ? preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine) : '';
+            
+            $separator = ',';
+            if ($firstLine !== false) {
+                $trimmedFirstLine = trim(strtolower($cleanFirstLine));
+                if (str_starts_with($trimmedFirstLine, 'sep=')) {
+                    $parts = explode('=', $trimmedFirstLine);
+                    if (isset($parts[1]) && ! empty(trim($parts[1]))) {
+                        $separator = trim($parts[1])[0];
+                    }
+                } else {
+                    rewind($handle);
+                    // Auto-detect separator if not specified
+                    $cleanFirstLineForDetect = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine);
+                    if (str_contains($cleanFirstLineForDetect, ';') && ! str_contains($cleanFirstLineForDetect, ',')) {
+                        $separator = ';';
+                    }
+                }
+            }
+
+            while (($row = fgetcsv($handle, 1000, $separator)) !== false) {
+                $rows[] = $row;
+            }
+            fclose($handle);
+        }
+
+        if (empty($rows)) {
+            return redirect()->back()->with('error', 'Berkas kosong atau tidak valid.');
+        }
+
+        // The first row is the header
+        $header = array_shift($rows);
+
+        // Clean headers (remove BOM or spaces)
+        $header = array_map(function ($h) {
+            $h = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $h); // strip BOM
+            return trim(strtolower($h));
+        }, $header);
+
+        // Map header column names to indexes
+        $map = [
+            'nama_santri' => array_search('nama santri', $header),
+            'nomor_induk' => array_search('nomor induk', $header),
+            'jenis_kelamin' => array_search('jenis kelamin', $header),
+            'tanggal_lahir' => array_search('tanggal lahir', $header),
+            'status' => array_search('status', $header),
+            'kelas' => array_search('kelas', $header),
+            'username_guru' => array_search('username guru', $header),
+            'username_santri' => array_search('username santri', $header),
+            'username_orangtua' => array_search('username orangtua', $header),
+            'hubungan_orangtua' => array_search('hubungan orangtua', $header),
+        ];
+
+        // English fallbacks / Legacy Email mappings
+        if ($map['nama_santri'] === false) $map['nama_santri'] = array_search('name', $header);
+        if ($map['nomor_induk'] === false) $map['nomor_induk'] = array_search('student_number', $header);
+        if ($map['jenis_kelamin'] === false) $map['jenis_kelamin'] = array_search('gender', $header);
+        if ($map['tanggal_lahir'] === false) $map['tanggal_lahir'] = array_search('birth_date', $header);
+        if ($map['status'] === false) $map['status'] = array_search('status', $header);
+        if ($map['kelas'] === false) $map['kelas'] = array_search('class_room', $header);
+        
+        if ($map['username_guru'] === false) $map['username_guru'] = array_search('teacher_username', $header);
+        if ($map['username_guru'] === false) $map['username_guru'] = array_search('email guru', $header);
+        if ($map['username_guru'] === false) $map['username_guru'] = array_search('teacher_email', $header);
+        
+        if ($map['username_santri'] === false) $map['username_santri'] = array_search('student_username', $header);
+        if ($map['username_santri'] === false) $map['username_santri'] = array_search('email santri', $header);
+        if ($map['username_santri'] === false) $map['username_santri'] = array_search('student_email', $header);
+        
+        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('parent_usernames', $header);
+        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('email orangtua', $header);
+        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('parent_emails', $header);
+        
+        if ($map['hubungan_orangtua'] === false) $map['hubungan_orangtua'] = array_search('parent_relations', $header);
+
+        if ($map['nama_santri'] === false) {
+            return redirect()->back()->with('error', 'Format berkas tidak valid. Harus memiliki kolom "Nama Santri".');
+        }
+
+        $importedCount = 0;
+        $updatedCount = 0;
+
+        $defaultPasswordHash = Hash::make('password123');
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($rows as $row) {
+                if (empty($row) || count($row) < 1 || is_null($row[0])) {
+                    continue;
+                }
+
+                $name = $row[$map['nama_santri']] ?? '';
+                if (empty(trim($name))) {
+                    continue;
+                }
+
+                $studentNumber = isset($map['nomor_induk']) && $map['nomor_induk'] !== false ? trim($row[$map['nomor_induk']] ?? '') : null;
+                $gender = isset($map['jenis_kelamin']) && $map['jenis_kelamin'] !== false ? strtolower(trim($row[$map['jenis_kelamin']] ?? '')) : 'male';
+                if (! in_array($gender, ['male', 'female'])) {
+                    $gender = 'male';
+                }
+
+                $birthDate = isset($map['tanggal_lahir']) && $map['tanggal_lahir'] !== false ? trim($row[$map['tanggal_lahir']] ?? '') : null;
+                if (! empty($birthDate)) {
+                    try {
+                        $birthDate = \Carbon\Carbon::parse($birthDate)->toDateString();
+                    } catch (\Exception $e) {
+                        $birthDate = null;
+                    }
+                }
+
+                $status = isset($map['status']) && $map['status'] !== false ? strtolower(trim($row[$map['status']] ?? '')) : 'active';
+                if (! in_array($status, ['active', 'inactive', 'graduated'])) {
+                    $status = 'active';
+                }
+
+                $classRoomId = null;
+                if (isset($map['kelas']) && $map['kelas'] !== false) {
+                    $className = trim($row[$map['kelas']] ?? '');
+                    if (! empty($className)) {
+                        $classRoomId = ClassRoom::query()->where('name', $className)->value('id');
+                    }
+                }
+
+                $teacherId = null;
+                if (isset($map['username_guru']) && $map['username_guru'] !== false) {
+                    $teacherUsername = trim($row[$map['username_guru']] ?? '');
+                    if (str_contains($teacherUsername, '@')) {
+                        $teacherUsername = explode('@', $teacherUsername)[0];
+                    }
+                    if (! empty($teacherUsername)) {
+                        $teacherId = TeacherProfile::query()
+                            ->whereHas('user', function ($q) use ($teacherUsername) {
+                                $q->where('username', $teacherUsername);
+                            })
+                            ->value('id');
+                    }
+                }
+
+                $studentUserId = null;
+                if (isset($map['username_santri']) && $map['username_santri'] !== false) {
+                    $studentUsername = trim($row[$map['username_santri']] ?? '');
+                    if (str_contains($studentUsername, '@')) {
+                        $studentUsername = explode('@', $studentUsername)[0];
+                    }
+                    if (! empty($studentUsername)) {
+                        $studentUser = User::query()->where('username', $studentUsername)->first();
+                        if (! $studentUser) {
+                            $studentRole = Role::where('name', 'student')->first();
+                            if ($studentRole) {
+                                $studentUser = User::create([
+                                    'role_id' => $studentRole->id,
+                                    'name' => $name,
+                                    'username' => $studentUsername,
+                                    'password' => $defaultPasswordHash,
+                                    'status' => 'active',
+                                ]);
+                            }
+                        }
+                        if ($studentUser) {
+                            $studentUserId = $studentUser->id;
+                        }
+                    }
+                }
+
+                $student = null;
+                if (! empty($studentNumber)) {
+                    $student = Student::query()->where('student_number', $studentNumber)->first();
+                }
+
+                $payload = [
+                    'name' => $name,
+                    'gender' => $gender,
+                    'birth_date' => $birthDate,
+                    'status' => $status,
+                    'class_room_id' => $classRoomId,
+                    'teacher_id' => $teacherId,
+                    'user_id' => $studentUserId,
+                ];
+
+                if (! empty($studentNumber)) {
+                    $payload['student_number'] = $studentNumber;
+                }
+
+                if ($student) {
+                    $student->update($payload);
+                    $updatedCount++;
+                } else {
+                    $student = Student::create($payload);
+                    $importedCount++;
+                }
+
+                // Handle Parents sync
+                if (isset($map['username_orangtua']) && $map['username_orangtua'] !== false) {
+                    $parentUsernamesStr = trim($row[$map['username_orangtua']] ?? '');
+                    $parentRelationsStr = isset($map['hubungan_orangtua']) && $map['hubungan_orangtua'] !== false ? trim($row[$map['hubungan_orangtua']] ?? '') : '';
+
+                    if (! empty($parentUsernamesStr)) {
+                        $usernames = preg_split('/[;,]/', $parentUsernamesStr);
+                        $relations = preg_split('/[;,]/', $parentRelationsStr);
+
+                        $syncData = [];
+
+                        foreach ($usernames as $index => $username) {
+                            $username = trim($username);
+                            if (str_contains($username, '@')) {
+                                $username = explode('@', $username)[0];
+                            }
+                            if (empty($username)) {
+                                continue;
+                            }
+
+                            // Look up ParentProfile, or auto-create it if user exists with parent role
+                            $parentProfile = ParentProfile::query()
+                                ->whereHas('user', function ($q) use ($username) {
+                                    $q->where('username', $username);
+                                })
+                                ->first();
+
+                            if (! $parentProfile) {
+                                // Try to find the User and create a ParentProfile automatically
+                                $parentUser = User::query()
+                                    ->where('username', $username)
+                                    ->whereHas('role', function ($q) {
+                                        $q->where('name', 'parent');
+                                    })
+                                    ->first();
+
+                                if (! $parentUser) {
+                                    $existingUser = User::where('username', $username)->first();
+                                    if (! $existingUser) {
+                                        $parentRole = Role::where('name', 'parent')->first();
+                                        if ($parentRole) {
+                                            $parentUser = User::create([
+                                                'role_id' => $parentRole->id,
+                                                'name' => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
+                                                'username' => $username,
+                                                'password' => $defaultPasswordHash,
+                                                'status' => 'active',
+                                            ]);
+                                        }
+                                    } else if ($existingUser->hasRole('parent')) {
+                                        $parentUser = $existingUser;
+                                    }
+                                }
+
+                                if ($parentUser) {
+                                    $parentProfile = ParentProfile::create([
+                                        'user_id' => $parentUser->id,
+                                        'phone'   => null,
+                                        'address' => null,
+                                    ]);
+                                }
+                            }
+
+                            if ($parentProfile) {
+                                $relation = isset($relations[$index]) && trim($relations[$index]) !== ''
+                                    ? trim($relations[$index])
+                                    : 'Wali';
+                                $syncData[$parentProfile->id] = ['relation' => $relation];
+                            }
+                        }
+
+                        if (! empty($syncData)) {
+                            $student->parents()->sync($syncData);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+        }
+
+        return redirect()
+            ->route('students.index')
+            ->with('success', "Impor selesai. {$importedCount} data santri ditambahkan, {$updatedCount} data diperbarui.");
     }
 }

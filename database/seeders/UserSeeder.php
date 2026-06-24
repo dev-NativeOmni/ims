@@ -15,27 +15,27 @@ class UserSeeder extends Seeder
             [
                 'role' => 'super_admin',
                 'name' => 'Super Admin HafizPlus',
-                'email' => 'superadmin@hafizplus.test',
+                'username' => 'superadmin',
             ],
             [
                 'role' => 'admin',
                 'name' => 'Admin HafizPlus',
-                'email' => 'admin@hafizplus.test',
+                'username' => 'admin',
             ],
             [
                 'role' => 'teacher',
                 'name' => 'Guru HafizPlus',
-                'email' => 'guru@hafizplus.test',
+                'username' => 'guru',
             ],
             [
                 'role' => 'parent',
                 'name' => 'Orangtua HafizPlus',
-                'email' => 'orangtua@hafizplus.test',
+                'username' => 'orangtua',
             ],
             [
                 'role' => 'student',
                 'name' => 'Santri HafizPlus',
-                'email' => 'santri@hafizplus.test',
+                'username' => 'santri',
             ],
         ];
 
@@ -43,13 +43,12 @@ class UserSeeder extends Seeder
             $role = Role::where('name', $userData['role'])->firstOrFail();
 
             User::updateOrCreate(
-                ['email' => $userData['email']],
+                ['username' => $userData['username']],
                 [
                     'role_id' => $role->id,
                     'name' => $userData['name'],
                     'password' => Hash::make('password123'),
                     'status' => 'active',
-                    'email_verified_at' => now(),
                 ]
             );
         }

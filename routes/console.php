@@ -8,6 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Schedule::command('hafizplus:prune-api-tokens --days=7')
+    ->dailyAt('02:00');
+
 Schedule::command('notifications:generate')
     ->dailyAt('06:00')
     ->withoutOverlapping();

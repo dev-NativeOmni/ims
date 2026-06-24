@@ -16,6 +16,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\QuranPdfController;
+use App\Http\Controllers\QuranMushafController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -105,6 +107,12 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('class-rooms', ClassRoomController::class);
         Route::resource('teachers', TeacherController::class);
         Route::resource('parents', ParentController::class);
+        Route::get('students/export', [StudentController::class, 'export'])
+            ->middleware('role:super_admin')
+            ->name('students.export');
+        Route::post('students/import', [StudentController::class, 'import'])
+            ->middleware('role:super_admin')
+            ->name('students.import');
         Route::resource('students', StudentController::class);
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])
@@ -198,6 +206,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+
+    Route::get('/quran-pdf', [QuranPdfController::class, 'index'])
+        ->name('quran.pdf');
+
+    Route::post('/quran-pdf/config', [QuranPdfController::class, 'updateConfig'])
+        ->middleware('role:super_admin,admin')
+        ->name('quran.pdf.config');
+
+    Route::get('/mushaf', [QuranMushafController::class, 'index'])
+        ->name('quran.mushaf');
 });
 
 require __DIR__ . '/auth.php';
@@ -210,10 +228,28 @@ require __DIR__ . '/auth.php';
 | Jangan dipakai sebagai halaman publik production.
 |
 */
-if (app()->environment('local')) {
+if (app()->environment('local', 'testing')) {
     Route::get('/dev/api-tester', function () {
         return view('dev.api-tester');
     })
         ->middleware(['auth', 'role:super_admin'])
         ->name('dev.api-tester');
+
+    Route::get('/dev/api-docs', function () {
+        return view('dev.api-docs');
+    })
+        ->middleware(['auth', 'role:super_admin'])
+        ->name('dev.api-docs');
+
+    Route::get('/dev/openapi.yaml', function () {
+        $path = base_path('docs/api-v1-openapi.yaml');
+        if (! file_exists($path)) {
+            abort(404);
+        }
+        return response(file_get_contents($path), 200, [
+            'Content-Type' => 'text/yaml',
+        ]);
+    })
+        ->middleware(['auth', 'role:super_admin'])
+        ->name('dev.openapi-yaml');
 }

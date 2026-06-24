@@ -64,6 +64,9 @@ class AuditLog extends Model
         return $this->action;
     }
 
+    /**
+     * Backward-compatible alias.
+     */
     public function getEventLabelAttribute(): string
     {
         return $this->action_label;

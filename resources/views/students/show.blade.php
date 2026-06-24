@@ -60,9 +60,9 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Akun Login</p>
+                        <p class="text-sm text-gray-500">Username Login</p>
                         <p class="font-semibold text-gray-900">
-                            {{ $student->user?->email ?: 'Belum dihubungkan' }}
+                            {{ $student->user?->username ?: 'Belum dihubungkan' }}
                         </p>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                         <thead>
                             <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
                                 <th class="px-4 py-3">Nama</th>
-                                <th class="px-4 py-3">Email</th>
+                                <th class="px-4 py-3">Username</th>
                                 <th class="px-4 py-3">Telepon</th>
                                 <th class="px-4 py-3">Relasi</th>
                             </tr>
@@ -121,7 +121,7 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">
-                                        {{ $parent->user?->email ?: '-' }}
+                                        {{ $parent->user?->username ?: '-' }}
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">

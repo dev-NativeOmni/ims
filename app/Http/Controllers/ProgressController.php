@@ -24,9 +24,24 @@ class ProgressController extends Controller
     ) {
     }
 
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $user = $request->user();
+
+        if ($user->hasRole('student')) {
+            $student = Student::query()->where('user_id', $user->id)->first();
+            if ($student) {
+                return redirect()->route('progress.show', $student);
+            }
+            abort(403, 'Akun santri belum memiliki profil santri.');
+        }
+
+        if ($user->hasRole('parent')) {
+            $visibleStudents = $this->studentProgressService->visibleStudentQuery($user)->get();
+            if ($visibleStudents->count() === 1) {
+                return redirect()->route('progress.show', $visibleStudents->first());
+            }
+        }
 
         $visibleStudentQuery = $this->studentProgressService
             ->visibleStudentQuery($user);

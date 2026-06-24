@@ -45,7 +45,7 @@
                                 required>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}" @selected((int) old('user_id', $systemNotification->user_id) === $user->id)>
-                                    {{ $user->name }} — {{ $user->email }} — {{ $user->role?->name ?? '-' }}
+                                    {{ $user->name }} — {{ $user->username }} — {{ $user->role?->name ?? '-' }}
                                 </option>
                             @endforeach
                         </select>

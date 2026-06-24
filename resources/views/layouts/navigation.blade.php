@@ -33,369 +33,199 @@
         $unreadNotificationCount = $user->unreadSystemNotifications()->count();
     }
 
-    // Variabel aktif untuk kelompok menu dropdown
-    $dataMasterActive = request()->routeIs('programs.*') || request()->routeIs('class-rooms.*') || request()->routeIs('teachers.*') || request()->routeIs('parents.*') || request()->routeIs('students.*');
-    $setoranActive = request()->routeIs('quick-inputs.*') || request()->routeIs('hafalan-records.*') || request()->routeIs('murajaah-records.*') || request()->routeIs('hafalan-targets.*');
-    $laporanActive = request()->routeIs('progress.*') || request()->routeIs('reports.*');
-    $systemActive = request()->routeIs('system-notifications.*') || request()->routeIs('audit-logs.*') || request()->routeIs('dev.api-tester');
+    $getLinkClasses = function (bool $active): string {
+        return $active
+            ? 'flex items-center px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50 text-indigo-700 group transition-all duration-150 shadow-sm'
+            : 'flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 group transition-all duration-150';
+    };
+
+    $getIconClasses = function (bool $active): string {
+        return $active
+            ? 'mr-3 h-5 w-5 text-indigo-600 flex-shrink-0 transition-colors duration-150'
+            : 'mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500 flex-shrink-0 transition-colors duration-150';
+    };
 @endphp
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="font-bold text-xl text-gray-800">
-                        HafizPlus
-                    </a>
-                </div>
+<!-- Mobile Sidebar (Drawer Overlay) -->
+<div x-show="sidebarOpen" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true" style="display: none;">
+    <!-- Backdrop Overlay -->
+    <div x-show="sidebarOpen" 
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true"></div>
 
-                <div class="hidden space-x-4 lg:space-x-6 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('*.dashboard')">
-                        Dashboard
-                    </x-nav-link>
+    <!-- Sidebar Drawer Panel -->
+    <div x-show="sidebarOpen"
+         x-transition:enter="transition ease-in-out duration-300 transform"
+         x-transition:enter-start="-translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in-out duration-300 transform"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="-translate-x-full"
+         class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white shadow-xl">
+         
+         <!-- Close Button -->
+         <div class="absolute top-0 right-0 -mr-12 pt-2">
+             <button type="button" @click="sidebarOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                 <span class="sr-only">Tutup sidebar</span>
+                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                 </svg>
+             </button>
+         </div>
 
-                    {{-- Dropdown Data Master --}}
-                    @if ($isAdmin)
-                        <div class="inline-flex items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center h-16 px-1 pt-1 border-b-2 {{ $dataMasterActive ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                        <span>Data Master</span>
-                                        <svg class="ms-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    @if ($hasRoute('programs.index'))
-                                        <x-dropdown-link :href="route('programs.index')">
-                                            Program
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('class-rooms.index'))
-                                        <x-dropdown-link :href="route('class-rooms.index')">
-                                            Kelas
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('teachers.index'))
-                                        <x-dropdown-link :href="route('teachers.index')">
-                                            Guru
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('parents.index'))
-                                        <x-dropdown-link :href="route('parents.index')">
-                                            Orangtua
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('students.index'))
-                                        <x-dropdown-link :href="route('students.index')">
-                                            Santri
-                                        </x-dropdown-link>
-                                    @endif
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    @endif
+         <!-- Mobile Logo -->
+         <div class="flex-shrink-0 flex items-center px-4">
+             <span class="font-bold text-xl text-gray-800 tracking-tight flex items-center gap-2">
+                 <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                 </svg>
+                 <span>HafizPlus</span>
+             </span>
+         </div>
 
-                    {{-- Dropdown Setoran & Target --}}
-                    @if ($canManageRecords)
-                        <div class="inline-flex items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center h-16 px-1 pt-1 border-b-2 {{ $setoranActive ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                        <span>Setoran & Target</span>
-                                        <svg class="ms-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    @if ($hasRoute('quick-inputs.index'))
-                                        <x-dropdown-link :href="route('quick-inputs.index')">
-                                            Input Cepat
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('hafalan-records.index'))
-                                        <x-dropdown-link :href="route('hafalan-records.index')">
-                                            Hafalan
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('murajaah-records.index'))
-                                        <x-dropdown-link :href="route('murajaah-records.index')">
-                                            Murajaah
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($hasRoute('hafalan-targets.index'))
-                                        <x-dropdown-link :href="route('hafalan-targets.index')">
-                                            Target
-                                        </x-dropdown-link>
-                                    @endif
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    @endif
+         <!-- Mobile Menu List -->
+         <div class="mt-5 flex-1 h-0 overflow-y-auto">
+             <nav class="px-2 space-y-1">
+                 @include('layouts.navigation-links')
+             </nav>
+         </div>
 
-                    {{-- Dropdown Progress & Laporan --}}
-                    @if (($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')))
-                        <div class="inline-flex items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center h-16 px-1 pt-1 border-b-2 {{ $laporanActive ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                        <span>Progres & Laporan</span>
-                                        <svg class="ms-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    @if ($canViewProgress && $hasRoute('progress.index'))
-                                        <x-dropdown-link :href="route('progress.index')">
-                                            Progress
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($canViewReports && $hasRoute('reports.index'))
-                                        <x-dropdown-link :href="route('reports.index')">
-                                            Laporan
-                                        </x-dropdown-link>
-                                    @endif
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    @endif
+         <!-- Mobile Profile Footer -->
+         <div class="flex-shrink-0 flex border-t border-gray-200 p-4 bg-gray-50/50">
+             <div class="flex items-center w-full">
+                 <div class="flex-shrink-0">
+                     @if ($user?->avatar)
+                         <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover shadow-inner">
+                     @else
+                         <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shadow-inner uppercase">
+                             {{ substr($user?->name ?? 'U', 0, 1) }}
+                         </div>
+                     @endif
+                 </div>
+                 <div class="ml-3 flex-1 min-w-0">
+                     <p class="text-sm font-semibold text-gray-800 truncate">
+                         {{ $user?->name }}
+                     </p>
+                     <p class="text-xs text-gray-500 truncate">
+                         {{ $user?->role?->display_name ?? $user?->role?->name ?? '-' }}
+                     </p>
+                 </div>
+                 <div class="ml-2 flex items-center gap-1">
+                     @if ($hasRoute('profile.edit'))
+                         <a href="{{ route('profile.edit') }}" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none" title="Profil">
+                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                             </svg>
+                         </a>
+                     @endif
+                     <form method="POST" action="{{ route('logout') }}" class="inline">
+                         @csrf
+                         <button type="submit" class="p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 focus:outline-none" title="Keluar">
+                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                             </svg>
+                         </button>
+                     </form>
+                 </div>
+             </div>
+         </div>
+    </div>
+    <!-- Dummy spacer to prevent overlay from closing immediately on tap close to edges -->
+    <div class="flex-shrink-0 w-14"></div>
+</div>
 
-                    {{-- Dropdown Sistem & Log --}}
-                    @if ($hasRoute('system-notifications.index') || ($canViewAudit && $hasRoute('audit-logs.index')) || ($isSuperAdmin && app()->environment('local') && $hasRoute('dev.api-tester')))
-                        <div class="inline-flex items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center h-16 px-1 pt-1 border-b-2 {{ $systemActive ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
-                                        <span>Sistem & Log</span>
-                                        @if ($unreadNotificationCount > 0)
-                                            <span class="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ms-1">
-                                                {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
-                                            </span>
-                                        @endif
-                                        <svg class="ms-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    @if ($hasRoute('system-notifications.index'))
-                                        <x-dropdown-link :href="route('system-notifications.index')">
-                                            Notifikasi
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($canViewAudit && $hasRoute('audit-logs.index'))
-                                        <x-dropdown-link :href="route('audit-logs.index')">
-                                            Audit Log
-                                        </x-dropdown-link>
-                                    @endif
-                                    @if ($isSuperAdmin && app()->environment('local') && $hasRoute('dev.api-tester'))
-                                        <x-dropdown-link :href="route('dev.api-tester')">
-                                            Dev API Tester
-                                        </x-dropdown-link>
-                                    @endif
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-600 bg-white hover:text-gray-800 focus:outline-none transition ease-in-out duration-150">
-                            <div class="text-left">
-                                <div>
-                                    {{ $user?->name }}
-                                </div>
-
-                                <div class="text-xs text-gray-400">
-                                    {{ $user?->role?->display_name ?? $user?->role?->name ?? '-' }}
-                                </div>
-                            </div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        @if ($hasRoute('profile.edit'))
-                            <x-dropdown-link :href="route('profile.edit')">
-                                Profil
-                            </x-dropdown-link>
-                        @endif
-
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                             onclick="event.preventDefault(); this.closest('form').submit();">
-                                Keluar
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open"
-                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-700 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{ 'hidden': open, 'inline-flex': ! open }"
-                              class="inline-flex"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M4 6h16M4 12h16M4 18h16" />
-
-                        <path :class="{ 'hidden': ! open, 'inline-flex': open }"
-                              class="hidden"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+<!-- Desktop Sidebar -->
+<aside class="hidden md:flex md:w-56 md:flex-col md:fixed md:inset-y-0 z-20 bg-white border-r border-gray-200">
+    <!-- Desktop Logo -->
+    <div class="flex-shrink-0 flex items-center px-6 h-16 border-b border-gray-100 bg-white">
+        <a href="{{ route('dashboard') }}" class="font-bold text-xl text-gray-800 tracking-tight flex items-center gap-2">
+            <svg class="h-6 w-6 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>HafizPlus</span>
+        </a>
     </div>
 
-    <div :class="{ 'block': open, 'hidden': ! open }" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('*.dashboard')">
-                Dashboard
-            </x-responsive-nav-link>
+    <!-- Desktop Menu List -->
+    <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+        <nav class="flex-1 px-4 space-y-1 bg-white">
+            @include('layouts.navigation-links')
+        </nav>
+    </div>
 
-            @if ($isAdmin)
-                @if ($hasRoute('programs.index'))
-                    <x-responsive-nav-link :href="route('programs.index')" :active="request()->routeIs('programs.*')">
-                        Program
-                    </x-responsive-nav-link>
+    <!-- Desktop Profile Footer -->
+    <div class="flex-shrink-0 flex border-t border-gray-200 p-4 bg-gray-50/50">
+        <div class="flex items-center w-full">
+            <div class="flex-shrink-0">
+                @if ($user?->avatar)
+                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover shadow-inner">
+                @else
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shadow-inner uppercase">
+                        {{ substr($user?->name ?? 'U', 0, 1) }}
+                    </div>
                 @endif
-
-                @if ($hasRoute('class-rooms.index'))
-                    <x-responsive-nav-link :href="route('class-rooms.index')" :active="request()->routeIs('class-rooms.*')">
-                        Kelas
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('teachers.index'))
-                    <x-responsive-nav-link :href="route('teachers.index')" :active="request()->routeIs('teachers.*')">
-                        Guru
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('parents.index'))
-                    <x-responsive-nav-link :href="route('parents.index')" :active="request()->routeIs('parents.*')">
-                        Orangtua
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('students.index'))
-                    <x-responsive-nav-link :href="route('students.index')" :active="request()->routeIs('students.*')">
-                        Santri
-                    </x-responsive-nav-link>
-                @endif
-            @endif
-
-            @if ($canManageRecords)
-                @if ($hasRoute('quick-inputs.index'))
-                    <x-responsive-nav-link :href="route('quick-inputs.index')" :active="request()->routeIs('quick-inputs.*')">
-                        Input Cepat
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('hafalan-records.index'))
-                    <x-responsive-nav-link :href="route('hafalan-records.index')" :active="request()->routeIs('hafalan-records.*')">
-                        Hafalan
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('murajaah-records.index'))
-                    <x-responsive-nav-link :href="route('murajaah-records.index')" :active="request()->routeIs('murajaah-records.*')">
-                        Murajaah
-                    </x-responsive-nav-link>
-                @endif
-
-                @if ($hasRoute('hafalan-targets.index'))
-                    <x-responsive-nav-link :href="route('hafalan-targets.index')" :active="request()->routeIs('hafalan-targets.*')">
-                        Target
-                    </x-responsive-nav-link>
-                @endif
-            @endif
-
-            @if ($canViewProgress && $hasRoute('progress.index'))
-                <x-responsive-nav-link :href="route('progress.index')" :active="request()->routeIs('progress.*')">
-                    Progress
-                </x-responsive-nav-link>
-            @endif
-
-            @if ($canViewReports && $hasRoute('reports.index'))
-                <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
-                    Laporan
-                </x-responsive-nav-link>
-            @endif
-
-            @if ($hasRoute('system-notifications.index'))
-                <x-responsive-nav-link :href="route('system-notifications.index')" :active="request()->routeIs('system-notifications.*')">
-                    <span class="inline-flex items-center gap-2">
-                        Notifikasi
-
-                        @if ($unreadNotificationCount > 0)
-                            <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
-                                {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
-                            </span>
-                        @endif
-                    </span>
-                </x-responsive-nav-link>
-            @endif
-
-            @if ($canViewAudit && $hasRoute('audit-logs.index'))
-                <x-responsive-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">
-                    Audit
-                </x-responsive-nav-link>
-            @endif
-        </div>
-
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">
-                    {{ $user?->name }}
-                </div>
-
-                <div class="font-medium text-sm text-gray-500">
-                    {{ $user?->email }}
-                </div>
-
-                <div class="mt-1 text-xs text-gray-400">
-                    {{ $user?->role?->display_name ?? $user?->role?->name ?? '-' }}
-                </div>
             </div>
-
-            <div class="mt-3 space-y-1">
+            <div class="ml-3 flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">
+                    {{ $user?->name }}
+                </p>
+                <p class="text-xs text-gray-500 truncate">
+                    {{ $user?->role?->display_name ?? $user?->role?->name ?? '-' }}
+                </p>
+            </div>
+            <div class="ml-2 flex items-center gap-1">
                 @if ($hasRoute('profile.edit'))
-                    <x-responsive-nav-link :href="route('profile.edit')">
-                        Profil
-                    </x-responsive-nav-link>
+                    <a href="{{ route('profile.edit') }}" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none" title="Profil">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </a>
                 @endif
-
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                                           onclick="event.preventDefault(); this.closest('form').submit();">
-                        Keluar
-                    </x-responsive-nav-link>
+                    <button type="submit" class="p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 focus:outline-none" title="Keluar">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </form>
             </div>
         </div>
     </div>
-</nav>
+</aside>
+
+<!-- Mobile Top Bar -->
+<div class="sticky top-0 z-10 md:hidden flex h-16 bg-white border-b border-gray-200 flex-shrink-0">
+    <button type="button" @click="sidebarOpen = true" class="px-4 border-r border-gray-200 text-gray-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+        <span class="sr-only">Buka sidebar</span>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+    <div class="flex-1 flex justify-between px-4 items-center bg-white">
+        <span class="font-bold text-lg text-gray-800 tracking-tight flex items-center gap-2">
+            <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>HafizPlus</span>
+        </span>
+        <!-- Small visual avatar on the right, clicking opens/toggles sidebar too -->
+        @if ($user?->avatar)
+            <button type="button" @click="sidebarOpen = true" class="w-8 h-8 rounded-full overflow-hidden shadow-inner">
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+            </button>
+        @else
+            <button type="button" @click="sidebarOpen = true" class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase shadow-inner">
+                {{ substr($user?->name ?? 'U', 0, 1) }}
+            </button>
+        @endif
+    </div>
+</div>

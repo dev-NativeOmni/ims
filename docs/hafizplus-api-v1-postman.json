@@ -1,0 +1,871 @@
+{
+	"info": {
+		"_postman_id": "8f03da7e-bc91-49b0-9db6-e9100d0246a0",
+		"name": "HafizPlus 2.0 API v1 Collection",
+		"description": "Koleksi Postman resmi untuk API v1 HafizPlus 2.0. Membantu integrasi frontend dan mobile client.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.access_token) {",
+									"        pm.environment.set(\"token\", jsonData.data.access_token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"superadmin@hafizplus.test\",\n    \"password\": \"password123\",\n    \"device_name\": \"Postman Client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Endpoint login untuk mendapatkan token otentikasi Sanctum."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile (Me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Mengambil detail informasi user yang sedang login beserta info token aktif."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Tokens",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/tokens",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"tokens"
+							]
+						},
+						"description": "Mengambil seluruh token/perangkat aktif yang terhubung dengan akun user."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout Current Device",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Mencabut token perangkat yang sedang digunakan saat ini."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout Other Devices",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout-other-devices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout-other-devices"
+							]
+						},
+						"description": "Mencabut seluruh token perangkat aktif milik user kecuali yang sedang digunakan saat ini."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout All Devices",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout-all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout-all"
+							]
+						},
+						"description": "Mencabut seluruh token perangkat aktif milik user secara keseluruhan."
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke Specific Token",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/tokens/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"tokens",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID Token yang akan dicabut"
+								}
+							]
+						},
+						"description": "Mencabut token perangkat tertentu berdasarkan ID token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Admin Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"admin"
+							]
+						},
+						"description": "Melihat statistik dashboard untuk role Admin / Super Admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Teacher Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/teacher",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"teacher"
+							]
+						},
+						"description": "Melihat ringkasan data bimbingan untuk guru yang aktif login."
+					},
+					"response": []
+				},
+				{
+					"name": "Parent Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/parent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"parent"
+							]
+						},
+						"description": "Melihat ringkasan laporan hafalan anak-anak dari wali santri aktif."
+					},
+					"response": []
+				},
+				{
+					"name": "Student Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/student",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"student"
+							]
+						},
+						"description": "Melihat rangkuman pencapaian pribadi santri aktif."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quran Data",
+			"item": [
+				{
+					"name": "List Surahs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/surahs?search=&juz=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"surahs"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Cari berdasarkan nama latin, arab, atau nomor surah"
+								},
+								{
+									"key": "juz",
+									"value": "",
+									"description": "Filter juz 1-30"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Batas jumlah per halaman"
+								}
+							]
+						},
+						"description": "Mengambil daftar surah Al-Quran."
+					},
+					"response": []
+				},
+				{
+					"name": "Surah Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/surahs/:number",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"surahs",
+								":number"
+							],
+							"variable": [
+								{
+									"key": "number",
+									"value": "1",
+									"description": "Nomor surah (1-114)"
+								}
+							]
+						},
+						"description": "Mengambil detail metadata surah."
+					},
+					"response": []
+				},
+				{
+					"name": "Ayahs of Surah",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/surahs/:number/ayahs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"surahs",
+								":number",
+								"ayahs"
+							],
+							"variable": [
+								{
+									"key": "number",
+									"value": "1",
+									"description": "Nomor surah"
+								}
+							]
+						},
+						"description": "Mengambil daftar ayat dari surah tertentu."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "List Students",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students?search=&status=&class_room_id=&teacher_id=&per_page=15",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Cari nama, nomor santri, atau email"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter status santri (active/inactive)"
+								},
+								{
+									"key": "class_room_id",
+									"value": "",
+									"description": "Filter ID Kelas"
+								},
+								{
+									"key": "teacher_id",
+									"value": "",
+									"description": "Filter ID Guru pembimbing"
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Batas data per halaman"
+								}
+							]
+						},
+						"description": "Mengambil daftar santri sesuai aturan visibilitas user aktif."
+					},
+					"response": []
+				},
+				{
+					"name": "Student Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID Santri"
+								}
+							]
+						},
+						"description": "Mengambil detail santri spesifik."
+					},
+					"response": []
+				},
+				{
+					"name": "Student Progress Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students/:id/progress",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								":id",
+								"progress"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "ID Santri"
+								}
+							]
+						},
+						"description": "Mengambil ringkasan data progres Al-Quran, hafalan, murajaah, dan target santri."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hafalan & Murajaah",
+			"item": [
+				{
+					"name": "Hafalan Records List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/hafalan-records?student_id=&teacher_id=&surah_id=&status=&from=&to=&search=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"hafalan-records"
+							],
+							"query": [
+								{
+									"key": "student_id",
+									"value": "",
+									"description": "Filter ID Santri"
+								},
+								{
+									"key": "teacher_id",
+									"value": "",
+									"description": "Filter ID Guru"
+								},
+								{
+									"key": "surah_id",
+									"value": "",
+									"description": "Filter ID Surah"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "passed / repeat / needs_improvement"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "Tanggal mulai (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "Tanggal akhir (YYYY-MM-DD)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Cari berdasarkan nama santri/catatan/surah"
+								}
+							]
+						},
+						"description": "Mengambil list riwayat setoran hafalan."
+					},
+					"response": []
+				},
+				{
+					"name": "Hafalan Record Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/hafalan-records/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"hafalan-records",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Mengambil detail satu catatan setoran hafalan."
+					},
+					"response": []
+				},
+				{
+					"name": "Murajaah Records List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/murajaah-records?student_id=&teacher_id=&surah_id=&status=&from=&to=&search=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"murajaah-records"
+							],
+							"query": [
+								{
+									"key": "student_id",
+									"value": "",
+									"description": "Filter ID Santri"
+								},
+								{
+									"key": "teacher_id",
+									"value": "",
+									"description": "Filter ID Guru"
+								},
+								{
+									"key": "surah_id",
+									"value": "",
+									"description": "Filter ID Surah"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "passed / repeat / needs_improvement"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "Tanggal mulai (YYYY-MM-DD)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "Tanggal akhir (YYYY-MM-DD)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Cari berdasarkan nama santri/catatan/surah"
+								}
+							]
+						},
+						"description": "Mengambil list riwayat murajaah santri."
+					},
+					"response": []
+				},
+				{
+					"name": "Murajaah Record Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/murajaah-records/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"murajaah-records",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Mengambil detail satu riwayat murajaah santri."
+					},
+					"response": []
+				},
+				{
+					"name": "Hafalan Targets List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/hafalan-targets?student_id=&teacher_id=&surah_id=&status=&from=&to=&search=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"hafalan-targets"
+							],
+							"query": [
+								{
+									"key": "student_id",
+									"value": "",
+									"description": "Filter ID Santri"
+								},
+								{
+									"key": "teacher_id",
+									"value": "",
+									"description": "Filter ID Guru"
+								},
+								{
+									"key": "surah_id",
+									"value": "",
+									"description": "Filter ID Surah"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "active/completed/missed/cancelled/planned/in_progress"
+								},
+								{
+									"key": "from",
+									"value": "",
+									"description": "Tanggal mulai (target_date)"
+								},
+								{
+									"key": "to",
+									"value": "",
+									"description": "Tanggal akhir (target_date)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Cari nama santri/catatan/surah"
+								}
+							]
+						},
+						"description": "Mengambil daftar target hafalan santri."
+					},
+					"response": []
+				},
+				{
+					"name": "Hafalan Target Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/hafalan-targets/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"hafalan-targets",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Mengambil detail satu target hafalan santri."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

@@ -166,7 +166,7 @@
                                 <option value="">Tidak dihubungkan dulu</option>
                                 @foreach ($studentUsers as $studentUser)
                                     <option value="{{ $studentUser->id }}" @selected((string) old('user_id', $student->user_id) === (string) $studentUser->id)>
-                                        {{ $studentUser->name }} - {{ $studentUser->email }}
+                                        {{ $studentUser->name }} - {{ $studentUser->username }}
                                     </option>
                                 @endforeach
                             </select>

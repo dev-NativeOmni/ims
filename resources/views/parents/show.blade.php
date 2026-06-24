@@ -25,8 +25,8 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Email</p>
-                        <p class="font-semibold text-gray-900">{{ $parent->user?->email }}</p>
+                        <p class="text-sm text-gray-500">Username</p>
+                        <p class="font-semibold text-gray-900">{{ $parent->user?->username }}</p>
                     </div>
 
                     <div>

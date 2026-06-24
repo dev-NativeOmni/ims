@@ -137,13 +137,13 @@
         <div class="card">
             <h2>1. Login API</h2>
 
-            <label for="email">Email</label>
-            <select id="email">
-                <option value="superadmin@hafizplus.test">superadmin@hafizplus.test</option>
-                <option value="admin@hafizplus.test">admin@hafizplus.test</option>
-                <option value="guru@hafizplus.test">guru@hafizplus.test</option>
-                <option value="orangtua@hafizplus.test">orangtua@hafizplus.test</option>
-                <option value="santri@hafizplus.test">santri@hafizplus.test</option>
+            <label for="username">Username</label>
+            <select id="username">
+                <option value="superadmin">superadmin</option>
+                <option value="admin">admin</option>
+                <option value="guru">guru</option>
+                <option value="orangtua">orangtua</option>
+                <option value="santri">santri</option>
             </select>
 
             <label for="password">Password</label>
@@ -237,7 +237,7 @@
 
     async function login() {
         const body = {
-            email: document.getElementById('email').value,
+            username: document.getElementById('username').value,
             password: document.getElementById('password').value,
             device_name: document.getElementById('device_name').value || 'Browser API Tester'
         };

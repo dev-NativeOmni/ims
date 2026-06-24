@@ -28,7 +28,7 @@ class ParentController extends Controller
                         ->orWhere('address', 'like', "%{$search}%")
                         ->orWhereHas('user', function ($userQuery) use ($search) {
                             $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                                ->orWhere('username', 'like', "%{$search}%");
                         });
                 });
             })
@@ -54,10 +54,9 @@ class ParentController extends Controller
             $user = User::create([
                 'role_id' => $parentRole->id,
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+                'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'status' => $validated['status'],
-                'email_verified_at' => now(),
             ]);
 
             ParentProfile::create([
@@ -97,7 +96,7 @@ class ParentController extends Controller
         DB::transaction(function () use ($validated, $parent) {
             $userData = [
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+                'username' => $validated['username'],
                 'status' => $validated['status'],
             ];
 

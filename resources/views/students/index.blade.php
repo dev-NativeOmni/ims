@@ -5,12 +5,32 @@
                 Santri
             </h2>
 
-            <a
-                href="{{ route('students.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
-            >
-                Tambah Santri
-            </a>
+            <div class="flex items-center gap-2">
+                @if (auth()->user()->hasRole('super_admin'))
+                    <a
+                        href="{{ route('students.export') }}"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Ekspor Excel
+                    </a>
+
+                    <button
+                        type="button"
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'import-students')"
+                        class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 active:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Impor Excel
+                    </button>
+                @endif
+
+                <a
+                    href="{{ route('students.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
+                >
+                    Tambah Santri
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -174,4 +194,59 @@
             </div>
         </div>
     </div>
+
+    @if (auth()->user()->hasRole('super_admin'))
+    <x-modal name="import-students" :show="false" focusable>
+        <form method="POST" action="{{ route('students.import') }}" enctype="multipart/form-data" class="p-6">
+            @csrf
+
+            <h2 class="text-lg font-medium text-gray-900">
+                Impor Data Santri
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                Unggah berkas Excel (.xlsx / .xls) untuk mengimpor atau memperbarui data santri secara massal.
+            </p>
+
+            <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1 border border-gray-100 max-h-60 overflow-y-auto">
+                <p class="font-semibold text-gray-700">Format Kolom Berkas Excel:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li><strong>Nama Santri</strong> (Wajib): Nama lengkap santri</li>
+                    <li><strong>Nomor Induk</strong> (Opsional, kunci pencocokan): Jika diisi dan sudah ada, data santri akan diperbarui. Jika belum ada, data santri baru akan dibuat.</li>
+                    <li><strong>Jenis Kelamin</strong> (Opsional): male / female</li>
+                    <li><strong>Tanggal Lahir</strong> (Opsional): format YYYY-MM-DD</li>
+                    <li><strong>Status</strong> (Opsional): active / inactive / graduated</li>
+                    <li><strong>Kelas</strong> (Opsional): Nama kelas yang sesuai di sistem</li>
+                    <li><strong>Username Guru</strong> (Opsional): Username akun guru pembimbing</li>
+                    <li><strong>Username Santri</strong> (Opsional): Username akun santri</li>
+                    <li><strong>Username Orangtua</strong> (Opsional): Username akun orangtua, pisahkan dengan koma jika memiliki lebih dari satu orangtua (contoh: <code>ortu1,ortu2</code>).</li>
+                    <li><strong>Hubungan Orangtua</strong> (Opsional): Relasi orangtua, pisahkan dengan koma (contoh: <code>Ayah,Ibu</code>). Harus berurutan sesuai dengan Username Orangtua.</li>
+                </ul>
+            </div>
+
+            <div class="mt-6">
+                <x-input-label for="excel_file" value="Pilih Berkas Excel" class="sr-only" />
+
+                <input
+                    id="excel_file"
+                    name="file"
+                    type="file"
+                    accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                    class="block w-full border border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    required
+                />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    Batal
+                </x-secondary-button>
+
+                <x-primary-button class="ms-3 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800">
+                    Proses Impor
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+    @endif
 </x-app-layout>

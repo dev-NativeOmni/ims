@@ -14,10 +14,12 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('reports.index') }}"
-                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
-                    Kembali
-                </a>
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'teacher']) || (auth()->user()->hasRole('parent') && auth()->user()->parentProfile?->students()->count() > 1))
+                    <a href="{{ route('reports.index') }}"
+                       class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                        Kembali
+                    </a>
+                @endif
 
                 <a href="{{ route('reports.student.export.csv', $student) }}"
                    class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">

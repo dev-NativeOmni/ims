@@ -14,9 +14,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => [
+            'username' => [
                 'required',
-                'email',
+                'string',
                 'max:150',
             ],
             'password' => [
@@ -35,8 +35,7 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
+            'username.required' => 'Username wajib diisi.',
             'password.required' => 'Password wajib diisi.',
             'device_name.max' => 'Nama perangkat maksimal 100 karakter.',
         ];

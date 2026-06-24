@@ -103,7 +103,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih santri</option>
                                 @foreach ($students as $student)
-                                    <option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>
+                                    <option value="{{ $student->id }}" @selected(old('student_id', request('student_id')) == $student->id)>
                                         {{ $student->name }}
                                         @if ($student->classRoom)
                                             — {{ $student->classRoom->name }}
@@ -123,7 +123,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih surah</option>
                                 @foreach ($surahs as $surah)
-                                    <option value="{{ $surah->id }}" @selected(old('surah_id') == $surah->id)>
+                                    <option value="{{ $surah->id }}" @selected(old('surah_id', request('surah_id')) == $surah->id)>
                                         {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
                                     </option>
                                 @endforeach
@@ -140,7 +140,7 @@
                                        name="ayah_start"
                                        min="1"
                                        required
-                                       value="{{ old('ayah_start') }}"
+                                       value="{{ old('ayah_start', request('ayah_start')) }}"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
 
@@ -153,7 +153,7 @@
                                        name="ayah_end"
                                        min="1"
                                        required
-                                       value="{{ old('ayah_end') }}"
+                                       value="{{ old('ayah_end', request('ayah_end')) }}"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
                         </div>
@@ -266,7 +266,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih santri</option>
                                 @foreach ($students as $student)
-                                    <option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>
+                                    <option value="{{ $student->id }}" @selected(old('student_id', request('student_id')) == $student->id)>
                                         {{ $student->name }}
                                         @if ($student->classRoom)
                                             — {{ $student->classRoom->name }}
@@ -286,7 +286,7 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih surah</option>
                                 @foreach ($surahs as $surah)
-                                    <option value="{{ $surah->id }}" @selected(old('surah_id') == $surah->id)>
+                                    <option value="{{ $surah->id }}" @selected(old('surah_id', request('surah_id')) == $surah->id)>
                                         {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
                                     </option>
                                 @endforeach
@@ -303,7 +303,7 @@
                                        name="ayah_start"
                                        min="1"
                                        required
-                                       value="{{ old('ayah_start') }}"
+                                       value="{{ old('ayah_start', request('ayah_start')) }}"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
 
@@ -316,7 +316,7 @@
                                        name="ayah_end"
                                        min="1"
                                        required
-                                       value="{{ old('ayah_end') }}"
+                                       value="{{ old('ayah_end', request('ayah_end')) }}"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
                         </div>
