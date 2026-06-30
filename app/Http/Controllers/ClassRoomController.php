@@ -9,6 +9,7 @@ use App\Models\Program;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClassRoomController extends Controller
 {
@@ -90,5 +91,156 @@ class ClassRoomController extends Controller
         return redirect()
             ->route('class-rooms.index')
             ->with('success', 'Kelas berhasil dihapus.');
+    }
+
+    // -------------------------------------------------------------------------
+    // Excel Export
+    // -------------------------------------------------------------------------
+    public function export(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $classRooms = ClassRoom::query()
+            ->with('program')
+            ->withCount('students')
+            ->orderBy('name')
+            ->get();
+
+        $headers = ['Nama Kelas', 'Level', 'Program', 'Jumlah Santri'];
+        $data    = [];
+
+        foreach ($classRooms as $classRoom) {
+            $data[] = [
+                $classRoom->name,
+                $classRoom->level ?? '',
+                $classRoom->program?->name ?? '',
+                $classRoom->students_count,
+            ];
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'classrooms_export_') . '.xlsx';
+        $fileName = 'kelas_' . now()->format('Ymd_His') . '.xlsx';
+
+        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+
+        return response()->streamDownload(function () use ($tempFile) {
+            readfile($tempFile);
+            @unlink($tempFile);
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Excel Import
+    // -------------------------------------------------------------------------
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
+        ]);
+
+        $file      = $request->file('file');
+        $filePath  = $file->getRealPath();
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        /** @var list<list<string|null>> $rows */
+        $rows = [];
+
+        if ($extension === 'xlsx') {
+            try {
+                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+            }
+        } else {
+            $handle = fopen($filePath, 'r');
+            if ($handle === false) {
+                return redirect()->back()->with('error', 'Gagal membuka berkas.');
+            }
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+                $rows[] = $row;
+            }
+            fclose($handle);
+        }
+
+        if (empty($rows)) {
+            return redirect()->back()->with('error', 'Berkas kosong atau tidak valid.');
+        }
+
+        $header = array_shift($rows);
+        $header = array_map(
+            fn ($h): string => trim(strtolower((string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $h))),
+            (array) $header
+        );
+
+        $col = static function (string $name) use ($header): ?int {
+            $v = array_search($name, $header, true);
+            return $v !== false ? (int) $v : null;
+        };
+
+        /** @var array<string, int|null> $map */
+        $map = [
+            'nama'    => $col('nama kelas') ?? $col('nama')  ?? $col('name'),
+            'level'   => $col('level'),
+            'program' => $col('program')    ?? $col('nama program'),
+        ];
+
+        if ($map['nama'] === null) {
+            return redirect()->back()->with('error', 'Format tidak valid. Kolom "Nama Kelas" wajib ada.');
+        }
+
+        $imported = 0;
+        $updated  = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $row) {
+                $name = trim((string) ($row[$map['nama']] ?? ''));
+                if ($name === '') {
+                    continue;
+                }
+
+                $level = $map['level'] !== null ? trim((string) ($row[$map['level']] ?? '')) : null;
+
+                $programId = null;
+                if ($map['program'] !== null) {
+                    $programName = trim((string) ($row[$map['program']] ?? ''));
+                    if ($programName !== '') {
+                        $programId = Program::where('name', $programName)->value('id');
+                    }
+                }
+
+                $existing = ClassRoom::where('name', $name)
+                    ->when($programId, fn ($q) => $q->where('program_id', $programId))
+                    ->first();
+
+                if ($existing) {
+                    $payload = [];
+                    if ($level !== null && $level !== '') {
+                        $payload['level'] = $level;
+                    }
+                    if ($programId !== null) {
+                        $payload['program_id'] = $programId;
+                    }
+                    if (! empty($payload)) {
+                        $existing->update($payload);
+                    }
+                    $updated++;
+                } else {
+                    ClassRoom::create([
+                        'name'       => $name,
+                        'level'      => $level ?: null,
+                        'program_id' => $programId,
+                    ]);
+                    $imported++;
+                }
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengimpor: ' . $e->getMessage());
+        }
+
+        return redirect()->route('class-rooms.index')
+            ->with('success', "Impor selesai. {$imported} kelas ditambahkan, {$updated} diperbarui.");
     }
 }

@@ -110,16 +110,29 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::middleware(['role:super_admin,admin'])->group(function () {
+        // Programs
+        Route::get('programs/export', [ProgramController::class, 'export'])->name('programs.export');
+        Route::post('programs/import', [ProgramController::class, 'import'])->name('programs.import');
         Route::resource('programs', ProgramController::class);
+
+        // Class Rooms
+        Route::get('class-rooms/export', [ClassRoomController::class, 'export'])->name('class-rooms.export');
+        Route::post('class-rooms/import', [ClassRoomController::class, 'import'])->name('class-rooms.import');
         Route::resource('class-rooms', ClassRoomController::class);
+
+        // Teachers
+        Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');
+        Route::post('teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
         Route::resource('teachers', TeacherController::class);
+
+        // Parents
+        Route::get('parents/export', [ParentController::class, 'export'])->name('parents.export');
+        Route::post('parents/import', [ParentController::class, 'import'])->name('parents.import');
         Route::resource('parents', ParentController::class);
-        Route::get('students/export', [StudentController::class, 'export'])
-            ->middleware('role:super_admin')
-            ->name('students.export');
-        Route::post('students/import', [StudentController::class, 'import'])
-            ->middleware('role:super_admin')
-            ->name('students.import');
+
+        // Students
+        Route::get('students/export', [StudentController::class, 'export'])->name('students.export');
+        Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
         Route::resource('students', StudentController::class);
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])

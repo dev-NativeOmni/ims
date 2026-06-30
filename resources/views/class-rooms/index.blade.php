@@ -5,12 +5,32 @@
                 Kelas
             </h2>
 
-            <a
-                href="{{ route('class-rooms.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
-            >
-                Tambah Kelas
-            </a>
+            <div class="flex items-center gap-2">
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+                    <a
+                        href="{{ route('class-rooms.export') }}"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Ekspor Excel
+                    </a>
+
+                    <button
+                        type="button"
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'import-class-rooms')"
+                        class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 active:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Impor Excel
+                    </button>
+                @endif
+
+                <a
+                    href="{{ route('class-rooms.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
+                >
+                    Tambah Kelas
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -119,4 +139,50 @@
             </div>
         </div>
     </div>
+
+    @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+    <x-modal name="import-class-rooms" :show="false" focusable>
+        <form method="POST" action="{{ route('class-rooms.import') }}" enctype="multipart/form-data" class="p-6">
+            @csrf
+
+            <h2 class="text-lg font-medium text-gray-900">
+                Impor Data Kelas
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                Unggah berkas Excel (.xlsx) atau CSV untuk mengimpor atau memperbarui data kelas secara massal.
+            </p>
+
+            <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1 border border-gray-100">
+                <p class="font-semibold text-gray-700">Format Kolom:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li><strong>Nama Kelas</strong> (Wajib): Nama kelas. Jika sudah ada (dengan program sama), data diperbarui.</li>
+                    <li><strong>Level</strong> (Opsional): Level/tingkatan kelas.</li>
+                    <li><strong>Program</strong> (Opsional): Nama program yang sesuai di sistem.</li>
+                </ul>
+            </div>
+
+            <div class="mt-6">
+                <input
+                    id="classroom_import_file"
+                    name="file"
+                    type="file"
+                    accept=".xlsx,.csv,.txt"
+                    class="block w-full border border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    required
+                />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    Batal
+                </x-secondary-button>
+
+                <x-primary-button class="ms-3 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800">
+                    Proses Impor
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+    @endif
 </x-app-layout>

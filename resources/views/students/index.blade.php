@@ -6,7 +6,7 @@
             </h2>
 
             <div class="flex items-center gap-2">
-                @if (auth()->user()->hasRole('super_admin'))
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
                     <a
                         href="{{ route('students.export') }}"
                         class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
@@ -195,7 +195,7 @@
         </div>
     </div>
 
-    @if (auth()->user()->hasRole('super_admin'))
+    @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
     <x-modal name="import-students" :show="false" focusable>
         <form method="POST" action="{{ route('students.import') }}" enctype="multipart/form-data" class="p-6">
             @csrf

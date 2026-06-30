@@ -5,12 +5,32 @@
                 Guru/Musyrif
             </h2>
 
-            <a
-                href="{{ route('teachers.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
-            >
-                Tambah Guru
-            </a>
+            <div class="flex items-center gap-2">
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+                    <a
+                        href="{{ route('teachers.export') }}"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Ekspor Excel
+                    </a>
+
+                    <button
+                        type="button"
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'import-teachers')"
+                        class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 active:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Impor Excel
+                    </button>
+                @endif
+
+                <a
+                    href="{{ route('teachers.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
+                >
+                    Tambah Guru
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -130,4 +150,52 @@
             </div>
         </div>
     </div>
+
+    @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+    <x-modal name="import-teachers" :show="false" focusable>
+        <form method="POST" action="{{ route('teachers.import') }}" enctype="multipart/form-data" class="p-6">
+            @csrf
+
+            <h2 class="text-lg font-medium text-gray-900">
+                Impor Data Guru
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                Unggah berkas Excel (.xlsx) atau CSV untuk mengimpor atau memperbarui data guru secara massal.
+            </p>
+
+            <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1 border border-gray-100">
+                <p class="font-semibold text-gray-700">Format Kolom:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li><strong>Nama</strong> (Wajib): Nama lengkap guru.</li>
+                    <li><strong>Username</strong> (Wajib, kunci pencocokan): Jika sudah ada, data diperbarui. Jika belum ada, guru baru dibuat dengan password default <code>password123</code>.</li>
+                    <li><strong>Nomor Pegawai</strong> (Opsional): Nomor identitas pegawai.</li>
+                    <li><strong>Telepon</strong> (Opsional): Nomor telepon.</li>
+                    <li><strong>Status</strong> (Opsional): <code>active</code> / <code>inactive</code>. Default: active.</li>
+                </ul>
+            </div>
+
+            <div class="mt-6">
+                <input
+                    id="teacher_import_file"
+                    name="file"
+                    type="file"
+                    accept=".xlsx,.csv,.txt"
+                    class="block w-full border border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    required
+                />
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button x-on:click="$dispatch('close')">
+                    Batal
+                </x-secondary-button>
+
+                <x-primary-button class="ms-3 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800">
+                    Proses Impor
+                </x-primary-button>
+            </div>
+        </form>
+    </x-modal>
+    @endif
 </x-app-layout>
