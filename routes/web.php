@@ -21,6 +21,7 @@ use App\Http\Controllers\QuranMushafController;
 use App\Http\Controllers\AdabController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SuperAdmin\UserManagementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -147,6 +148,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin'])->group(function () {
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
     });
+
+        // Super Admin user management routes
+        Route::prefix('superadmin')->name('superadmin.')->middleware(['role:super_admin'])->group(function () {
+            Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+            Route::post('users/{id}/force-reset', [UserManagementController::class, 'forceReset'])->name('users.force-reset');
+        });
 
     /*
     |--------------------------------------------------------------------------

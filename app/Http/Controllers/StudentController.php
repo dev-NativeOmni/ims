@@ -242,7 +242,7 @@ class StudentController extends Controller
                 $student->name,
                 $student->student_number,
                 $student->gender,
-                $student->birth_date ? $student->birth_date->toDateString() : '',
+                $student->birth_date ? optional($student->birth_date)->toDateString() : '',
                 $student->status,
                 $student->classRoom?->name,
                 $student->teacher?->user?->username,
@@ -272,6 +272,7 @@ class StudentController extends Controller
         $filePath = $file->getRealPath();
         $extension = strtolower($file->getClientOriginalExtension());
 
+        /** @var list<list<string|null>> $rows */
         $rows = [];
 
         if ($extension === 'xlsx') {
@@ -289,7 +290,7 @@ class StudentController extends Controller
 
             // Read the first line to check for sep=; instruction (Excel helper)
             $firstLine = fgets($handle);
-            $cleanFirstLine = $firstLine !== false ? preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine) : '';
+            $cleanFirstLine = $firstLine !== false ? (string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine) : '';
             
             $separator = ',';
             if ($firstLine !== false) {
@@ -302,7 +303,7 @@ class StudentController extends Controller
                 } else {
                     rewind($handle);
                     // Auto-detect separator if not specified
-                    $cleanFirstLineForDetect = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine);
+                    $cleanFirstLineForDetect = (string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine);
                     if (str_contains($cleanFirstLineForDetect, ';') && ! str_contains($cleanFirstLineForDetect, ',')) {
                         $separator = ';';
                     }
@@ -323,54 +324,39 @@ class StudentController extends Controller
         $header = array_shift($rows);
 
         // Clean headers (remove BOM or spaces)
-        $header = array_map(function ($h) {
-            $h = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $h); // strip BOM
-            $h = preg_replace('/\s+/', ' ', $h); // normalize spaces
+        $header = array_map(function ($h): string {
+            $h = (string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $h); // strip BOM
+            $h = (string) preg_replace('/\s+/', ' ', $h);                          // normalize spaces
             return trim(strtolower($h));
-        }, $header);
+        }, (array) $header);
 
-        // Map header column names to indexes
+        // Helper: resolve column index, returning null instead of false when not found
+        $col = static function (string $name) use ($header): ?int {
+            $result = array_search($name, $header, true);
+            return $result !== false ? (int) $result : null;
+        };
+
+        // Map header column names to indexes (null = column not present in file)
+        /** @var array<string, int|null> $map */
         $map = [
-            'nama_santri' => array_search('nama santri', $header),
-            'nomor_induk' => array_search('nomor induk', $header),
-            'jenis_kelamin' => array_search('jenis kelamin', $header),
-            'tanggal_lahir' => array_search('tanggal lahir', $header),
-            'status' => array_search('status', $header),
-            'kelas' => array_search('kelas', $header),
-            'username_guru' => array_search('username guru', $header),
-            'username_santri' => array_search('username santri', $header),
-            'username_orangtua' => array_search('username orangtua', $header),
-            'hubungan_orangtua' => array_search('hubungan orangtua', $header),
+            'nama_santri'       => $col('nama santri')       ?? $col('name'),
+            'nomor_induk'       => $col('nomor induk')       ?? $col('student_number'),
+            'jenis_kelamin'     => $col('jenis kelamin')     ?? $col('gender'),
+            'tanggal_lahir'     => $col('tanggal lahir')     ?? $col('birth_date'),
+            'status'            => $col('status'),
+            'kelas'             => $col('kelas')             ?? $col('class_room'),
+            'username_guru'     => $col('username guru')     ?? $col('teacher_username') ?? $col('email guru')     ?? $col('teacher_email'),
+            'username_santri'   => $col('username santri')   ?? $col('student_username')  ?? $col('email santri')   ?? $col('student_email'),
+            'username_orangtua' => $col('username orangtua') ?? $col('parent_usernames')  ?? $col('email orangtua') ?? $col('parent_emails'),
+            'hubungan_orangtua' => $col('hubungan orangtua') ?? $col('parent_relations'),
         ];
 
-        // English fallbacks / Legacy Email mappings
-        if ($map['nama_santri'] === false) $map['nama_santri'] = array_search('name', $header);
-        if ($map['nomor_induk'] === false) $map['nomor_induk'] = array_search('student_number', $header);
-        if ($map['jenis_kelamin'] === false) $map['jenis_kelamin'] = array_search('gender', $header);
-        if ($map['tanggal_lahir'] === false) $map['tanggal_lahir'] = array_search('birth_date', $header);
-        if ($map['status'] === false) $map['status'] = array_search('status', $header);
-        if ($map['kelas'] === false) $map['kelas'] = array_search('class_room', $header);
-        
-        if ($map['username_guru'] === false) $map['username_guru'] = array_search('teacher_username', $header);
-        if ($map['username_guru'] === false) $map['username_guru'] = array_search('email guru', $header);
-        if ($map['username_guru'] === false) $map['username_guru'] = array_search('teacher_email', $header);
-        
-        if ($map['username_santri'] === false) $map['username_santri'] = array_search('student_username', $header);
-        if ($map['username_santri'] === false) $map['username_santri'] = array_search('email santri', $header);
-        if ($map['username_santri'] === false) $map['username_santri'] = array_search('student_email', $header);
-        
-        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('parent_usernames', $header);
-        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('email orangtua', $header);
-        if ($map['username_orangtua'] === false) $map['username_orangtua'] = array_search('parent_emails', $header);
-        
-        if ($map['hubungan_orangtua'] === false) $map['hubungan_orangtua'] = array_search('parent_relations', $header);
-
-        if ($map['nama_santri'] === false) {
+        if ($map['nama_santri'] === null) {
             return redirect()->back()->with('error', 'Format berkas tidak valid. Harus memiliki kolom "Nama Santri".');
         }
 
         $importedCount = 0;
-        $updatedCount = 0;
+        $updatedCount  = 0;
 
         $defaultPasswordHash = Hash::make('password123');
 
@@ -382,18 +368,24 @@ class StudentController extends Controller
                     continue;
                 }
 
-                $name = $row[$map['nama_santri']] ?? '';
+                $name = (string) ($row[$map['nama_santri']] ?? '');
                 if (empty(trim($name))) {
                     continue;
                 }
 
-                $studentNumber = isset($map['nomor_induk']) && $map['nomor_induk'] !== false ? trim($row[$map['nomor_induk']] ?? '') : null;
-                $gender = isset($map['jenis_kelamin']) && $map['jenis_kelamin'] !== false ? strtolower(trim($row[$map['jenis_kelamin']] ?? '')) : 'male';
-                if (! in_array($gender, ['male', 'female'])) {
+                $studentNumber = $map['nomor_induk'] !== null
+                    ? trim((string) ($row[$map['nomor_induk']] ?? ''))
+                    : null;
+                $gender = $map['jenis_kelamin'] !== null
+                    ? strtolower(trim((string) ($row[$map['jenis_kelamin']] ?? '')))
+                    : 'male';
+                if (! in_array($gender, ['male', 'female'], true)) {
                     $gender = 'male';
                 }
 
-                $birthDate = isset($map['tanggal_lahir']) && $map['tanggal_lahir'] !== false ? trim($row[$map['tanggal_lahir']] ?? '') : null;
+                $birthDate = $map['tanggal_lahir'] !== null
+                    ? trim((string) ($row[$map['tanggal_lahir']] ?? ''))
+                    : null;
                 if (! empty($birthDate)) {
                     if (is_numeric($birthDate) && (int)$birthDate > 10000 && (int)$birthDate < 100000) {
                         try {
@@ -412,22 +404,24 @@ class StudentController extends Controller
                     $birthDate = null;
                 }
 
-                $status = isset($map['status']) && $map['status'] !== false ? strtolower(trim($row[$map['status']] ?? '')) : 'active';
-                if (! in_array($status, ['active', 'inactive', 'graduated'])) {
+                $status = $map['status'] !== null
+                    ? strtolower(trim((string) ($row[$map['status']] ?? '')))
+                    : 'active';
+                if (! in_array($status, ['active', 'inactive', 'graduated'], true)) {
                     $status = 'active';
                 }
 
                 $classRoomId = null;
-                if (isset($map['kelas']) && $map['kelas'] !== false) {
-                    $className = trim($row[$map['kelas']] ?? '');
+                if ($map['kelas'] !== null) {
+                    $className = trim((string) ($row[$map['kelas']] ?? ''));
                     if (! empty($className)) {
                         $classRoomId = ClassRoom::query()->where('name', $className)->value('id');
                     }
                 }
 
                 $teacherId = null;
-                if (isset($map['username_guru']) && $map['username_guru'] !== false) {
-                    $teacherUsername = trim($row[$map['username_guru']] ?? '');
+                if ($map['username_guru'] !== null) {
+                    $teacherUsername = trim((string) ($row[$map['username_guru']] ?? ''));
                     if (str_contains($teacherUsername, '@')) {
                         $teacherUsername = explode('@', $teacherUsername)[0];
                     }
@@ -441,8 +435,8 @@ class StudentController extends Controller
                 }
 
                 $studentUserId = null;
-                if (isset($map['username_santri']) && $map['username_santri'] !== false) {
-                    $studentUsername = trim($row[$map['username_santri']] ?? '');
+                if ($map['username_santri'] !== null) {
+                    $studentUsername = trim((string) ($row[$map['username_santri']] ?? ''));
                     if (str_contains($studentUsername, '@')) {
                         $studentUsername = explode('@', $studentUsername)[0];
                     }
@@ -479,27 +473,27 @@ class StudentController extends Controller
                 if ($student) {
                     // Update only non-null values from import to prevent overwriting existing data with null
                     $updatePayload = [];
-                    if (! empty($name)) $updatePayload['name'] = $name;
-                    if (! empty($gender)) $updatePayload['gender'] = $gender;
-                    if (! empty($status)) $updatePayload['status'] = $status;
-                    if (! empty($studentNumber)) $updatePayload['student_number'] = $studentNumber;
+                    if (! empty($name))          $updatePayload['name']           = $name;
+                    if (! empty($gender))         $updatePayload['gender']         = $gender;
+                    if (! empty($status))         $updatePayload['status']         = $status;
+                    if (! empty($studentNumber))  $updatePayload['student_number'] = $studentNumber;
 
-                    if (! is_null($birthDate)) $updatePayload['birth_date'] = $birthDate;
-                    if (! is_null($classRoomId)) $updatePayload['class_room_id'] = $classRoomId;
-                    if (! is_null($teacherId)) $updatePayload['teacher_id'] = $teacherId;
-                    if (! is_null($studentUserId)) $updatePayload['user_id'] = $studentUserId;
+                    if ($birthDate !== null)      $updatePayload['birth_date']     = $birthDate;
+                    if ($classRoomId !== null)    $updatePayload['class_room_id']  = $classRoomId;
+                    if ($teacherId !== null)      $updatePayload['teacher_id']     = $teacherId;
+                    if ($studentUserId !== null)  $updatePayload['user_id']        = $studentUserId;
 
                     $student->update($updatePayload);
                     $updatedCount++;
                 } else {
                     $payload = [
-                        'name' => $name,
-                        'gender' => $gender,
-                        'birth_date' => $birthDate,
-                        'status' => $status,
-                        'class_room_id' => $classRoomId,
-                        'teacher_id' => $teacherId,
-                        'user_id' => $studentUserId,
+                        'name'           => $name,
+                        'gender'         => $gender,
+                        'birth_date'     => $birthDate,
+                        'status'         => $status,
+                        'class_room_id'  => $classRoomId,
+                        'teacher_id'     => $teacherId,
+                        'user_id'        => $studentUserId,
                         'student_number' => $studentNumber,
                     ];
                     $student = Student::create($payload);
@@ -507,9 +501,11 @@ class StudentController extends Controller
                 }
 
                 // Handle Parents sync
-                if (isset($map['username_orangtua']) && $map['username_orangtua'] !== false) {
-                    $parentUsernamesStr = trim($row[$map['username_orangtua']] ?? '');
-                    $parentRelationsStr = isset($map['hubungan_orangtua']) && $map['hubungan_orangtua'] !== false ? trim($row[$map['hubungan_orangtua']] ?? '') : '';
+                if ($map['username_orangtua'] !== null) {
+                    $parentUsernamesStr = trim((string) ($row[$map['username_orangtua']] ?? ''));
+                    $parentRelationsStr = $map['hubungan_orangtua'] !== null
+                        ? trim((string) ($row[$map['hubungan_orangtua']] ?? ''))
+                        : '';
 
                     if (! empty($parentUsernamesStr)) {
                         $usernames = preg_split('/[;,]/', $parentUsernamesStr);
@@ -518,7 +514,7 @@ class StudentController extends Controller
                         $syncData = [];
 
                         foreach ($usernames as $index => $username) {
-                            $username = trim($username);
+                            $username = trim((string) $username);
                             if (str_contains($username, '@')) {
                                 $username = explode('@', $username)[0];
                             }
@@ -548,15 +544,15 @@ class StudentController extends Controller
                                         $parentRole = Role::where('name', 'parent')->first();
                                         if ($parentRole) {
                                             $parentUser = User::create([
-                                                'role_id' => $parentRole->id,
-                                                'name' => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
-                                                'username' => $username,
-                                                'password' => $defaultPasswordHash,
+                                                'role_id'        => $parentRole->id,
+                                                'name'           => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
+                                                'username'       => $username,
+                                                'password'       => $defaultPasswordHash,
                                                 'plain_password' => 'password123',
-                                                'status' => 'active',
+                                                'status'         => 'active',
                                             ]);
                                         }
-                                    } else if ($existingUser->hasRole('parent')) {
+                                    } elseif ($existingUser->hasRole('parent')) {
                                         $parentUser = $existingUser;
                                     }
                                 }
@@ -571,8 +567,8 @@ class StudentController extends Controller
                             }
 
                             if ($parentProfile) {
-                                $relation = isset($relations[$index]) && trim($relations[$index]) !== ''
-                                    ? trim($relations[$index])
+                                $relation = isset($relations[$index]) && trim((string) $relations[$index]) !== ''
+                                    ? trim((string) $relations[$index])
                                     : 'Wali';
                                 $syncData[$parentProfile->id] = ['relation' => $relation];
                             }
