@@ -67,4 +67,9 @@ class Student extends Model
     {
         return $this->hasMany(HafalanTarget::class);
     }
+
+    public function adabRecords(): HasMany
+    {
+        return $this->hasMany(AdabRecord::class);
+    }
 }

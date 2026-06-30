@@ -20,7 +20,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="bg-white rounded-xl shadow-sm p-5 border">
                     <p class="text-sm text-gray-500">Total Santri</p>
                     <p class="text-3xl font-bold text-gray-900">{{ data_get($stats, 'total_students', 0) }}</p>
@@ -44,9 +44,17 @@
                     <p class="text-3xl font-bold text-gray-900">{{ data_get($stats, 'active_targets', 0) }}</p>
                     <p class="text-xs text-red-500 mt-1">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
                 </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-5 border">
+                    <p class="text-sm text-gray-500">Adab Hari Ini</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-sm text-gray-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Status Pengisian Santri</p>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <a href="{{ url('/students') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-4 shadow-sm">
                     <p class="font-semibold">Kelola Santri</p>
                     <p class="text-sm text-emerald-100">Data santri, kelas, guru, dan orangtua.</p>
@@ -55,6 +63,11 @@
                 <a href="{{ url('/hafalan-targets') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-4 shadow-sm">
                     <p class="font-semibold">Target Hafalan</p>
                     <p class="text-sm text-indigo-100">Pantau target aktif, selesai, dan terlambat.</p>
+                </a>
+
+                <a href="{{ route('adab.index') }}" class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-5 py-4 shadow-sm">
+                    <p class="font-semibold">Monitoring Adab</p>
+                    <p class="text-sm text-teal-100">Progres pengisian kuisioner adab santri harian.</p>
                 </a>
 
                 <a href="{{ url('/reports') }}" class="bg-gray-900 hover:bg-black text-white rounded-xl px-5 py-4 shadow-sm">

@@ -18,10 +18,11 @@
     $isTeacher = $hasRole('teacher');
     $isParent = $hasRole('parent');
     $isStudent = $hasRole('student');
+    $isSupervisor = $hasRole('supervisor');
 
     $isAdmin = $isSuperAdmin || $isAdminUser;
-    $canManageRecords = $isSuperAdmin || $isAdminUser || $isTeacher;
-    $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent;
+    $canManageRecords = $isSuperAdmin || $isAdminUser || $isTeacher || $isSupervisor;
+    $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor;
     $canViewReports = $isSuperAdmin || $isAdminUser || $isTeacher;
     $canViewAudit = $isSuperAdmin || $isAdminUser;
 

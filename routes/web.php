@@ -18,6 +18,8 @@ use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\QuranPdfController;
 use App\Http\Controllers\QuranMushafController;
+use App\Http\Controllers\AdabController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -53,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [DashboardController::class, 'student'])
         ->middleware('role:student')
         ->name('student.dashboard');
+
+    Route::get('/supervisor/dashboard', [DashboardController::class, 'supervisor'])
+        ->middleware('role:supervisor')
+        ->name('supervisor.dashboard');
 
     /*
     |--------------------------------------------------------------------------
@@ -138,6 +144,10 @@ Route::middleware(['auth'])->group(function () {
             });
     });
 
+    Route::middleware(['role:super_admin'])->group(function () {
+        Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Hafalan, Murajaah, Target, Quick Input
@@ -216,6 +226,22 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/mushaf', [QuranMushafController::class, 'index'])
         ->name('quran.mushaf');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Adab
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student'])->group(function () {
+        Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
+        Route::get('/adab/student/{student}', [AdabController::class, 'show'])->name('adab.show');
+        Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
+        Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
+        
+        Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
+            Route::delete('/adab/{adabRecord}', [AdabController::class, 'destroy'])->name('adab.destroy');
+        });
+    });
 });
 
 require __DIR__ . '/auth.php';

@@ -35,6 +35,7 @@ class DashboardController extends Controller
             'teacher' => redirect()->route('teacher.dashboard'),
             'parent' => redirect()->route('parent.dashboard'),
             'student' => redirect()->route('student.dashboard'),
+            'supervisor' => redirect()->route('supervisor.dashboard'),
             default => redirect()->route('login')->withErrors([
                 'email' => 'Role akun belum valid.',
             ]),
@@ -43,19 +44,29 @@ class DashboardController extends Controller
 
     public function superAdmin(): View
     {
+        $stats = $this->dashboardService->adminStats();
+        $today = now()->toDateString();
+        $stats['adab_filled_today'] = \App\Models\AdabRecord::where('assessment_date', $today)->count();
+        $stats['adab_total_students'] = \App\Models\Student::count();
+
         return view('dashboards.admin', [
             'title' => 'Super Admin Dashboard',
             'subtitle' => 'Monitoring penuh seluruh data HafizPlus.',
-            'stats' => $this->dashboardService->adminStats(),
+            'stats' => $stats,
         ]);
     }
 
     public function admin(): View
     {
+        $stats = $this->dashboardService->adminStats();
+        $today = now()->toDateString();
+        $stats['adab_filled_today'] = \App\Models\AdabRecord::where('assessment_date', $today)->count();
+        $stats['adab_total_students'] = \App\Models\Student::count();
+
         return view('dashboards.admin', [
             'title' => 'Admin Dashboard',
             'subtitle' => 'Monitoring operasional santri, guru, hafalan, dan murajaah.',
-            'stats' => $this->dashboardService->adminStats(),
+            'stats' => $stats,
         ]);
     }
 
@@ -78,5 +89,20 @@ class DashboardController extends Controller
         return view('dashboards.student', [
             'stats' => $this->dashboardService->studentStats($request->user()),
         ]);
+    }
+
+    public function supervisor(Request $request): View
+    {
+        $today = now()->toDateString();
+        
+        $students = \App\Models\Student::with(['classRoom', 'adabRecords' => function ($q) use ($today) {
+            $q->where('assessment_date', $today);
+        }])->orderBy('name')->get();
+        
+        $totalStudents = $students->count();
+        $filledCount = $students->filter(fn($s) => $s->adabRecords->isNotEmpty())->count();
+        $notFilledCount = $totalStudents - $filledCount;
+        
+        return view('dashboards.supervisor', compact('students', 'totalStudents', 'filledCount', 'notFilledCount', 'today'));
     }
 }

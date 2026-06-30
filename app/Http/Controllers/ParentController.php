@@ -56,6 +56,7 @@ class ParentController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
+                'plain_password' => $validated['password'],
                 'status' => $validated['status'],
             ]);
 
@@ -102,6 +103,7 @@ class ParentController extends Controller
 
             if (! empty($validated['password'])) {
                 $userData['password'] = Hash::make($validated['password']);
+                $userData['plain_password'] = $validated['password'];
             }
 
             $parent->user()->update($userData);

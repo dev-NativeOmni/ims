@@ -265,7 +265,7 @@ class StudentController extends Controller
     public function import(Request $request): RedirectResponse
     {
         $request->validate([
-            'file' => 'required|file|max:4096',
+            'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
         ]);
 
         $file = $request->file('file');
@@ -325,6 +325,7 @@ class StudentController extends Controller
         // Clean headers (remove BOM or spaces)
         $header = array_map(function ($h) {
             $h = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $h); // strip BOM
+            $h = preg_replace('/\s+/', ' ', $h); // normalize spaces
             return trim(strtolower($h));
         }, $header);
 
@@ -394,11 +395,21 @@ class StudentController extends Controller
 
                 $birthDate = isset($map['tanggal_lahir']) && $map['tanggal_lahir'] !== false ? trim($row[$map['tanggal_lahir']] ?? '') : null;
                 if (! empty($birthDate)) {
-                    try {
-                        $birthDate = \Carbon\Carbon::parse($birthDate)->toDateString();
-                    } catch (\Exception $e) {
-                        $birthDate = null;
+                    if (is_numeric($birthDate) && (int)$birthDate > 10000 && (int)$birthDate < 100000) {
+                        try {
+                            $birthDate = \Carbon\Carbon::createFromTimestamp(($birthDate - 25569) * 86400)->toDateString();
+                        } catch (\Exception $e) {
+                            $birthDate = null;
+                        }
+                    } else {
+                        try {
+                            $birthDate = \Carbon\Carbon::parse($birthDate)->toDateString();
+                        } catch (\Exception $e) {
+                            $birthDate = null;
+                        }
                     }
+                } else {
+                    $birthDate = null;
                 }
 
                 $status = isset($map['status']) && $map['status'] !== false ? strtolower(trim($row[$map['status']] ?? '')) : 'active';
@@ -445,6 +456,7 @@ class StudentController extends Controller
                                     'name' => $name,
                                     'username' => $studentUsername,
                                     'password' => $defaultPasswordHash,
+                                    'plain_password' => 'password123',
                                     'status' => 'active',
                                 ]);
                             }
@@ -460,24 +472,36 @@ class StudentController extends Controller
                     $student = Student::query()->where('student_number', $studentNumber)->first();
                 }
 
-                $payload = [
-                    'name' => $name,
-                    'gender' => $gender,
-                    'birth_date' => $birthDate,
-                    'status' => $status,
-                    'class_room_id' => $classRoomId,
-                    'teacher_id' => $teacherId,
-                    'user_id' => $studentUserId,
-                ];
-
-                if (! empty($studentNumber)) {
-                    $payload['student_number'] = $studentNumber;
+                if (! $student && ! empty($studentUserId)) {
+                    $student = Student::query()->where('user_id', $studentUserId)->first();
                 }
 
                 if ($student) {
-                    $student->update($payload);
+                    // Update only non-null values from import to prevent overwriting existing data with null
+                    $updatePayload = [];
+                    if (! empty($name)) $updatePayload['name'] = $name;
+                    if (! empty($gender)) $updatePayload['gender'] = $gender;
+                    if (! empty($status)) $updatePayload['status'] = $status;
+                    if (! empty($studentNumber)) $updatePayload['student_number'] = $studentNumber;
+
+                    if (! is_null($birthDate)) $updatePayload['birth_date'] = $birthDate;
+                    if (! is_null($classRoomId)) $updatePayload['class_room_id'] = $classRoomId;
+                    if (! is_null($teacherId)) $updatePayload['teacher_id'] = $teacherId;
+                    if (! is_null($studentUserId)) $updatePayload['user_id'] = $studentUserId;
+
+                    $student->update($updatePayload);
                     $updatedCount++;
                 } else {
+                    $payload = [
+                        'name' => $name,
+                        'gender' => $gender,
+                        'birth_date' => $birthDate,
+                        'status' => $status,
+                        'class_room_id' => $classRoomId,
+                        'teacher_id' => $teacherId,
+                        'user_id' => $studentUserId,
+                        'student_number' => $studentNumber,
+                    ];
                     $student = Student::create($payload);
                     $importedCount++;
                 }
@@ -528,6 +552,7 @@ class StudentController extends Controller
                                                 'name' => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
                                                 'username' => $username,
                                                 'password' => $defaultPasswordHash,
+                                                'plain_password' => 'password123',
                                                 'status' => 'active',
                                             ]);
                                         }

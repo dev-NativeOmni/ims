@@ -121,6 +121,15 @@
             <span>Mushaf Al-Qur'an</span>
         </a>
 
+        @if ($hasRoute('adab.index'))
+            <a href="{{ route('adab.index') }}" class="{{ $getLinkClasses($routeIs('adab.*')) }}">
+                <svg class="{{ $getIconClasses($routeIs('adab.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>Adab</span>
+            </a>
+        @endif
+
         @if ($canViewProgress && $hasRoute('progress.index'))
             <a href="{{ route('progress.index') }}" class="{{ $getLinkClasses($routeIs('progress.*')) }}">
                 <svg class="{{ $getIconClasses($routeIs('progress.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,6 +155,15 @@
     <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
         Sistem
     </span>
+
+    @if ($isSuperAdmin && $hasRoute('users.index'))
+        <a href="{{ route('users.index') }}" class="{{ $getLinkClasses($routeIs('users.*')) }}">
+            <svg class="{{ $getIconClasses($routeIs('users.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>Manajemen User</span>
+        </a>
+    @endif
 
     @if ($hasRoute('system-notifications.index'))
         <a href="{{ route('system-notifications.index') }}" class="{{ $getLinkClasses($routeIs('system-notifications.*')) }}">

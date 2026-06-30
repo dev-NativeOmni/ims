@@ -295,4 +295,82 @@ class StudentImportExportTest extends TestCase
         $this->assertEquals('Ibu', $p1Relation);
         $this->assertEquals('Ayah', $p2Relation);
     }
+
+    public function test_super_admin_import_optimizations(): void
+    {
+        $superAdmin = User::where('username', 'superadmin')->first();
+        $classRoom = ClassRoom::first();
+        $teacher = TeacherProfile::first();
+        $teacherUser = $teacher->user;
+
+        // 1. Create a student with existing data
+        $studentUser = User::factory()->create([
+            'username' => 'optstudent',
+            'role_id' => User::where('username', 'santri')->first()->role_id,
+        ]);
+        $student = Student::create([
+            'name' => 'Original Name',
+            'student_number' => 'SNT-OPT',
+            'gender' => 'female',
+            'birth_date' => '2010-01-01',
+            'status' => 'active',
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $teacher->id,
+            'user_id' => $studentUser->id,
+        ]);
+
+        // 2. Perform import with:
+        // - Serial date: 44289 (which represents 2021-04-02)
+        // - Matching by user_id but student_number is empty (checks duplicate key and secondary matching)
+        // - Empty Class, Guru, and status (checks partial update, shouldn't overwrite existing ones)
+        // - Normalized spaces in headers (checks normalizer)
+        $tempFile = @tempnam(sys_get_temp_dir(), 'test_xlsx');
+        $headers = [
+            'Nama   Santri', // spaces normalized
+            'Nomor Induk',
+            'Jenis Kelamin',
+            'Tanggal Lahir',
+            'Status',
+            'Kelas',
+            'Username Guru',
+            'Username Santri',
+        ];
+        $data = [
+            [
+                'Updated Name',
+                '', // empty student number, should match by username 'optstudent' (user_id)
+                'male',
+                '44289', // numeric Excel date for 2021-04-02
+                '', // empty status, should NOT overwrite
+                '', // empty class, should NOT overwrite
+                '', // empty teacher, should NOT overwrite
+                'optstudent',
+            ]
+        ];
+
+        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+
+        $file = new UploadedFile($tempFile, 'students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
+
+        $response = $this->actingAs($superAdmin)->post(route('students.import'), [
+            'file' => $file,
+        ]);
+
+        @unlink($tempFile);
+
+        $response->assertRedirect(route('students.index'));
+
+        // Assert updates
+        $student->refresh();
+        $this->assertEquals('Updated Name', $student->name);
+        $this->assertEquals('male', $student->gender);
+        $this->assertEquals('2021-04-03', $student->birth_date->toDateString()); // Serial date parsed!
+        
+        // Assert old data was NOT overwritten with null/empty
+        $this->assertEquals('SNT-OPT', $student->student_number); // kept old student number since imported was empty
+        $this->assertEquals('active', $student->status); // kept old status
+        $this->assertEquals($classRoom->id, $student->class_room_id); // kept old class
+        $this->assertEquals($teacher->id, $student->teacher_id); // kept old teacher
+        $this->assertEquals($studentUser->id, $student->user_id);
+    }
 }
