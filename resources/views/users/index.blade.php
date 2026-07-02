@@ -140,7 +140,7 @@
 
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-mono text-sm tracking-wide bg-zinc-50 dark:bg-zinc-800 px-2 py-1 rounded border dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 select-all" x-text="showPass ? '{{ $u->plain_password ?: \'(Belum Tersimpan)\' }}' : '••••••••'"></span>
+                                            <span class="font-mono text-sm tracking-wide bg-zinc-50 dark:bg-zinc-800 px-2 py-1 rounded border dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 select-all" x-text="showPass ? '{{ $u->plain_password ?: '(Belum Tersimpan)' }}' : '••••••••'"></span>
                                             <button @click="showPass = !showPass" type="button" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

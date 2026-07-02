@@ -165,12 +165,13 @@
 
                                         <!-- Tipe Badge -->
                                         <td class="px-6 py-4 text-center whitespace-nowrap">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 uppercase">
-                                                        Pelanggaran
+                                            @if ($item->type === 'violation')
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 uppercase">
+                                                    Pelanggaran
                                                 </span>
                                             @else
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40 uppercase">
-                                                        Penghargaan
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40 uppercase">
+                                                    Penghargaan
                                                 </span>
                                             @endif
                                         </td>
