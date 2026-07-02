@@ -44,7 +44,7 @@ class TeacherPerformanceTest extends TestCase
         // Ensure headmaster role exists
         $headmasterRole = \App\Models\Role::updateOrCreate(
             ['name' => 'headmaster'],
-            ['name' => 'headmaster', 'display_name' => 'Kepala Bagian Tahfizh']
+            ['name' => 'headmaster', 'display_name' => 'Kepala Sekolah']
         );
         $headmaster = User::factory()->create([
             'username' => 'kabagtahfizh',

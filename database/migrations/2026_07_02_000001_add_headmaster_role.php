@@ -14,7 +14,7 @@ return new class extends Migration
             ['name' => 'headmaster'],
             [
                 'name' => 'headmaster',
-                'display_name' => 'Kepala Bagian Tahfizh',
+                'display_name' => 'Kepala Sekolah',
             ]
         );
     }
