@@ -63,9 +63,18 @@
                         </select>
                     </div>
 
-                    <div class="md:col-span-2 flex items-end gap-3">
+                    <div>
+                        <label for="status" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Status Akun</label>
+                        <select name="status" id="status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                            <option value="" class="dark:bg-zinc-900">Semua Status</option>
+                            <option value="active" @selected(request('status') === 'active') class="dark:bg-zinc-900">Aktif</option>
+                            <option value="inactive" @selected(request('status') === 'inactive') class="dark:bg-zinc-900">Nonaktif</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-end gap-3">
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
-                            Cari User
+                            Cari
                         </button>
 
                         <a href="{{ route('users.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150">

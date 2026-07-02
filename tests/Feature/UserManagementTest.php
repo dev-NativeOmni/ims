@@ -160,4 +160,40 @@ class UserManagementTest extends TestCase
             ])
             ->assertStatus(403);
     }
+
+    public function test_super_admin_can_filter_users_by_status(): void
+    {
+        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $superAdmin = User::factory()->create([
+            'role_id' => $superAdminRole->id,
+            'username' => 'testsuperadmin',
+            'status' => 'active',
+        ]);
+
+        $activeUser = User::factory()->create([
+            'role_id' => Role::where('name', 'teacher')->first()->id,
+            'username' => 'activeteacher',
+            'status' => 'active',
+            'name' => 'Active Teacher Name',
+        ]);
+
+        $inactiveUser = User::factory()->create([
+            'role_id' => Role::where('name', 'teacher')->first()->id,
+            'username' => 'inactiveteacher',
+            'status' => 'inactive',
+            'name' => 'Inactive Teacher Name',
+        ]);
+
+        // Filter active
+        $responseActive = $this->actingAs($superAdmin)->get(route('users.index', ['status' => 'active']));
+        $responseActive->assertStatus(200);
+        $responseActive->assertSee('Active Teacher Name');
+        $responseActive->assertDontSee('Inactive Teacher Name');
+
+        // Filter inactive
+        $responseInactive = $this->actingAs($superAdmin)->get(route('users.index', ['status' => 'inactive']));
+        $responseInactive->assertStatus(200);
+        $responseInactive->assertSee('Inactive Teacher Name');
+        $responseInactive->assertDontSee('Active Teacher Name');
+    }
 }

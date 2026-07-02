@@ -29,6 +29,10 @@ class UserController extends Controller
             $query->where('role_id', $request->integer('role_id'));
         }
 
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status')->toString());
+        }
+
         $users = $query->orderBy('name')->paginate(10)->withQueryString();
         $roles = Role::orderBy('display_name')->get();
 
