@@ -20,6 +20,7 @@ use App\Http\Controllers\QuranPdfController;
 use App\Http\Controllers\QuranMushafController;
 use App\Http\Controllers\AdabController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\UserManagementController;
 
@@ -160,6 +161,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:super_admin'])->group(function () {
         Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
 
         // Super Admin user management routes
@@ -202,7 +205,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:super_admin,admin,teacher,parent,student'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster'])->group(function () {
         Route::get('/progress', [ProgressController::class, 'index'])
             ->name('progress.index');
 
@@ -211,6 +214,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/reports', [ReportController::class, 'index'])
             ->name('reports.index');
+
+        Route::get('/reports/teachers', [ReportController::class, 'teacherPerformance'])
+            ->middleware('role:super_admin,admin,headmaster')
+            ->name('reports.teachers');
 
         Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])
             ->name('reports.export.csv');

@@ -496,6 +496,138 @@ class ReportController extends Controller
         return false;
     }
 
+    public function teacherPerformance(Request $request)
+    {
+        $month = (int) $request->input('month', date('n'));
+        $year = (int) $request->input('year', date('Y'));
+
+        // Fetch all active teachers sorted by user name
+        $teachers = TeacherProfile::query()
+            ->select('teacher_profiles.*')
+            ->join('users', 'teacher_profiles.user_id', '=', 'users.id')
+            ->where('users.status', 'active')
+            ->orderBy('users.name')
+            ->with('user')
+            ->get();
+
+        $performanceData = [];
+
+        foreach ($teachers as $teacher) {
+            // Count total hafalan inputs
+            $totalHafalan = HafalanRecord::where('teacher_id', $teacher->id)
+                ->whereYear('submitted_at', $year)
+                ->whereMonth('submitted_at', $month)
+                ->count();
+
+            // Count total murajaah inputs
+            $totalMurajaah = MurajaahRecord::where('teacher_id', $teacher->id)
+                ->whereYear('reviewed_at', $year)
+                ->whereMonth('reviewed_at', $month)
+                ->count();
+
+            // Count student targets
+            $totalTargets = HafalanTarget::where('teacher_id', $teacher->id)
+                ->whereYear('target_date', $year)
+                ->whereMonth('target_date', $month)
+                ->count();
+
+            $completedTargets = HafalanTarget::where('teacher_id', $teacher->id)
+                ->whereYear('target_date', $year)
+                ->whereMonth('target_date', $month)
+                ->where('status', 'completed')
+                ->count();
+
+            // Average student scores
+            $avgHafalan = HafalanRecord::where('teacher_id', $teacher->id)
+                ->whereYear('submitted_at', $year)
+                ->whereMonth('submitted_at', $month)
+                ->whereNotNull('score')
+                ->avg('score');
+
+            $avgMurajaah = MurajaahRecord::where('teacher_id', $teacher->id)
+                ->whereYear('reviewed_at', $year)
+                ->whereMonth('reviewed_at', $month)
+                ->whereNotNull('overall_score')
+                ->avg('overall_score');
+
+            // Formulate metrics
+            // 1. Keaktifan Input (Max 40 points) - Healthy input rate of at least 30 records per month
+            $totalInputs = $totalHafalan + $totalMurajaah;
+            $keaktifanScore = min(40.0, ($totalInputs / 30.0) * 40.0);
+
+            // 2. Ketercapaian Target (Max 40 points)
+            if ($totalTargets > 0) {
+                $targetPercentage = ($completedTargets / $totalTargets) * 100.0;
+            } else {
+                $targetPercentage = 100.0; // Assume full score if no targets were set
+            }
+            $targetScore = ($targetPercentage / 100.0) * 40.0;
+
+            // 3. Rerata Nilai Santri (Max 20 points)
+            $scoresCount = 0;
+            $scoresSum = 0;
+            if ($avgHafalan !== null) {
+                $scoresSum += $avgHafalan;
+                $scoresCount++;
+            }
+            if ($avgMurajaah !== null) {
+                $scoresSum += $avgMurajaah;
+                $scoresCount++;
+            }
+            $avgStudentScore = $scoresCount > 0 ? ($scoresSum / $scoresCount) : 0.0;
+            $studentScorePoints = ($avgStudentScore / 100.0) * 20.0;
+
+            // Final Weighted Score (Max 100 points)
+            $finalScore = round($keaktifanScore + $targetScore + $studentScorePoints, 2);
+
+            // Performance Category
+            if ($finalScore >= 85.0) {
+                $category = 'Sangat Baik';
+                $badgeColor = 'bg-green-100 text-green-800 border-green-200';
+            } elseif ($finalScore >= 70.0) {
+                $category = 'Baik';
+                $badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+            } elseif ($finalScore >= 55.0) {
+                $category = 'Cukup';
+                $badgeColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            } else {
+                $category = 'Kurang';
+                $badgeColor = 'bg-red-100 text-red-800 border-red-200';
+            }
+
+            $performanceData[] = [
+                'teacher' => $teacher,
+                'total_hafalan' => $totalHafalan,
+                'total_murajaah' => $totalMurajaah,
+                'total_inputs' => $totalInputs,
+                'total_targets' => $totalTargets,
+                'completed_targets' => $completedTargets,
+                'target_percentage' => round($targetPercentage, 2),
+                'avg_hafalan_score' => $avgHafalan !== null ? round($avgHafalan, 2) : null,
+                'avg_murajaah_score' => $avgMurajaah !== null ? round($avgMurajaah, 2) : null,
+                'avg_student_score' => round($avgStudentScore, 2),
+                'keaktifan_score' => round($keaktifanScore, 2),
+                'target_score' => round($targetScore, 2),
+                'student_score_points' => round($studentScorePoints, 2),
+                'final_score' => $finalScore,
+                'category' => $category,
+                'badge_color' => $badgeColor,
+            ];
+        }
+
+        return view('reports.teachers', [
+            'performanceData' => $performanceData,
+            'selectedMonth' => $month,
+            'selectedYear' => $year,
+            'months' => [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ],
+            'years' => range(date('Y') - 4, date('Y') + 1),
+        ]);
+    }
+
     private function formatDateForCsv(mixed $value): string
     {
         if (blank($value)) {

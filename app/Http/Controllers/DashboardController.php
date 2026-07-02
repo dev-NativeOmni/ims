@@ -36,6 +36,7 @@ class DashboardController extends Controller
             'parent' => redirect()->route('parent.dashboard'),
             'student' => redirect()->route('student.dashboard'),
             'supervisor' => redirect()->route('supervisor.dashboard'),
+            'headmaster' => redirect()->route('reports.teachers'),
             default => redirect()->route('login')->withErrors([
                 'email' => 'Role akun belum valid.',
             ]),
