@@ -164,11 +164,20 @@
                     </table>
                 </div>
 
-                @if ($users->hasPages())
-                    <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                        {{ $users->links() }}
+                <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="text-xs text-zinc-500 dark:text-zinc-450 font-medium">
+                        @if ($users->total() > 0)
+                            Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari {{ $users->total() }} user terdaftar
+                        @else
+                            Menampilkan 0 user
+                        @endif
                     </div>
-                @endif
+                    @if ($users->hasPages())
+                        <div class="flex-shrink-0">
+                            {{ $users->links() }}
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
