@@ -130,14 +130,14 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                             <thead class="bg-gray-50 dark:bg-[#09090b]/40">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Tanggal</th>
-                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Santri</th>
-                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Kategori / Judul</th>
-                                    <th scope="col" class="px-6 py-3.5 class text-center text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Tipe</th>
-                                    <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Poin</th>
-                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">Dicatat Oleh</th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tanggal</th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Santri</th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Kategori / Judul</th>
+                                    <th scope="col" class="px-6 py-3.5 class text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tipe</th>
+                                    <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Poin</th>
+                                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Dicatat Oleh</th>
                                     @if ($canManage)
-                                        <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-gray-550 dark:text-zinc-400 uppercase tracking-wider">Aksi</th>
+                                        <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Aksi</th>
                                     @endif
                                 </tr>
                             </thead>
@@ -159,19 +159,18 @@
                                         <td class="px-6 py-4 text-sm text-gray-700 dark:text-zinc-300">
                                             <div class="font-medium text-gray-900 dark:text-zinc-200">{{ $item->title }}</div>
                                             @if ($item->description)
-                                                <p class="text-xs text-gray-550 dark:text-zinc-450 mt-0.5 line-clamp-1" title="{{ $item->description }}">{{ $item->description }}</p>
+                                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-1" title="{{ $item->description }}">{{ $item->description }}</p>
                                             @endif
                                         </td>
 
                                         <!-- Tipe Badge -->
                                         <td class="px-6 py-4 text-center whitespace-nowrap">
-                                            @if ($item->type === 'violation')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-105 text-red-800 dark:bg-rose-950/40 dark:text-rose-300 border border-red-200 dark:border-rose-900/40 uppercase">
-                                                    Pelanggaran
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 uppercase">
+                                                        Pelanggaran
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-105 text-green-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-green-200 dark:border-emerald-900/40 uppercase">
-                                                    Penghargaan
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40 uppercase">
+                                                        Penghargaan
                                                 </span>
                                             @endif
                                         </td>
@@ -192,7 +191,7 @@
                                         @if ($canManage)
                                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                                 <div class="inline-flex gap-2">
-                                                    <a href="{{ route('student-points.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-305" title="Ubah">
+                                                    <a href="{{ route('student-points.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300" title="Ubah">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.83 20.013a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                                                         </svg>
@@ -201,7 +200,7 @@
                                                     <form method="POST" action="{{ route('student-points.destroy', $item) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan poin ini?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="text-red-650 hover:text-red-900 dark:text-red-400 dark:hover:text-red-305 cursor-pointer" title="Hapus">
+                                                        <button type="submit" class="text-rose-600 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300 cursor-pointer" title="Hapus">
                                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                                                             </svg>

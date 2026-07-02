@@ -102,7 +102,7 @@
                             class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
                             required
                         >
-                        <p class="text-[10px] text-zinc-400 dark:text-zinc-550 mt-1">Ketik password awal. Sistem akan mengenkripsi password ini untuk keamanan login serta menyimpannya dalam plaintext untuk kemudahan monitoring admin.</p>
+                        <p class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Ketik password awal. Sistem akan mengenkripsi password ini untuk keamanan login serta menyimpannya dalam plaintext untuk kemudahan monitoring admin.</p>
                         @error('password')
                             <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                         @enderror

@@ -22,13 +22,13 @@
             @endif
 
             @if (session('error'))
-                <div class="p-4 bg-rose-50 dark:bg-rose-955/30 border border-rose-200 dark:border-rose-800 rounded-lg text-rose-850 dark:text-rose-350 text-sm">
+                <div class="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded-lg text-rose-800 dark:text-rose-300 text-sm">
                     {{ session('error') }}
                 </div>
             @endif
 
             <!-- Deskripsi Panel -->
-            <div class="bg-gradient-to-r from-violet-600 via-indigo-650 to-indigo-700 text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+            <div class="bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-12 translate-y-12">
                     <svg class="h-64 w-64" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -79,7 +79,7 @@
                     </div>
 
                     <div class="flex items-end gap-3">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
                             Cari
                         </button>
 
@@ -114,7 +114,7 @@
                                         </div>
                                     </td>
 
-                                    <td class="px-6 py-4 font-mono text-xs text-zinc-600 dark:text-zinc-450">
+                                    <td class="px-6 py-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
                                         {{ $u->username }}
                                     </td>
 
@@ -140,7 +140,7 @@
 
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-mono text-sm tracking-wide bg-zinc-50 dark:bg-zinc-850 px-2 py-1 rounded border dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 select-all" x-text="showPass ? '{{ $u->plain_password ?: '(Belum Tersimpan)' }}' : '••••••••'"></span>
+                                            <span class="font-mono text-sm tracking-wide bg-zinc-50 dark:bg-zinc-800 px-2 py-1 rounded border dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 select-all" x-text="showPass ? '{{ $u->plain_password ?: \'(Belum Tersimpan)\' }}' : '••••••••'"></span>
                                             <button @click="showPass = !showPass" type="button" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -156,7 +156,7 @@
                                                 Aktif
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-450">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                                                 Nonaktif
                                             </span>
                                         @endif
@@ -191,7 +191,7 @@
                 </div>
 
                 <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div class="text-xs text-zinc-500 dark:text-zinc-450 font-medium">
+                    <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         @if ($users->total() > 0)
                             Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari {{ $users->total() }} user terdaftar
                         @else

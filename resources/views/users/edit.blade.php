@@ -98,7 +98,7 @@
                             placeholder="Biarkan kosong jika tidak ingin diubah"
                             class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
                         >
-                        <p class="text-[10px] text-zinc-400 dark:text-zinc-550 mt-1">Kosongkan jika tidak ada pergantian password. Jika diubah, password baru akan langsung disimpan dalam basis data terenkripsi dan dicatat plain-text.</p>
+                        <p class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Kosongkan jika tidak ada pergantian password. Jika diubah, password baru akan langsung disimpan dalam basis data terenkripsi dan dicatat plain-text.</p>
                         @error('password')
                             <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                         @enderror

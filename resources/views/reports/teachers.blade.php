@@ -69,7 +69,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-indigo-650 hover:bg-indigo-600 shadow-sm transition-colors min-h-[42px]">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors min-h-[42px]">
                         Terapkan Filter
                     </button>
                 </form>
@@ -150,14 +150,14 @@
                                         <!-- Nama Guru -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-850 dark:text-indigo-300 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                                                <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
                                                     {{ substr($data['teacher']->user?->name ?? 'G', 0, 2) }}
                                                 </div>
                                                 <div>
                                                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                                         {{ $data['teacher']->user?->name ?? 'Tanpa Nama' }}
                                                     </div>
-                                                    <div class="text-xs text-gray-500 dark:text-zinc-550">
+                                                    <div class="text-xs text-gray-500 dark:text-zinc-400">
                                                         Username: {{ $data['teacher']->user?->username ?? '-' }}
                                                     </div>
                                                 </div>
@@ -166,7 +166,7 @@
 
                                         <!-- Keaktifan Input (40%) -->
                                         <td class="px-6 py-4">
-                                            <div class="text-sm text-gray-900 dark:text-zinc-350">
+                                            <div class="text-sm text-gray-900 dark:text-zinc-300">
                                                 <span class="font-bold">{{ $data['total_inputs'] }}</span> input
                                             </div>
                                             <div class="text-xs text-gray-500 mt-0.5">
@@ -179,7 +179,7 @@
 
                                         <!-- Ketercapaian Target (40%) -->
                                         <td class="px-6 py-4">
-                                            <div class="text-sm text-gray-900 dark:text-zinc-350">
+                                            <div class="text-sm text-gray-900 dark:text-zinc-300">
                                                 <span class="font-bold">{{ $data['completed_targets'] }}</span> / {{ $data['total_targets'] }} target
                                             </div>
                                             <div class="text-xs text-gray-500 mt-0.5">
@@ -192,7 +192,7 @@
 
                                         <!-- Rerata Nilai Santri (20%) -->
                                         <td class="px-6 py-4">
-                                            <div class="text-sm text-gray-900 dark:text-zinc-350">
+                                            <div class="text-sm text-gray-900 dark:text-zinc-300">
                                                 Rerata: <span class="font-bold">{{ $data['avg_student_score'] }}</span>
                                             </div>
                                             <div class="text-xs text-gray-500 mt-0.5">
