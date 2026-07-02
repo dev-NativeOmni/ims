@@ -21,6 +21,7 @@ use App\Http\Controllers\QuranMushafController;
 use App\Http\Controllers\AdabController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StudentPointController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\UserManagementController;
 
@@ -160,7 +161,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['role:super_admin'])->group(function () {
-        Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
+        Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update']);
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
@@ -197,6 +198,20 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/quick-inputs/murajaah', [QuickInputController::class, 'storeMurajaah'])
             ->name('quick-inputs.murajaah.store');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Points & Discipline (Tanse / Ketahanan Sekolah)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,supervisor,headmaster,tanse'])->group(function () {
+        Route::get('/student-points', [StudentPointController::class, 'index'])->name('student-points.index');
+    });
+
+    Route::middleware(['role:super_admin,admin,tanse'])->group(function () {
+        Route::resource('student-points', StudentPointController::class)->except(['index']);
     });
 
     /*

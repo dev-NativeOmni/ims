@@ -75,6 +75,41 @@ class UserController extends Controller
             ->with('success', 'Data user ' . $user->username . ' berhasil diperbarui.');
     }
 
+    public function create(): View
+    {
+        $this->authorizeSuperAdmin();
+
+        $roles = Role::orderBy('display_name')->get();
+
+        return view('users.create', compact('roles'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'role_id' => 'required|exists:roles,id',
+            'password' => 'required|string|min:6',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'role_id' => $validated['role_id'],
+            'password' => Hash::make($validated['password']),
+            'plain_password' => $validated['password'],
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'User baru berhasil dibuat.');
+    }
+
     private function authorizeSuperAdmin(): void
     {
         if (! auth()->user()->hasRole('super_admin')) {

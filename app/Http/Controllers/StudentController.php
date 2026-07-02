@@ -80,6 +80,7 @@ class StudentController extends Controller
             'classRoom.program',
             'teacher.user',
             'parents.user',
+            'points.logger',
         ]);
 
         $hafalanRecords = $student->hafalanRecords()

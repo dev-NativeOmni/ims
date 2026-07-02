@@ -144,6 +144,92 @@
                 </div>
             </div>
 
+            <!-- Kedisiplinan: Poin Pelanggaran & Penghargaan -->
+            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-150 pb-4 mb-4">
+                    <h3 class="font-semibold text-gray-900">
+                        Kedisiplinan (Poin & Disiplin)
+                    </h3>
+                    @php
+                        $violations = $student->points->where('type', 'violation');
+                        $rewards = $student->points->where('type', 'reward');
+                        $totalViolationsVal = $violations->sum('points');
+                        $totalRewardsVal = $rewards->sum('points');
+                        $netBalance = $totalRewardsVal - $totalViolationsVal;
+                    @endphp
+                    <div class="flex flex-wrap gap-2 mt-2 sm:mt-0 text-xs">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full font-bold bg-red-50 text-red-700 border border-red-200">
+                            Total Pelanggaran: {{ $totalViolationsVal }} Poin
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full font-bold bg-green-50 text-green-700 border border-green-200">
+                            Total Penghargaan: {{ $totalRewardsVal }} Poin
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full font-bold {{ $netBalance >= 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-amber-50 text-amber-700 border-amber-200' }} border">
+                            Selisih: {{ $netBalance > 0 ? '+' : '' }}{{ $netBalance }} Poin
+                        </span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
+                                <th class="px-4 py-3">Tanggal</th>
+                                <th class="px-4 py-3">Nama Pelanggaran / Penghargaan</th>
+                                <th class="px-4 py-3 text-center">Tipe</th>
+                                <th class="px-4 py-3 text-center">Poin</th>
+                                <th class="px-4 py-3">Dicatat Oleh</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($student->points->sortByDesc('date') as $point)
+                                <tr>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        {{ $point->date?->format('d/m/Y') }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        <div class="font-semibold">{{ $point->title }}</div>
+                                        @if ($point->description)
+                                            <div class="text-xs text-gray-500 mt-0.5">{{ $point->description }}</div>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-4 py-3 text-center">
+                                        @if ($point->type === 'violation')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200 uppercase">
+                                                Pelanggaran
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200 uppercase">
+                                                Penghargaan
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-4 py-3 text-center text-sm font-bold">
+                                        <span class="{{ $point->type === 'violation' ? 'text-red-600' : 'text-green-600' }}">
+                                            {{ $point->type === 'violation' ? '-' : '+' }}{{ $point->points }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-4 py-3 text-sm text-gray-700">
+                                        {{ $point->logger?->name ?? 'Sistem' }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-4 py-6 text-center text-gray-500 text-sm">
+                                        Belum ada catatan poin pelanggaran atau penghargaan untuk santri ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="flex justify-end">
                 <a href="{{ route('students.index') }}" class="text-sm text-gray-600 hover:underline">
                     Kembali ke daftar santri

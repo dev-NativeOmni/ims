@@ -20,6 +20,7 @@
     $isStudent = $hasRole('student');
     $isSupervisor = $hasRole('supervisor');
     $isHeadmaster = $hasRole('headmaster');
+    $isTanse = $hasRole('tanse');
 
     $logo = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
     $namaInstansi = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;

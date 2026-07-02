@@ -72,4 +72,9 @@ class Student extends Model
     {
         return $this->hasMany(AdabRecord::class);
     }
+
+    public function points(): HasMany
+    {
+        return $this->hasMany(StudentPoint::class);
+    }
 }

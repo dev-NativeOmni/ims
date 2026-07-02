@@ -94,4 +94,70 @@ class UserManagementTest extends TestCase
         $this->assertEquals('newawesomepassword123', $studentUser->plain_password);
         $this->assertTrue(Hash::check('newawesomepassword123', $studentUser->password));
     }
+
+    public function test_super_admin_can_create_new_user(): void
+    {
+        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $superAdmin = User::factory()->create([
+            'role_id' => $superAdminRole->id,
+            'username' => 'testsuperadmin',
+            'status' => 'active',
+        ]);
+
+        $teacherRole = Role::where('name', 'teacher')->first();
+
+        // Access create form
+        $this->actingAs($superAdmin)
+            ->get(route('users.create'))
+            ->assertStatus(200);
+
+        // Store new user
+        $response = $this->actingAs($superAdmin)
+            ->post(route('users.store'), [
+                'name' => 'Guru Baru Tahfidz',
+                'username' => 'gurubaru',
+                'role_id' => $teacherRole->id,
+                'password' => 'secretpwd123',
+                'status' => 'active',
+            ]);
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Guru Baru Tahfidz',
+            'username' => 'gurubaru',
+            'role_id' => $teacherRole->id,
+            'plain_password' => 'secretpwd123',
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_create_new_user(): void
+    {
+        $adminRole = Role::where('name', 'admin')->first();
+        $admin = User::factory()->create([
+            'role_id' => $adminRole->id,
+            'username' => 'testadmin',
+            'status' => 'active',
+        ]);
+
+        $teacherRole = Role::where('name', 'teacher')->first();
+
+        // Try to access create form
+        $this->actingAs($admin)
+            ->get(route('users.create'))
+            ->assertStatus(403);
+
+        // Try to store new user
+        $this->actingAs($admin)
+            ->post(route('users.store'), [
+                'name' => 'Guru Baru Tahfidz',
+                'username' => 'gurubaru',
+                'role_id' => $teacherRole->id,
+                'password' => 'secretpwd123',
+                'status' => 'active',
+            ])
+            ->assertStatus(403);
+    }
 }

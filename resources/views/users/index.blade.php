@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-zinc-800 dark:text-zinc-200 leading-tight">
-            {{ __('Manajemen Akun User') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-zinc-800 dark:text-zinc-200 leading-tight">
+                {{ __('Manajemen Akun User') }}
+            </h2>
+            <a
+                href="{{ route('users.create') }}"
+                class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-755 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest transition duration-150"
+            >
+                Tambah User
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
