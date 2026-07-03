@@ -42,7 +42,7 @@ class UserSeeder extends Seeder
         foreach ($users as $userData) {
             $role = Role::where('name', $userData['role'])->firstOrFail();
 
-            User::updateOrCreate(
+            $user = User::updateOrCreate(
                 ['username' => $userData['username']],
                 [
                     'role_id' => $role->id,
@@ -52,6 +52,20 @@ class UserSeeder extends Seeder
                     'status' => 'active',
                 ]
             );
+
+            if ($userData['role'] === 'teacher') {
+                \App\Models\TeacherProfile::updateOrCreate(['user_id' => $user->id]);
+            } elseif ($userData['role'] === 'parent') {
+                \App\Models\ParentProfile::updateOrCreate(['user_id' => $user->id]);
+            } elseif ($userData['role'] === 'student') {
+                \App\Models\Student::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'name' => $user->name,
+                        'status' => 'active',
+                    ]
+                );
+            }
         }
     }
 }

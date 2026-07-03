@@ -126,17 +126,8 @@ class DashboardService
         $teacher = $user->teacherProfile;
 
         if (! $teacher) {
-            return [
-                'teacher' => null,
-                'students' => collect(),
-                'students_progress' => collect(),
-                'total_students' => 0,
-                'active_targets' => 0,
-                'overdue_targets' => 0,
-                'latest_targets' => collect(),
-                'latest_hafalan_records' => collect(),
-                'latest_murajaah_records' => collect(),
-            ];
+            $teacher = TeacherProfile::create(['user_id' => $user->id]);
+            $user->setRelation('teacherProfile', $teacher);
         }
 
         $today = now()->toDateString();
@@ -212,18 +203,8 @@ class DashboardService
         $parent = $user->parentProfile;
 
         if (! $parent) {
-            return [
-                'parent' => null,
-                'children' => collect(),
-                'children_progress' => collect(),
-                'children_motivation' => collect(),
-                'total_children' => 0,
-                'active_targets' => 0,
-                'overdue_targets' => 0,
-                'latest_targets' => collect(),
-                'latest_hafalan_records' => collect(),
-                'latest_murajaah_records' => collect(),
-            ];
+            $parent = ParentProfile::create(['user_id' => $user->id]);
+            $user->setRelation('parentProfile', $parent);
         }
 
         $today = now()->toDateString();
@@ -300,17 +281,12 @@ class DashboardService
         $student = $user->studentProfile;
 
         if (! $student) {
-            return [
-                'student' => null,
-                'progress' => [],
-                'summary' => [],
-                'motivation' => [],
-                'active_targets' => collect(),
-                'overdue_targets' => collect(),
-                'latest_targets' => collect(),
-                'latest_hafalan_records' => collect(),
-                'latest_murajaah_records' => collect(),
-            ];
+            $student = Student::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'status' => 'active',
+            ]);
+            $user->setRelation('studentProfile', $student);
         }
 
         $student->load([

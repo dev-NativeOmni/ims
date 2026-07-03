@@ -60,19 +60,36 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        $userData = [
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'role_id' => $validated['role_id'],
-            'status' => $validated['status'],
-        ];
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $user) {
+            $userData = [
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'role_id' => $validated['role_id'],
+                'status' => $validated['status'],
+            ];
 
-        if (! empty($validated['password'])) {
-            $userData['password'] = Hash::make($validated['password']);
-            $userData['plain_password'] = $validated['password'];
-        }
+            if (! empty($validated['password'])) {
+                $userData['password'] = Hash::make($validated['password']);
+                $userData['plain_password'] = $validated['password'];
+            }
 
-        $user->update($userData);
+            $user->update($userData);
+
+            $role = Role::find($validated['role_id']);
+            if ($role) {
+                if ($role->name === 'teacher' && ! $user->teacherProfile()->exists()) {
+                    \App\Models\TeacherProfile::create(['user_id' => $user->id]);
+                } elseif ($role->name === 'parent' && ! $user->parentProfile()->exists()) {
+                    \App\Models\ParentProfile::create(['user_id' => $user->id]);
+                } elseif ($role->name === 'student' && ! $user->studentProfile()->exists()) {
+                    \App\Models\Student::create([
+                        'user_id' => $user->id,
+                        'name' => $user->name,
+                        'status' => 'active',
+                    ]);
+                }
+            }
+        });
 
         return redirect()
             ->route('users.index')
@@ -100,14 +117,31 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'role_id' => $validated['role_id'],
-            'password' => Hash::make($validated['password']),
-            'plain_password' => $validated['password'],
-            'status' => $validated['status'],
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'role_id' => $validated['role_id'],
+                'password' => Hash::make($validated['password']),
+                'plain_password' => $validated['password'],
+                'status' => $validated['status'],
+            ]);
+
+            $role = Role::find($validated['role_id']);
+            if ($role) {
+                if ($role->name === 'teacher') {
+                    \App\Models\TeacherProfile::create(['user_id' => $user->id]);
+                } elseif ($role->name === 'parent') {
+                    \App\Models\ParentProfile::create(['user_id' => $user->id]);
+                } elseif ($role->name === 'student') {
+                    \App\Models\Student::create([
+                        'user_id' => $user->id,
+                        'name' => $user->name,
+                        'status' => 'active',
+                    ]);
+                }
+            }
+        });
 
         return redirect()
             ->route('users.index')
