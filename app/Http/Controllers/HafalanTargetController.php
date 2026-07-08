@@ -30,6 +30,11 @@ class HafalanTargetController extends Controller
                 'teacher.user',
             ])
             ->whereIn('student_id', $visibleStudentIds)
+            ->when($request->filled('class_room_id'), function ($query) use ($request) {
+                $query->whereHas('student', function ($q) use ($request) {
+                    $q->where('class_room_id', $request->integer('class_room_id'));
+                });
+            })
             ->when($request->filled('student_id'), function ($query) use ($request, $visibleStudentIds) {
                 $studentId = (int) $request->input('student_id');
 
@@ -101,6 +106,12 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         $surahs = Surah::query()
             ->orderBy('number')
             ->get();
@@ -110,6 +121,7 @@ class HafalanTargetController extends Controller
         return view('hafalan-targets.index', compact(
             'targets',
             'students',
+            'classRooms',
             'surahs',
             'summary',
             'statusOptions'
@@ -128,6 +140,12 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         $surahs = Surah::query()
             ->orderBy('number')
             ->get();
@@ -136,6 +154,7 @@ class HafalanTargetController extends Controller
 
         return view('hafalan-targets.create', compact(
             'students',
+            'classRooms',
             'surahs',
             'statusOptions'
         ));
@@ -197,6 +216,12 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         $surahs = Surah::query()
             ->orderBy('number')
             ->get();
@@ -209,6 +234,7 @@ class HafalanTargetController extends Controller
             'hafalanTarget',
             'target',
             'students',
+            'classRooms',
             'surahs',
             'statusOptions'
         ));

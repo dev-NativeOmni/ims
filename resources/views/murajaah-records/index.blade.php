@@ -29,7 +29,19 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Kelas</label>
+                            <select name="class_room_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="">Semua Kelas</option>
+                                @foreach ($classRooms as $class)
+                                    <option value="{{ $class->id }}" @selected(request('class_room_id') == $class->id)>
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Cari</label>
                             <input type="text"

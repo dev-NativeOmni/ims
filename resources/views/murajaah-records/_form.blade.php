@@ -2,7 +2,38 @@
     $record = $murajaahRecord ?? null;
 @endphp
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{
+    selectedClass: '',
+    selectedStudent: '{{ old('student_id', $record?->student_id) }}',
+    allStudents: [
+        @foreach($students as $student)
+            { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', nis: '{{ $student->student_number ?? '' }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}' },
+        @endforeach
+    ],
+    get filteredStudents() {
+        if (!this.selectedClass) return this.allStudents;
+        return this.allStudents.filter(s => s.classId == this.selectedClass);
+    }
+}" x-init="
+    if (selectedStudent) {
+        let s = allStudents.find(x => x.id == selectedStudent);
+        if (s) selectedClass = s.classId;
+    }
+}">
+    <div>
+        <label for="class_room_filter" class="block text-sm font-medium text-gray-700">
+            Saring Berdasarkan Kelas
+        </label>
+        <select id="class_room_filter"
+                x-model="selectedClass"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            <option value="">Semua Kelas</option>
+            @foreach ($classRooms as $class)
+                <option value="{{ $class->id }}">{{ $class->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
     <div>
         <label for="student_id" class="block text-sm font-medium text-gray-700">
             Santri
@@ -10,20 +41,13 @@
 
         <select id="student_id"
                 name="student_id"
+                x-model="selectedStudent"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 required>
             <option value="">Pilih Santri</option>
-            @foreach ($students as $student)
-                <option value="{{ $student->id }}" @selected(old('student_id', $record?->student_id) == $student->id)>
-                    {{ $student->name }}
-                    @if ($student->student_number)
-                        — {{ $student->student_number }}
-                    @endif
-                    @if ($student->classRoom)
-                        — {{ $student->classRoom->name }}
-                    @endif
-                </option>
-            @endforeach
+            <template x-for="student in filteredStudents" :key="student.id">
+                <option :value="student.id" x-text="student.name + (student.nis ? ' — ' + student.nis : '') + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudent"></option>
+            </template>
         </select>
 
         @error('student_id')

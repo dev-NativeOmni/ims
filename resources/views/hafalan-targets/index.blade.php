@@ -60,7 +60,19 @@
             </div>
 
             <div class="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
-                <form method="GET" action="{{ route('hafalan-targets.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-6">
+                <form method="GET" action="{{ route('hafalan-targets.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-7">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kelas</label>
+                        <select name="class_room_id" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            <option value="">Semua kelas</option>
+                            @foreach ($classRooms as $class)
+                                <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
+                                    {{ $class->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Santri</label>
                         <select name="student_id" class="mt-1 w-full rounded-lg border-gray-300 text-sm">

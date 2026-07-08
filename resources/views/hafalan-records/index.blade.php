@@ -29,7 +29,16 @@
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <select name="class_room_id" class="rounded-md border-gray-300 shadow-sm">
+                        <option value="">Semua Kelas</option>
+                        @foreach ($classRooms as $class)
+                            <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
+                                {{ $class->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
                     <input
                         type="text"
                         name="search"

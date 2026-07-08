@@ -62,8 +62,15 @@ class QuickInputController extends Controller
             ->limit(5)
             ->get();
 
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         return view('quick-inputs.index', [
             'students' => $students,
+            'classRooms' => $classRooms,
             'surahs' => $surahs,
 
             // Nama variable utama yang dipakai view.

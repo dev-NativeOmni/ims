@@ -25,20 +25,45 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('hafalan-targets.store') }}" class="space-y-6">
+                <form method="POST" action="{{ route('hafalan-targets.store') }}" class="space-y-6" x-data="{
+                    selectedClass: '',
+                    selectedStudent: '{{ old('student_id') }}',
+                    allStudents: [
+                        @foreach($students as $student)
+                            { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}', teacherName: '{{ $student->teacher?->user?->name ?? '' }}' },
+                        @endforeach
+                    ],
+                    get filteredStudents() {
+                        if (!this.selectedClass) return this.allStudents;
+                        return this.allStudents.filter(s => s.classId == this.selectedClass);
+                    }
+                }" x-init="
+                    if (selectedStudent) {
+                        let s = allStudents.find(x => x.id == selectedStudent);
+                        if (s) selectedClass = s.classId;
+                    }
+                }">
                     @csrf
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Santri</label>
-                        <select name="student_id" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
-                            <option value="">Pilih santri</option>
-                            @foreach ($students as $student)
-                                <option value="{{ $student->id }}" @selected((string) old('student_id') === (string) $student->id)>
-                                    {{ $student->name }}
-                                    — {{ $student->classRoom?->name ?? '-' }}
-                                    — Guru: {{ $student->teacher?->user?->name ?? '-' }}
-                                </option>
+                        <label for="class_room_filter" class="block text-sm font-medium text-gray-700">Saring Berdasarkan Kelas</label>
+                        <select id="class_room_filter"
+                                x-model="selectedClass"
+                                class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            <option value="">Semua Kelas</option>
+                            @foreach ($classRooms as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Santri</label>
+                        <select name="student_id" x-model="selectedStudent" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            <option value="">Pilih santri</option>
+                            <template x-for="student in filteredStudents" :key="student.id">
+                                <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '') + (student.teacherName ? ' — Guru: ' + student.teacherName : '')" :selected="student.id == selectedStudent"></option>
+                            </template>
                         </select>
                     </div>
 

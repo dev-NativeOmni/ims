@@ -17,8 +17,43 @@
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">Formulir Catatan Kedisiplinan</h3>
                 </div>
 
-                <form method="POST" action="{{ route('student-points.store') }}" class="p-6 space-y-6" x-data="{ type: '{{ old('type', 'violation') }}' }">
+                <form method="POST" action="{{ route('student-points.store') }}" class="p-6 space-y-6" x-data="{
+                    type: '{{ old('type', 'violation') }}',
+                    selectedClass: '',
+                    selectedStudent: '{{ old('student_id', $selectedStudentId) }}',
+                    allStudents: [
+                        @foreach($students as $student)
+                            { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', nis: '{{ $student->student_number ?? '' }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? 'Tanpa Kelas' }}' },
+                        @endforeach
+                    ],
+                    get filteredStudents() {
+                        if (!this.selectedClass) return this.allStudents;
+                        return this.allStudents.filter(s => s.classId == this.selectedClass);
+                    }
+                }" x-init="
+                    if (selectedStudent) {
+                        let s = allStudents.find(x => x.id == selectedStudent);
+                        if (s) selectedClass = s.classId;
+                    }
+                }">
                     @csrf
+
+                    <!-- Filter Kelas -->
+                    <div class="space-y-2">
+                        <label for="class_room_filter" class="block text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                            Saring Berdasarkan Kelas
+                        </label>
+                        <select
+                            id="class_room_filter"
+                            x-model="selectedClass"
+                            class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                        >
+                            <option value="">Semua Kelas</option>
+                            @foreach ($classRooms as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- Student Select -->
                     <div class="space-y-2">
@@ -28,15 +63,14 @@
                         <select
                             name="student_id"
                             id="student_id"
+                            x-model="selectedStudent"
                             required
                             class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                         >
                             <option value="">-- Pilih Santri --</option>
-                            @foreach ($students as $student)
-                                <option value="{{ $student->id }}" {{ old('student_id', $selectedStudentId) == $student->id ? 'selected' : '' }}>
-                                    {{ $student->name }} (NIS: {{ $student->student_number ?: '-' }}) - {{ $student->classRoom?->name ?? 'Tanpa Kelas' }}
-                                </option>
-                            @endforeach
+                            <template x-for="student in filteredStudents" :key="student.id">
+                                <option :value="student.id" x-text="student.name + (student.nis ? ' (NIS: ' + student.nis + ')' : '') + ' - ' + student.className" :selected="student.id == selectedStudent"></option>
+                            </template>
                         </select>
                         @error('student_id')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>

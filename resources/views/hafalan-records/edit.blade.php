@@ -8,11 +8,44 @@
     <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('hafalan-records.update', $hafalanRecord) }}" class="space-y-6">
+                <form method="POST" action="{{ route('hafalan-records.update', $hafalanRecord) }}" class="space-y-6" x-data="{
+                    selectedClass: '',
+                    selectedStudent: '{{ old('student_id', $hafalanRecord->student_id) }}',
+                    allStudents: [
+                        @foreach($students as $student)
+                            { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', nis: '{{ $student->student_number ?? '' }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}' },
+                        @endforeach
+                    ],
+                    get filteredStudents() {
+                        if (!this.selectedClass) return this.allStudents;
+                        return this.allStudents.filter(s => s.classId == this.selectedClass);
+                    }
+                }" x-init="
+                    if (selectedStudent) {
+                        let s = allStudents.find(x => x.id == selectedStudent);
+                        if (s) selectedClass = s.classId;
+                    }
+                }">
                     @csrf
                     @method('PUT')
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="class_room_filter" class="block text-sm font-medium text-gray-700">
+                                Saring Berdasarkan Kelas
+                            </label>
+                            <select
+                                id="class_room_filter"
+                                x-model="selectedClass"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                                <option value="">Semua Kelas</option>
+                                @foreach ($classRooms as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div>
                             <label for="student_id" class="block text-sm font-medium text-gray-700">
                                 Santri
@@ -21,17 +54,14 @@
                             <select
                                 id="student_id"
                                 name="student_id"
+                                x-model="selectedStudent"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                                 required
                             >
                                 <option value="">Pilih Santri</option>
-                                @foreach ($students as $student)
-                                    <option value="{{ $student->id }}" @selected((string) old('student_id', $hafalanRecord->student_id) === (string) $student->id)>
-                                        {{ $student->name }}
-                                        {{ $student->student_number ? ' - ' . $student->student_number : '' }}
-                                        {{ $student->classRoom?->name ? ' - ' . $student->classRoom->name : '' }}
-                                    </option>
-                                @endforeach
+                                <template x-for="student in filteredStudents" :key="student.id">
+                                    <option :value="student.id" x-text="student.name + (student.nis ? ' - ' + student.nis : '') + (student.className ? ' - ' + student.className : '')" :selected="student.id == selectedStudent"></option>
+                                </template>
                             </select>
 
                             @error('student_id')

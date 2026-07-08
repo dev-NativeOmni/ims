@@ -28,6 +28,11 @@ class HafalanRecordController extends Controller
             ->when($user->hasRole('teacher'), function ($query) use ($user) {
                 $query->where('teacher_id', $user->teacherProfile?->id);
             })
+            ->when($request->filled('class_room_id'), function ($query) use ($request) {
+                $query->whereHas('student', function ($q) use ($request) {
+                    $q->where('class_room_id', $request->integer('class_room_id'));
+                });
+            })
             ->when($request->filled('student_id'), function ($query) use ($request) {
                 $query->where('student_id', $request->integer('student_id'));
             })
@@ -144,10 +149,17 @@ class HafalanRecordController extends Controller
             ->orderBy('number')
             ->get();
 
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         return [
             'students' => $students,
             'teachers' => $teachers,
             'surahs' => $surahs,
+            'classRooms' => $classRooms,
         ];
     }
 }

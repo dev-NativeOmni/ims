@@ -17,16 +17,36 @@ class StudentPointController extends Controller
         $query = StudentPoint::with(['student.classRoom', 'logger']);
 
         // Filter based on role
+        $visibleStudentIds = collect();
         if ($user->hasRole('student')) {
             $student = Student::where('user_id', $user->id)->first();
             $query->where('student_id', $student?->id ?? 0);
+            if ($student) $visibleStudentIds->push($student->id);
         } elseif ($user->hasRole('parent')) {
             $parent = ParentProfile::where('user_id', $user->id)->with('students')->first();
             $studentIds = $parent?->students->pluck('id')->toArray() ?? [];
             $query->whereIn('student_id', $studentIds);
+            $visibleStudentIds = collect($studentIds);
+        } else {
+            $visibleStudentIds = Student::where('status', 'active')->pluck('id');
+        }
+
+        $classRooms = collect();
+        if ($visibleStudentIds->isNotEmpty()) {
+            $classRoomIds = Student::whereIn('id', $visibleStudentIds)->pluck('class_room_id')->filter()->unique()->values();
+            $classRooms = \App\Models\ClassRoom::query()
+                ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+                ->orderBy('name')
+                ->get();
         }
 
         // Apply filters
+        if ($request->filled('class_room_id')) {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('class_room_id', $request->integer('class_room_id'));
+            });
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->whereHas('student', function ($q) use ($search) {
@@ -105,6 +125,7 @@ class StudentPointController extends Controller
 
         return view('student-points.index', [
             'points' => $points,
+            'classRooms' => $classRooms,
             'totalViolations' => $totalViolations,
             'totalRewards' => $totalRewards,
             'violationsByCategory' => $violationsByCategory,
@@ -120,10 +141,15 @@ class StudentPointController extends Controller
     {
         $this->authorizeManagement();
 
-        $students = Student::where('status', 'active')->orderBy('name')->get();
+        $students = Student::where('status', 'active')->with('classRoom')->orderBy('name')->get();
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
         $selectedStudentId = $request->input('student_id');
 
-        return view('student-points.create', compact('students', 'selectedStudentId'));
+        return view('student-points.create', compact('students', 'classRooms', 'selectedStudentId'));
     }
 
     public function store(Request $request)
@@ -161,9 +187,14 @@ class StudentPointController extends Controller
     {
         $this->authorizeManagement();
 
-        $students = Student::where('status', 'active')->orderBy('name')->get();
+        $students = Student::where('status', 'active')->with('classRoom')->orderBy('name')->get();
+        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = \App\Models\ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
 
-        return view('student-points.edit', compact('studentPoint', 'students'));
+        return view('student-points.edit', compact('studentPoint', 'students', 'classRooms'));
     }
 
     public function update(Request $request, StudentPoint $studentPoint)
