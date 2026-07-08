@@ -125,6 +125,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('hafalan-records.index'));
         $response->assertDontSee(route('murajaah-records.index'));
         $response->assertDontSee(route('hafalan-targets.index'));
+        $response->assertDontSee(route('reports.index'));
         $response->assertDontSee(route('reports.teachers'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
@@ -133,7 +134,6 @@ class NavigationMenuTest extends TestCase
         // Should see
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
-        $response->assertSee(route('reports.index'));
         $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('adab.index'));
         $response->assertSee(route('student-points.index'));
@@ -156,6 +156,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('hafalan-records.index'));
         $response->assertDontSee(route('murajaah-records.index'));
         $response->assertDontSee(route('hafalan-targets.index'));
+        $response->assertDontSee(route('reports.index'));
         $response->assertDontSee(route('reports.teachers'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
@@ -164,7 +165,6 @@ class NavigationMenuTest extends TestCase
         // Should see
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
-        $response->assertSee(route('reports.index'));
         $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('adab.index'));
         $response->assertSee(route('student-points.index'));
@@ -228,16 +228,16 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('teachers.index'));
         $response->assertDontSee(route('parents.index'));
         $response->assertDontSee(route('students.index'));
+        $response->assertDontSee(route('quick-inputs.index'));
+        $response->assertDontSee(route('hafalan-records.index'));
+        $response->assertDontSee(route('murajaah-records.index'));
+        $response->assertDontSee(route('hafalan-targets.index'));
         $response->assertDontSee(route('adab.index'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));
 
         // Should see
-        $response->assertSee(route('quick-inputs.index'));
-        $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
-        $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
         $response->assertSee(route('reports.index'));
@@ -313,6 +313,8 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('progress.index'));
         $response->assertDontSee(route('reports.index'));
         $response->assertDontSee(route('reports.teachers'));
+        $response->assertDontSee(route('digital-reports.index'));
+        $response->assertDontSee(route('quran.mushaf'));
         
         $response->assertDontSee(route('adab.index'));
 
@@ -322,8 +324,6 @@ class NavigationMenuTest extends TestCase
 
         // Should see
         $response->assertSee(route('student-points.index'));
-        $response->assertSee(route('quran.mushaf'));
-        $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('system-notifications.index'));
     }
 
