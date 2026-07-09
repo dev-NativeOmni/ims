@@ -47,7 +47,7 @@
 
     $getLinkClasses = function (bool $active): string {
         return $active
-            ? 'flex items-center px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white border border-indigo-100 dark:border-white/10 group transition-all duration-150 shadow-[0_4px_12px_rgba(99,102,241,0.08)] dark:shadow-[0_4px_12px_rgba(99,102,241,0.12)]'
+            ? 'flex items-center px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white border border-indigo-100 dark:border-white/10 group transition-all duration-150 shadow-[0_4px_12px_rgba(13,148,136,0.08)] dark:shadow-[0_4px_12px_rgba(13,148,136,0.12)]'
             : 'flex items-center px-3 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-200 dark:hover:border-white/5 group transition-all duration-150';
     };
 
