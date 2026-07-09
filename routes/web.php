@@ -238,6 +238,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])
             ->name('reports.export.csv');
 
+        Route::get('/reports/periodic', [ReportController::class, 'periodicProgress'])
+            ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
+            ->name('reports.periodic');
+
+        Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
+            ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
+            ->name('reports.periodic.print');
+
         Route::get('/reports/student/{student}', [ReportController::class, 'student'])
             ->name('reports.student');
 

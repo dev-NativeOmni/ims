@@ -636,4 +636,272 @@ class ReportController extends Controller
 
         return \Illuminate\Support\Carbon::parse($value)->format('Y-m-d');
     }
+
+    public function periodicProgress(Request $request)
+    {
+        $data = $this->getPeriodicProgressData($request);
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+        return view('reports.periodic', $data);
+    }
+
+    public function periodicProgressPrint(Request $request)
+    {
+        $data = $this->getPeriodicProgressData($request);
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+        return view('reports.periodic-print', $data);
+    }
+
+    private function getPeriodicProgressData(Request $request): array
+    {
+        $user = $request->user();
+        $visibleStudentIds = $this->visibleStudentIds($user);
+
+        // Fetch classrooms available to user
+        $classRooms = ClassRoom::query()
+            ->whereHas('students', function ($q) use ($visibleStudentIds) {
+                $q->whereIn('id', $visibleStudentIds);
+            })
+            ->orderBy('name')
+            ->get();
+
+        if ($classRooms->isEmpty()) {
+            return [
+                'classRooms' => collect(),
+                'selectedClass' => null,
+                'studentReports' => [],
+                'summary' => [
+                    'total_students' => 0,
+                    'total_hafalan' => 0,
+                    'total_murajaah' => 0,
+                    'avg_hafalan_score' => 0,
+                    'avg_murajaah_score' => 0,
+                    'total_targets' => 0,
+                    'completed_targets' => 0,
+                    'target_completion_rate' => 100,
+                ],
+                'chartLabels' => [],
+                'hafalanTrend' => [],
+                'murajaahTrend' => [],
+                'selectedClassId' => null,
+                'periodType' => 'monthly',
+                'selectedMonth' => date('n'),
+                'selectedQuarter' => 1,
+                'selectedYear' => date('Y'),
+                'monthsList' => [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ]
+            ];
+        }
+
+        $selectedClassId = $request->integer('class_room_id', $classRooms->first()->id);
+        $periodType = $request->input('period_type', 'monthly');
+        $selectedMonth = $request->integer('month', date('n'));
+        
+        $currentMonth = date('n');
+        $defaultQuarter = 1;
+        if ($currentMonth >= 7 && $currentMonth <= 9) $defaultQuarter = 1;
+        elseif ($currentMonth >= 10 && $currentMonth <= 12) $defaultQuarter = 2;
+        elseif ($currentMonth >= 1 && $currentMonth <= 3) $defaultQuarter = 3;
+        elseif ($currentMonth >= 4 && $currentMonth <= 6) $defaultQuarter = 4;
+
+        $selectedQuarter = $request->integer('quarter', $defaultQuarter);
+        $selectedYear = $request->integer('year', date('Y'));
+
+        // Calculate Date Range
+        if ($periodType === 'monthly') {
+            $startDate = \Illuminate\Support\Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
+            $endDate = \Illuminate\Support\Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth();
+        } else {
+            // Quarterly
+            switch ($selectedQuarter) {
+                case 1:
+                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 7, 1)->startOfDay();
+                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 9, 30)->endOfDay();
+                    break;
+                case 2:
+                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 10, 1)->startOfDay();
+                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 12, 31)->endOfDay();
+                    break;
+                case 3:
+                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 1, 1)->startOfDay();
+                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 3, 31)->endOfDay();
+                    break;
+                case 4:
+                default:
+                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 4, 1)->startOfDay();
+                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 6, 30)->endOfDay();
+                    break;
+            }
+        }
+
+        // Get class students
+        $students = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('class_room_id', $selectedClassId)
+            ->orderBy('name')
+            ->get();
+
+        $studentIds = $students->pluck('id');
+
+        // Fetch records
+        $hafalanRecords = HafalanRecord::query()
+            ->with(['surah', 'student'])
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'passed')
+            ->whereBetween('submitted_at', [$startDate, $endDate])
+            ->get();
+
+        $murajaahRecords = MurajaahRecord::query()
+            ->with(['surah', 'student'])
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'passed')
+            ->whereBetween('reviewed_at', [$startDate, $endDate])
+            ->get();
+
+        $targets = HafalanTarget::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('target_date', [$startDate, $endDate])
+            ->get();
+
+        // Calculate trends
+        $chartLabels = [];
+        $hafalanTrend = [];
+        $murajaahTrend = [];
+
+        if ($periodType === 'monthly') {
+            $chartLabels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4', 'Minggu 5'];
+            $hafalanTrend = [0, 0, 0, 0, 0];
+            $murajaahTrend = [0, 0, 0, 0, 0];
+
+            foreach ($hafalanRecords as $record) {
+                $day = \Illuminate\Support\Carbon::parse($record->submitted_at)->day;
+                if ($day <= 7) $hafalanTrend[0]++;
+                elseif ($day <= 14) $hafalanTrend[1]++;
+                elseif ($day <= 21) $hafalanTrend[2]++;
+                elseif ($day <= 28) $hafalanTrend[3]++;
+                else $hafalanTrend[4]++;
+            }
+
+            foreach ($murajaahRecords as $record) {
+                $day = \Illuminate\Support\Carbon::parse($record->reviewed_at)->day;
+                if ($day <= 7) $murajaahTrend[0]++;
+                elseif ($day <= 14) $murajaahTrend[1]++;
+                elseif ($day <= 21) $murajaahTrend[2]++;
+                elseif ($day <= 28) $murajaahTrend[3]++;
+                else $murajaahTrend[4]++;
+            }
+        } else {
+            // Quarterly
+            if ($selectedQuarter === 1) {
+                $chartLabels = ['Juli', 'Agustus', 'September'];
+                $months = [7, 8, 9];
+            } elseif ($selectedQuarter === 2) {
+                $chartLabels = ['Oktober', 'November', 'Desember'];
+                $months = [10, 11, 12];
+            } elseif ($selectedQuarter === 3) {
+                $chartLabels = ['Januari', 'Februari', 'Maret'];
+                $months = [1, 2, 3];
+            } else {
+                $chartLabels = ['April', 'Mei', 'Juni'];
+                $months = [4, 5, 6];
+            }
+
+            $hafalanTrend = [0, 0, 0];
+            $murajaahTrend = [0, 0, 0];
+
+            foreach ($hafalanRecords as $record) {
+                $m = \Illuminate\Support\Carbon::parse($record->submitted_at)->month;
+                $idx = array_search($m, $months);
+                if ($idx !== false) {
+                    $hafalanTrend[$idx]++;
+                }
+            }
+
+            foreach ($murajaahRecords as $record) {
+                $m = \Illuminate\Support\Carbon::parse($record->reviewed_at)->month;
+                $idx = array_search($m, $months);
+                if ($idx !== false) {
+                    $murajaahTrend[$idx]++;
+                }
+            }
+        }
+
+        // Summary metrics
+        $totalHafalan = $hafalanRecords->count();
+        $totalMurajaah = $murajaahRecords->count();
+        $avgHafalanScore = $hafalanRecords->avg('score') ? round((float)$hafalanRecords->avg('score'), 1) : 0;
+        $avgMurajaahScore = $murajaahRecords->avg('overall_score') ? round((float)$murajaahRecords->avg('overall_score'), 1) : 0;
+
+        $totalTargets = $targets->count();
+        $completedTargets = $targets->where('status', 'completed')->count();
+        $targetCompletionRate = $totalTargets > 0 ? round(($completedTargets / $totalTargets) * 100, 1) : 100;
+
+        $summary = [
+            'total_students' => $students->count(),
+            'total_hafalan' => $totalHafalan,
+            'total_murajaah' => $totalMurajaah,
+            'avg_hafalan_score' => $avgHafalanScore,
+            'avg_murajaah_score' => $avgMurajaahScore,
+            'total_targets' => $totalTargets,
+            'completed_targets' => $completedTargets,
+            'target_completion_rate' => $targetCompletionRate,
+        ];
+
+        // Detailed student list
+        $studentReports = [];
+        foreach ($students as $student) {
+            $studentHafalan = $hafalanRecords->where('student_id', $student->id);
+            $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
+
+            // Latest surah during the period
+            $latestHafalan = $studentHafalan->sortByDesc('submitted_at')->first();
+            $latestMurajaah = $studentMurajaah->sortByDesc('reviewed_at')->first();
+
+            $latestProgressText = '-';
+            if ($latestHafalan) {
+                $latestProgressText = 'Hafalan: ' . ($latestHafalan->surah?->name_latin ?? '-') . ' (Ayat ' . $latestHafalan->ayah_start . '-' . $latestHafalan->ayah_end . ')';
+            } elseif ($latestMurajaah) {
+                $latestProgressText = 'Murajaah: ' . ($latestMurajaah->surah?->name_latin ?? '-') . ' (Ayat ' . $latestMurajaah->ayah_start . '-' . $latestMurajaah->ayah_end . ')';
+            }
+
+            // Average score
+            $avgScore = $studentHafalan->avg('score') ? round((float)$studentHafalan->avg('score'), 1) : null;
+
+            $studentReports[] = [
+                'student' => $student,
+                'total_hafalan' => $studentHafalan->count(),
+                'total_murajaah' => $studentMurajaah->count(),
+                'avg_score' => $avgScore,
+                'latest_progress' => $latestProgressText,
+            ];
+        }
+
+        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+
+        return [
+            'classRooms' => $classRooms,
+            'selectedClass' => $selectedClass,
+            'studentReports' => $studentReports,
+            'summary' => $summary,
+            'chartLabels' => $chartLabels,
+            'hafalanTrend' => $hafalanTrend,
+            'murajaahTrend' => $murajaahTrend,
+            'selectedClassId' => $selectedClassId,
+            'periodType' => $periodType,
+            'selectedMonth' => $selectedMonth,
+            'selectedQuarter' => $selectedQuarter,
+            'selectedYear' => $selectedYear,
+            'monthsList' => [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ]
+        ];
+    }
 }
