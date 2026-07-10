@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CoreDataSeeder::class,
             QuranDataSeeder::class,
-            ThirtyStudentsSeeder::class,
+            // ThirtyStudentsSeeder::class,
         ]);
     }
 }
