@@ -172,7 +172,7 @@ class StudentController extends Controller
 
     private function studentPayload(array $validated): array
     {
-        return Arr::only($validated, [
+        $payload = Arr::only($validated, [
             'user_id',
             'class_room_id',
             'teacher_id',
@@ -181,7 +181,19 @@ class StudentController extends Controller
             'gender',
             'birth_date',
             'status',
+            'tahfizh_level',
         ]);
+
+        if (empty($payload['tahfizh_level'])) {
+            $class = ClassRoom::find($payload['class_room_id'] ?? null);
+            if ($class && (preg_match('/\bX\b/i', $class->name) || preg_match('/\b10\b/i', $class->name) || ($class->level && (preg_match('/\bX\b/i', $class->level) || preg_match('/\b10\b/i', $class->level))))) {
+                $payload['tahfizh_level'] = 'ummi';
+            } else {
+                $payload['tahfizh_level'] = 'reguler';
+            }
+        }
+
+        return $payload;
     }
 
     private function syncParents(Student $student, array $validated): void

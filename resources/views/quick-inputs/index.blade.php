@@ -73,20 +73,23 @@
 
             <div x-data="{
                 selectedClass: '',
-                selectedHafalanStudent: '{{ old('student_id', request('student_id', '')) }}',
-                selectedMurajaahStudent: '{{ old('student_id', request('student_id', '')) }}',
+                selectedStudentId: '{{ old('student_id', request('student_id', '')) }}',
                 allStudents: [
                     @foreach($students as $student)
-                        { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}' },
+                        { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}', level: '{{ $student->tahfizh_level }}' },
                     @endforeach
                 ],
                 get filteredStudents() {
                     if (!this.selectedClass) return this.allStudents;
                     return this.allStudents.filter(s => s.classId == this.selectedClass);
+                },
+                get isUmmiSelected() {
+                    let s = this.allStudents.find(x => x.id == this.selectedStudentId);
+                    return s && s.level === 'ummi';
                 }
             }" x-init="
-                if (selectedHafalanStudent) {
-                    let s = allStudents.find(x => x.id == selectedHafalanStudent);
+                if (selectedStudentId) {
+                    let s = allStudents.find(x => x.id == selectedStudentId);
                     if (s) selectedClass = s.classId;
                 }
             }" class="space-y-6">
@@ -108,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-show="!isUmmiSelected">
 
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b flex items-center justify-between gap-4">
@@ -137,11 +140,11 @@
                             <select id="hafalan_student_id"
                                     name="student_id"
                                     required
-                                    x-model="selectedHafalanStudent"
+                                    x-model="selectedStudentId"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih santri</option>
                                 <template x-for="student in filteredStudents" :key="student.id">
-                                    <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedHafalanStudent"></option>
+                                    <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudentId"></option>
                                 </template>
                             </select>
                         </div>
@@ -296,11 +299,11 @@
                             <select id="murajaah_student_id"
                                     name="student_id"
                                     required
-                                    x-model="selectedMurajaahStudent"
+                                    x-model="selectedStudentId"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Pilih santri</option>
                                 <template x-for="student in filteredStudents" :key="student.id">
-                                    <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedMurajaahStudent"></option>
+                                    <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudentId"></option>
                                 </template>
                             </select>
                         </div>
@@ -454,7 +457,213 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Form Cepat UMMI (x-show="isUmmiSelected") -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden" x-show="isUmmiSelected" x-cloak>
+                <div class="px-6 py-4 border-b flex items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Input Cepat Tahsin UMMI (Kelas 10)</h3>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Catat perkembangan jilid dan hafalan Metode UMMI santri.
+                        </p>
+                    </div>
+                    <button type="submit"
+                            form="ummi-form"
+                            style="background-color: #f59e0b; color: #ffffff;"
+                            class="shrink-0 inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:opacity-90">
+                        Simpan Catatan UMMI
+                    </button>
+                </div>
+
+                <form id="ummi-form" method="POST" action="{{ route('quick-inputs.ummi.store') }}" class="p-6 space-y-4">
+                    @csrf
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="ummi_student_id" class="block text-sm font-medium text-gray-700">
+                                    Santri
+                                </label>
+                                <select id="ummi_student_id"
+                                        name="student_id"
+                                        required
+                                        x-model="selectedStudentId"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih santri</option>
+                                    <template x-for="student in filteredStudents" :key="student.id">
+                                        <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudentId"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="ummi_tatap_muka" class="block text-sm font-medium text-gray-700">
+                                        Tatap Muka (Ke-)
+                                    </label>
+                                    <input id="ummi_tatap_muka"
+                                           type="number"
+                                           name="tatap_muka"
+                                           min="1"
+                                           required
+                                           value="{{ old('tatap_muka', 1) }}"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label for="ummi_tanggal" class="block text-sm font-medium text-gray-700">
+                                        Tanggal
+                                    </label>
+                                    <input id="ummi_tanggal"
+                                           type="date"
+                                           name="tanggal"
+                                           required
+                                           value="{{ old('tanggal', now()->toDateString()) }}"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="ummi_hafalan_surah" class="block text-sm font-medium text-gray-700">
+                                        Hafalan (Surah)
+                                    </label>
+                                    <select id="ummi_hafalan_surah"
+                                            name="hafalan_surah_id"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="">Pilih Surah</option>
+                                        @foreach ($surahs as $surah)
+                                            <option value="{{ $surah->id }}" @selected(old('hafalan_surah_id') == $surah->id)>
+                                                {{ $surah->number }}. {{ $surah->name_latin }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="ummi_hafalan_ayah" class="block text-sm font-medium text-gray-700">
+                                        Hafalan (Ayat)
+                                    </label>
+                                    <input id="ummi_hafalan_ayah"
+                                           type="text"
+                                           name="hafalan_ayah"
+                                           value="{{ old('hafalan_ayah') }}"
+                                           placeholder="e.g. 1-10"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="ummi_jilid" class="block text-sm font-medium text-gray-700">
+                                        UMMI / Al-Qur'an (Jilid/Surat)
+                                    </label>
+                                    <input id="ummi_jilid"
+                                           type="text"
+                                           name="ummi_jilid"
+                                           value="{{ old('ummi_jilid') }}"
+                                           placeholder="e.g. Jilid 4 atau QS. Al-Mulk"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label for="ummi_halaman" class="block text-sm font-medium text-gray-700">
+                                        Halaman / Ayat
+                                    </label>
+                                    <input id="ummi_halaman"
+                                           type="text"
+                                           name="ummi_halaman"
+                                           value="{{ old('ummi_halaman') }}"
+                                           placeholder="e.g. Hal 12 atau Ayat 1-5"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="ummi_materi" class="block text-sm font-medium text-gray-700">
+                                    Materi Pembelajaran UMMI
+                                </label>
+                                <input id="ummi_materi"
+                                       type="text"
+                                       name="materi"
+                                       value="{{ old('materi') }}"
+                                       placeholder="e.g. Mad Thabi'i"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="ummi_nilai" class="block text-sm font-medium text-gray-700">
+                                        Nilai
+                                    </label>
+                                    <select id="ummi_nilai"
+                                            name="nilai"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="">Pilih Nilai</option>
+                                        <option value="A+" @selected(old('nilai') === 'A+')>A+ (Kesalahan 0)</option>
+                                        <option value="A" @selected(old('nilai') === 'A')>A (Kesalahan 0)</option>
+                                        <option value="B+" @selected(old('nilai') === 'B+')>B+ (Kesalahan -1)</option>
+                                        <option value="B" @selected(old('nilai') === 'B')>B (Kesalahan -2)</option>
+                                        <option value="B-" @selected(old('nilai') === 'B-')>B- (Kesalahan -3)</option>
+                                        <option value="C+" @selected(old('nilai') === 'C+')>C+ (Kesalahan -4)</option>
+                                        <option value="C" @selected(old('nilai') === 'C')>C (Kesalahan -5)</option>
+                                        <option value="C-" @selected(old('nilai') === 'C-')>C- (Kesalahan -6)</option>
+                                        <option value="D" @selected(old('nilai') === 'D')>D (Kesalahan -7)</option>
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="ummi_disimak_guru" class="block text-sm font-medium text-gray-700">
+                                            Disimak Guru
+                                        </label>
+                                        <select id="ummi_disimak_guru"
+                                                name="disimak_guru"
+                                                required
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="Ya" @selected(old('disimak_guru', 'Ya') === 'Ya')>Ya</option>
+                                            <option value="Tidak" @selected(old('disimak_guru') === 'Tidak')>Tidak</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="ummi_disimak_ortu" class="block text-sm font-medium text-gray-700">
+                                            Disimak Ortu
+                                        </label>
+                                        <select id="ummi_disimak_ortu"
+                                                name="disimak_ortu"
+                                                required
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="Tidak" @selected(old('disimak_ortu', 'Tidak') === 'Tidak')>Tidak</option>
+                                            <option value="Ya" @selected(old('disimak_ortu') === 'Ya')>Ya</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="ummi_keterangan" class="block text-sm font-medium text-gray-700">
+                                    Keterangan / Catatan Kesalahan
+                                </label>
+                                <textarea id="ummi_keterangan"
+                                          name="keterangan"
+                                          rows="4"
+                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                          placeholder="Catatan kesalahan bacaan atau makhraj..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4 flex justify-end">
+                        <button type="submit"
+                                style="background-color: #f59e0b; color: #ffffff;"
+                                class="inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm hover:opacity-90">
+                            Simpan Catatan UMMI
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b">
                         <h3 class="font-semibold text-gray-900">Hafalan Terbaru</h3>
@@ -524,6 +733,48 @@
                         @empty
                             <div class="px-6 py-8 text-center text-gray-500">
                                 Belum ada murajaah.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b">
+                        <h3 class="font-semibold text-gray-900">Catatan UMMI Terbaru</h3>
+                    </div>
+
+                    <div class="divide-y">
+                        @forelse ($latestUmmiRecords as $record)
+                            <div class="px-6 py-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="font-medium text-gray-900">
+                                        {{ $record->student?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-sm text-gray-600 font-semibold text-amber-600">
+                                        @if($record->ummi_jilid)
+                                            {{ $record->ummi_jilid }} Hal. {{ $record->ummi_halaman ?: '-' }}
+                                        @endif
+                                        @if($record->hafalan_surah_id)
+                                            <span class="text-gray-500 font-normal block text-xs mt-0.5">Hafalan: QS. {{ $record->surah?->name_latin }} Ayat {{ $record->hafalan_ayah }}</span>
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-400">
+                                        Guru: {{ $record->teacher?->user?->name ?? '-' }}
+                                    </p>
+                                </div>
+
+                                <div class="text-right shrink-0">
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        Nilai: {{ $record->nilai ?: '-' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ $record->tanggal?->format('d M Y') ?? '-' }}
+                                    </p>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="px-6 py-8 text-center text-gray-500">
+                                Belum ada catatan UMMI.
                             </div>
                         @endforelse
                     </div>

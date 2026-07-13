@@ -128,61 +128,31 @@
         <div class="mb-6 space-y-3">
             <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIDZ</h3>
             
-            <!-- Table 1: Targets -->
+            <!-- Table 1: Targets Summary -->
             <table class="w-full border border-black text-xs text-left">
                 <thead>
                     <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                        <th class="p-1 border-r border-black w-10">No.</th>
-                        <th class="p-1 border-r border-black">TARGET</th>
-                        <th class="p-1 border-r border-black">CAPAIAN</th>
-                        <th class="p-1 border-r border-black">KETERANGAN</th>
-                        <th class="p-1">Deskripsi</th>
+                        <th class="p-1.5 border-r border-black w-36">LEVEL / METODE</th>
+                        <th class="p-1.5 border-r border-black w-48">TARGET TERM INI</th>
+                        <th class="p-1.5 border-r border-black w-60">CAPAIAN TERAKHIR</th>
+                        <th class="p-1.5">DESKRIPSI / CATATAN</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if($targetRecords->isNotEmpty())
-                        @foreach($targetRecords as $idx => $target)
-                            <tr class="border-b border-black">
-                                <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
-                                <td class="p-1.5 border-r border-black font-semibold">QS. {{ $target->surah?->name_latin }} (Ayat {{ $target->ayah_start }}-{{ $target->ayah_end }})</td>
-                                <td class="p-1.5 border-r border-black text-center font-bold text-green-700">
-                                    @if($target->matching_record)
-                                        Tercapai
-                                    @else
-                                        <span class="text-red-600 font-semibold">Belum Tercapai</span>
-                                    @endif
-                                </td>
-                                <td class="p-1.5 border-r border-black text-center text-gray-700">
-                                    @if($target->matching_record)
-                                        {{ $target->matching_record->submitted_at?->format('d/m/Y') }}
-                                    @else
-                                        Target: {{ $target->target_date?->format('d/m/Y') }}
-                                    @endif
-                                </td>
-                                <td class="p-1.5 text-gray-600">
-                                    @if($target->matching_record)
-                                        {{ $target->matching_record->notes ?: 'Tercapai sesuai target' }}
-                                    @else
-                                        {{ $target->notes ?: '-' }}
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
-                        @forelse($hafalanRecords as $idx => $record)
-                            <tr class="border-b border-black">
-                                <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
-                                <td class="p-1.5 border-r border-black font-semibold">QS. {{ $record->surah?->name_latin }} (Ayat {{ $record->ayah_start }}-{{ $record->ayah_end }})</td>
-                                <td class="p-1.5 border-r border-black text-center font-bold text-green-700">Lulus</td>
-                                <td class="p-1.5 border-r border-black text-center text-gray-700">{{ $record->submitted_at?->format('d/m/Y') }}</td>
-                                <td class="p-1.5 text-gray-600">{{ $record->notes ?: 'Setoran passed (Skor: '.round($record->score).')' }}</td>
-                            </tr>
-                        @empty
-                            <tr class="border-b border-black">
-                                <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data capaian hafalan.</td>
-                            </tr>
-                        @endforelse
-                    @endif
+                    <tr class="border-b border-black">
+                        <td class="p-2 border-r border-black text-center align-middle font-bold">
+                            {{ strtoupper($tahfizhLevelLabel) }}
+                        </td>
+                        <td class="p-2 border-r border-black align-middle text-center">
+                            {{ $termTargetText }}
+                        </td>
+                        <td class="p-2 border-r border-black align-middle font-semibold text-green-700 text-center">
+                            {{ $latestCapaianText }}
+                        </td>
+                        <td class="p-2 align-middle text-gray-700">
+                            {{ $latestCapaianNotes ?: 'Telah menyelesaikan perkembangan tahfizh/tahsin dengan baik.' }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 

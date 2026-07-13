@@ -155,6 +155,25 @@
                         </div>
 
                         <div>
+                            <label for="tahfizh_level" class="block text-sm font-medium text-gray-700">
+                                Level Tahfizh
+                            </label>
+                            <select
+                                id="tahfizh_level"
+                                name="tahfizh_level"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                                <option value="tahsin" @selected(old('tahfizh_level', $student->tahfizh_level) === 'tahsin')>Tahsin (3 baris/pertemuan)</option>
+                                <option value="reguler" @selected(old('tahfizh_level', $student->tahfizh_level) === 'reguler')>Reguler (5 baris/pertemuan)</option>
+                                <option value="akselerasi" @selected(old('tahfizh_level', $student->tahfizh_level) === 'akselerasi')>Akselerasi (7 baris/pertemuan)</option>
+                                <option value="ummi" @selected(old('tahfizh_level', $student->tahfizh_level) === 'ummi')>Metode Ummi (Kelas 10)</option>
+                            </select>
+                            @error('tahfizh_level')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="user_id" class="block text-sm font-medium text-gray-700">
                                 Akun Login Santri
                             </label>

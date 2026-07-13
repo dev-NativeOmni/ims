@@ -15,6 +15,7 @@ class StudentReport extends Model
         'academic_year',
         'semester',
         'teacher_notes',
+        'tahfizh_target_term',
         'status', // 'draft', 'published', 'locked'
         'created_by',
     ];

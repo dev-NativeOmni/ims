@@ -282,6 +282,18 @@
                         <input type="hidden" name="semester" value="{{ $semester }}" />
 
                         <div>
+                            <label for="tahfizh_target_term" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Target Tahfizh Term Ini (Kustom)</label>
+                            <input 
+                                type="text"
+                                name="tahfizh_target_term" 
+                                id="tahfizh_target_term" 
+                                value="{{ old('tahfizh_target_term', $report->tahfizh_target_term) }}"
+                                placeholder="Biarkan kosong untuk menggunakan target default sesuai level santri..."
+                                class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white mb-4"
+                            />
+                        </div>
+
+                        <div>
                             <label for="teacher_notes" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Narasi Deskriptif / Evaluasi Karakter Wali Kelas</label>
                             <textarea 
                                 name="teacher_notes" 
@@ -311,6 +323,11 @@
                 @else
                     <div class="space-y-4 text-sm">
                         <div class="bg-zinc-50 dark:bg-zinc-800/40 p-4 border dark:border-zinc-800 rounded-xl leading-relaxed">
+                            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Target Tahfizh Term Ini:</span>
+                            <p class="text-gray-800 dark:text-zinc-200 font-semibold mb-3">
+                                {{ $report->tahfizh_target_term ?: 'Sesuai Target Level (' . $student->tahfizh_level_label . ')' }}
+                            </p>
+                            
                             <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Catatan Wali Kelas:</span>
                             <p class="text-gray-800 dark:text-zinc-200 italic">
                                 "{{ $report->teacher_notes ?: 'Belum ada catatan dari wali kelas.' }}"

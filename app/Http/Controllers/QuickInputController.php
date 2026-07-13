@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HafalanRecord;
 use App\Models\MurajaahRecord;
+use App\Models\UmmiRecord;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
@@ -62,6 +63,18 @@ class QuickInputController extends Controller
             ->limit(5)
             ->get();
 
+        $latestUmmiRecords = UmmiRecord::query()
+            ->with([
+                'student.classRoom.program',
+                'teacher.user',
+                'surah',
+            ])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->latest('tanggal')
+            ->latest()
+            ->limit(5)
+            ->get();
+
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
         $classRooms = \App\Models\ClassRoom::query()
             ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
@@ -76,6 +89,7 @@ class QuickInputController extends Controller
             // Nama variable utama yang dipakai view.
             'latestHafalanRecords' => $latestHafalanRecords,
             'latestMurajaahRecords' => $latestMurajaahRecords,
+            'latestUmmiRecords' => $latestUmmiRecords,
 
             // Alias pengaman kalau ada bagian view lama yang masih pakai nama ini.
             'recentHafalanRecords' => $latestHafalanRecords,
@@ -205,6 +219,66 @@ class QuickInputController extends Controller
         return redirect()
             ->route('quick-inputs.index')
             ->with('success', 'Data murajaah berhasil disimpan.');
+    }
+
+    public function storeUmmi(Request $request, UserAccessService $accessService): RedirectResponse
+    {
+        Gate::authorize('create', HafalanRecord::class);
+
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
+
+        $validator = Validator::make($request->all(), [
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'tatap_muka' => ['required', 'integer', 'min:1'],
+            'tanggal' => ['required', 'date'],
+            'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'hafalan_ayah' => ['nullable', 'string', 'max:100'],
+            'ummi_jilid' => ['nullable', 'string', 'max:150'],
+            'ummi_halaman' => ['nullable', 'string', 'max:100'],
+            'materi' => ['nullable', 'string', 'max:255'],
+            'nilai' => ['nullable', 'string', 'max:50'],
+            'disimak_guru' => ['required', Rule::in(['Ya', 'Tidak'])],
+            'disimak_ortu' => ['required', Rule::in(['Ya', 'Tidak'])],
+            'keterangan' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $validator->after(function ($validator) use ($request, $visibleStudentIds) {
+            if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
+                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+            }
+        });
+
+        $validated = $validator->validate();
+
+        $student = Student::query()->findOrFail($validated['student_id']);
+
+        $teacherId = $this->resolveTeacherId($request, $student);
+
+        if (! $teacherId) {
+            return back()
+                ->withInput()
+                ->with('error', 'Santri ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data santri.');
+        }
+
+        UmmiRecord::query()->create([
+            'student_id' => $student->id,
+            'teacher_id' => $teacherId,
+            'tatap_muka' => $validated['tatap_muka'],
+            'tanggal' => $validated['tanggal'],
+            'hafalan_surah_id' => $validated['hafalan_surah_id'] ?? null,
+            'hafalan_ayah' => $validated['hafalan_ayah'] ?? null,
+            'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+            'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+            'materi' => $validated['materi'] ?? null,
+            'nilai' => $validated['nilai'] ?? null,
+            'disimak_guru' => $validated['disimak_guru'],
+            'disimak_ortu' => $validated['disimak_ortu'],
+            'keterangan' => $validated['keterangan'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('quick-inputs.index')
+            ->with('success', 'Catatan Tahsin UMMI berhasil disimpan.');
     }
 
     private function resolveTeacherId(Request $request, Student $student): ?int

@@ -22,6 +22,7 @@ class Student extends Model
         'gender',
         'birth_date',
         'status',
+        'tahfizh_level',
     ];
 
     protected function casts(): array
@@ -63,6 +64,11 @@ class Student extends Model
         return $this->hasMany(MurajaahRecord::class);
     }
 
+    public function ummiRecords(): HasMany
+    {
+        return $this->hasMany(UmmiRecord::class);
+    }
+
     public function hafalanTargets(): HasMany
     {
         return $this->hasMany(HafalanTarget::class);
@@ -76,5 +82,16 @@ class Student extends Model
     public function points(): HasMany
     {
         return $this->hasMany(StudentPoint::class);
+    }
+
+    public function getTahfizhLevelLabelAttribute(): string
+    {
+        return match ($this->tahfizh_level) {
+            'tahsin' => 'Tahsin',
+            'reguler' => 'Reguler',
+            'akselerasi' => 'Akselerasi',
+            'ummi' => 'Metode Ummi',
+            default => 'Reguler',
+        };
     }
 }

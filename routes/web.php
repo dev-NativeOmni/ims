@@ -206,6 +206,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/quick-inputs/murajaah', [QuickInputController::class, 'storeMurajaah'])
             ->name('quick-inputs.murajaah.store');
+
+        Route::post('/quick-inputs/ummi', [QuickInputController::class, 'storeUmmi'])
+            ->name('quick-inputs.ummi.store');
     });
 
     /*

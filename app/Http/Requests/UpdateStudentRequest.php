@@ -64,6 +64,10 @@ class UpdateStudentRequest extends FormRequest
                 'required',
                 Rule::in(['active', 'inactive', 'graduated']),
             ],
+            'tahfizh_level' => [
+                'nullable',
+                Rule::in(['tahsin', 'reguler', 'akselerasi', 'ummi']),
+            ],
             'parent_ids' => [
                 'nullable',
                 'array',
