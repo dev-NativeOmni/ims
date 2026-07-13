@@ -71,7 +71,7 @@ class StudentReportController extends Controller
             $avgAllah = round(($adabRecords->avg(fn($r) => ($r->q1+$r->q2+$r->q3+$r->q4+$r->q5)/5)) * 100, 1);
             $avgRasul = round(($adabRecords->avg(fn($r) => ($r->q6+$r->q7+$r->q8+$r->q9+$r->q10)/5)) * 100, 1);
             $avgSosial = round(($adabRecords->avg(fn($r) => ($r->q11+$r->q12+$r->q13+$r->q14+$r->q15)/5)) * 100, 1);
-            $avgQuran = round(($adabRecords->avg(fn($r) => ($r->q16+$r->q17+$r->q18+$r->q19+$r->q20)/5)) * 100, 1);
+            $avgQuran = round(($adabRecords->whereNotNull('mentor_score')->avg('mentor_score') ?? 0), 1);
             $avgTotal = round($adabRecords->avg('total_score'), 1);
         }
 
@@ -183,6 +183,34 @@ class StudentReportController extends Controller
         $progress = $this->progressService->calculate($student);
         $hafalanRecords = HafalanRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest()->limit(5)->get();
         $murajaahRecords = MurajaahRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest()->limit(5)->get();
+        $targetRecords = HafalanTarget::with('surah')->where('student_id', $student->id)->orderBy('target_date', 'asc')->limit(5)->get();
+
+        foreach ($targetRecords as $target) {
+            $matchingRecord = HafalanRecord::where('student_id', $student->id)
+                ->where('surah_id', $target->surah_id)
+                ->where('status', 'passed')
+                ->where('ayah_start', '<=', $target->ayah_start)
+                ->where('ayah_end', '>=', $target->ayah_end)
+                ->latest()
+                ->first();
+            
+            if (!$matchingRecord) {
+                $matchingRecord = HafalanRecord::where('student_id', $student->id)
+                    ->where('surah_id', $target->surah_id)
+                    ->where('status', 'passed')
+                    ->latest()
+                    ->first();
+            }
+            
+            $target->matching_record = $matchingRecord;
+        }
+
+        $tahfizhExams = \App\Models\TahfizhExam::with('surah')
+            ->where('student_id', $student->id)
+            ->latest('exam_date')
+            ->latest()
+            ->limit(5)
+            ->get();
 
         // Adab
         $adabRecords = AdabRecord::where('student_id', $student->id)->get();
@@ -191,7 +219,7 @@ class StudentReportController extends Controller
             $avgAllah = round(($adabRecords->avg(fn($r) => ($r->q1+$r->q2+$r->q3+$r->q4+$r->q5)/5)) * 100, 1);
             $avgRasul = round(($adabRecords->avg(fn($r) => ($r->q6+$r->q7+$r->q8+$r->q9+$r->q10)/5)) * 100, 1);
             $avgSosial = round(($adabRecords->avg(fn($r) => ($r->q11+$r->q12+$r->q13+$r->q14+$r->q15)/5)) * 100, 1);
-            $avgQuran = round(($adabRecords->avg(fn($r) => ($r->q16+$r->q17+$r->q18+$r->q19+$r->q20)/5)) * 100, 1);
+            $avgQuran = round(($adabRecords->whereNotNull('mentor_score')->avg('mentor_score') ?? 0), 1);
             $avgTotal = round($adabRecords->avg('total_score'), 1);
         }
 
@@ -212,6 +240,8 @@ class StudentReportController extends Controller
             'progress',
             'hafalanRecords',
             'murajaahRecords',
+            'targetRecords',
+            'tahfizhExams',
             'avgAllah',
             'avgRasul',
             'avgSosial',

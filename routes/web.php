@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StudentPointController;
 use App\Http\Controllers\StudentReportController;
+use App\Http\Controllers\TahfizhExamController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\UserManagementController;
 
@@ -167,6 +168,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
 
+    Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
+        Route::get('/adab-settings', [SettingController::class, 'editAdab'])->name('settings.adab');
+        Route::post('/adab-settings', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
+    });
+
         // Super Admin user management routes
         Route::prefix('superadmin')->name('superadmin.')->middleware(['role:super_admin'])->group(function () {
             Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
@@ -182,6 +188,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh'])->group(function () {
         Route::resource('hafalan-records', HafalanRecordController::class);
         Route::resource('murajaah-records', MurajaahRecordController::class);
+        Route::resource('tahfizh-exams', TahfizhExamController::class);
 
         Route::patch('/hafalan-targets/{hafalanTarget}/complete', [HafalanTargetController::class, 'complete'])
             ->name('hafalan-targets.complete');
@@ -283,11 +290,12 @@ Route::middleware(['auth'])->group(function () {
     | Adab
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student'])->group(function () {
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab'])->group(function () {
         Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
         Route::get('/adab/student/{student}', [AdabController::class, 'show'])->name('adab.show');
         Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
         Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
+        Route::post('/adab/student/{student}/record/{adabRecord}/mentor-score', [AdabController::class, 'storeMentorScore'])->name('adab.store-mentor-score');
         
         Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
             Route::delete('/adab/{adabRecord}', [AdabController::class, 'destroy'])->name('adab.destroy');

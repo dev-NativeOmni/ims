@@ -39,6 +39,7 @@ class DashboardController extends Controller
             'headmaster' => redirect()->route('reports.teachers'),
             'tanse' => redirect()->route('student-points.index'),
             'coordinator_tahfizh' => redirect()->route('progress.index'),
+            'pendamping_adab' => redirect()->route('adab.index'),
             default => redirect()->route('login')->withErrors([
                 'email' => 'Role akun belum valid.',
             ]),

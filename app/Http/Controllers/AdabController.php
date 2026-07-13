@@ -76,7 +76,7 @@ class AdabController extends Controller
             $avgAllah = round(($adabStats->avg(fn($r) => ($r->q1 + $r->q2 + $r->q3 + $r->q4 + $r->q5) / 5)) * 100, 1);
             $avgRasul = round(($adabStats->avg(fn($r) => ($r->q6 + $r->q7 + $r->q8 + $r->q9 + $r->q10) / 5)) * 100, 1);
             $avgSosial = round(($adabStats->avg(fn($r) => ($r->q11 + $r->q12 + $r->q13 + $r->q14 + $r->q15) / 5)) * 100, 1);
-            $avgQuran = round(($adabStats->avg(fn($r) => ($r->q16 + $r->q17 + $r->q18 + $r->q19 + $r->q20) / 5)) * 100, 1);
+            $avgQuran = round(($adabStats->whereNotNull('mentor_score')->avg('mentor_score') ?? 0), 1);
         }
 
         $classRankings = ClassRoom::query()
@@ -97,7 +97,7 @@ class AdabController extends Controller
         
         // Authorize: Student themselves, Admin/Supervisor, or student's teacher
         $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
-        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
+        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
         
         abort_unless($isOwn || $isManager || $isTeacher, 403, 'Anda tidak memiliki akses untuk mengisi kuisioner adab santri ini.');
@@ -123,13 +123,13 @@ class AdabController extends Controller
         
         // Authorize: Student themselves, Admin/Supervisor, or student's teacher
         $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
-        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
+        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
         
         abort_unless($isOwn || $isManager || $isTeacher, 403, 'Anda tidak memiliki akses untuk mengisi kuisioner adab santri ini.');
 
         $rules = [];
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 15; $i++) {
             $rules["q{$i}"] = 'required|boolean';
         }
         $rules['notes'] = 'nullable|string|max:1000';
@@ -150,10 +150,12 @@ class AdabController extends Controller
         }
 
         $sum = 0;
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 15; $i++) {
             $sum += (int) $validated["q{$i}"];
         }
-        $totalScore = $sum * 5; // 20 * 5 = 100 points maximum
+        // Student score is out of 50
+        $studentScore = round(($sum / 15) * 50, 1);
+        $totalScore = $studentScore;
 
         AdabRecord::create(array_merge($validated, [
             'student_id' => $student->id,
@@ -164,7 +166,7 @@ class AdabController extends Controller
 
         return redirect()
             ->route('adab.show', $student)
-            ->with('success', 'Kuisioner Adab hari ini berhasil disimpan dengan nilai ' . $totalScore . '/100.');
+            ->with('success', 'Kuisioner Adab hari ini berhasil disimpan dengan nilai mandiri ' . $studentScore . '/50.');
     }
 
     public function show(Student $student): View
@@ -173,7 +175,7 @@ class AdabController extends Controller
         $visible = false;
 
         // Check if student is visible to user
-        if ($user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
+        if ($user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab'])) {
             $visible = true;
         } elseif ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id) {
             $visible = true;
@@ -187,7 +189,7 @@ class AdabController extends Controller
 
         $student->load(['classRoom', 'teacher.user']);
         $adabRecords = AdabRecord::where('student_id', $student->id)
-            ->with('evaluator')
+            ->with(['evaluator', 'mentor'])
             ->orderBy('assessment_date', 'desc')
             ->paginate(10);
 
@@ -196,16 +198,21 @@ class AdabController extends Controller
         
         $averages = [];
         $totalAverage = 0;
+        $mentorAverage = 0;
         
         if ($allRecords->isNotEmpty()) {
-            for ($i = 1; $i <= 20; $i++) {
+            for ($i = 1; $i <= 15; $i++) {
                 // Average of 1 and 0 is the fraction of "Yes" responses
                 $averages["q{$i}"] = round($allRecords->avg("q{$i}"), 2);
             }
+            for ($i = 16; $i <= 20; $i++) {
+                $averages["q{$i}"] = 0;
+            }
             $totalAverage = round($allRecords->avg('total_score'), 1);
+            $mentorAverage = round(($allRecords->whereNotNull('mentor_score')->avg('mentor_score') ?? 0), 1);
         }
 
-        return view('adab.show', compact('student', 'adabRecords', 'averages', 'totalAverage'));
+        return view('adab.show', compact('student', 'adabRecords', 'averages', 'totalAverage', 'mentorAverage'));
     }
 
     public function destroy(AdabRecord $adabRecord): RedirectResponse
@@ -221,5 +228,33 @@ class AdabController extends Controller
         return redirect()
             ->route('adab.show', $student)
             ->with('success', 'Penilaian adab berhasil dihapus.');
+    }
+
+    public function storeMentorScore(Request $request, Student $student, AdabRecord $adabRecord): RedirectResponse
+    {
+        $user = Auth::user();
+        abort_unless($user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']), 403, 'Hanya pendamping adab atau admin yang dapat memberi nilai.');
+
+        $validated = $request->validate([
+            'mentor_score' => 'required|integer|min:0|max:100',
+        ]);
+
+        $sum = 0;
+        for ($i = 1; $i <= 15; $i++) {
+            $sum += (int) $adabRecord->{"q{$i}"};
+        }
+        $studentScore = round(($sum / 15) * 50, 1);
+        $mentorWeightedScore = $validated['mentor_score'] * 0.5;
+        $totalScore = round($studentScore + $mentorWeightedScore, 1);
+
+        $adabRecord->update([
+            'mentor_score' => $validated['mentor_score'],
+            'mentor_id' => $user->id,
+            'total_score' => $totalScore,
+        ]);
+
+        return redirect()
+            ->route('adab.show', $student)
+            ->with('success', 'Nilai pendamping adab berhasil disimpan: ' . $validated['mentor_score'] . '/100. Total skor menjadi: ' . $totalScore . '.');
     }
 }

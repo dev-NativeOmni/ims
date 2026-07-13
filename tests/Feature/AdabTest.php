@@ -69,14 +69,14 @@ class AdabTest extends TestCase
             ->get(route('adab.create', $student))
             ->assertStatus(200);
 
-        // Submit form (18 "Ya" (1) and 2 "Tidak" (0) answers -> score should be 18 * 5 = 90)
+        // Submit form (12 "Ya" (1) and 3 "Tidak" (0) answers -> score should be 12 / 15 * 50 = 40)
         $data = [
             'notes' => 'Catatan harianku',
         ];
-        for ($i = 1; $i <= 18; $i++) {
+        for ($i = 1; $i <= 12; $i++) {
             $data["q{$i}"] = 1;
         }
-        for ($i = 19; $i <= 20; $i++) {
+        for ($i = 13; $i <= 15; $i++) {
             $data["q{$i}"] = 0;
         }
 
@@ -85,11 +85,63 @@ class AdabTest extends TestCase
 
         $response->assertRedirect(route('adab.show', $student));
         
-        // Assert record exists in database with score 90
+        // Assert record exists in database with score 40
         $this->assertDatabaseHas('adab_records', [
             'student_id' => $student->id,
-            'total_score' => 90,
+            'total_score' => 40,
             'notes' => 'Catatan harianku',
+        ]);
+    }
+
+    public function test_mentor_can_grade_student_adab(): void
+    {
+        $studentRole = Role::where('name', 'student')->first();
+        $studentUser = User::factory()->create([
+            'role_id' => $studentRole->id,
+            'status' => 'active',
+        ]);
+        $student = Student::create([
+            'name' => 'Test Student 2',
+            'student_number' => 'ST124',
+            'user_id' => $studentUser->id,
+        ]);
+
+        // Create an existing daily record for student
+        $record = AdabRecord::create([
+            'student_id' => $student->id,
+            'evaluator_id' => $studentUser->id,
+            'assessment_date' => now()->toDateString(),
+            'q1' => 1, 'q2' => 1, 'q3' => 1, 'q4' => 1, 'q5' => 1,
+            'q6' => 1, 'q7' => 1, 'q8' => 1, 'q9' => 1, 'q10' => 1,
+            'q11' => 1, 'q12' => 1, 'q13' => 0, 'q14' => 0, 'q15' => 0,
+            'total_score' => 40,
+        ]);
+
+        // Create mentor user
+        $mentorRole = Role::where('name', 'pendamping_adab')->first();
+        if (!$mentorRole) {
+            $mentorRole = Role::create(['name' => 'pendamping_adab', 'display_name' => 'Pendamping Adab']);
+        }
+        $mentor = User::factory()->create([
+            'role_id' => $mentorRole->id,
+            'username' => 'testmentor',
+            'status' => 'active',
+        ]);
+
+        // Post mentor grade (80 out of 100 -> weighted score 40)
+        // Total score should become: 40 (student score) + 40 (mentor weighted) = 80
+        $response = $this->actingAs($mentor)
+            ->post(route('adab.store-mentor-score', [$student, $record]), [
+                'mentor_score' => 80,
+            ]);
+
+        $response->assertRedirect(route('adab.show', $student));
+
+        $this->assertDatabaseHas('adab_records', [
+            'id' => $record->id,
+            'mentor_score' => 80,
+            'mentor_id' => $mentor->id,
+            'total_score' => 80,
         ]);
     }
 
@@ -159,5 +211,61 @@ class AdabTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Adab Hari Ini');
         $response->assertSee('Monitoring Adab');
+    }
+
+    public function test_unauthorized_user_cannot_access_adab_settings(): void
+    {
+        // Guest
+        $this->get(route('settings.adab'))->assertRedirect(route('login'));
+
+        // Teacher
+        $teacherRole = Role::where('name', 'teacher')->first();
+        $teacher = User::factory()->create(['role_id' => $teacherRole->id, 'status' => 'active']);
+        $this->actingAs($teacher)->get(route('settings.adab'))->assertStatus(403);
+
+        // Student
+        $studentRole = Role::where('name', 'student')->first();
+        $student = User::factory()->create(['role_id' => $studentRole->id, 'status' => 'active']);
+        $this->actingAs($student)->get(route('settings.adab'))->assertStatus(403);
+    }
+
+    public function test_authorized_user_can_access_and_update_adab_settings(): void
+    {
+        $supervisorRole = Role::where('name', 'supervisor')->first();
+        if (!$supervisorRole) {
+            $supervisorRole = Role::create(['name' => 'supervisor', 'display_name' => 'Supervisor']);
+        }
+        $supervisor = User::factory()->create([
+            'role_id' => $supervisorRole->id,
+            'username' => 'testsupervisor2',
+            'status' => 'active',
+        ]);
+
+        // Can access page
+        $this->actingAs($supervisor)->get(route('settings.adab'))->assertStatus(200);
+
+        // Prepare test data
+        $postData = ['categories' => []];
+        $defaultCategories = \App\Models\Setting::getAdabQuestions();
+        
+        foreach ($defaultCategories as $catIdx => $category) {
+            $postData['categories'][$catIdx] = [
+                'title' => $category['title'] . ' MODIFIED',
+                'desc' => $category['desc'] . ' MODIFIED',
+                'questions' => [],
+            ];
+            foreach ($category['questions'] as $qKey => $questionText) {
+                $postData['categories'][$catIdx]['questions'][$qKey] = $questionText . ' MODIFIED';
+            }
+        }
+
+        // Can submit update
+        $response = $this->actingAs($supervisor)->post(route('settings.adab.update'), $postData);
+        $response->assertRedirect(route('settings.adab'));
+
+        // Assert updated in Setting
+        $updatedQuestions = \App\Models\Setting::getAdabQuestions();
+        $this->assertEquals('🕋 Adab Kepada Allah MODIFIED', $updatedQuestions[0]['title']);
+        $this->assertEquals('Apakah Anda melaksanakan shalat fardhu tepat waktu hari ini? MODIFIED', $updatedQuestions[0]['questions']['q1']);
     }
 }

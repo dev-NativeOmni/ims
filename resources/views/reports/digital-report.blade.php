@@ -151,12 +151,12 @@
                                 <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgRasul }}%</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-400">Adab Pergaulan (Sosial)</span>
+                                <span class="text-gray-400">Adab Belajar</span>
                                 <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgSosial }}%</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-400">Adab kpd Al-Qur'an</span>
-                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgQuran }}%</span>
+                                <span class="text-gray-400">Penilaian Pendamping</span>
+                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgQuran }}</span>
                             </div>
                         </div>
                     </div>

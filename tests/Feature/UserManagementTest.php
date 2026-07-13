@@ -47,6 +47,7 @@ class UserManagementTest extends TestCase
         $superAdminRole = Role::where('name', 'super_admin')->first();
         $superAdmin = User::factory()->create([
             'role_id' => $superAdminRole->id,
+            'name' => 'AAA Super Admin',
             'username' => 'testsuperadmin',
             'status' => 'active',
             'plain_password' => 'supersecret123',
@@ -174,27 +175,27 @@ class UserManagementTest extends TestCase
             'role_id' => Role::where('name', 'teacher')->first()->id,
             'username' => 'activeteacher',
             'status' => 'active',
-            'name' => 'Active Teacher Name',
+            'name' => 'AAA Active Teacher Name',
         ]);
 
         $inactiveUser = User::factory()->create([
             'role_id' => Role::where('name', 'teacher')->first()->id,
             'username' => 'inactiveteacher',
             'status' => 'inactive',
-            'name' => 'Inactive Teacher Name',
+            'name' => 'AAA Inactive Teacher Name',
         ]);
 
         // Filter active
         $responseActive = $this->actingAs($superAdmin)->get(route('users.index', ['status' => 'active']));
         $responseActive->assertStatus(200);
-        $responseActive->assertSee('Active Teacher Name');
-        $responseActive->assertDontSee('Inactive Teacher Name');
+        $responseActive->assertSee('AAA Active Teacher Name');
+        $responseActive->assertDontSee('AAA Inactive Teacher Name');
 
         // Filter inactive
         $responseInactive = $this->actingAs($superAdmin)->get(route('users.index', ['status' => 'inactive']));
         $responseInactive->assertStatus(200);
-        $responseInactive->assertSee('Inactive Teacher Name');
-        $responseInactive->assertDontSee('Active Teacher Name');
+        $responseInactive->assertSee('AAA Inactive Teacher Name');
+        $responseInactive->assertDontSee('AAA Active Teacher Name');
     }
 
     public function test_super_admin_can_delete_other_user(): void

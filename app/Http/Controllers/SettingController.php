@@ -59,8 +59,33 @@ class SettingController extends Controller
             Setting::set('login_bg', $path);
         }
 
-        return redirect()
-            ->route('settings.index')
-            ->with('success', 'Pengaturan berhasil diperbarui.');
+        return redirect()->route('settings.index')->with('success', 'Pengaturan berhasil diperbarui.');
+    }
+
+    public function editAdab()
+    {
+        $categories = Setting::getAdabQuestions();
+        return view('settings.adab', compact('categories'));
+    }
+
+    public function updateAdab(Request $request)
+    {
+        $rules = [];
+        for ($catIdx = 0; $catIdx < 3; $catIdx++) {
+            $rules["categories.{$catIdx}.title"] = 'required|string|max:255';
+            $rules["categories.{$catIdx}.desc"] = 'required|string|max:1000';
+            
+            $startQ = ($catIdx * 5) + 1;
+            $endQ = $startQ + 4;
+            for ($qIdx = $startQ; $qIdx <= $endQ; $qIdx++) {
+                $rules["categories.{$catIdx}.questions.q{$qIdx}"] = 'required|string|max:255';
+            }
+        }
+
+        $validated = $request->validate($rules);
+
+        Setting::set('adab_questions', json_encode($validated['categories']));
+
+        return redirect()->route('settings.adab')->with('success', 'Daftar pertanyaan kuisioner adab berhasil diperbarui.');
     }
 }

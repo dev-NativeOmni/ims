@@ -7,6 +7,10 @@
     <!-- Tailwind CSS v4 via CDN for print layout rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @page {
+            size: 215mm 330mm;
+            margin: 8mm 12mm;
+        }
         @media print {
             .no-print {
                 display: none !important;
@@ -14,13 +18,40 @@
             body {
                 background-color: white !important;
                 color: black !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             .page-break {
                 page-break-before: always;
             }
+            .print-container {
+                min-height: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                zoom: 80% !important;
+            }
+            .signature-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
         }
         body {
             font-family: 'Times New Roman', Times, serif;
+        }
+        .logo-left {
+            width: 90px;
+            height: 80px;
+            object-fit: cover;
+            object-position: left;
+        }
+        .logo-right {
+            width: 92px;
+            height: 80px;
+            object-fit: cover;
+            object-position: right;
         }
     </style>
 </head>
@@ -47,6 +78,7 @@
             $progress = $data['progress'];
             $hafalanRecords = $data['hafalanRecords'];
             $murajaahRecords = $data['murajaahRecords'];
+            $targetRecords = $data['targetRecords'];
             $avgAllah = $data['avgAllah'];
             $avgRasul = $data['avgRasul'];
             $avgSosial = $data['avgSosial'];
@@ -58,184 +90,297 @@
         @endphp
 
         <!-- Official Report Card Layout -->
-        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 border shadow-sm rounded-none min-h-[297mm] {{ $index > 0 ? 'page-break mt-8 print:mt-0' : '' }}">
+        <div class="print-container max-w-4xl mx-auto bg-white p-8 sm:p-12 border shadow-sm rounded-none min-h-[330mm] {{ $index > 0 ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
             
-            <!-- Kop Surat Sekolah -->
-            <div class="text-center border-b-4 border-double border-black pb-4 mb-6">
-                <h1 class="text-xl font-bold uppercase tracking-wide">SMA ISLAM AL AZHAR 7 SOLO BARU</h1>
-                <p class="text-xs text-gray-600 mt-1">Jl. KH. Samanhudi No. 1, Solo Baru, Sukoharjo, Jawa Tengah</p>
-                <h2 class="text-lg font-bold uppercase mt-2 tracking-wider text-indigo-900">RAPOR DIGITAL MONITORING SISWA</h2>
-                <p class="text-sm text-gray-500 font-semibold mt-0.5">Tahun Ajaran: {{ $academicYear }} · Semester: {{ $semester }} ({{ $semester == 1 ? 'Ganjil' : 'Genap' }})</p>
+            <!-- Kop Surat Terpadu (Sesuai PDF Baru Integrasi) -->
+            <div class="flex items-center justify-between border-b border-black pb-4 mb-6">
+                <!-- Left Logo: Al Azhar (cropped from image2.png) -->
+                <div class="shrink-0">
+                    <img src="{{ asset('images/image2.png') }}" class="logo-left" alt="Logo Al Azhar" />
+                </div>
+                
+                <!-- Title & Basmalah -->
+                <div class="flex-1 flex flex-col items-center px-4">
+                    <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
+                    <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">LAPORAN PENILAIAN ADAB, TAHFIDZ, DAN TANSE</h1>
+                    <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">SMA ISLAM AL AZHAR 7 SUKOHARJO</h2>
+                    
+                    <!-- Semester Box -->
+                    <div class="border border-black px-4 py-0.5 mt-2 bg-gray-50 text-[9px] font-bold text-black uppercase">
+                        SEMESTER : {{ $semester == 1 ? '1 (SATU)' : '2 (DUA)' }}
+                    </div>
+                    
+                    <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran {{ $academicYear }}</p>
+                </div>
+                
+                <!-- Right Logo: Makarimah (cropped from image2.png) -->
+                <div class="shrink-0">
+                    <img src="{{ asset('images/image2.png') }}" class="logo-right" alt="Logo Makarimah" />
+                </div>
             </div>
 
             <!-- Identitas Siswa -->
-            <div class="grid grid-cols-2 gap-4 text-xs mb-6 pb-4 border-b border-gray-300">
-                <div class="space-y-1.5">
-                    <div class="flex"><span class="w-32 text-gray-500">Nama Lengkap</span> <span class="font-bold">: {{ $student->name }}</span></div>
-                    <div class="flex"><span class="w-32 text-gray-500">Nomor Induk (NIS)</span> <span>: {{ $student->student_number ?: '-' }}</span></div>
-                    <div class="flex"><span class="w-32 text-gray-500">Jenis Kelamin</span> <span>: {{ $student->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}</span></div>
-                </div>
-                <div class="space-y-1.5">
-                    <div class="flex"><span class="w-32 text-gray-500">Kelas</span> <span class="font-semibold">: {{ $student->classRoom?->name ?: '-' }}</span></div>
-                    <div class="flex"><span class="w-32 text-gray-500">Program</span> <span>: {{ $student->classRoom?->program?->name ?: '-' }}</span></div>
-                    <div class="flex"><span class="w-32 text-gray-500">Guru Wali Kelas</span> <span>: {{ $student->teacher?->user?->name ?: '-' }}</span></div>
-                </div>
-            </div>
+            <table class="text-xs text-black mb-6" style="line-height: 1.6; min-width: 300px;">
+                <tr>
+                    <td class="w-20 font-bold">Nama</td>
+                    <td class="w-4">:</td>
+                    <td>{{ $student->name }}</td>
+                </tr>
+                <tr>
+                    <td class="font-bold">NIS/NISN</td>
+                    <td>:</td>
+                    <td>{{ $student->student_number ?: '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Kelas</td>
+                    <td>:</td>
+                    <td>{{ $student->classRoom?->name ?: '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Term</td>
+                    <td>:</td>
+                    <td>{{ $student->classRoom?->program?->name ?: '-' }}</td>
+                </tr>
+            </table>
 
-            <!-- Modul 1: Tahfizh Al-Quran -->
+            <!-- I. LAPORAN TAHFIDZ -->
             <div class="mb-6 space-y-3">
-                <h3 class="text-sm font-bold uppercase tracking-wider bg-gray-100 p-1.5 border-l-4 border-indigo-700">I. Capaian Tahfizh Al-Qur'an</h3>
+                <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIDZ</h3>
                 
-                <div class="grid grid-cols-3 gap-4 text-xs text-center">
-                    <div class="border p-2">
-                        <span class="block text-gray-500 uppercase tracking-widest text-[9px]">Progres Hafalan</span>
-                        <span class="text-base font-bold text-gray-900 mt-1 block">{{ number_format($progress['progress_percent'] ?? 0, 2) }}%</span>
-                    </div>
-                    <div class="border p-2">
-                        <span class="block text-gray-500 uppercase tracking-widest text-[9px]">Rerata Skor Hafalan</span>
-                        <span class="text-base font-bold text-gray-900 mt-1 block">{{ $progress['average_hafalan_score'] > 0 ? round($progress['average_hafalan_score'], 1) : '-' }}</span>
-                    </div>
-                    <div class="border p-2">
-                        <span class="block text-gray-500 uppercase tracking-widest text-[9px]">Target Terlambat</span>
-                        <span class="text-base font-bold text-red-600 mt-1 block">{{ $progress['overdue_targets'] ?? 0 }} Target</span>
-                    </div>
-                </div>
-
-                <!-- Recent Memorizations -->
-                @if($hafalanRecords->isNotEmpty())
-                    <div class="text-xs pt-1">
-                        <span class="font-bold text-gray-700 block mb-1">Setoran Hafalan Terakhir:</span>
-                        <table class="w-full text-left border">
-                            <thead>
-                                <tr class="bg-gray-50 border-b">
-                                    <th class="p-1 border-r text-center w-10">No</th>
-                                    <th class="p-1 border-r">Surah / Ayat</th>
-                                    <th class="p-1 border-r text-center w-24">Tanggal</th>
-                                    <th class="p-1 text-center w-20">Nilai</th>
+                <!-- Table 1: Targets -->
+                <table class="w-full border border-black text-xs text-left">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-black text-center font-bold">
+                            <th class="p-1 border-r border-black w-10">No.</th>
+                            <th class="p-1 border-r border-black">TARGET</th>
+                            <th class="p-1 border-r border-black">CAPAIAN</th>
+                            <th class="p-1 border-r border-black">KETERANGAN</th>
+                            <th class="p-1">Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if($targetRecords->isNotEmpty())
+                            @foreach($targetRecords as $idx => $target)
+                                <tr class="border-b border-black">
+                                    <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
+                                    <td class="p-1.5 border-r border-black font-semibold">QS. {{ $target->surah?->name_latin }} (Ayat {{ $target->ayah_start }}-{{ $target->ayah_end }})</td>
+                                    <td class="p-1.5 border-r border-black text-center font-bold text-green-700">
+                                        @if($target->matching_record)
+                                            Tercapai
+                                        @else
+                                            <span class="text-red-600 font-semibold">Belum Tercapai</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-1.5 border-r border-black text-center text-gray-700">
+                                        @if($target->matching_record)
+                                            {{ $target->matching_record->submitted_at?->format('d/m/Y') }}
+                                        @else
+                                            Target: {{ $target->target_date?->format('d/m/Y') }}
+                                        @endif
+                                    </td>
+                                    <td class="p-1.5 text-gray-600">
+                                        @if($target->matching_record)
+                                            {{ $target->matching_record->notes ?: 'Tercapai sesuai target' }}
+                                        @else
+                                            {{ $target->notes ?: '-' }}
+                                        @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($hafalanRecords as $idx => $record)
-                                    <tr class="border-b">
-                                        <td class="p-1 border-r text-center">{{ $idx + 1 }}</td>
-                                        <td class="p-1 border-r">{{ $record->surah?->name_latin }} (Ayat {{ $record->ayah_start }}-{{ $record->ayah_end }})</td>
-                                        <td class="p-1 border-r text-center">{{ $record->submitted_at?->format('d/m/Y') }}</td>
-                                        <td class="p-1 text-center font-bold">{{ $record->score }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+                            @endforeach
+                        @else
+                            @forelse($hafalanRecords as $idx => $record)
+                                <tr class="border-b border-black">
+                                    <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
+                                    <td class="p-1.5 border-r border-black font-semibold">QS. {{ $record->surah?->name_latin }} (Ayat {{ $record->ayah_start }}-{{ $record->ayah_end }})</td>
+                                    <td class="p-1.5 border-r border-black text-center font-bold text-green-700">Lulus</td>
+                                    <td class="p-1.5 border-r border-black text-center text-gray-700">{{ $record->submitted_at?->format('d/m/Y') }}</td>
+                                    <td class="p-1.5 text-gray-600">{{ $record->notes ?: 'Setoran passed (Skor: '.round($record->score).')' }}</td>
+                                </tr>
+                            @empty
+                                <tr class="border-b border-black">
+                                    <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data capaian hafalan.</td>
+                                </tr>
+                            @endforelse
+                        @endif
+                    </tbody>
+                </table>
+
+                <!-- Table 2: Nilai Ujian (Recent Exams) -->
+                <table class="w-full border border-black text-xs text-left mt-4">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-black text-center font-bold">
+                            <th class="p-1 border-r border-black w-10">No.</th>
+                            <th class="p-1 border-r border-black">NILAI UJIAN</th>
+                            <th class="p-1 border-r border-black w-24">KKM</th>
+                            <th class="p-1 border-r border-black w-28">KETERANGAN</th>
+                            <th class="p-1">Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($tahfizhExams as $idx => $exam)
+                            <tr class="border-b border-black">
+                                <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
+                                <td class="p-1.5 border-r border-black font-semibold">{{ $exam->exam_range }}</td>
+                                <td class="p-1.5 border-r border-black text-center">75</td>
+                                <td class="p-1.5 border-r border-black text-center font-bold text-indigo-750">Skor: {{ round($exam->total_score) }}</td>
+                                <td class="p-1.5 text-gray-600">{{ $exam->notes ?: 'Lulus ujian tahfizh' }}</td>
+                            </tr>
+                        @empty
+                            <tr class="border-b border-black">
+                                <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data nilai ujian tahfizh.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Modul 2: Adab & Akhlak -->
+            <!-- II. PENILAIAN ADAB -->
             <div class="mb-6 space-y-3">
-                <h3 class="text-sm font-bold uppercase tracking-wider bg-gray-100 p-1.5 border-l-4 border-teal-600">II. Evaluasi Adab & Pembiasaan Akhlak</h3>
+                <h3 class="text-xs font-black uppercase text-black">II. PENILAIAN ADAB</h3>
                 
-                <div class="flex justify-between items-center border p-3 text-xs mb-2 bg-teal-50/10">
-                    <span class="font-bold text-gray-700">RATA-RATA NILAI KEPATUHAN ADAB:</span>
-                    <span class="text-base font-extrabold text-teal-700">{{ $avgTotal }} / 100</span>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-center">
-                    <div class="border p-2">
-                        <span class="block text-gray-500 mb-1">Adab kpd Allah</span>
-                        <span class="font-bold text-gray-900 text-sm">{{ $avgAllah }}%</span>
-                    </div>
-                    <div class="border p-2">
-                        <span class="block text-gray-500 mb-1">Adab kpd Rasulullah</span>
-                        <span class="font-bold text-gray-900 text-sm">{{ $avgRasul }}%</span>
-                    </div>
-                    <div class="border p-2">
-                        <span class="block text-gray-500 mb-1">Adab Pergaulan</span>
-                        <span class="font-bold text-gray-900 text-sm">{{ $avgSosial }}%</span>
-                    </div>
-                    <div class="border p-2">
-                        <span class="block text-gray-500 mb-1">Adab kpd Al-Qur'an</span>
-                        <span class="font-bold text-gray-900 text-sm">{{ $avgQuran }}%</span>
-                    </div>
-                </div>
+                <table class="w-full border border-black text-xs text-left">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-black text-center font-bold">
+                            <th class="p-1 border-r border-black w-10">No.</th>
+                            <th class="p-1 border-r border-black w-56">KOMPONEN ADAB</th>
+                            <th class="p-1 border-r border-black w-24">Nilai</th>
+                            <th class="p-1">Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center align-middle">1</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ALLAH</td>
+                            <td rowspan="3" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
+                                <span class="text-base font-black">{{ $avgTotal }}%</span>
+                                @php
+                                    $pred = '';
+                                    if ($avgTotal >= 85) $pred = 'Mumtaz';
+                                    elseif ($avgTotal >= 70) $pred = 'Jayyid';
+                                    elseif ($avgTotal >= 55) $pred = 'Maqbul';
+                                    else $pred = 'Dhaif';
+                                @endphp
+                                <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ $pred }}</span>
+                            </td>
+                            <td rowspan="3" class="p-3 text-gray-700 leading-relaxed align-middle">
+                                @if($avgTotal >= 85)
+                                    Sangat baik, konsisten dalam beribadah, shalat fardhu tepat waktu, rutin membaca shalawat serta menerapkan adab belajar secara tertib dan disiplin di kelas.
+                                @elseif($avgTotal >= 70)
+                                    Baik, rutin melaksanakan ibadah harian, membaca shalawat, serta menunjukkan kedisiplinan dan kesopanan yang baik saat belajar di kelas.
+                                @elseif($avgTotal >= 55)
+                                    Cukup baik, sudah berusaha tertib beribadah dan mengikuti aturan belajar di kelas, namun perlu pembinaan lebih lanjut agar lebih konsisten.
+                                @else
+                                    Memerlukan perhatian khusus dan bimbingan moral intensif baik di sekolah maupun di rumah untuk meningkatkan kualitas ibadah dan adab belajar.
+                                @endif
+                            </td>
+                        </tr>
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center align-middle">2</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ROSUL</td>
+                        </tr>
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center align-middle">3</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB BELAJAR</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Modul 3: Kedisiplinan & Penghargaan (Tanse) -->
+            <!-- III. LAPORAN TANSE -->
             <div class="mb-6 space-y-3">
-                <h3 class="text-sm font-bold uppercase tracking-wider bg-gray-100 p-1.5 border-l-4 border-red-600">III. Catatan Kedisiplinan & Prestasi</h3>
-
-                <div class="grid grid-cols-2 gap-4 text-xs text-center mb-3">
-                    <div class="border p-2 bg-rose-50/10">
-                        <span class="block text-rose-500 font-semibold uppercase text-[9px] tracking-wide">Poin Pelanggaran</span>
-                        <span class="text-base font-bold text-rose-700 mt-1 block">{{ $violations->sum('points') }} Poin</span>
-                    </div>
-                    <div class="border p-2 bg-emerald-50/10">
-                        <span class="block text-emerald-500 font-semibold uppercase text-[9px] tracking-wide">Poin Penghargaan (Prestasi)</span>
-                        <span class="text-base font-bold text-emerald-700 mt-1 block">+{{ $rewards->sum('points') }} Poin</span>
-                    </div>
-                </div>
-
-                <!-- Violations details -->
-                @if($violations->isNotEmpty())
-                    <div class="text-xs pt-1">
-                        <span class="font-bold text-gray-700 block mb-1">Catatan Kasus Pelanggaran:</span>
-                        <table class="w-full text-left border">
-                            <thead>
-                                <tr class="bg-gray-50 border-b">
-                                    <th class="p-1 border-r text-center w-10">No</th>
-                                    <th class="p-1 border-r">Pelanggaran / Sanksi</th>
-                                    <th class="p-1 border-r text-center w-24">Lokasi</th>
-                                    <th class="p-1 text-center w-20">Poin</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($violations as $idx => $v)
-                                    <tr class="border-b">
-                                        <td class="p-1 border-r text-center">{{ $idx + 1 }}</td>
-                                        <td class="p-1 border-r">
-                                            <div class="font-semibold">{{ $v->title }}</div>
-                                            @if($v->sanction)
-                                                <p class="text-[10px] text-amber-700 italic">Sanksi: {{ $v->sanction }}</p>
-                                            @endif
-                                        </td>
-                                        <td class="p-1 border-r text-center">{{ $v->location ?: '-' }}</td>
-                                        <td class="p-1 text-center text-red-650 font-bold">-{{ $v->points }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+                <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE</h3>
+                
+                <table class="w-full border border-black text-xs text-left">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-black text-center font-bold">
+                            <th class="p-1 border-r border-black w-10">No.</th>
+                            <th class="p-1 border-r border-black w-48">JENIS PERILAKU</th>
+                            <th class="p-1 border-r border-black w-24">POIN</th>
+                            <th class="p-1">Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center">1</td>
+                            <td class="p-2 border-r border-black font-bold">Penghargaan</td>
+                            <td class="p-2 border-r border-black text-center font-bold text-emerald-700">{{ $rewards->sum('points') }}</td>
+                            <td class="p-2 text-gray-700">
+                                @if($rewards->isNotEmpty())
+                                    <ul class="list-disc list-inside">
+                                        @foreach($rewards as $r)
+                                            <li>{{ $r->notes }} (+{{ $r->points }} Poin)</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    Nihil - Tidak memiliki catatan penghargaan/prestasi.
+                                @endif
+                            </td>
+                        </tr>
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center">2</td>
+                            <td class="p-2 border-r border-black font-bold">Pelanggaran</td>
+                            <td class="p-2 border-r border-black text-center font-bold text-rose-700">{{ $violations->sum('points') }}</td>
+                            <td class="p-2 text-gray-700">
+                                @if($violations->isNotEmpty())
+                                    <ul class="list-disc list-inside text-rose-700">
+                                        @foreach($violations as $v)
+                                            <li>{{ $v->notes }} (-{{ $v->points }} Poin)</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    Nihil - Tidak memiliki catatan pelanggaran perilaku negatif.
+                                @endif
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Catatan Wali Kelas -->
-            <div class="mb-8 p-4 border border-gray-300 rounded-none text-xs">
-                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-2">CATATAN & EVALUASI WALI KELAS:</h4>
-                <p class="italic text-gray-800 leading-relaxed font-semibold">
+            <div class="mb-6 p-3 border border-black rounded-none text-xs">
+                <h4 class="font-bold text-black uppercase mb-1">CATATAN & EVALUASI WALI KELAS:</h4>
+                <p class="italic text-gray-900 leading-relaxed font-semibold">
                     "{{ $report?->teacher_notes ?: 'Belum ada catatan deskriptif dari wali kelas.' }}"
                 </p>
             </div>
 
-            <!-- Signature Area -->
-            <div class="grid grid-cols-3 gap-6 text-center text-xs mt-12 pt-8 border-t border-gray-200">
-                <div>
-                    <p>Mengetahui,</p>
-                    <p class="font-semibold">Orang Tua / Wali Santri</p>
-                    <div class="h-20"></div>
-                    <p class="border-b border-black w-3/4 mx-auto"></p>
+            <!-- Signature Area (4 Kolom Sesuai PDF Rapor Baru Integrasi) -->
+            <div class="signature-block w-full text-xs text-black mt-8">
+                <!-- Row 1 -->
+                <div class="grid grid-cols-2 gap-8 text-center">
+                    <div>
+                        <p class="font-semibold">Koordinator Tahfidz</p>
+                        <div class="h-16 print:h-12"></div>
+                        <p class="font-bold underline text-black">Zainal Arifin, S.Pd</p>
+                        <p class="text-[10px] text-gray-650">NIK. 15.06.0393</p>
+                    </div>
+                    <div>
+                        <p>Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                        <p class="font-semibold">Koordinator Keagamaan</p>
+                        <div class="h-16 print:h-12"></div>
+                        <p class="font-bold underline text-black">Rifqi Ihsan, S.Pd</p>
+                        <p class="text-[10px] text-gray-650">NIK. 15.06.0393</p>
+                    </div>
                 </div>
-                <div>
-                    <p>Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
-                    <p class="font-semibold">Guru Wali Kelas</p>
-                    <div class="h-20"></div>
-                    <p class="font-bold border-b border-black w-3/4 mx-auto">{{ $student->teacher?->user?->name ?? '.......................' }}</p>
-                </div>
-                <div>
-                    <p>Mengetahui,</p>
-                    <p class="font-semibold">Kepala Sekolah</p>
-                    <div class="h-20"></div>
-                    <p class="font-bold border-b border-black w-3/4 mx-auto">Moh. Pandoyo, S.Si, M.Pd, G.r</p>
+                
+                <!-- Row 2 -->
+                <div class="grid grid-cols-2 gap-8 text-center mt-6">
+                    <div>
+                        <p>Mengetahui,</p>
+                        <p class="font-semibold">Kepala SMA Islam Al Azhar 7 Sukoharjo</p>
+                        <div class="h-16 print:h-12"></div>
+                        <p class="font-bold underline text-black">Moh Pandoyo, S.Si., M.Pd., Gr.</p>
+                        <p class="text-[10px] text-gray-650">NIK. 08.04.0160</p>
+                    </div>
+                    <div>
+                        <p class="invisible">Spacer</p>
+                        <p class="font-semibold">Koordinator Tanse</p>
+                        <div class="h-16 print:h-12"></div>
+                        <p class="font-bold underline text-black">Yatim Hermawan, S.E., S.Kom</p>
+                        <p class="text-[10px] text-gray-650">NIK. 15.06.0393</p>
+                    </div>
                 </div>
             </div>
-
         </div>
     @endforeach
 

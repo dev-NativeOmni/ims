@@ -36,7 +36,7 @@
                             </div>
                         </div>
                         <div class="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border border-zinc-150 dark:border-zinc-800">
-                            <strong>Petunjuk:</strong> Jawablah seluruh pertanyaan kejujuran ini dengan <strong>Ya</strong> atau <strong>Tidak</strong>. Setiap jawaban <strong>Ya</strong> bernilai <strong>5 poin</strong>. Dapatkan nilai sempurna <strong>100 poin</strong> dengan membiasakan seluruh adab mulia ini setiap harinya.
+                            <strong>Petunjuk:</strong> Jawablah seluruh pertanyaan kejujuran ini dengan <strong>Ya</strong> atau <strong>Tidak</strong>. Setiap jawaban <strong>Ya</strong> berkontribusi pada skor mandiri (bobot 50% dari nilai total). Nilai sisa 50% akan dinilai langsung oleh Pendamping Adab.
                         </div>
                     </div>
 
@@ -51,7 +51,7 @@
                             <h4 class="text-sm font-semibold uppercase text-indigo-200 tracking-wider">Perkiraan Skor Hari Ini</h4>
                             <div class="flex items-baseline gap-2 mt-4">
                                 <span class="text-6xl font-black tracking-tight" id="liveScore">0</span>
-                                <span class="text-xl text-indigo-300">/ 100 Poin</span>
+                                <span class="text-xl text-indigo-300">/ 50 Poin Mandiri</span>
                             </div>
                         </div>
                         <div class="mt-6 relative z-10">
@@ -61,7 +61,7 @@
                             </div>
                             <div class="flex justify-between items-center text-xs text-indigo-200 mt-2">
                                 <span id="scoreCategory">Kategori: -</span>
-                                <span id="filledCount">0 dari 20 pertanyaan terjawab</span>
+                                <span id="filledCount">0 dari 15 pertanyaan terjawab</span>
                             </div>
                         </div>
                     </div>
@@ -69,52 +69,7 @@
 
                 <!-- Soal Kuisioner per Kategori -->
                 @php
-                    $categories = [
-                        [
-                            'title' => '🕋 Adab Kepada Allah',
-                            'desc' => 'Menjaga hubungan ketakwaan dan ibadah sehari-hari kepada Allah Subhanahu wa Ta\'ala.',
-                            'questions' => [
-                                'q1' => 'Apakah Anda melaksanakan shalat fardhu tepat waktu hari ini?',
-                                'q2' => 'Apakah Anda mengawali aktivitas hari ini dengan membaca Basmalah?',
-                                'q3' => 'Apakah Anda selalu berdoa setelah selesai shalat fardhu hari ini?',
-                                'q4' => 'Apakah Anda bersyukur atas segala nikmat yang Anda rasakan hari ini?',
-                                'q5' => 'Apakah Anda menyempatkan diri berdzikir (membaca tasbih/tahmid/takbir) hari ini?'
-                            ]
-                        ],
-                        [
-                            'title' => '💚 Adab Kepada Rasulullah',
-                            'desc' => 'Menghidupkan kecintaan dan amalan sunnah sesuai ajaran Nabi Muhammad Shallallahu \'Alaihi wa Sallam.',
-                            'questions' => [
-                                'q6' => 'Apakah Anda membaca shalawat kepada Nabi Muhammad hari ini?',
-                                'q7' => 'Apakah Anda berusaha menjalankan sunnah Nabi (seperti makan/minum dengan duduk dan tangan kanan) hari ini?',
-                                'q8' => 'Apakah Anda menyempatkan diri membaca doa/dzikir pagi atau petang hari ini?',
-                                'q9' => 'Apakah Anda membaca doa harian (sebelum/sesudah tidur, makan, atau masuk kamar mandi) hari ini?',
-                                'q10' => 'Apakah Anda mendengarkan, membaca, atau merenungkan hadits Rasulullah hari ini?'
-                            ]
-                        ],
-                        [
-                            'title' => '🤝 Adab Pergaulan (Akhlak Sosial)',
-                            'desc' => 'Menjaga tutur kata dan sikap santun dalam bersosialisasi dengan teman, guru, dan lingkungan.',
-                            'questions' => [
-                                'q11' => 'Apakah Anda berbicara dan bertutur kata sopan kepada sesama hari ini?',
-                                'q12' => 'Apakah Anda menjauhi perkataan kasar, mencela, merundung (bully), atau berbohong hari ini?',
-                                'q13' => 'Apakah Anda menghormati orang yang lebih tua (guru/orang tua) dan menyayangi yang lebih muda hari ini?',
-                                'q14' => 'Apakah Anda bersedia membantu teman yang membutuhkan bantuan hari ini?',
-                                'q15' => 'Apakah Anda mengucapkan salam ketika bertemu atau berpapasan dengan teman/guru hari ini?'
-                            ]
-                        ],
-                        [
-                            'title' => '📖 Adab Kepada Al-Qur\'an',
-                            'desc' => 'Menghormati kesucian Al-Qur\'an dan istiqamah dalam berinteraksi dengan Kalamullah.',
-                            'questions' => [
-                                'q16' => 'Apakah Anda berwudhu terlebih dahulu sebelum menyentuh mushaf Al-Qur\'an hari ini?',
-                                'q17' => 'Apakah Anda membaca Al-Qur\'an dengan tartil, tenang, dan tidak terburu-buru hari ini?',
-                                'q18' => 'Apakah Anda meletakkan mushaf Al-Qur\'an di tempat yang tinggi, aman, dan bersih hari ini?',
-                                'q19' => 'Apakah Anda mendengarkan lantunan ayat Al-Qur\'an dengan khusyuk hari ini?',
-                                'q20' => 'Apakah Anda disiplin melaksanakan murojaah hafalan Al-Qur\'an hari ini?'
-                            ]
-                        ],
-                    ];
+                    $categories = \App\Models\Setting::getAdabQuestions();
                 @endphp
 
                 @foreach ($categories as $catIdx => $category)
@@ -205,7 +160,7 @@
 
             function updateCalculations() {
                 let filledQuestions = new Set();
-                let totalScore = 0;
+                let yesCount = 0;
 
                 radios.forEach(radio => {
                     const label = radio.closest('label');
@@ -216,7 +171,7 @@
                     if (radio.checked) {
                         filledQuestions.add(q);
                         if (val === 1) {
-                            totalScore += 5; // 20 * 5 = 100 max
+                            yesCount++;
                         }
 
                         // Apply checked styling based on answer
@@ -231,19 +186,22 @@
                     }
                 });
 
+                // Calculate score out of 50
+                let studentScore = Math.round((yesCount / 15) * 50 * 10) / 10;
+
                 // Update UI elements
-                liveScoreEl.textContent = totalScore;
-                progressBar.style.width = totalScore + '%';
-                filledCountEl.textContent = `${filledQuestions.size} dari 20 pertanyaan terjawab`;
+                liveScoreEl.textContent = studentScore;
+                progressBar.style.width = (studentScore * 2) + '%';
+                filledCountEl.textContent = `${filledQuestions.size} dari 15 pertanyaan terjawab`;
 
                 // Update Category string
                 let category = '-';
-                if (filledQuestions.size === 20) {
-                    if (totalScore >= 85) {
+                if (filledQuestions.size === 15) {
+                    if (studentScore >= 42.5) {
                         category = 'Mumtaz (Sangat Baik)';
-                    } else if (totalScore >= 70) {
+                    } else if (studentScore >= 35) {
                         category = 'Jayyid (Baik)';
-                    } else if (totalScore >= 55) {
+                    } else if (studentScore >= 27.5) {
                         category = 'Maqbul (Cukup)';
                     } else {
                         category = 'Dhaif (Kurang)';

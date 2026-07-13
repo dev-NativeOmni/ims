@@ -98,21 +98,20 @@
                         <h4 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-6">Konsistensi Berdasarkan Kategori</h4>
                         
                         @php
-                            // Calculate average for each of the 4 categories (out of 100%)
-                            $allahAvg = 0; $rasulullahAvg = 0; $pergaulanAvg = 0; $quranAvg = 0;
+                            $allahAvg = 0; $rasulullahAvg = 0; $belajarAvg = 0; $mentorAvg = 0;
                             
                             if (count($averages) > 0) {
                                 $allahAvg = round((($averages['q1'] + $averages['q2'] + $averages['q3'] + $averages['q4'] + $averages['q5']) / 5) * 100);
                                 $rasulullahAvg = round((($averages['q6'] + $averages['q7'] + $averages['q8'] + $averages['q9'] + $averages['q10']) / 5) * 100);
-                                $pergaulanAvg = round((($averages['q11'] + $averages['q12'] + $averages['q13'] + $averages['q14'] + $averages['q15']) / 5) * 100);
-                                $quranAvg = round((($averages['q16'] + $averages['q17'] + $averages['q18'] + $averages['q19'] + $averages['q20']) / 5) * 100);
+                                $belajarAvg = round((($averages['q11'] + $averages['q12'] + $averages['q13'] + $averages['q14'] + $averages['q15']) / 5) * 100);
+                                $mentorAvg = round($mentorAverage);
                             }
                             
                             $cats = [
-                                ['label' => '🕋 Adab Kepada Allah', 'val' => $allahAvg, 'color' => 'bg-emerald-500', 'desc' => 'Shalat fardhu tepat waktu, Basmalah, dzikir & doa.'],
-                                ['label' => '💚 Adab Kepada Rasulullah', 'val' => $rasulullahAvg, 'color' => 'bg-teal-500', 'desc' => 'Shalawat, sunnah nabi harian, dzikir & doa harian.'],
-                                ['label' => '🤝 Adab Pergaulan', 'val' => $pergaulanAvg, 'color' => 'bg-indigo-500', 'desc' => 'Kesopanan bicara, menghindari cemoohan, menyapa salam.'],
-                                ['label' => '📖 Adab Kepada Al-Qur\'an', 'val' => $quranAvg, 'color' => 'bg-purple-500', 'desc' => 'Berwudhu sebelum menyentuh, membaca tenang, murojaah.'],
+                                ['label' => '🕋 Adab Kepada Allah', 'val' => $allahAvg, 'color' => 'bg-emerald-500', 'desc' => 'Shalat tepat waktu, doa & dzikir.'],
+                                ['label' => '💚 Adab Kepada Rasulullah', 'val' => $rasulullahAvg, 'color' => 'bg-teal-500', 'desc' => 'Shalawat & sunnah harian.'],
+                                ['label' => '📚 Adab Belajar', 'val' => $belajarAvg, 'color' => 'bg-indigo-500', 'desc' => 'Ketertiban, menyimak khusyuk, & kerapian.'],
+                                ['label' => '👥 Penilaian Pendamping', 'val' => $mentorAvg, 'color' => 'bg-purple-500', 'desc' => 'Evaluasi rata-rata dari pendamping adab.'],
                             ];
                         @endphp
 
@@ -124,7 +123,14 @@
                                             <span class="text-sm font-bold text-zinc-800 dark:text-zinc-200">{{ $c['label'] }}</span>
                                             <span class="text-[10px] text-zinc-400 dark:text-zinc-550 ml-2">({{ $c['desc'] }})</span>
                                         </div>
-                                        <span class="text-sm font-black text-zinc-900 dark:text-white">{{ $c['val'] }}% <span class="text-[10px] font-normal text-zinc-400">Konsistensi "Ya"</span></span>
+                                        <span class="text-sm font-black text-zinc-900 dark:text-white">
+                                            {{ $c['val'] }}{{ $c['label'] === '👥 Penilaian Pendamping' ? '' : '%' }}
+                                            @if($c['label'] !== '👥 Penilaian Pendamping')
+                                                <span class="text-[10px] font-normal text-zinc-400">Konsistensi "Ya"</span>
+                                            @else
+                                                <span class="text-[10px] font-normal text-zinc-400">Poin Rata-rata</span>
+                                            @endif
+                                        </span>
                                     </div>
                                     <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-3 overflow-hidden">
                                         <div class="{{ $c['color'] }} h-full rounded-full transition-all duration-500" style="width: {{ $c['val'] }}%"></div>
@@ -140,14 +146,14 @@
                     <h4 class="text-sm font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider mb-6">Riwayat Jawaban Kuisioner Harian</h4>
                     
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-center">
                             <thead>
-                                <tr class="text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                                    <th class="px-4 py-3">Tanggal Pengisian</th>
-                                    <th class="px-4 py-3 text-center">Skor Akhir</th>
-                                    <th class="px-4 py-3 text-center">Jawaban Ya</th>
-                                    <th class="px-4 py-3 text-center">Jawaban Tidak</th>
-                                    <th class="px-4 py-3">Refleksi / Catatan</th>
+                                <tr class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left">Tanggal Pengisian</th>
+                                    <th class="px-4 py-3">Skor Mandiri (50%)</th>
+                                    <th class="px-4 py-3">Skor Pendamping (50%)</th>
+                                    <th class="px-4 py-3">Total Skor</th>
+                                    <th class="px-4 py-3 text-left">Refleksi / Catatan</th>
                                     @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor']))
                                         <th class="px-4 py-3 text-right">Aksi</th>
                                     @endif
@@ -156,29 +162,86 @@
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 text-sm">
                                 @foreach ($adabRecords as $record)
                                     @php
-                                        // Count Ya and Tidak answers
                                         $yaCount = 0;
-                                        for ($i = 1; $i <= 20; $i++) {
+                                        for ($i = 1; $i <= 15; $i++) {
                                             if ($record->{"q{$i}"} == 1) {
                                                 $yaCount++;
                                             }
                                         }
-                                        $tidakCount = 20 - $yaCount;
+                                        $studentScore = round(($yaCount / 15) * 50, 1);
+                                        $mentorScore = $record->mentor_score;
+                                        $hasMentorScore = !is_null($mentorScore);
+                                        $canGrade = auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
                                     @endphp
                                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150">
-                                        <td class="px-4 py-3 font-semibold text-zinc-950 dark:text-white">
+                                        <td class="px-4 py-3 font-semibold text-zinc-950 dark:text-white text-left">
                                             {{ $record->assessment_date->format('d M Y') }}
                                         </td>
-                                        <td class="px-4 py-3 text-center font-black text-zinc-900 dark:text-white">
-                                            {{ $record->total_score }} <span class="text-xs text-zinc-400 font-normal">/ 100</span>
+                                        <td class="px-4 py-3 font-semibold text-zinc-900 dark:text-white">
+                                            <span class="text-zinc-900 dark:text-white font-bold">{{ $studentScore }}</span>
+                                            <span class="text-xs text-zinc-400">/ 50</span>
+                                            <span class="text-xs text-zinc-400 block mt-0.5">({{ $yaCount }} Ya, {{ 15 - $yaCount }} Tidak)</span>
                                         </td>
-                                        <td class="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 font-bold">
-                                            {{ $yaCount }}
+                                        <td class="px-4 py-3">
+                                            @if (!$hasMentorScore)
+                                                @if ($canGrade)
+                                                    <form method="POST" action="{{ route('adab.store-mentor-score', [$student, $record]) }}" class="flex items-center gap-1.5 justify-center">
+                                                        @csrf
+                                                        <input type="number" name="mentor_score" min="0" max="100" placeholder="0-100" class="w-16 px-2 py-1 text-xs border rounded-xl dark:bg-zinc-800 dark:border-zinc-700 dark:text-white text-center focus:ring-indigo-500" required />
+                                                        <button type="submit" class="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-sm transition">Kirim</button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-zinc-400 italic text-xs">Belum dinilai</span>
+                                                @endif
+                                            @else
+                                                @if ($canGrade)
+                                                    <div x-data="{ editing: false }" class="flex flex-col items-center">
+                                                        <div x-show="!editing" class="flex items-center gap-1.5 justify-center">
+                                                            <span class="font-bold text-zinc-900 dark:text-white">{{ $mentorScore }}</span>
+                                                            <span class="text-xs text-zinc-400">/ 100</span>
+                                                            <span class="text-xs text-zinc-400">(B. {{ $mentorScore * 0.5 }})</span>
+                                                            <button @click="editing = true" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold ml-1">Ubah</button>
+                                                        </div>
+                                                        <form x-show="editing" method="POST" action="{{ route('adab.store-mentor-score', [$student, $record]) }}" class="flex items-center gap-1 justify-center" style="display:none">
+                                                            @csrf
+                                                            <input type="number" name="mentor_score" value="{{ $mentorScore }}" min="0" max="100" class="w-14 px-1.5 py-0.5 text-xs border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 dark:text-white text-center" required />
+                                                            <button type="submit" class="px-1.5 py-0.5 text-[10px] font-bold text-white bg-emerald-600 rounded-md hover:bg-emerald-500">Simpan</button>
+                                                            <button type="button" @click="editing = false" class="px-1.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 bg-zinc-200 dark:bg-zinc-800 rounded-md hover:bg-zinc-350">Batal</button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="font-bold text-zinc-900 dark:text-white">{{ $mentorScore }}</span>
+                                                    <span class="text-xs text-zinc-400">/ 100</span>
+                                                    <span class="text-xs text-zinc-400 block mt-0.5">(Bobot: {{ $mentorScore * 0.5 }})</span>
+                                                @endif
+                                            @endif
                                         </td>
-                                        <td class="px-4 py-3 text-center text-zinc-450 dark:text-zinc-500 font-bold">
-                                            {{ $tidakCount }}
+                                        <td class="px-4 py-3">
+                                            @php
+                                                $badgeClass = '';
+                                                $categoryText = '';
+                                                if ($record->total_score >= 85) {
+                                                    $badgeClass = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30';
+                                                    $categoryText = 'Mumtaz';
+                                                } elseif ($record->total_score >= 70) {
+                                                    $badgeClass = 'bg-teal-50 text-teal-700 dark:bg-teal-950/20 dark:text-teal-400 border border-teal-100 dark:border-teal-900/30';
+                                                    $categoryText = 'Jayyid';
+                                                } elseif ($record->total_score >= 55) {
+                                                    $badgeClass = 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30';
+                                                    $categoryText = 'Maqbul';
+                                                } else {
+                                                    $badgeClass = 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-455 border border-rose-100 dark:border-rose-900/30';
+                                                    $categoryText = 'Dhaif';
+                                                }
+                                            @endphp
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="font-black text-base text-zinc-900 dark:text-white">{{ $record->total_score }}</span>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold {{ $badgeClass }}">
+                                                    {{ $categoryText }}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td class="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 max-w-xs truncate" title="{{ $record->notes }}">
+                                        <td class="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 text-left max-w-xs truncate" title="{{ $record->notes }}">
                                             {{ $record->notes ?: '-' }}
                                         </td>
                                         @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor']))

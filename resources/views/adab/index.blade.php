@@ -23,7 +23,7 @@
                 <div class="relative z-10 max-w-2xl">
                     <h3 class="text-xl font-bold mb-2">Evaluasi Akhlak & Adab Harian</h3>
                     <p class="text-teal-100 text-sm leading-relaxed">
-                        Evaluasi kedisiplinan dan pembiasaan adab islami harian santri. Penilaian mencakup aspek ibadah kepada Allah, kecintaan pada Rasulullah, adab bersosialisasi, dan interaksi dengan Al-Qur'an.
+                        Evaluasi kedisiplinan dan pembiasaan adab islami harian santri. Penilaian mencakup 3 modul mandiri santri (adab kepada Allah, adab kepada Rasulullah, adab belajar) dengan bobot 50% dan penilaian pendamping adab dengan bobot 50%.
                     </p>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                                             <div class="font-semibold text-zinc-900 dark:text-white">
                                                 {{ $student->name }}
                                             </div>
-                                            <div class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                            <div class="text-xs text-zinc-400 dark:text-zinc-550 mt-0.5">
                                                 NIS: {{ $student->student_number ?: '-' }} | {{ $student->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}
                                             </div>
                                         </td>
@@ -146,7 +146,7 @@
                                                     {{ round($score, 1) }}
                                                 </span>
                                             @else
-                                                <span class="text-xs text-zinc-400 dark:text-zinc-600 italic">Belum ada data</span>
+                                                <span class="text-xs text-zinc-400 dark:text-zinc-650 italic">Belum ada data</span>
                                             @endif
                                         </td>
 
@@ -155,7 +155,7 @@
                                                 Riwayat & Rincian
                                             </a>
 
-                                            @if ($isAdmin || $isSupervisor || Auth::user()->hasRole('teacher'))
+                                            @if ($isAdmin || $isSupervisor || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('pendamping_adab'))
                                                 @if (!$student->today_record)
                                                     <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-150">
                                                         Bantu Isi
@@ -194,7 +194,7 @@
                         <!-- Allah -->
                         <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-5 border dark:border-zinc-800 flex flex-col justify-between items-center text-center">
                             <span class="text-2xl mb-2">🕋</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Adab Kepada Allah</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-550 dark:text-zinc-400">Adab Kepada Allah</span>
                             <h3 class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">{{ $avgAllah }}%</h3>
                             <div class="w-full bg-gray-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden mt-4">
                                 <div class="bg-indigo-600 h-full rounded-full" style="width: {{ $avgAllah }}%"></div>
@@ -204,17 +204,17 @@
                         <!-- Rasul -->
                         <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-5 border dark:border-zinc-800 flex flex-col justify-between items-center text-center">
                             <span class="text-2xl mb-2">💚</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Adab Kepada Rasulullah</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-550 dark:text-zinc-400">Adab Kepada Rasulullah</span>
                             <h3 class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">{{ $avgRasul }}%</h3>
                             <div class="w-full bg-gray-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden mt-4">
                                 <div class="bg-emerald-600 h-full rounded-full" style="width: {{ $avgRasul }}%"></div>
                             </div>
                         </div>
 
-                        <!-- Sosial -->
+                        <!-- Belajar -->
                         <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-5 border dark:border-zinc-800 flex flex-col justify-between items-center text-center">
-                            <span class="text-2xl mb-2">🤝</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Adab Pergaulan (Sosial)</span>
+                            <span class="text-2xl mb-2">📚</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-550 dark:text-zinc-400">Adab Belajar</span>
                             <h3 class="text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-2">{{ $avgSosial }}%</h3>
                             <div class="w-full bg-gray-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden mt-4">
                                 <div class="bg-teal-600 h-full rounded-full" style="width: {{ $avgSosial }}%"></div>
@@ -223,9 +223,9 @@
 
                         <!-- Quran -->
                         <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-5 border dark:border-zinc-800 flex flex-col justify-between items-center text-center">
-                            <span class="text-2xl mb-2">📖</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Adab Kepada Al-Qur'an</span>
-                            <h3 class="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-2">{{ $avgQuran }}%</h3>
+                            <span class="text-2xl mb-2">👥</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-550 dark:text-zinc-400">Penilaian Pendamping</span>
+                            <h3 class="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-2">{{ $avgQuran }}</h3>
                             <div class="w-full bg-gray-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden mt-4">
                                 <div class="bg-purple-600 h-full rounded-full" style="width: {{ $avgQuran }}%"></div>
                             </div>
