@@ -358,6 +358,7 @@ class StudentController extends Controller
             'tanggal_lahir'     => $col('tanggal lahir')     ?? $col('birth_date'),
             'status'            => $col('status'),
             'kelas'             => $col('kelas')             ?? $col('class_room'),
+            'tahfizh_level'     => $col('level tahfizh')     ?? $col('tahfizh level')     ?? $col('level'),
             'username_guru'     => $col('username guru')     ?? $col('teacher_username') ?? $col('email guru')     ?? $col('teacher_email'),
             'username_santri'   => $col('username santri')   ?? $col('student_username')  ?? $col('email santri')   ?? $col('student_email'),
             'username_orangtua' => $col('username orangtua') ?? $col('parent_usernames')  ?? $col('email orangtua') ?? $col('parent_emails'),
@@ -483,6 +484,27 @@ class StudentController extends Controller
                     $student = Student::query()->where('user_id', $studentUserId)->first();
                 }
 
+                $tahfizhLevel = null;
+                if ($map['tahfizh_level'] !== null) {
+                    $val = strtolower(trim((string) ($row[$map['tahfizh_level']] ?? '')));
+                    if (in_array($val, ['tahsin', 'reguler', 'akselerasi', 'ummi'], true)) {
+                        $tahfizhLevel = $val;
+                    }
+                }
+
+                if (empty($tahfizhLevel)) {
+                    if ($classRoomId) {
+                        $class = ClassRoom::find($classRoomId);
+                        if ($class && (preg_match('/\bX\b/i', $class->name) || preg_match('/\b10\b/i', $class->name) || ($class->level && (preg_match('/\bX\b/i', $class->level) || preg_match('/\b10\b/i', $class->level))))) {
+                            $tahfizhLevel = 'ummi';
+                        } else {
+                            $tahfizhLevel = 'reguler';
+                        }
+                    } else {
+                        $tahfizhLevel = 'reguler';
+                    }
+                }
+
                 if ($student) {
                     // Update only non-null values from import to prevent overwriting existing data with null
                     $updatePayload = [];
@@ -495,6 +517,10 @@ class StudentController extends Controller
                     if ($classRoomId !== null)    $updatePayload['class_room_id']  = $classRoomId;
                     if ($teacherId !== null)      $updatePayload['teacher_id']     = $teacherId;
                     if ($studentUserId !== null)  $updatePayload['user_id']        = $studentUserId;
+                    
+                    if ($tahfizhLevel !== null) {
+                        $updatePayload['tahfizh_level'] = $tahfizhLevel;
+                    }
 
                     $student->update($updatePayload);
                     $updatedCount++;
@@ -508,6 +534,7 @@ class StudentController extends Controller
                         'teacher_id'     => $teacherId,
                         'user_id'        => $studentUserId,
                         'student_number' => $studentNumber,
+                        'tahfizh_level'  => $tahfizhLevel,
                     ];
                     $student = Student::create($payload);
                     $importedCount++;
