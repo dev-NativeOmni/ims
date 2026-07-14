@@ -203,13 +203,23 @@ class StudentReportController extends Controller
         if ($report && $report->tahfizh_target_term) {
             $termTargetText = $report->tahfizh_target_term;
         } else {
-            $termTargetText = match ($student->tahfizh_level) {
-                'tahsin' => 'Target: 3 baris/pertemuan',
-                'reguler' => 'Target: 5 baris/pertemuan',
-                'akselerasi' => 'Target: 7 baris/pertemuan',
-                'ummi' => 'Metode Bacaan Ummi',
-                default => 'Target: 5 baris/pertemuan',
+            $levelBaris = match ($student->tahfizh_level) {
+                'tahsin' => 3,
+                'reguler' => 5,
+                'akselerasi' => 7,
+                'ummi' => null,
+                default => 5,
             };
+
+            if ($levelBaris === null) {
+                $termTargetText = 'Metode Bacaan Ummi';
+            } else {
+                $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
+                $meetings = ($meetingFrequency === 'seminggu sekali') ? 4 : 20;
+                $totalTargetBaris = $levelBaris * $meetings;
+                
+                $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
+            }
         }
 
         // Compute Capaian Terakhir

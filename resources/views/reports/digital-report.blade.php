@@ -94,6 +94,10 @@
                         <span class="text-indigo-500">📖</span> Perkembangan Tahfizh
                     </h4>
                     
+                    <div class="mb-4 text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 px-3 py-2 rounded-xl border border-indigo-100 dark:border-indigo-950/30">
+                        {{ $termTargetText }}
+                    </div>
+
                     <div class="space-y-4">
                         <div class="flex justify-between items-baseline">
                             <span class="text-xs text-gray-500">Progress Hafalan Quran</span>
