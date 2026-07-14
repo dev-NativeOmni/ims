@@ -82,13 +82,14 @@ class ProgramController extends Controller
     {
         $programs = Program::query()->withCount('classRooms')->orderBy('name')->get();
 
-        $headers = ['Nama Program', 'Deskripsi', 'Status', 'Jumlah Kelas'];
+        $headers = ['Nama Program', 'Deskripsi', 'Frekuensi Pertemuan', 'Status', 'Jumlah Kelas'];
         $data    = [];
 
         foreach ($programs as $program) {
             $data[] = [
                 $program->name,
                 $program->description ?? '',
+                $program->meeting_frequency ?? 'setiap hari',
                 $program->status,
                 $program->class_rooms_count,
             ];
@@ -159,6 +160,7 @@ class ProgramController extends Controller
         $map = [
             'nama'      => $col('nama program') ?? $col('nama') ?? $col('name'),
             'deskripsi' => $col('deskripsi')    ?? $col('description'),
+            'frekuensi' => $col('frekuensi pertemuan') ?? $col('frekuensi') ?? $col('meeting frequency') ?? $col('frequency'),
             'status'    => $col('status'),
         ];
 
@@ -185,11 +187,16 @@ class ProgramController extends Controller
                 }
 
                 $deskripsi = $map['deskripsi'] !== null ? trim((string) ($row[$map['deskripsi']] ?? '')) : null;
+                $frekuensi = $map['frekuensi'] !== null ? strtolower(trim((string) ($row[$map['frekuensi']] ?? ''))) : 'setiap hari';
+                if (! in_array($frekuensi, ['setiap hari', 'seminggu sekali'], true)) {
+                    $frekuensi = 'setiap hari';
+                }
 
                 $existing = Program::where('name', $name)->first();
                 if ($existing) {
                     $existing->update([
                         'description' => $deskripsi ?: $existing->description,
+                        'meeting_frequency' => $frekuensi,
                         'status'      => $status,
                     ]);
                     $updated++;
@@ -197,6 +204,7 @@ class ProgramController extends Controller
                     Program::create([
                         'name'        => $name,
                         'description' => $deskripsi,
+                        'meeting_frequency' => $frekuensi,
                         'status'      => $status,
                     ]);
                     $imported++;

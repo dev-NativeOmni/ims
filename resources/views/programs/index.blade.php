@@ -56,6 +56,7 @@
                             <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
                                 <th class="px-4 py-3">Nama</th>
                                 <th class="px-4 py-3">Deskripsi</th>
+                                <th class="px-4 py-3">Frekuensi Pertemuan</th>
                                 <th class="px-4 py-3">Status</th>
                                 <th class="px-4 py-3">Jumlah Kelas</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
@@ -71,6 +72,10 @@
 
                                     <td class="px-4 py-3 text-gray-600">
                                         {{ $program->description ?: '-' }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-gray-600 capitalize">
+                                        {{ $program->meeting_frequency ?? 'setiap hari' }}
                                     </td>
 
                                     <td class="px-4 py-3">
@@ -106,7 +111,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                                    <td colspan="6" class="px-4 py-6 text-center text-gray-500">
                                         Belum ada data program.
                                     </td>
                                 </tr>
@@ -140,6 +145,7 @@
                 <ul class="list-disc pl-4 space-y-1">
                     <li><strong>Nama Program</strong> (Wajib): Nama unik program. Jika sudah ada, data akan diperbarui.</li>
                     <li><strong>Deskripsi</strong> (Opsional): Keterangan program.</li>
+                    <li><strong>Frekuensi Pertemuan</strong> (Opsional): <code>setiap hari</code> / <code>seminggu sekali</code>. Default: setiap hari.</li>
                     <li><strong>Status</strong> (Opsional): <code>active</code> / <code>inactive</code>. Default: active.</li>
                 </ul>
             </div>

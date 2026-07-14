@@ -26,6 +26,11 @@ class StoreProgramRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'meeting_frequency' => [
+                'required',
+                'string',
+                Rule::in(['setiap hari', 'seminggu sekali']),
+            ],
             'status' => [
                 'required',
                 Rule::in(['active', 'inactive']),
@@ -38,6 +43,7 @@ class StoreProgramRequest extends FormRequest
         return [
             'name' => 'nama program',
             'description' => 'deskripsi',
+            'meeting_frequency' => 'frekuensi pertemuan',
             'status' => 'status',
         ];
     }

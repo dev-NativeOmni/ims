@@ -44,6 +44,24 @@
                     </div>
 
                     <div>
+                        <label for="meeting_frequency" class="block text-sm font-medium text-gray-700">
+                            Frekuensi Pertemuan
+                        </label>
+                        <select
+                            id="meeting_frequency"
+                            name="meeting_frequency"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            required
+                        >
+                            <option value="setiap hari" @selected(old('meeting_frequency') === 'setiap hari')>Setiap Hari</option>
+                            <option value="seminggu sekali" @selected(old('meeting_frequency') === 'seminggu sekali')>Seminggu Sekali</option>
+                        </select>
+                        @error('meeting_frequency')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="status" class="block text-sm font-medium text-gray-700">
                             Status
                         </label>

@@ -28,6 +28,11 @@ class UpdateProgramRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'meeting_frequency' => [
+                'required',
+                'string',
+                Rule::in(['setiap hari', 'seminggu sekali']),
+            ],
             'status' => [
                 'required',
                 Rule::in(['active', 'inactive']),
@@ -40,6 +45,7 @@ class UpdateProgramRequest extends FormRequest
         return [
             'name' => 'nama program',
             'description' => 'deskripsi',
+            'meeting_frequency' => 'frekuensi pertemuan',
             'status' => 'status',
         ];
     }

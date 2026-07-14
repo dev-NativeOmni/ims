@@ -15,10 +15,20 @@ class CoreDataSeeder extends Seeder
     public function run(): void
     {
         $program = Program::updateOrCreate(
-            ['name' => 'Tahfizh Reguler'],
+            ['name' => 'Program Tahfizh'],
             [
-                'description' => 'Program tahfizh reguler untuk santri aktif.',
+                'description' => 'Program tahfizh intensif untuk santri aktif.',
                 'status' => 'active',
+                'meeting_frequency' => 'setiap hari',
+            ]
+        );
+
+        $programReguler = Program::updateOrCreate(
+            ['name' => 'Program Reguler'],
+            [
+                'description' => 'Program kelas reguler seminggu sekali.',
+                'status' => 'active',
+                'meeting_frequency' => 'seminggu sekali',
             ]
         );
 

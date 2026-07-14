@@ -18,10 +18,11 @@ class ThirtyStudentsSeeder extends Seeder
     {
         // 1. Get or create program and classroom
         $program = Program::firstOrCreate(
-            ['name' => 'Tahfizh Reguler'],
+            ['name' => 'Program Tahfizh'],
             [
-                'description' => 'Program tahfizh reguler untuk santri aktif.',
+                'description' => 'Program tahfizh intensif untuk santri aktif.',
                 'status' => 'active',
+                'meeting_frequency' => 'setiap hari',
             ]
         );
 
