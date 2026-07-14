@@ -691,6 +691,8 @@ class ReportController extends Controller
                 'selectedMonth' => date('n'),
                 'selectedQuarter' => 1,
                 'selectedYear' => date('Y'),
+                'tuntasCount' => 0,
+                'tidakTuntasCount' => 0,
                 'monthsList' => [
                     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -853,8 +855,13 @@ class ReportController extends Controller
             'target_completion_rate' => $targetCompletionRate,
         ];
 
+        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+
         // Detailed student list
         $studentReports = [];
+        $tuntasCount = 0;
+        $tidakTuntasCount = 0;
+
         foreach ($students as $student) {
             $studentHafalan = $hafalanRecords->where('student_id', $student->id);
             $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
@@ -873,16 +880,56 @@ class ReportController extends Controller
             // Average score
             $avgScore = $studentHafalan->avg('score') ? round((float)$studentHafalan->avg('score'), 1) : null;
 
+            // Calculate Capaian Baris (lines of setoran)
+            $capaianBaris = 0;
+            foreach ($studentHafalan as $rec) {
+                if ($rec->surah) {
+                    $capaianBaris += self::calculateLines(
+                        $rec->surah->number,
+                        $rec->ayah_start,
+                        $rec->ayah_end,
+                        $rec->surah->total_ayah
+                    );
+                }
+            }
+
+            // Calculate Target Baris
+            $levelBaris = match ($student->tahfizh_level) {
+                'tahsin' => 3,
+                'reguler' => 5,
+                'akselerasi' => 7,
+                'ummi' => null,
+                default => 5,
+            };
+
+            if ($levelBaris === null) {
+                $targetBaris = 0;
+            } else {
+                $meetingFrequency = $selectedClass?->program?->meeting_frequency ?? 'setiap hari';
+                $meetings = ($meetingFrequency === 'seminggu sekali') ? 4 : 20;
+                $targetBaris = $levelBaris * $meetings;
+            }
+
+            // Check if student completed their target
+            $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
+
+            if ($isTuntas) {
+                $tuntasCount++;
+            } else {
+                $tidakTuntasCount++;
+            }
+
             $studentReports[] = [
                 'student' => $student,
                 'total_hafalan' => $studentHafalan->count(),
                 'total_murajaah' => $studentMurajaah->count(),
                 'avg_score' => $avgScore,
                 'latest_progress' => $latestProgressText,
+                'capaian_baris' => $capaianBaris,
+                'target_baris' => $targetBaris,
+                'is_tuntas' => $isTuntas,
             ];
         }
-
-        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
 
         return [
             'classRooms' => $classRooms,
@@ -897,11 +944,47 @@ class ReportController extends Controller
             'selectedMonth' => $selectedMonth,
             'selectedQuarter' => $selectedQuarter,
             'selectedYear' => $selectedYear,
+            'tuntasCount' => $tuntasCount,
+            'tidakTuntasCount' => $tidakTuntasCount,
             'monthsList' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
             ]
         ];
+    }
+
+    /**
+     * Estimates the lines count of a setoran based on the mushaf page layout (15 lines per page)
+     */
+    public static function calculateLines(int $surahNumber, int $ayahStart, int $ayahEnd, int $totalAyah): float
+    {
+        // Page counts of all 114 surahs in standard Medina mushaf (15 lines per page)
+        $pages = [
+            1 => 1.0, 2 => 48.0, 3 => 27.0, 4 => 29.0, 5 => 22.0, 6 => 23.0, 7 => 26.0, 8 => 10.0, 9 => 21.0, 10 => 13.0,
+            11 => 14.0, 12 => 12.0, 13 => 7.0, 14 => 7.0, 15 => 6.0, 16 => 15.0, 17 => 12.0, 18 => 12.0, 19 => 7.0, 20 => 10.0,
+            21 => 10.0, 22 => 10.0, 23 => 8.0, 24 => 10.0, 25 => 6.0, 26 => 11.0, 27 => 9.0, 28 => 11.0, 29 => 7.0, 30 => 6.0,
+            31 => 4.0, 32 => 3.0, 33 => 9.0, 34 => 6.0, 35 => 6.0, 36 => 6.0, 37 => 7.0, 38 => 5.0, 39 => 8.0, 40 => 9.0,
+            41 => 6.0, 42 => 6.0, 43 => 7.0, 44 => 3.0, 45 => 3.0, 46 => 4.0, 47 => 4.0, 48 => 4.0, 49 => 2.5, 50 => 3.0,
+            51 => 2.5, 52 => 2.5, 53 => 2.5, 54 => 2.5, 55 => 3.0, 56 => 3.0, 57 => 4.0, 58 => 3.0, 59 => 3.0, 60 => 2.5,
+            61 => 1.5, 62 => 1.5, 63 => 1.5, 64 => 2.0, 65 => 2.0, 66 => 2.0, 67 => 2.5, 68 => 2.0, 69 => 2.0, 70 => 2.0,
+            71 => 1.5, 72 => 2.0, 73 => 1.5, 74 => 2.0, 75 => 2.0, 76 => 2.0, 77 => 2.0, 78 => 2.0, 79 => 2.0, 80 => 1.5,
+            81 => 1.0, 82 => 1.0, 83 => 2.0, 84 => 1.0, 85 => 1.0, 86 => 1.0, 87 => 1.0, 88 => 1.0, 89 => 1.5, 90 => 1.0,
+            91 => 1.0, 92 => 1.0, 93 => 0.5, 94 => 0.5, 95 => 0.5, 96 => 1.0, 97 => 0.5, 98 => 1.0, 99 => 0.5, 100 => 0.5,
+            101 => 0.5, 102 => 0.5, 103 => 0.3, 104 => 0.5, 105 => 0.3, 106 => 0.3, 107 => 0.5, 108 => 0.3, 109 => 0.5, 110 => 0.3,
+            111 => 0.3, 112 => 0.3, 113 => 0.3, 114 => 0.3
+        ];
+
+        $pageCount = $pages[$surahNumber] ?? 1.0;
+        $totalLines = $pageCount * 15.0;
+
+        if ($totalAyah <= 0) {
+            return 0;
+        }
+
+        $versesCount = max(1, $ayahEnd - $ayahStart + 1);
+        $ratio = min(1.0, $versesCount / $totalAyah);
+
+        return round($ratio * $totalLines, 1);
     }
 }
