@@ -227,25 +227,39 @@ class StudentReportController extends Controller
         $latestCapaianNotes = '';
 
         if ($student->tahfizh_level === 'ummi') {
-            $latestUmmi = \App\Models\UmmiRecord::with('surah')
-                ->where('student_id', $student->id)
+            $latestUmmiRecord = \App\Models\UmmiRecord::where('student_id', $student->id)
                 ->latest('tanggal')
                 ->latest()
                 ->first();
 
-            if ($latestUmmi) {
+            if ($latestUmmiRecord) {
+                $latestUmmiRecords = \App\Models\UmmiRecord::with('surah')
+                    ->where('student_id', $student->id)
+                    ->where('tanggal', $latestUmmiRecord->getRawOriginal('tanggal'))
+                    ->where('tatap_muka', $latestUmmiRecord->tatap_muka)
+                    ->get();
+
                 $parts = [];
-                if ($latestUmmi->ummi_jilid) {
-                    $parts[] = $latestUmmi->ummi_jilid . ($latestUmmi->ummi_halaman ? ' Hal. ' . $latestUmmi->ummi_halaman : '');
+                $firstRec = $latestUmmiRecords->first();
+                if ($firstRec->ummi_jilid) {
+                    $parts[] = $firstRec->ummi_jilid . ($firstRec->ummi_halaman ? ' Hal. ' . $firstRec->ummi_halaman : '');
                 }
-                if ($latestUmmi->hafalan_surah_id) {
-                    $parts[] = 'Hafalan QS. ' . $latestUmmi->surah?->name_latin . ($latestUmmi->hafalan_ayah ? ' Ayat ' . $latestUmmi->hafalan_ayah : '');
+
+                $surahParts = [];
+                foreach ($latestUmmiRecords as $rec) {
+                    if ($rec->hafalan_surah_id) {
+                        $surahParts[] = 'Hafalan QS. ' . $rec->surah?->name_latin . ($rec->hafalan_ayah ? ' Ayat ' . $rec->hafalan_ayah : '');
+                    }
                 }
+                if (!empty($surahParts)) {
+                    $parts[] = implode(', ', $surahParts);
+                }
+
                 $latestCapaianText = implode(', ', $parts);
-                if ($latestUmmi->nilai) {
-                    $latestCapaianText .= ' [Nilai: ' . $latestUmmi->nilai . ']';
+                if ($firstRec->nilai) {
+                    $latestCapaianText .= ' [Nilai: ' . $firstRec->nilai . ']';
                 }
-                $latestCapaianNotes = $latestUmmi->keterangan;
+                $latestCapaianNotes = $latestUmmiRecords->pluck('keterangan')->filter()->unique()->implode('; ');
             } else {
                 $latestCapaianText = 'Belum ada catatan UMMI.';
             }

@@ -78,6 +78,7 @@
                 surahEndHafalan: '{{ old('surah_end_id', '') }}',
                 surahStartMurajaah: '{{ old('surah_id', '') }}',
                 surahEndMurajaah: '{{ old('surah_end_id', '') }}',
+                ummiHafalans: [{ surah_id: '', ayah: '' }],
                 allStudents: [
                     @foreach($students as $student)
                         { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}', level: '{{ $student->tahfizh_level }}' },
@@ -570,32 +571,55 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="ummi_hafalan_surah" class="block text-sm font-medium text-gray-700">
-                                        Hafalan (Surah)
-                                    </label>
-                                    <select id="ummi_hafalan_surah"
-                                            name="hafalan_surah_id"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                        <option value="">Pilih Surah</option>
-                                        @foreach ($surahs as $surah)
-                                            <option value="{{ $surah->id }}" @selected(old('hafalan_surah_id') == $surah->id)>
-                                                {{ $surah->number }}. {{ $surah->name_latin }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="ummi_hafalan_ayah" class="block text-sm font-medium text-gray-700">
-                                        Hafalan (Ayat)
-                                    </label>
-                                    <input id="ummi_hafalan_ayah"
-                                           type="text"
-                                           name="hafalan_ayah"
-                                           value="{{ old('hafalan_ayah') }}"
-                                           placeholder="e.g. 1-10"
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <!-- Dynamic Hafalan List -->
+                            <div class="space-y-2 border border-gray-200 rounded-lg p-3">
+                                <label class="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-2">
+                                    Setoran Hafalan UMMI
+                                </label>
+                                <template x-for="(item, index) in ummiHafalans" :key="index">
+                                    <div class="grid grid-cols-12 gap-3 items-end bg-gray-50/70 p-2.5 rounded border border-gray-150 relative">
+                                        <div class="col-span-6">
+                                            <label :for="'ummi_hafalan_surah_' + index" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Surah
+                                            </label>
+                                            <select :id="'ummi_hafalan_surah_' + index"
+                                                    :name="'hafalan_surah_ids['+index+']'"
+                                                    x-model="item.surah_id"
+                                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                                <option value="">Pilih Surah</option>
+                                                @foreach ($surahs as $surah)
+                                                    <option value="{{ $surah->id }}">
+                                                        {{ $surah->number }}. {{ $surah->name_latin }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-span-4">
+                                            <label :for="'ummi_hafalan_ayah_' + index" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Ayat
+                                            </label>
+                                            <input type="text"
+                                                   :id="'ummi_hafalan_ayah_' + index"
+                                                   :name="'hafalan_ayahs['+index+']'"
+                                                   x-model="item.ayah"
+                                                   placeholder="e.g. 1-10"
+                                                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                        </div>
+                                        <div class="col-span-2 text-right">
+                                            <button type="button"
+                                                    @click="if(ummiHafalans.length > 1) { ummiHafalans.splice(index, 1); } else { item.surah_id = ''; item.ayah = ''; }"
+                                                    class="inline-flex items-center px-2 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded text-[10px] font-bold border border-red-200">
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="pt-1">
+                                    <button type="button"
+                                            @click="ummiHafalans.push({ surah_id: '', ayah: '' })"
+                                            class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded text-xs font-semibold border border-indigo-200 transition-colors">
+                                        + Tambah Surat Hafalan
+                                    </button>
                                 </div>
                             </div>
 

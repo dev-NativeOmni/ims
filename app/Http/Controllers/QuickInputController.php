@@ -358,6 +358,10 @@ class QuickInputController extends Controller
             'tanggal' => ['required', 'date'],
             'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
             'hafalan_ayah' => ['nullable', 'string', 'max:100'],
+            'hafalan_surah_ids' => ['nullable', 'array'],
+            'hafalan_surah_ids.*' => ['nullable', 'integer', 'exists:surahs,id'],
+            'hafalan_ayahs' => ['nullable', 'array'],
+            'hafalan_ayahs.*' => ['nullable', 'string', 'max:100'],
             'ummi_jilid' => ['nullable', 'string', 'max:150'],
             'ummi_halaman' => ['nullable', 'string', 'max:100'],
             'materi' => ['nullable', 'string', 'max:255'],
@@ -385,21 +389,60 @@ class QuickInputController extends Controller
                 ->with('error', 'Santri ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data santri.');
         }
 
-        UmmiRecord::query()->create([
-            'student_id' => $student->id,
-            'teacher_id' => $teacherId,
-            'tatap_muka' => $validated['tatap_muka'],
-            'tanggal' => $validated['tanggal'],
-            'hafalan_surah_id' => $validated['hafalan_surah_id'] ?? null,
-            'hafalan_ayah' => $validated['hafalan_ayah'] ?? null,
-            'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-            'ummi_halaman' => $validated['ummi_halaman'] ?? null,
-            'materi' => $validated['materi'] ?? null,
-            'nilai' => $validated['nilai'] ?? null,
-            'disimak_guru' => $validated['disimak_guru'],
-            'disimak_ortu' => $validated['disimak_ortu'],
-            'keterangan' => $validated['keterangan'] ?? null,
-        ]);
+        $hafalans = [];
+        if ($request->has('hafalan_surah_ids')) {
+            $surahIds = $request->input('hafalan_surah_ids');
+            $ayahs = $request->input('hafalan_ayahs');
+            foreach ($surahIds as $idx => $sid) {
+                if (!empty($sid)) {
+                    $hafalans[] = [
+                        'surah_id' => (int) $sid,
+                        'ayah' => $ayahs[$idx] ?? null
+                    ];
+                }
+            }
+        } elseif ($request->filled('hafalan_surah_id')) {
+            $hafalans[] = [
+                'surah_id' => (int) $request->input('hafalan_surah_id'),
+                'ayah' => $request->input('hafalan_ayah')
+            ];
+        }
+
+        if (empty($hafalans)) {
+            UmmiRecord::query()->create([
+                'student_id' => $student->id,
+                'teacher_id' => $teacherId,
+                'tatap_muka' => $validated['tatap_muka'],
+                'tanggal' => $validated['tanggal'],
+                'hafalan_surah_id' => null,
+                'hafalan_ayah' => null,
+                'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                'materi' => $validated['materi'] ?? null,
+                'nilai' => $validated['nilai'] ?? null,
+                'disimak_guru' => $validated['disimak_guru'],
+                'disimak_ortu' => $validated['disimak_ortu'],
+                'keterangan' => $validated['keterangan'] ?? null,
+            ]);
+        } else {
+            foreach ($hafalans as $hafalan) {
+                UmmiRecord::query()->create([
+                    'student_id' => $student->id,
+                    'teacher_id' => $teacherId,
+                    'tatap_muka' => $validated['tatap_muka'],
+                    'tanggal' => $validated['tanggal'],
+                    'hafalan_surah_id' => $hafalan['surah_id'],
+                    'hafalan_ayah' => $hafalan['ayah'],
+                    'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                    'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                    'materi' => $validated['materi'] ?? null,
+                    'nilai' => $validated['nilai'] ?? null,
+                    'disimak_guru' => $validated['disimak_guru'],
+                    'disimak_ortu' => $validated['disimak_ortu'],
+                    'keterangan' => $validated['keterangan'] ?? null,
+                ]);
+            }
+        }
 
         return redirect()
             ->route('quick-inputs.index')

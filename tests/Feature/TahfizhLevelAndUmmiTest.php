@@ -150,6 +150,49 @@ class TahfizhLevelAndUmmiTest extends TestCase
         ]);
     }
 
+    public function test_teacher_can_save_multiple_ummi_hafalan_records_for_ummi_student()
+    {
+        $surah2 = Surah::create([
+            'number' => 2,
+            'name_arabic' => 'البقرة',
+            'name_latin' => 'Al-Baqarah',
+            'total_ayah' => 286,
+            'revelation_type' => 'medinan',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->post(route('quick-inputs.ummi.store'), [
+            'student_id' => $this->studentUmmi->id,
+            'tatap_muka' => 6,
+            'tanggal' => now()->toDateString(),
+            'hafalan_surah_ids' => [$this->surah->id, $surah2->id],
+            'hafalan_ayahs' => ['1-7', '1-5'],
+            'ummi_jilid' => 'Jilid 5',
+            'ummi_halaman' => 'Halaman 1',
+            'materi' => 'Materi Baru',
+            'nilai' => 'A',
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Ya',
+            'keterangan' => 'Lancar jaya.',
+        ]);
+
+        $response->assertRedirect(route('quick-inputs.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('ummi_records', [
+            'student_id' => $this->studentUmmi->id,
+            'tatap_muka' => 6,
+            'hafalan_surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-7',
+        ]);
+
+        $this->assertDatabaseHas('ummi_records', [
+            'student_id' => $this->studentUmmi->id,
+            'tatap_muka' => 6,
+            'hafalan_surah_id' => $surah2->id,
+            'hafalan_ayah' => '1-5',
+        ]);
+    }
+
     public function test_can_update_tahfizh_target_term_in_student_report()
     {
         $response = $this->actingAs($this->teacherUser)->post(route('digital-reports.update', $this->studentReguler), [
