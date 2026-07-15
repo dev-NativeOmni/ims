@@ -132,27 +132,39 @@
             <table class="w-full border border-black text-xs text-left">
                 <thead>
                     <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                        <th class="p-1.5 border-r border-black w-36">LEVEL / METODE</th>
-                        <th class="p-1.5 border-r border-black w-48">TARGET TERM INI</th>
-                        <th class="p-1.5 border-r border-black w-60">CAPAIAN TERAKHIR</th>
-                        <th class="p-1.5">DESKRIPSI / CATATAN</th>
+                        <th class="p-1 border-r border-black w-10">No.</th>
+                        <th class="p-1 border-r border-black w-48">TARGET</th>
+                        <th class="p-1 border-r border-black w-48">CAPAIAN</th>
+                        <th class="p-1 border-r border-black w-28">KETERANGAN</th>
+                        <th class="p-1">Deskripsi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center align-middle font-bold">
-                            {{ strtoupper($tahfizhLevelLabel) }}
-                        </td>
-                        <td class="p-2 border-r border-black align-middle text-center">
-                            {{ $termTargetText }}
-                        </td>
-                        <td class="p-2 border-r border-black align-middle font-semibold text-green-700 text-center">
-                            {{ $latestCapaianText }}
-                        </td>
-                        <td class="p-2 align-middle text-gray-700">
-                            {{ $latestCapaianNotes ?: 'Telah menyelesaikan perkembangan tahfizh/tahsin dengan baik.' }}
-                        </td>
-                    </tr>
+                    @forelse($targetRecords as $idx => $target)
+                        <tr class="border-b border-black">
+                            <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
+                            <td class="p-1.5 border-r border-black align-middle">
+                                QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_start }}-{{ $target->ayah_end }})
+                            </td>
+                            <td class="p-1.5 border-r border-black align-middle">
+                                @if($target->matching_record)
+                                    QS. {{ $target->matching_record->surah?->name_latin ?? '-' }} (Ayat {{ $target->matching_record->ayah_start }}-{{ $target->matching_record->ayah_end }})
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $target->status === 'completed' ? 'text-green-700' : 'text-red-650' }}">
+                                {{ $target->status === 'completed' ? 'Tuntas' : 'Tidak Tuntas' }}
+                            </td>
+                            <td class="p-1.5 align-middle text-gray-700">
+                                {{ $target->notes ?: ($target->status === 'completed' ? 'Target hafalan term ini telah tercapai.' : 'Belum menyelesaikan target hafalan.') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="border-b border-black">
+                            <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data target tahfizh.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
 
@@ -233,7 +245,7 @@
                     <tr class="border-b border-black">
                         <td class="p-2 border-r border-black text-center align-middle">4</td>
                         <td class="p-2 border-r border-black font-semibold align-middle">ADAB TERHADAP LINGKUNGAN ({{ round($avgLingkungan) }}%)</td>
-                    </tr>tr>
+                    </tr>
                 </tbody>
             </table>
         </div>
