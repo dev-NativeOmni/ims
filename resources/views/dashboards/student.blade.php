@@ -33,7 +33,7 @@
                 </div>
             @else
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                             Profil Santri
                         </h3>
@@ -66,7 +66,7 @@
                         </dl>
                     </div>
 
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm lg:col-span-2">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 lg:col-span-2">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
@@ -97,21 +97,21 @@
                         </div>
 
                         <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4 border border-zinc-100 dark:border-zinc-800/40">
+                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4">
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">Setoran Hafalan</p>
                                 <p class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
                                     {{ number_format(data_get($progress, 'total_hafalan_records', 0)) }}
                                 </p>
                             </div>
 
-                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4 border border-zinc-100 dark:border-zinc-800/40">
+                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4">
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">Murajaah</p>
                                 <p class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
                                     {{ number_format(data_get($progress, 'total_murajaah_records', 0)) }}
                                 </p>
                             </div>
 
-                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4 border border-zinc-100 dark:border-zinc-800/40">
+                            <div class="rounded-xl bg-zinc-50 dark:bg-zinc-950/40 p-4">
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">Target Terlambat</p>
                                 <p class="mt-1 text-2xl font-bold text-red-650 dark:text-red-400">
                                     {{ number_format(data_get($progress, 'overdue_targets', $overdueTargets->count())) }}
@@ -138,8 +138,8 @@
                 ])
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                        <div class="border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                        <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Target Aktif
                             </h3>
@@ -172,8 +172,8 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                        <div class="border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                        <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Target Terlambat
                             </h3>
@@ -200,8 +200,8 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                        <div class="border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                        <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Hafalan Terbaru
                             </h3>
@@ -228,8 +228,8 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                        <div class="border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                        <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Murajaah Terbaru
                             </h3>

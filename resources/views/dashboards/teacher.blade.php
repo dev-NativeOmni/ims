@@ -27,34 +27,34 @@
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Santri Bimbingan</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ data_get($stats, 'total_students', 0) }}</p>
+                <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Santri Bimbingan</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'total_students', 0) }}</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Setoran Hari Ini</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ data_get($stats, 'hafalan_today', 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
+                <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Setoran Hari Ini</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'hafalan_today', 0) }}</p>
+                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Target Aktif</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ data_get($stats, 'active_targets', 0) }}</p>
+                <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Target Aktif</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'active_targets', 0) }}</p>
                     <p class="text-xs text-red-500 mt-1">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-5 border">
-                    <p class="text-sm text-gray-500">Butuh Perhatian</p>
-                    <p class="text-3xl font-bold text-gray-900">
+                <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Butuh Perhatian</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
                         {{ data_get($stats, 'hafalan_need_attention', 0) + data_get($stats, 'murajaah_need_attention', 0) }}
                     </p>
-                    <p class="text-xs text-gray-400 mt-1">Hafalan + Murajaah</p>
+                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Hafalan + Murajaah</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <a href="{{ url('/hafalan-records/create') }}" class="bg-white/80 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-white/5 shadow-sm rounded-2xl p-5 hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
+                <a href="{{ url('/hafalan-records/create') }}" class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-5 hover:shadow-md hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
                     <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -66,7 +66,7 @@
                     </div>
                 </a>
 
-                <a href="{{ url('/murajaah-records/create') }}" class="bg-white/80 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-white/5 shadow-sm rounded-2xl p-5 hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
+                <a href="{{ url('/murajaah-records/create') }}" class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-5 hover:shadow-md hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
                     <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.092-1.209.138-2.43.138-3.662Z" />
@@ -79,7 +79,7 @@
                     </div>
                 </a>
 
-                <a href="{{ url('/hafalan-targets/create') }}" class="bg-white/80 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-white/5 shadow-sm rounded-2xl p-5 hover:shadow-md hover:border-zinc-300 dark:hover:border-white/10 hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
+                <a href="{{ url('/hafalan-targets/create') }}" class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-5 hover:shadow-md hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
                     <div class="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -92,8 +92,8 @@
                 </a>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div class="px-5 py-4 border-b">
+            <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
                     <h3 class="font-semibold text-gray-900">Progress Santri Bimbingan</h3>
                 </div>
 
@@ -137,8 +137,8 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-5 py-4 border-b flex items-center justify-between">
+                <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
                         <h3 class="font-semibold text-gray-900">Target Terdekat</h3>
                         <a href="{{ url('/hafalan-targets') }}" class="text-sm text-emerald-700 hover:underline">Kelola</a>
                     </div>
@@ -162,8 +162,8 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-5 py-4 border-b">
+                <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
                         <h3 class="font-semibold text-gray-900">Setoran Terbaru</h3>
                     </div>
                     <div class="divide-y">
@@ -180,8 +180,8 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div class="px-5 py-4 border-b">
+            <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
                     <h3 class="font-semibold text-gray-900">Murajaah Terbaru</h3>
                 </div>
                 <div class="divide-y">

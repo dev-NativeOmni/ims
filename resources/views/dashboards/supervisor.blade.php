@@ -33,7 +33,7 @@
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 
                 <!-- Total Santri -->
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex items-center gap-4">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                     <div class="p-3.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -46,7 +46,7 @@
                 </div>
 
                 <!-- Sudah Mengisi -->
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex items-center gap-4">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                     <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -68,7 +68,7 @@
                 </div>
 
                 <!-- Belum Mengisi -->
-                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex items-center gap-4">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                     <div class="p-3.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -91,7 +91,7 @@
             </div>
 
             <!-- Progress Bar Besar -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-6">
                 <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wider">Progres Pengisian Seluruh Santri</h3>
                 @php
                     $percent = $totalStudents > 0 ? ($filledCount / $totalStudents) * 100 : 0;
@@ -106,8 +106,8 @@
             </div>
 
             <!-- Daftar Progres Pengisian Hari Ini -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-2xl overflow-hidden">
-                <div class="px-6 py-5 border-b border-zinc-150 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
+            <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
+                <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/80 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
                     <h3 class="text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Santri Hari Ini</h3>
                     <span class="text-xs text-zinc-400">Total: {{ $totalStudents }} Santri</span>
                 </div>
