@@ -187,7 +187,6 @@
                         <tr class="bg-gray-100 border-b border-black text-center font-bold">
                             <th class="p-1 border-r border-black w-10">No.</th>
                             <th class="p-1 border-r border-black">NILAI UJIAN</th>
-                            <th class="p-1 border-r border-black w-24">KKM</th>
                             <th class="p-1 border-r border-black w-28">KETERANGAN</th>
                             <th class="p-1">Deskripsi</th>
                         </tr>
@@ -197,13 +196,12 @@
                             <tr class="border-b border-black">
                                 <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
                                 <td class="p-1.5 border-r border-black font-semibold">{{ $exam->exam_range }}</td>
-                                <td class="p-1.5 border-r border-black text-center">75</td>
                                 <td class="p-1.5 border-r border-black text-center font-bold text-indigo-750">Skor: {{ round($exam->total_score) }}</td>
                                 <td class="p-1.5 text-gray-600">{{ $exam->notes ?: 'Lulus ujian tahfizh' }}</td>
                             </tr>
                         @empty
                             <tr class="border-b border-black">
-                                <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data nilai ujian tahfizh.</td>
+                                <td colspan="4" class="p-3 text-center text-gray-500 italic">Belum ada data nilai ujian tahfizh.</td>
                             </tr>
                         @endforelse
                     </tbody>
