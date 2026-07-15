@@ -236,7 +236,7 @@
                     <tbody>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">1</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ALLAH</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">Adab kepada Allah</td>
                             <td rowspan="4" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
                                 @php
                                     $pred = \App\Models\Setting::getAdabGrade($avgTotal);
@@ -263,15 +263,15 @@
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">2</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA SESAMA TEMAN</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">Adab kepada Sesama Teman</td>
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">3</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KETIKA BELAJAR</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">Adab ketika Belajar</td>
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">4</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB TERHADAP LINGKUNGAN</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">Adab terhadap Lingkungan</td>
                         </tr>
                     </tbody>
                 </table>
