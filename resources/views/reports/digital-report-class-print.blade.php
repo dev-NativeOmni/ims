@@ -194,13 +194,13 @@
                 </table>
 
                 <!-- Table 2: Nilai Ujian (Recent Exams) -->
-                <table class="w-full table-fixed border border-black text-xs text-left mt-4">
+                <table class="w-full table-fixed border border-black border-t-0 text-xs text-left mt-0">
                     <thead>
                         <tr class="bg-gray-100 border-b border-black text-center font-bold">
                             <th class="p-1.5 border-r border-black w-[8%]">No.</th>
-                            <th class="p-1.5 border-r border-black w-[35%]">NILAI UJIAN</th>
-                            <th class="p-1.5 border-r border-black w-[20%]">KETERANGAN</th>
-                            <th class="p-1.5 w-[37%]">Deskripsi</th>
+                            <th class="p-1.5 border-r border-black w-[64%]">NILAI UJIAN</th>
+                            <th class="p-1.5 border-r border-black w-[12%]">KETERANGAN</th>
+                            <th class="p-1.5 w-[16%]">Deskripsi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -236,7 +236,7 @@
                     <tbody>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">1</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">Adab kepada Allah</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ALLAH</td>
                             <td rowspan="4" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
                                 @php
                                     $pred = \App\Models\Setting::getAdabGrade($avgTotal);
@@ -263,15 +263,15 @@
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">2</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">Adab kepada Sesama Teman</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA SESAMA TEMAN</td>
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">3</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">Adab ketika Belajar</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KETIKA BELAJAR</td>
                         </tr>
                         <tr class="border-b border-black">
                             <td class="p-2 border-r border-black text-center align-middle">4</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">Adab terhadap Lingkungan</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB TERHADAP LINGKUNGAN</td>
                         </tr>
                     </tbody>
                 </table>
