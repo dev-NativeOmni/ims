@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'HafizPlus') }} - {{ __('Log in') }}</title>
+    <title>{{ config('app.name', 'IMS') }} - {{ __('Log in') }}</title>
 
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -137,7 +137,7 @@
                 @endif
             </div>
             <h1 class="text-3xl font-extrabold font-display text-slate-900 tracking-tight leading-none">
-                Hafiz<span class="text-gradient-primary">Plus</span>
+                IMS <span class="text-gradient-primary">System</span>
             </h1>
             @if ($namaInstansi)
                 <p class="text-indigo-600 text-xs mt-2 font-bold tracking-wide uppercase">{{ $namaInstansi }}</p>

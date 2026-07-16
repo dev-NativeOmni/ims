@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Schema;
 
 class PruneExpiredApiTokens extends Command
 {
-    protected $signature = 'hafizplus:prune-api-tokens
+    protected $signature = 'ims:prune-api-tokens
                             {--days=0 : Delete tokens expired at least this many days ago}
                             {--dry-run : Show how many tokens would be deleted without deleting}';
 
-    protected $description = 'Delete expired Sanctum personal access tokens for HafizPlus API.';
+    protected $description = 'Delete expired Sanctum personal access tokens for IMS API.';
 
     public function handle(): int
     {

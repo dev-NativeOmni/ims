@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>HafizPlus — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
+        <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
 
         <!-- Theme Initialization Script -->
         <script>
@@ -35,7 +35,7 @@
                             <svg class="h-7 w-7 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            <span class="font-bold text-xl tracking-tight text-zinc-850 dark:text-white">HafizPlus</span>
+                            <span class="font-bold text-xl tracking-tight text-zinc-850 dark:text-white">IMS</span>
                         </div>
                         
                         <!-- Theme Toggle Button -->
@@ -127,7 +127,7 @@
                                     <span class="w-2.5 h-2.5 rounded-full bg-green-500/85"></span>
                                 </div>
                                 <div class="px-3 py-0.5 rounded bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 text-[10px] text-zinc-500 font-mono">
-                                    demo.hafizplus.com/dashboard/student
+                                    demo.ims-system.com/dashboard/student
                                 </div>
                                 <div class="w-10"></div>
                             </div>
@@ -192,7 +192,7 @@
                 <div id="features" class="w-full flex flex-col items-center gap-12 pt-10">
                     <div class="text-center flex flex-col gap-3 max-w-xl">
                         <h2 class="text-2xl sm:text-4xl font-bold text-zinc-900 dark:text-white">
-                            Kenapa Memilih <span class="font-serif italic text-indigo-600 dark:text-indigo-400">HafizPlus?</span>
+                            Kenapa Memilih <span class="font-serif italic text-indigo-600 dark:text-indigo-400">IMS?</span>
                         </h2>
                         <p class="text-sm text-zinc-500 dark:text-zinc-400">
                             Fitur lengkap yang dirancang khusus untuk mempermudah ekosistem tahfidz Qur'an di pondok pesantren, sekolah, maupun rumah tahfidz.
@@ -245,7 +245,7 @@
             <!-- Footer -->
             <footer class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-zinc-200 dark:border-white/5 text-center mt-20 relative z-10">
                 <p class="text-xs text-zinc-500">
-                    &copy; 2026 HafizPlus. Dibuat dengan cinta untuk generasi penghafal Qur'an.
+                    &copy; 2026 IMS (Integrated Management System). Dibuat dengan cinta untuk generasi penghafal Qur'an.
                 </p>
             </footer>
         </div>

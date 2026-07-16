@@ -14,42 +14,42 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'role' => 'super_admin',
-                'name' => 'Super Admin HafizPlus',
+                'name' => 'Super Admin IMS (Integrated Management System)',
                 'username' => 'superadmin',
             ],
             [
                 'role' => 'admin',
-                'name' => 'Admin HafizPlus',
+                'name' => 'Admin IMS (Integrated Management System)',
                 'username' => 'admin',
             ],
             [
                 'role' => 'teacher',
-                'name' => 'Guru HafizPlus',
+                'name' => 'Guru IMS (Integrated Management System)',
                 'username' => 'guru',
             ],
             [
                 'role' => 'parent',
-                'name' => 'Orangtua HafizPlus',
+                'name' => 'Orangtua IMS (Integrated Management System)',
                 'username' => 'orangtua',
             ],
             [
                 'role' => 'student',
-                'name' => 'Santri HafizPlus',
+                'name' => 'Santri IMS (Integrated Management System)',
                 'username' => 'santri',
             ],
             [
                 'role' => 'headmaster',
-                'name' => 'Kepala Sekolah HafizPlus',
+                'name' => 'Kepala Sekolah IMS (Integrated Management System)',
                 'username' => 'kepsek',
             ],
             [
                 'role' => 'tanse',
-                'name' => 'Tanse HafizPlus',
+                'name' => 'Tanse IMS (Integrated Management System)',
                 'username' => 'tanse',
             ],
             [
                 'role' => 'coordinator_tahfizh',
-                'name' => 'Koordinator Tahfizh HafizPlus',
+                'name' => 'Koordinator Tahfizh IMS (Integrated Management System)',
                 'username' => 'koordinator',
             ],
         ];

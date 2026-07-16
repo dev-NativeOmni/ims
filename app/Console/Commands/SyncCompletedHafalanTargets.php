@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class SyncCompletedHafalanTargets extends Command
 {
-    protected $signature = 'hafizplus:sync-completed-targets {--dry-run : Tampilkan jumlah target yang cocok tanpa mengubah database}';
+    protected $signature = 'ims:sync-completed-targets {--dry-run : Tampilkan jumlah target yang cocok tanpa mengubah database}';
 
     protected $description = 'Sinkronkan target hafalan aktif menjadi selesai jika sudah ada setoran hafalan lulus yang mencakup target tersebut.';
 

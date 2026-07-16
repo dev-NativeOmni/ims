@@ -55,7 +55,7 @@ class DashboardController extends Controller
 
         return view('dashboards.admin', [
             'title' => 'Super Admin Dashboard',
-            'subtitle' => 'Monitoring penuh seluruh data HafizPlus.',
+            'subtitle' => 'Monitoring penuh seluruh data IMS.',
             'stats' => $stats,
         ]);
     }

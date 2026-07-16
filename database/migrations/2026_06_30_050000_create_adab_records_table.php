@@ -66,7 +66,7 @@ return new class extends Migration
             ['username' => 'supervisor'],
             [
                 'role_id' => $supervisorRole->id,
-                'name' => 'Koordinator Keagamaan HafizPlus',
+                'name' => 'Koordinator Keagamaan IMS',
                 'password' => Hash::make('password123'),
                 'status' => 'active',
             ]

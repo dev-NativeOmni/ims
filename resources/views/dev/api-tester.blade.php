@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>HafizPlus API v1 Tester</title>
+    <title>IMS API v1 Tester</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -126,9 +126,9 @@
 <body>
 <div class="container">
     <div class="card">
-        <h1>HafizPlus API v1 Tester</h1>
+        <h1>IMS API v1 Tester</h1>
         <p>
-            Halaman ini untuk testing lokal endpoint API HafizPlus.
+            Halaman ini untuk testing lokal endpoint API IMS.
             Jangan jadikan ini halaman publik production.
         </p>
     </div>
@@ -210,7 +210,7 @@
 
 <script>
     const baseUrl = window.location.origin;
-    let token = localStorage.getItem('hafizplus_api_token') || '';
+    let token = localStorage.getItem('ims_api_token') || '';
 
     updateTokenBox();
 
@@ -263,7 +263,7 @@
             token = data?.data?.access_token || '';
 
             if (token) {
-                localStorage.setItem('hafizplus_api_token', token);
+                localStorage.setItem('ims_api_token', token);
             }
 
             updateTokenBox();
@@ -314,7 +314,7 @@
 
     function clearToken(showMessage = true) {
         token = '';
-        localStorage.removeItem('hafizplus_api_token');
+        localStorage.removeItem('ims_api_token');
         updateTokenBox();
 
         if (showMessage) {

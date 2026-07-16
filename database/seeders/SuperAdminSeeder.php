@@ -14,10 +14,10 @@ class SuperAdminSeeder extends Seeder
         $superAdminRole = Role::where('name', 'super_admin')->firstOrFail();
 
         User::updateOrCreate(
-            ['email' => 'superadmin@hafizplus.test'],
+            ['email' => 'superadmin@ims.test'],
             [
                 'role_id' => $superAdminRole->id,
-                'name' => 'Super Admin HafizPlus',
+                'name' => 'Super Admin IMS (Integrated Management System)',
                 'password' => Hash::make('password123'),
                 'status' => 'active',
                 'email_verified_at' => now(),

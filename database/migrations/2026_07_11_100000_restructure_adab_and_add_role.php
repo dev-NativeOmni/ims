@@ -36,7 +36,7 @@ return new class extends Migration
             ['username' => 'pendamping_adab'],
             [
                 'role_id' => $role->id,
-                'name' => 'Pendamping Adab HafizPlus',
+                'name' => 'Pendamping Adab IMS',
                 'password' => Hash::make('password123'),
                 'status' => 'active',
             ]

@@ -227,7 +227,7 @@
             <!-- Print Footer Info -->
             <div class="hidden print:block text-right text-xs text-gray-505 dark:text-zinc-500 mt-12">
                 <p>Dicetak pada: {{ date('d F Y H:i:s') }}</p>
-                <p>Oleh: {{ auth()->user()->name }} · HafizPlus</p>
+                <p>Oleh: {{ auth()->user()->name }} · IMS</p>
             </div>
 
         </div>

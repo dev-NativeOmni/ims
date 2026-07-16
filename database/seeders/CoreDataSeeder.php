@@ -56,7 +56,7 @@ class CoreDataSeeder extends Seeder
             ['user_id' => $parentUser->id],
             [
                 'phone' => '082222222222',
-                'address' => 'Alamat testing orangtua HafizPlus',
+                'address' => 'Alamat testing orangtua IMS',
             ]
         );
 
@@ -68,7 +68,7 @@ class CoreDataSeeder extends Seeder
                 'student_number' => 'SNT-001',
                 'class_room_id' => $classRoom->id,
                 'teacher_id' => $teacherProfile->id,
-                'name' => 'Santri HafizPlus',
+                'name' => 'Santri IMS',
                 'gender' => 'male',
                 'birth_date' => '2012-01-15',
                 'status' => 'active',

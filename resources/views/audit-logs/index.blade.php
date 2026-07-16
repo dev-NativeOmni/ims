@@ -5,7 +5,7 @@
                 Audit Log
             </h2>
             <p class="text-sm text-gray-600 mt-1">
-                Riwayat aktivitas penting pada sistem HafizPlus.
+                Riwayat aktivitas penting pada sistem IMS.
             </p>
         </div>
     </x-slot>

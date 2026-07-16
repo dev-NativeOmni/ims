@@ -5,7 +5,7 @@
                 {{ $title ?? 'Admin Dashboard' }}
             </h2>
             <p class="text-sm text-gray-500">
-                {{ $subtitle ?? 'Monitoring operasional HafizPlus.' }}
+                {{ $subtitle ?? 'Monitoring operasional IMS.' }}
             </p>
         </div>
     </x-slot>

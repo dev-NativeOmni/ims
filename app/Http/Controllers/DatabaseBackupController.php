@@ -24,7 +24,7 @@ class DatabaseBackupController extends Controller
 
     public function store(): RedirectResponse
     {
-        $exitCode = Artisan::call('hafizplus:backup-database', [
+        $exitCode = Artisan::call('ims:backup-database', [
             '--prune' => true,
         ]);
 
