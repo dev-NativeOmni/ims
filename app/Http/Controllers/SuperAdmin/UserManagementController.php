@@ -10,16 +10,7 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    public function __construct()
-    {
-        // Ensure only super admin can access this controller
-        $this->middleware(function ($request, $next) {
-            if (! $request->user() || ! $request->user()->hasRole('super_admin')) {
-                abort(403, 'Unauthorized');
-            }
-            return $next($request);
-        });
-    }
+
 
     /**
      * Show a list of all users.
