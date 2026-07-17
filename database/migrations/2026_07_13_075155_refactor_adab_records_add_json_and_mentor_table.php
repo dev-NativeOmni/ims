@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -51,7 +51,7 @@ return new class extends Migration
             DB::table('adab_records')
                 ->where('id', $record->id)
                 ->update([
-                    'answers'       => json_encode($answers),
+                    'answers' => json_encode($answers),
                     'student_score' => $studentScore,
                 ]);
         }

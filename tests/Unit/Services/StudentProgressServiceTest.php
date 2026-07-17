@@ -41,13 +41,13 @@ class StudentProgressServiceTest extends TestCase
     public function it_correctly_calculates_memorized_ayahs_for_single_non_overlapping_record(): void
     {
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 1,
-            'ayah_end'     => 3,
-            'status'       => 'passed',
-            'score'        => 80,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'status' => 'passed',
+            'score' => 80,
             'submitted_at' => now(),
         ]);
 
@@ -63,25 +63,25 @@ class StudentProgressServiceTest extends TestCase
     {
         // Setoran 1: Ayat 1 - 3
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 1,
-            'ayah_end'     => 3,
-            'status'       => 'passed',
-            'score'        => 80,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'status' => 'passed',
+            'score' => 80,
             'submitted_at' => now()->subDay(),
         ]);
 
         // Setoran 2: Ayat 2 - 5 (overlapping dengan setoran 1)
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 2,
-            'ayah_end'     => 5,
-            'status'       => 'passed',
-            'score'        => 90,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 2,
+            'ayah_end' => 5,
+            'status' => 'passed',
+            'score' => 90,
             'submitted_at' => now(),
         ]);
 
@@ -98,25 +98,25 @@ class StudentProgressServiceTest extends TestCase
     {
         // Setoran 1: Ayat 1 - 3, status repeat (gagal)
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 1,
-            'ayah_end'     => 3,
-            'status'       => 'repeat',
-            'score'        => 50,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'status' => 'repeat',
+            'score' => 50,
             'submitted_at' => now()->subDay(),
         ]);
 
         // Setoran 2: Ayat 4 - 7, status passed
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 4,
-            'ayah_end'     => 7,
-            'status'       => 'passed',
-            'score'        => 88,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 4,
+            'ayah_end' => 7,
+            'status' => 'passed',
+            'score' => 88,
             'submitted_at' => now(),
         ]);
 
@@ -133,35 +133,35 @@ class StudentProgressServiceTest extends TestCase
     {
         // Surah 1 (Al-Fatihah, total 7 ayat): Ayat 1 - 7 (lulus)
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $this->surah->id,
-            'ayah_start'   => 1,
-            'ayah_end'     => 7,
-            'status'       => 'passed',
-            'score'        => 95,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
+            'score' => 95,
             'submitted_at' => now()->subDay(),
         ]);
 
         // Buat surah kedua: Al-Baqarah (total 286 ayat)
         $surah2 = Surah::create([
-            'number'     => 2,
-            'name_ar'    => 'البقرة',
+            'number' => 2,
+            'name_ar' => 'البقرة',
             'name_latin' => 'Al-Baqarah',
             'total_ayah' => 286,
-            'juz_start'  => 1,
-            'juz_end'    => 3,
+            'juz_start' => 1,
+            'juz_end' => 3,
         ]);
 
         // Setoran Surah 2: Ayat 1 - 10 (lulus)
         HafalanRecord::create([
-            'student_id'   => $this->student->id,
-            'teacher_id'   => $this->teacherProfile->id,
-            'surah_id'     => $surah2->id,
-            'ayah_start'   => 1,
-            'ayah_end'     => 10,
-            'status'       => 'passed',
-            'score'        => 85,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $surah2->id,
+            'ayah_start' => 1,
+            'ayah_end' => 10,
+            'status' => 'passed',
+            'score' => 85,
             'submitted_at' => now(),
         ]);
 
@@ -179,31 +179,31 @@ class StudentProgressServiceTest extends TestCase
     public function it_correctly_calculates_average_murajaah_score(): void
     {
         MurajaahRecord::create([
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
-            'status'        => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
             'fluency_score' => 90,
-            'tajwid_score'  => 85,
+            'tajwid_score' => 85,
             'makhraj_score' => 80,
             'overall_score' => 85,
-            'reviewed_at'   => now(),
+            'reviewed_at' => now(),
         ]);
 
         MurajaahRecord::create([
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
-            'status'        => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
             'fluency_score' => 100,
-            'tajwid_score'  => 95,
+            'tajwid_score' => 95,
             'makhraj_score' => 90,
             'overall_score' => 95,
-            'reviewed_at'   => now(),
+            'reviewed_at' => now(),
         ]);
 
         $progress = $this->service->calculate($this->student);

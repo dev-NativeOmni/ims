@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\ClassRoom;
-use App\Models\Student;
 use App\Models\Program;
 use App\Models\Role;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ProgramTest extends TestCase
@@ -119,7 +118,7 @@ class ProgramTest extends TestCase
 
         // 3. Create Students
         $studentRole = Role::firstOrCreate(['name' => 'student'], ['display_name' => 'Student']);
-        
+
         $dailyStudent = Student::create([
             'user_id' => User::factory()->create(['role_id' => $studentRole->id])->id,
             'class_room_id' => $dailyClass->id,
@@ -127,7 +126,7 @@ class ProgramTest extends TestCase
             'tahfizh_level' => 'reguler', // 5 lines
             'status' => 'active',
         ]);
-        
+
         $weeklyStudent = Student::create([
             'user_id' => User::factory()->create(['role_id' => $studentRole->id])->id,
             'class_room_id' => $weeklyClass->id,

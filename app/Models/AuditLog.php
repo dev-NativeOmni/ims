@@ -75,7 +75,7 @@ class AuditLog extends Model
     public function getAuditableNameAttribute(): string
     {
         return $this->auditable_label
-            ?: class_basename((string) $this->auditable_type) . ' #' . $this->auditable_id;
+            ?: class_basename((string) $this->auditable_type).' #'.$this->auditable_id;
     }
 
     public function getAuditableTypeLabelAttribute(): string

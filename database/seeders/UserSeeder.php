@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\ParentProfile;
 use App\Models\Role;
+use App\Models\Student;
+use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -69,11 +72,11 @@ class UserSeeder extends Seeder
             );
 
             if ($userData['role'] === 'teacher') {
-                \App\Models\TeacherProfile::updateOrCreate(['user_id' => $user->id]);
+                TeacherProfile::updateOrCreate(['user_id' => $user->id]);
             } elseif ($userData['role'] === 'parent') {
-                \App\Models\ParentProfile::updateOrCreate(['user_id' => $user->id]);
+                ParentProfile::updateOrCreate(['user_id' => $user->id]);
             } elseif ($userData['role'] === 'student') {
-                \App\Models\Student::updateOrCreate(
+                Student::updateOrCreate(
                     ['user_id' => $user->id],
                     [
                         'name' => $user->name,

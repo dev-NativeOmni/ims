@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
-use PHPUnit\Framework\Attributes\Test;
+use App\Models\ClassRoom;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Role;
 
 class NavigationMenuTest extends TestCase
 {
@@ -177,8 +178,8 @@ class NavigationMenuTest extends TestCase
         $roleSupervisor = Role::firstOrCreate(['name' => 'supervisor'], ['display_name' => 'Supervisor']);
         $supervisorUser = User::factory()->create([
             'role_id' => $roleSupervisor->id,
-            'name'    => 'Supervisor Test',
-            'status'  => 'active',
+            'name' => 'Supervisor Test',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($supervisorUser)->get(route('supervisor.dashboard'));
@@ -215,8 +216,8 @@ class NavigationMenuTest extends TestCase
         $roleHeadmaster = Role::firstOrCreate(['name' => 'headmaster'], ['display_name' => 'Kepala Sekolah']);
         $headmasterUser = User::factory()->create([
             'role_id' => $roleHeadmaster->id,
-            'name'    => 'Kepsek Test',
-            'status'  => 'active',
+            'name' => 'Kepsek Test',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($headmasterUser)->get(route('reports.teachers'));
@@ -253,8 +254,8 @@ class NavigationMenuTest extends TestCase
         $roleCoord = Role::firstOrCreate(['name' => 'coordinator_tahfizh'], ['display_name' => 'Koordinator Tahfizh']);
         $coordUser = User::factory()->create([
             'role_id' => $roleCoord->id,
-            'name'    => 'Koordinator Test',
-            'status'  => 'active',
+            'name' => 'Koordinator Test',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($coordUser)->get(route('progress.index'));
@@ -292,8 +293,8 @@ class NavigationMenuTest extends TestCase
         $roleTanse = Role::firstOrCreate(['name' => 'tanse'], ['display_name' => 'Tanse']);
         $tanseUser = User::factory()->create([
             'role_id' => $roleTanse->id,
-            'name'    => 'Tanse Test',
-            'status'  => 'active',
+            'name' => 'Tanse Test',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($tanseUser)->get(route('student-points.index'));
@@ -305,7 +306,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('teachers.index'));
         $response->assertDontSee(route('parents.index'));
         $response->assertDontSee(route('students.index'));
-        
+
         $response->assertDontSee(route('quick-inputs.index'));
         $response->assertDontSee(route('hafalan-records.index'));
         $response->assertDontSee(route('murajaah-records.index'));
@@ -315,7 +316,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('reports.teachers'));
         $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('quran.mushaf'));
-        
+
         $response->assertDontSee(route('adab.index'));
 
         $response->assertDontSee(route('users.index'));
@@ -330,7 +331,7 @@ class NavigationMenuTest extends TestCase
     #[Test]
     public function super_admin_can_access_class_print_route(): void
     {
-        $classRoom = \App\Models\ClassRoom::first();
+        $classRoom = ClassRoom::first();
         $response = $this->actingAs($this->superAdmin)->get(route('digital-reports.class-print', $classRoom));
 
         $response->assertStatus(200);

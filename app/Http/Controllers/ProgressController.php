@@ -21,8 +21,7 @@ class ProgressController extends Controller
     public function __construct(
         private readonly StudentProgressService $studentProgressService,
         private readonly StudentMotivationService $studentMotivationService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -79,8 +78,8 @@ class ProgressController extends Controller
 
                 $query->where(function (Builder $searchQuery) use ($keyword) {
                     $searchQuery
-                        ->where('name', 'like', '%' . $keyword . '%')
-                        ->orWhere('student_number', 'like', '%' . $keyword . '%');
+                        ->where('name', 'like', '%'.$keyword.'%')
+                        ->orWhere('student_number', 'like', '%'.$keyword.'%');
                 });
             })
             ->orderBy('name');
@@ -244,7 +243,7 @@ class ProgressController extends Controller
                     'total_ayahs' => $totalAyah,
                     'progress_percent' => round(($memorizedAyahs / $totalAyah) * 100, 2),
                     'ranges' => collect($mergedIntervals)
-                        ->map(fn (array $range) => $range[0] . '-' . $range[1])
+                        ->map(fn (array $range) => $range[0].'-'.$range[1])
                         ->implode(', '),
                 ];
             })
@@ -271,7 +270,7 @@ class ProgressController extends Controller
                     'type' => 'hafalan',
                     'label' => 'Hafalan',
                     'title' => $record->surah?->name_latin ?? '-',
-                    'range' => $record->ayah_start . ' - ' . $record->ayah_end,
+                    'range' => $record->ayah_start.' - '.$record->ayah_end,
                     'status' => $record->status,
                     'score' => $record->score,
                     'teacher' => $record->teacher?->user?->name,
@@ -297,7 +296,7 @@ class ProgressController extends Controller
                     'type' => 'murajaah',
                     'label' => 'Murajaah',
                     'title' => $record->surah?->name_latin ?? '-',
-                    'range' => $record->ayah_start . ' - ' . $record->ayah_end,
+                    'range' => $record->ayah_start.' - '.$record->ayah_end,
                     'status' => $record->status,
                     'score' => $record->overall_score ?? $record->score ?? null,
                     'teacher' => $record->teacher?->user?->name,
@@ -324,7 +323,7 @@ class ProgressController extends Controller
                     'type' => 'target',
                     'label' => 'Target',
                     'title' => $target->surah?->name_latin ?? '-',
-                    'range' => $target->ayah_start . ' - ' . $target->ayah_end,
+                    'range' => $target->ayah_start.' - '.$target->ayah_end,
                     'status' => $target->status,
                     'score' => null,
                     'teacher' => $target->teacher?->user?->name,

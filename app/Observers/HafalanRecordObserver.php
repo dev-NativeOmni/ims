@@ -88,13 +88,13 @@ class HafalanRecordObserver
         $hafalanRecord->loadMissing(['student', 'surah']);
 
         $studentName = $hafalanRecord->student?->name
-            ?? 'Santri ID ' . $hafalanRecord->student_id;
+            ?? 'Santri ID '.$hafalanRecord->student_id;
 
         $surahName = $hafalanRecord->surah?->name_latin
             ?? $hafalanRecord->surah?->name
-            ?? 'Surah ID ' . $hafalanRecord->surah_id;
+            ?? 'Surah ID '.$hafalanRecord->surah_id;
 
-        return $studentName . ' - ' . $surahName . ' ayat ' . $hafalanRecord->ayah_start . '-' . $hafalanRecord->ayah_end;
+        return $studentName.' - '.$surahName.' ayat '.$hafalanRecord->ayah_start.'-'.$hafalanRecord->ayah_end;
     }
 
     private function trackedFields(): array

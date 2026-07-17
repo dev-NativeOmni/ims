@@ -6,10 +6,13 @@ use App\Http\Requests\StoreClassRoomRequest;
 use App\Http\Requests\UpdateClassRoomRequest;
 use App\Models\ClassRoom;
 use App\Models\Program;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClassRoomController extends Controller
 {
@@ -96,7 +99,7 @@ class ClassRoomController extends Controller
     // -------------------------------------------------------------------------
     // Excel Export
     // -------------------------------------------------------------------------
-    public function export(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function export(): StreamedResponse
     {
         $classRooms = ClassRoom::query()
             ->with('program')
@@ -105,7 +108,7 @@ class ClassRoomController extends Controller
             ->get();
 
         $headers = ['Nama Kelas', 'Level', 'Program', 'Jumlah Santri'];
-        $data    = [];
+        $data = [];
 
         foreach ($classRooms as $classRoom) {
             $data[] = [
@@ -116,10 +119,10 @@ class ClassRoomController extends Controller
             ];
         }
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'classrooms_export_') . '.xlsx';
-        $fileName = 'kelas_' . now()->format('Ymd_His') . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'classrooms_export_').'.xlsx';
+        $fileName = 'kelas_'.now()->format('Ymd_His').'.xlsx';
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         return response()->streamDownload(function () use ($tempFile) {
             readfile($tempFile);
@@ -138,8 +141,8 @@ class ClassRoomController extends Controller
             'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
         ]);
 
-        $file      = $request->file('file');
-        $filePath  = $file->getRealPath();
+        $file = $request->file('file');
+        $filePath = $file->getRealPath();
         $extension = strtolower($file->getClientOriginalExtension());
 
         /** @var list<list<string|null>> $rows */
@@ -147,9 +150,9 @@ class ClassRoomController extends Controller
 
         if ($extension === 'xlsx') {
             try {
-                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+                $rows = SimpleXlsxReader::read($filePath);
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: '.$e->getMessage());
             }
         } else {
             $handle = fopen($filePath, 'r');
@@ -174,14 +177,15 @@ class ClassRoomController extends Controller
 
         $col = static function (string $name) use ($header): ?int {
             $v = array_search($name, $header, true);
+
             return $v !== false ? (int) $v : null;
         };
 
         /** @var array<string, int|null> $map */
         $map = [
-            'nama'    => $col('nama kelas') ?? $col('nama')  ?? $col('name'),
-            'level'   => $col('level'),
-            'program' => $col('program')    ?? $col('nama program'),
+            'nama' => $col('nama kelas') ?? $col('nama') ?? $col('name'),
+            'level' => $col('level'),
+            'program' => $col('program') ?? $col('nama program'),
         ];
 
         if ($map['nama'] === null) {
@@ -189,7 +193,7 @@ class ClassRoomController extends Controller
         }
 
         $imported = 0;
-        $updated  = 0;
+        $updated = 0;
 
         DB::beginTransaction();
         try {
@@ -227,8 +231,8 @@ class ClassRoomController extends Controller
                     $updated++;
                 } else {
                     ClassRoom::create([
-                        'name'       => $name,
-                        'level'      => $level ?: null,
+                        'name' => $name,
+                        'level' => $level ?: null,
                         'program_id' => $programId,
                     ]);
                     $imported++;
@@ -237,7 +241,8 @@ class ClassRoomController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengimpor: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengimpor: '.$e->getMessage());
         }
 
         return redirect()->route('class-rooms.index')

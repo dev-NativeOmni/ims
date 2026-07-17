@@ -7,11 +7,9 @@ use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdabController extends Controller
@@ -26,13 +24,14 @@ class AdabController extends Controller
 
         if ($isStudent) {
             $student = Student::where('user_id', $user->id)->firstOrFail();
+
             return redirect()->route('adab.show', $student);
         }
 
-        $isAdmin      = $user->hasAnyRole(['super_admin', 'admin']);
+        $isAdmin = $user->hasAnyRole(['super_admin', 'admin']);
         $isSupervisor = $user->hasRole('supervisor');
-        $isTeacher    = $user->hasRole('teacher');
-        $isParent     = $user->hasRole('parent');
+        $isTeacher = $user->hasRole('teacher');
+        $isParent = $user->hasRole('parent');
 
         $classRooms = ClassRoom::query()->orderBy('name')->get();
 
@@ -59,7 +58,7 @@ class AdabController extends Controller
         $students = $studentQuery->orderBy('name')->paginate(10)->withQueryString();
 
         $today = now()->toDateString();
-        $thisYear  = (int) now()->format('Y');
+        $thisYear = (int) now()->format('Y');
         $thisMonth = (int) now()->format('n');
 
         foreach ($students as $student) {
@@ -85,7 +84,7 @@ class AdabController extends Controller
             }
 
             $student->average_adab_score = round($combined, 1);
-            $student->adab_grade         = Setting::getAdabGrade($combined);
+            $student->adab_grade = Setting::getAdabGrade($combined);
         }
 
         // Stats for dashboard tab
@@ -137,7 +136,7 @@ class AdabController extends Controller
     {
         $user = Auth::user();
 
-        $isOwn     = $user->hasRole('student') && $student->user_id === $user->id;
+        $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
         $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
@@ -165,7 +164,7 @@ class AdabController extends Controller
     {
         $user = Auth::user();
 
-        $isOwn     = $user->hasRole('student') && $student->user_id === $user->id;
+        $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
         $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
@@ -200,19 +199,19 @@ class AdabController extends Controller
         }
 
         // Calculate student score (0–100)
-        $allAnswers   = array_merge(...array_values($answers));
+        $allAnswers = array_merge(...array_values($answers));
         $studentScore = count($allAnswers) > 0
             ? round((array_sum($allAnswers) / count($allAnswers)) * 100, 2)
             : 0;
 
         AdabRecord::create([
-            'student_id'    => $student->id,
-            'evaluator_id'  => Auth::id(),
+            'student_id' => $student->id,
+            'evaluator_id' => Auth::id(),
             'assessment_date' => $today,
-            'answers'       => $answers,
+            'answers' => $answers,
             'student_score' => $studentScore,
-            'total_score'   => $studentScore, // total = student only until mentor adds score
-            'notes'         => $validated['notes'] ?? null,
+            'total_score' => $studentScore, // total = student only until mentor adds score
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         $grade = Setting::getAdabGrade($studentScore);
@@ -226,7 +225,7 @@ class AdabController extends Controller
      * -------------------------------------------------------------------- */
     public function show(Student $student): View
     {
-        $user    = Auth::user();
+        $user = Auth::user();
         $visible = false;
 
         if ($user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab'])) {
@@ -269,7 +268,7 @@ class AdabController extends Controller
             ? round(($studentAvg * 0.5) + ($latestMentor->mentor_score * 0.5), 1)
             : round($studentAvg, 1);
 
-        $grade      = Setting::getAdabGrade($combinedScore);
+        $grade = Setting::getAdabGrade($combinedScore);
         $gradeLabel = Setting::getAdabGradeLabel($grade);
 
         // Per-category averages (for chart/display)
@@ -289,7 +288,7 @@ class AdabController extends Controller
         }
 
         // Check if mentor already scored this month
-        $thisYear  = (int) now()->format('Y');
+        $thisYear = (int) now()->format('Y');
         $thisMonth = (int) now()->format('n');
         $mentorAlreadyScoredThisMonth = AdabMentorAssessment::where('student_id', $student->id)
             ->where('year', $thisYear)
@@ -337,9 +336,9 @@ class AdabController extends Controller
 
         $validated = $request->validate([
             'mentor_score' => 'required|integer|min:0|max:100',
-            'year'         => 'required|integer|min:2020|max:2099',
-            'month'        => 'required|integer|min:1|max:12',
-            'notes'        => 'nullable|string|max:1000',
+            'year' => 'required|integer|min:2020|max:2099',
+            'month' => 'required|integer|min:1|max:12',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $months = [
@@ -348,19 +347,19 @@ class AdabController extends Controller
             7 => 'Juli', 8 => 'Agustus', 9 => 'September',
             10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
-        $periodLabel = ($months[$validated['month']] ?? '-') . ' ' . $validated['year'];
+        $periodLabel = ($months[$validated['month']] ?? '-').' '.$validated['year'];
 
         AdabMentorAssessment::updateOrCreate(
             [
                 'student_id' => $student->id,
-                'year'       => $validated['year'],
-                'month'      => $validated['month'],
+                'year' => $validated['year'],
+                'month' => $validated['month'],
             ],
             [
-                'mentor_id'    => $user->id,
+                'mentor_id' => $user->id,
                 'mentor_score' => $validated['mentor_score'],
                 'period_label' => $periodLabel,
-                'notes'        => $validated['notes'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ]
         );
 

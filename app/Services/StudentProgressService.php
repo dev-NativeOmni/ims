@@ -12,11 +12,12 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-
+use Illuminate\Support\Facades\DB;
 
 class StudentProgressService
 {
     private static ?array $allAyahs = null;
+
     private static ?array $juzTotalAyahs = null;
 
     public function visibleStudentQuery(?User $user): Builder
@@ -120,8 +121,8 @@ class StudentProgressService
             'remaining_ayahs' => max(0, $totalQuranAyahs - $memorizedAyahs),
             'progress_percent' => $progressPercent,
             'completed_juz_count' => $juzStats['juz_count'],
-            'completed_juz_list' => $juzStats['juz_count'] > 0 
-                ? 'Juz ' . implode(', ', $juzStats['completed_juz'])
+            'completed_juz_list' => $juzStats['juz_count'] > 0
+                ? 'Juz '.implode(', ', $juzStats['completed_juz'])
                 : 'Belum ada Juz lengkap',
 
             'total_hafalan_records' => (clone $hafalanRecordsQuery)->count(),
@@ -155,7 +156,7 @@ class StudentProgressService
                 ?? $latestHafalan?->surah?->name
                 ?? null,
             'latest_hafalan_ayah' => $latestHafalan
-                ? $latestHafalan->ayah_start . ' - ' . $latestHafalan->ayah_end
+                ? $latestHafalan->ayah_start.' - '.$latestHafalan->ayah_end
                 : null,
             'latest_hafalan_date' => $latestHafalan?->submitted_at,
 
@@ -163,7 +164,7 @@ class StudentProgressService
                 ?? $latestMurajaah?->surah?->name
                 ?? null,
             'latest_murajaah_ayah' => $latestMurajaah
-                ? $latestMurajaah->ayah_start . ' - ' . $latestMurajaah->ayah_end
+                ? $latestMurajaah->ayah_start.' - '.$latestMurajaah->ayah_end
                 : null,
             'latest_murajaah_date' => $latestMurajaah?->reviewed_at,
         ];
@@ -172,16 +173,16 @@ class StudentProgressService
     private function getJuzStats(Student $student): array
     {
         if (self::$allAyahs === null) {
-            $ayahs = \Illuminate\Support\Facades\DB::table('ayahs')
+            $ayahs = DB::table('ayahs')
                 ->select('id', 'surah_id', 'ayah_number', 'juz')
                 ->get();
-            
+
             self::$allAyahs = [];
             self::$juzTotalAyahs = [];
-            
+
             foreach ($ayahs as $ayah) {
                 self::$allAyahs[$ayah->surah_id][$ayah->ayah_number] = $ayah->juz;
-                if (!isset(self::$juzTotalAyahs[$ayah->juz])) {
+                if (! isset(self::$juzTotalAyahs[$ayah->juz])) {
                     self::$juzTotalAyahs[$ayah->juz] = 0;
                 }
                 self::$juzTotalAyahs[$ayah->juz]++;
@@ -207,9 +208,9 @@ class StudentProgressService
                 if (isset(self::$allAyahs[$surahId][$a])) {
                     $juz = self::$allAyahs[$surahId][$a];
                     $key = "{$surahId}-{$a}";
-                    if (!isset($memorizedMap[$key])) {
+                    if (! isset($memorizedMap[$key])) {
                         $memorizedMap[$key] = true;
-                        if (!isset($juzMemorizedCount[$juz])) {
+                        if (! isset($juzMemorizedCount[$juz])) {
                             $juzMemorizedCount[$juz] = 0;
                         }
                         $juzMemorizedCount[$juz]++;

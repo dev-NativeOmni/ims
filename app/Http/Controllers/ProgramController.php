@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProgramRequest;
 use App\Http\Requests\UpdateProgramRequest;
 use App\Models\Program;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProgramController extends Controller
 {
@@ -78,12 +81,12 @@ class ProgramController extends Controller
     // -------------------------------------------------------------------------
     // Excel Export
     // -------------------------------------------------------------------------
-    public function export(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function export(): StreamedResponse
     {
         $programs = Program::query()->withCount('classRooms')->orderBy('name')->get();
 
         $headers = ['Nama Program', 'Deskripsi', 'Frekuensi Pertemuan', 'Status', 'Jumlah Kelas'];
-        $data    = [];
+        $data = [];
 
         foreach ($programs as $program) {
             $data[] = [
@@ -95,10 +98,10 @@ class ProgramController extends Controller
             ];
         }
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'programs_export_') . '.xlsx';
-        $fileName = 'programs_' . now()->format('Ymd_His') . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'programs_export_').'.xlsx';
+        $fileName = 'programs_'.now()->format('Ymd_His').'.xlsx';
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         return response()->streamDownload(function () use ($tempFile) {
             readfile($tempFile);
@@ -117,8 +120,8 @@ class ProgramController extends Controller
             'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
         ]);
 
-        $file      = $request->file('file');
-        $filePath  = $file->getRealPath();
+        $file = $request->file('file');
+        $filePath = $file->getRealPath();
         $extension = strtolower($file->getClientOriginalExtension());
 
         /** @var list<list<string|null>> $rows */
@@ -126,9 +129,9 @@ class ProgramController extends Controller
 
         if ($extension === 'xlsx') {
             try {
-                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+                $rows = SimpleXlsxReader::read($filePath);
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: '.$e->getMessage());
             }
         } else {
             $handle = fopen($filePath, 'r');
@@ -153,15 +156,16 @@ class ProgramController extends Controller
 
         $col = static function (string $name) use ($header): ?int {
             $v = array_search($name, $header, true);
+
             return $v !== false ? (int) $v : null;
         };
 
         /** @var array<string, int|null> $map */
         $map = [
-            'nama'      => $col('nama program') ?? $col('nama') ?? $col('name'),
-            'deskripsi' => $col('deskripsi')    ?? $col('description'),
+            'nama' => $col('nama program') ?? $col('nama') ?? $col('name'),
+            'deskripsi' => $col('deskripsi') ?? $col('description'),
             'frekuensi' => $col('frekuensi pertemuan') ?? $col('frekuensi') ?? $col('meeting frequency') ?? $col('frequency'),
-            'status'    => $col('status'),
+            'status' => $col('status'),
         ];
 
         if ($map['nama'] === null) {
@@ -169,7 +173,7 @@ class ProgramController extends Controller
         }
 
         $imported = 0;
-        $updated  = 0;
+        $updated = 0;
 
         DB::beginTransaction();
         try {
@@ -197,15 +201,15 @@ class ProgramController extends Controller
                     $existing->update([
                         'description' => $deskripsi ?: $existing->description,
                         'meeting_frequency' => $frekuensi,
-                        'status'      => $status,
+                        'status' => $status,
                     ]);
                     $updated++;
                 } else {
                     Program::create([
-                        'name'        => $name,
+                        'name' => $name,
                         'description' => $deskripsi,
                         'meeting_frequency' => $frekuensi,
-                        'status'      => $status,
+                        'status' => $status,
                     ]);
                     $imported++;
                 }
@@ -213,7 +217,8 @@ class ProgramController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengimpor: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengimpor: '.$e->getMessage());
         }
 
         return redirect()->route('programs.index')

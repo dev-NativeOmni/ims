@@ -15,7 +15,7 @@ class AuthApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -94,7 +94,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/auth/me');
 
         $response->assertStatus(200)
@@ -121,7 +121,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/v1/auth/logout');
 
         $response->assertStatus(200)
@@ -141,7 +141,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Device 3')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/v1/auth/logout-all');
 
         $response->assertStatus(200)
@@ -160,7 +160,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Device B')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/auth/tokens');
 
         $response->assertStatus(200)
@@ -195,7 +195,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Device C')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/v1/auth/logout-other-devices');
 
         $response->assertStatus(200)
@@ -217,8 +217,8 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Device active')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->deleteJson('/api/v1/auth/tokens/' . $targetToken->accessToken->id);
+            'Authorization' => 'Bearer '.$token,
+        ])->deleteJson('/api/v1/auth/tokens/'.$targetToken->accessToken->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -235,7 +235,7 @@ class AuthApiTest extends TestCase
         $token = $user->createToken('Device active')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->deleteJson('/api/v1/auth/tokens/9999');
 
         $response->assertStatus(404)

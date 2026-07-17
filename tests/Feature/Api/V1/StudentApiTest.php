@@ -2,15 +2,13 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\User;
+use App\Models\ClassRoom;
 use App\Models\Student;
 use App\Models\TeacherProfile;
-use App\Models\ParentProfile;
-use App\Models\ClassRoom;
-use App\Models\Program;
+use App\Models\User;
+use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\CoreDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +19,7 @@ class StudentApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -35,7 +33,7 @@ class StudentApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/students');
 
         $response->assertStatus(200)
@@ -67,7 +65,7 @@ class StudentApiTest extends TestCase
             'role_id' => User::where('username', 'santri')->first()->role_id,
             'status' => 'active',
         ]);
-        
+
         $classRoom = ClassRoom::first();
         Student::create([
             'student_number' => 'SNT-002',
@@ -84,7 +82,7 @@ class StudentApiTest extends TestCase
         $token = $teacherUser->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/students');
 
         $response->assertStatus(200);
@@ -100,7 +98,7 @@ class StudentApiTest extends TestCase
             'role_id' => User::where('username', 'santri')->first()->role_id,
             'status' => 'active',
         ]);
-        
+
         $classRoom = ClassRoom::first();
         $teacherProfile = TeacherProfile::first();
         Student::create([
@@ -118,7 +116,7 @@ class StudentApiTest extends TestCase
         $token = $parentUser->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/students');
 
         $response->assertStatus(200);
@@ -132,7 +130,7 @@ class StudentApiTest extends TestCase
         $token = $studentUser->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/students');
 
         $response->assertStatus(200);
@@ -147,8 +145,8 @@ class StudentApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/students/' . $student->id);
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/v1/students/'.$student->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -168,8 +166,8 @@ class StudentApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/students/' . $student->id . '/progress');
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/v1/students/'.$student->id.'/progress');
 
         $response->assertStatus(200)
             ->assertJsonStructure([

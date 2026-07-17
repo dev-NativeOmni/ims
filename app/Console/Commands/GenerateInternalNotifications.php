@@ -34,14 +34,14 @@ class GenerateInternalNotifications extends Command
 
             $created = $notificationService->generateForUser($user);
 
-            $this->info($created . ' notifikasi dibuat untuk user ID ' . $user->id . '.');
+            $this->info($created.' notifikasi dibuat untuk user ID '.$user->id.'.');
 
             return self::SUCCESS;
         }
 
         $created = $notificationService->generateForAllActiveUsers();
 
-        $this->info($created . ' notifikasi dibuat untuk seluruh user aktif.');
+        $this->info($created.' notifikasi dibuat untuk seluruh user aktif.');
 
         return self::SUCCESS;
     }

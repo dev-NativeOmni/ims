@@ -210,7 +210,7 @@ class StoreHafalanRecordRequest extends FormRequest
                         if ((int) $ayahEnd > $surahStart->total_ayah) {
                             $validator->errors()->add(
                                 "ayah_ends.{$idx}",
-                                'Ayat akhir tidak boleh melebihi jumlah ayat surah ' . $surahStart->name_latin . ' (' . $surahStart->total_ayah . ' ayat).'
+                                'Ayat akhir tidak boleh melebihi jumlah ayat surah '.$surahStart->name_latin.' ('.$surahStart->total_ayah.' ayat).'
                             );
                         }
                     }

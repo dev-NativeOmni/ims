@@ -36,7 +36,7 @@ class ThirtyStudentsSeeder extends Seeder
 
         // 2. Get a teacher to assign to these students
         $teacherProfile = TeacherProfile::first();
-        if (!$teacherProfile) {
+        if (! $teacherProfile) {
             $teacherRole = Role::where('name', 'teacher')->first();
             $teacherUser = User::create([
                 'role_id' => $teacherRole->id,
@@ -60,7 +60,7 @@ class ThirtyStudentsSeeder extends Seeder
         // 3. Create 30 students and parents
         for ($i = 1; $i <= 30; $i++) {
             $index = str_pad($i, 3, '0', STR_PAD_LEFT);
-            
+
             // Parent user
             $parentUser = User::create([
                 'role_id' => $parentRole->id,
@@ -73,7 +73,7 @@ class ThirtyStudentsSeeder extends Seeder
 
             $parentProfile = ParentProfile::create([
                 'user_id' => $parentUser->id,
-                'phone' => '0833' . $index . '0000',
+                'phone' => '0833'.$index.'0000',
                 'address' => "Alamat Wali Santri $index",
             ]);
 
@@ -94,7 +94,7 @@ class ThirtyStudentsSeeder extends Seeder
                 'teacher_id' => $teacherProfile->id,
                 'name' => "Santri Dummy $index",
                 'gender' => $i % 2 === 0 ? 'male' : 'female',
-                'birth_date' => '2013-05-' . str_pad(min(28, $i), 2, '0', STR_PAD_LEFT),
+                'birth_date' => '2013-05-'.str_pad(min(28, $i), 2, '0', STR_PAD_LEFT),
                 'status' => 'active',
             ]);
 

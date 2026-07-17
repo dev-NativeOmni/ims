@@ -3,9 +3,9 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Models\User;
+use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\CoreDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +16,7 @@ class DashboardApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -30,7 +30,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/admin');
 
         $response->assertStatus(200)
@@ -50,7 +50,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/admin');
 
         $response->assertStatus(403);
@@ -62,7 +62,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/teacher');
 
         $response->assertStatus(200)
@@ -82,7 +82,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/teacher');
 
         $response->assertStatus(403);
@@ -94,7 +94,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/parent');
 
         $response->assertStatus(200)
@@ -114,7 +114,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/parent');
 
         $response->assertStatus(403);
@@ -126,7 +126,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/student');
 
         $response->assertStatus(200)
@@ -146,7 +146,7 @@ class DashboardApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/dashboard/student');
 
         $response->assertStatus(403);

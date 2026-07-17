@@ -65,6 +65,7 @@ class SettingController extends Controller
     public function editAdab()
     {
         $categories = Setting::getAdabQuestions();
+
         return view('settings.adab', compact('categories'));
     }
 
@@ -80,7 +81,7 @@ class SettingController extends Controller
         $rules = [];
         foreach ($input as $catIdx => $cat) {
             $rules["categories.{$catIdx}.title"] = 'required|string|max:255';
-            $rules["categories.{$catIdx}.desc"]  = 'required|string|max:1000';
+            $rules["categories.{$catIdx}.desc"] = 'required|string|max:1000';
 
             $questions = $cat['questions'] ?? [];
             foreach ($questions as $qIdx => $_) {
@@ -94,8 +95,8 @@ class SettingController extends Controller
         $toSave = [];
         foreach ($validated['categories'] as $catIdx => $cat) {
             $toSave[] = [
-                'title'     => $cat['title'],
-                'desc'      => $cat['desc'],
+                'title' => $cat['title'],
+                'desc' => $cat['desc'],
                 'questions' => array_values($cat['questions']),
             ];
         }

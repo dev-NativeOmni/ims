@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ParentProfile;
 use App\Models\Role;
+use App\Models\Student;
+use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -21,7 +25,7 @@ class UserController extends Controller
             $search = $request->string('search')->toString();
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                    ->orWhere('username', 'like', "%{$search}%");
             });
         }
 
@@ -54,13 +58,13 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'role_id' => 'required|exists:roles,id',
             'password' => 'nullable|string|min:6',
             'status' => 'required|in:active,inactive',
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $user) {
+        DB::transaction(function () use ($validated, $user) {
             $userData = [
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -78,11 +82,11 @@ class UserController extends Controller
             $role = Role::find($validated['role_id']);
             if ($role) {
                 if ($role->name === 'teacher' && ! $user->teacherProfile()->exists()) {
-                    \App\Models\TeacherProfile::create(['user_id' => $user->id]);
+                    TeacherProfile::create(['user_id' => $user->id]);
                 } elseif ($role->name === 'parent' && ! $user->parentProfile()->exists()) {
-                    \App\Models\ParentProfile::create(['user_id' => $user->id]);
+                    ParentProfile::create(['user_id' => $user->id]);
                 } elseif ($role->name === 'student' && ! $user->studentProfile()->exists()) {
-                    \App\Models\Student::create([
+                    Student::create([
                         'user_id' => $user->id,
                         'name' => $user->name,
                         'status' => 'active',
@@ -93,7 +97,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'Data user ' . $user->username . ' berhasil diperbarui.');
+            ->with('success', 'Data user '.$user->username.' berhasil diperbarui.');
     }
 
     public function create(): View
@@ -117,7 +121,7 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated) {
             $user = User::create([
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -130,11 +134,11 @@ class UserController extends Controller
             $role = Role::find($validated['role_id']);
             if ($role) {
                 if ($role->name === 'teacher') {
-                    \App\Models\TeacherProfile::create(['user_id' => $user->id]);
+                    TeacherProfile::create(['user_id' => $user->id]);
                 } elseif ($role->name === 'parent') {
-                    \App\Models\ParentProfile::create(['user_id' => $user->id]);
+                    ParentProfile::create(['user_id' => $user->id]);
                 } elseif ($role->name === 'student') {
-                    \App\Models\Student::create([
+                    Student::create([
                         'user_id' => $user->id,
                         'name' => $user->name,
                         'status' => 'active',
@@ -163,7 +167,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User ' . $username . ' berhasil dihapus.');
+            ->with('success', 'User '.$username.' berhasil dihapus.');
     }
 
     private function authorizeSuperAdmin(): void

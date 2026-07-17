@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ClassRoom;
-use App\Models\HafalanRecord;
-use App\Models\MurajaahRecord;
 use App\Models\Program;
 use App\Models\Role;
 use App\Models\Student;
@@ -19,10 +17,15 @@ class CrossSurahSetoranTest extends TestCase
     use RefreshDatabase;
 
     private User $teacherUser;
+
     private TeacherProfile $teacher;
+
     private Student $student;
+
     private Surah $surah1;
+
     private Surah $surah2;
+
     private Surah $surah3;
 
     protected function setUp(): void
@@ -101,7 +104,7 @@ class CrossSurahSetoranTest extends TestCase
         // Record 1: Surah 1, Ayah 5 to 7 (end of Al-Fatihah)
         // Record 2: Surah 2, Ayah 1 to 10
         $this->assertDatabaseCount('hafalan_records', 2);
-        
+
         $this->assertDatabaseHas('hafalan_records', [
             'surah_id' => $this->surah1->id,
             'ayah_start' => 5,
@@ -230,7 +233,7 @@ class CrossSurahSetoranTest extends TestCase
 
         $response->assertRedirect(route('quick-inputs.index'));
         $this->assertDatabaseCount('hafalan_records', 2);
-        
+
         $this->assertDatabaseHas('hafalan_records', [
             'surah_id' => $this->surah1->id,
             'ayah_start' => 6,
@@ -261,7 +264,7 @@ class CrossSurahSetoranTest extends TestCase
 
         $response->assertRedirect(route('quick-inputs.index'));
         $this->assertDatabaseCount('murajaah_records', 2);
-        
+
         $this->assertDatabaseHas('murajaah_records', [
             'surah_id' => $this->surah1->id,
             'ayah_start' => 6,

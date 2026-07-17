@@ -15,7 +15,7 @@ class DevRoutesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,

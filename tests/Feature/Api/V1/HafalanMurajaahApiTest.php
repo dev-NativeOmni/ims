@@ -2,17 +2,17 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\User;
-use App\Models\Student;
-use App\Models\TeacherProfile;
-use App\Models\Surah;
 use App\Models\HafalanRecord;
-use App\Models\MurajaahRecord;
 use App\Models\HafalanTarget;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\UserSeeder;
+use App\Models\MurajaahRecord;
+use App\Models\Student;
+use App\Models\Surah;
+use App\Models\TeacherProfile;
+use App\Models\User;
 use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\QuranDataSeeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +23,7 @@ class HafalanMurajaahApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -54,7 +54,7 @@ class HafalanMurajaahApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/hafalan-records');
 
         $response->assertStatus(200)
@@ -70,8 +70,8 @@ class HafalanMurajaahApiTest extends TestCase
 
         // Test show endpoint
         $responseShow = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/hafalan-records/' . $record->id);
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/v1/hafalan-records/'.$record->id);
 
         $responseShow->assertStatus(200)
             ->assertJson([
@@ -106,7 +106,7 @@ class HafalanMurajaahApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/murajaah-records');
 
         $response->assertStatus(200)
@@ -122,8 +122,8 @@ class HafalanMurajaahApiTest extends TestCase
 
         // Test show endpoint
         $responseShow = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/murajaah-records/' . $record->id);
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/v1/murajaah-records/'.$record->id);
 
         $responseShow->assertStatus(200)
             ->assertJson([
@@ -157,7 +157,7 @@ class HafalanMurajaahApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/hafalan-targets');
 
         $response->assertStatus(200)
@@ -173,8 +173,8 @@ class HafalanMurajaahApiTest extends TestCase
 
         // Test show endpoint
         $responseShow = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/hafalan-targets/' . $target->id);
+            'Authorization' => 'Bearer '.$token,
+        ])->getJson('/api/v1/hafalan-targets/'.$target->id);
 
         $responseShow->assertStatus(200)
             ->assertJson([

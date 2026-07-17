@@ -3,9 +3,9 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Models\User;
+use Database\Seeders\QuranDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\QuranDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +16,7 @@ class QuranApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -30,7 +30,7 @@ class QuranApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/surahs');
 
         $response->assertStatus(200)
@@ -55,7 +55,7 @@ class QuranApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/surahs/1');
 
         $response->assertStatus(200)
@@ -76,7 +76,7 @@ class QuranApiTest extends TestCase
         $token = $user->createToken('Test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/v1/surahs/1/ayahs');
 
         $response->assertStatus(200)

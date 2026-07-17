@@ -140,7 +140,7 @@ class StoreMurajaahRecordRequest extends FormRequest
                 if ((int) $this->input('ayah_end') > $surahEnd->total_ayah) {
                     $validator->errors()->add(
                         'ayah_end',
-                        'Ayat akhir tidak boleh melebihi jumlah ayat surah ' . $surahEnd->name_latin . ' (' . $surahEnd->total_ayah . ' ayat).'
+                        'Ayat akhir tidak boleh melebihi jumlah ayat surah '.$surahEnd->name_latin.' ('.$surahEnd->total_ayah.' ayat).'
                     );
                 }
             }

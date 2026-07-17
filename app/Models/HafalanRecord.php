@@ -54,7 +54,7 @@ class HafalanRecord extends Model
 
     public function getAyahRangeAttribute(): string
     {
-        return $this->ayah_start . ' - ' . $this->ayah_end;
+        return $this->ayah_start.' - '.$this->ayah_end;
     }
 
     public function getSubmissionTypeLabelAttribute(): string

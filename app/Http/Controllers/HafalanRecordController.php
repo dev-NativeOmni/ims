@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreHafalanRecordRequest;
 use App\Http\Requests\UpdateHafalanRecordRequest;
+use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Student;
 use App\Models\Surah;
@@ -11,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class HafalanRecordController extends Controller
@@ -79,7 +81,7 @@ class HafalanRecordController extends Controller
         $scores = $validated['scores'] ?? [];
         $statuses = $validated['statuses'] ?? [];
 
-        \Illuminate\Support\Facades\DB::transaction(function () use (
+        DB::transaction(function () use (
             $studentId,
             $teacherId,
             $notes,
@@ -193,8 +195,8 @@ class HafalanRecordController extends Controller
             ->get();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = \App\Models\ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
 

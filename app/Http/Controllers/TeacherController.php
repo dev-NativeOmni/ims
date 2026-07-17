@@ -7,11 +7,14 @@ use App\Http\Requests\UpdateTeacherRequest;
 use App\Models\Role;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TeacherController extends Controller
 {
@@ -52,18 +55,18 @@ class TeacherController extends Controller
             $teacherRole = Role::where('name', 'teacher')->firstOrFail();
 
             $user = User::create([
-                'role_id'        => $teacherRole->id,
-                'name'           => $validated['name'],
-                'username'       => $validated['username'],
-                'password'       => Hash::make($validated['password']),
+                'role_id' => $teacherRole->id,
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
                 'plain_password' => $validated['password'],
-                'status'         => $validated['status'],
+                'status' => $validated['status'],
             ]);
 
             TeacherProfile::create([
-                'user_id'         => $user->id,
+                'user_id' => $user->id,
                 'employee_number' => $validated['employee_number'] ?? null,
-                'phone'           => $validated['phone'] ?? null,
+                'phone' => $validated['phone'] ?? null,
             ]);
         });
 
@@ -95,13 +98,13 @@ class TeacherController extends Controller
 
         DB::transaction(function () use ($validated, $teacher) {
             $userData = [
-                'name'     => $validated['name'],
+                'name' => $validated['name'],
                 'username' => $validated['username'],
-                'status'   => $validated['status'],
+                'status' => $validated['status'],
             ];
 
             if (! empty($validated['password'])) {
-                $userData['password']       = Hash::make($validated['password']);
+                $userData['password'] = Hash::make($validated['password']);
                 $userData['plain_password'] = $validated['password'];
             }
 
@@ -109,7 +112,7 @@ class TeacherController extends Controller
 
             $teacher->update([
                 'employee_number' => $validated['employee_number'] ?? null,
-                'phone'           => $validated['phone'] ?? null,
+                'phone' => $validated['phone'] ?? null,
             ]);
         });
 
@@ -140,7 +143,7 @@ class TeacherController extends Controller
     // -------------------------------------------------------------------------
     // Excel Export
     // -------------------------------------------------------------------------
-    public function export(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function export(): StreamedResponse
     {
         $teachers = TeacherProfile::query()
             ->with('user')
@@ -149,23 +152,23 @@ class TeacherController extends Controller
             ->get();
 
         $headers = ['Nama', 'Username', 'Nomor Pegawai', 'Telepon', 'Status', 'Jumlah Santri'];
-        $data    = [];
+        $data = [];
 
         foreach ($teachers as $teacher) {
             $data[] = [
-                $teacher->user?->name            ?? '',
-                $teacher->user?->username        ?? '',
-                $teacher->employee_number        ?? '',
-                $teacher->phone                  ?? '',
-                $teacher->user?->status          ?? '',
+                $teacher->user?->name ?? '',
+                $teacher->user?->username ?? '',
+                $teacher->employee_number ?? '',
+                $teacher->phone ?? '',
+                $teacher->user?->status ?? '',
                 $teacher->students_count,
             ];
         }
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'teachers_export_') . '.xlsx';
-        $fileName = 'guru_' . now()->format('Ymd_His') . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'teachers_export_').'.xlsx';
+        $fileName = 'guru_'.now()->format('Ymd_His').'.xlsx';
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         return response()->streamDownload(function () use ($tempFile) {
             readfile($tempFile);
@@ -184,8 +187,8 @@ class TeacherController extends Controller
             'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
         ]);
 
-        $file      = $request->file('file');
-        $filePath  = $file->getRealPath();
+        $file = $request->file('file');
+        $filePath = $file->getRealPath();
         $extension = strtolower($file->getClientOriginalExtension());
 
         /** @var list<list<string|null>> $rows */
@@ -193,9 +196,9 @@ class TeacherController extends Controller
 
         if ($extension === 'xlsx') {
             try {
-                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+                $rows = SimpleXlsxReader::read($filePath);
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: '.$e->getMessage());
             }
         } else {
             $handle = fopen($filePath, 'r');
@@ -220,16 +223,17 @@ class TeacherController extends Controller
 
         $col = static function (string $name) use ($header): ?int {
             $v = array_search($name, $header, true);
+
             return $v !== false ? (int) $v : null;
         };
 
         /** @var array<string, int|null> $map */
         $map = [
-            'nama'            => $col('nama')          ?? $col('name'),
-            'username'        => $col('username'),
-            'nomor_pegawai'   => $col('nomor pegawai') ?? $col('employee_number'),
-            'telepon'         => $col('telepon')       ?? $col('phone'),
-            'status'          => $col('status'),
+            'nama' => $col('nama') ?? $col('name'),
+            'username' => $col('username'),
+            'nomor_pegawai' => $col('nomor pegawai') ?? $col('employee_number'),
+            'telepon' => $col('telepon') ?? $col('phone'),
+            'status' => $col('status'),
         ];
 
         if ($map['nama'] === null || $map['username'] === null) {
@@ -237,14 +241,14 @@ class TeacherController extends Controller
         }
 
         $imported = 0;
-        $updated  = 0;
+        $updated = 0;
 
         $teacherRole = Role::where('name', 'teacher')->first();
 
         DB::beginTransaction();
         try {
             foreach ($rows as $row) {
-                $name     = trim((string) ($row[$map['nama']]     ?? ''));
+                $name = trim((string) ($row[$map['nama']] ?? ''));
                 $username = trim((string) ($row[$map['username']] ?? ''));
 
                 if ($name === '' || $username === '') {
@@ -259,14 +263,14 @@ class TeacherController extends Controller
                 }
 
                 $employeeNumber = $map['nomor_pegawai'] !== null ? trim((string) ($row[$map['nomor_pegawai']] ?? '')) : null;
-                $phone          = $map['telepon']       !== null ? trim((string) ($row[$map['telepon']]       ?? '')) : null;
+                $phone = $map['telepon'] !== null ? trim((string) ($row[$map['telepon']] ?? '')) : null;
 
                 $existingUser = User::where('username', $username)->first();
 
                 if ($existingUser) {
                     // Update user fields
                     $existingUser->update([
-                        'name'   => $name,
+                        'name' => $name,
                         'status' => $status,
                     ]);
 
@@ -286,9 +290,9 @@ class TeacherController extends Controller
                     } else {
                         if ($teacherRole && $existingUser->role_id === $teacherRole->id) {
                             TeacherProfile::create([
-                                'user_id'         => $existingUser->id,
+                                'user_id' => $existingUser->id,
                                 'employee_number' => $employeeNumber ?: null,
-                                'phone'           => $phone ?: null,
+                                'phone' => $phone ?: null,
                             ]);
                         }
                     }
@@ -298,17 +302,17 @@ class TeacherController extends Controller
                         continue;
                     }
                     $newUser = User::create([
-                        'role_id'        => $teacherRole->id,
-                        'name'           => $name,
-                        'username'       => $username,
-                        'password'       => Hash::make('password123'),
+                        'role_id' => $teacherRole->id,
+                        'name' => $name,
+                        'username' => $username,
+                        'password' => Hash::make('password123'),
                         'plain_password' => 'password123',
-                        'status'         => $status,
+                        'status' => $status,
                     ]);
                     TeacherProfile::create([
-                        'user_id'         => $newUser->id,
+                        'user_id' => $newUser->id,
                         'employee_number' => $employeeNumber ?: null,
-                        'phone'           => $phone ?: null,
+                        'phone' => $phone ?: null,
                     ]);
                     $imported++;
                 }
@@ -316,7 +320,8 @@ class TeacherController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengimpor: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengimpor: '.$e->getMessage());
         }
 
         return redirect()->route('teachers.index')

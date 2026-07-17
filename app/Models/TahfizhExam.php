@@ -65,14 +65,15 @@ class TahfizhExam extends Model
     public function getExamRangeAttribute(): string
     {
         if ($this->juz) {
-            return 'Juz ' . $this->juz;
+            return 'Juz '.$this->juz;
         }
 
         if ($this->surah) {
-            $range = 'QS. ' . $this->surah->name_latin;
+            $range = 'QS. '.$this->surah->name_latin;
             if ($this->ayah_start && $this->ayah_end) {
-                $range .= ' (Ayat ' . $this->ayah_start . '-' . $this->ayah_end . ')';
+                $range .= ' (Ayat '.$this->ayah_start.'-'.$this->ayah_end.')';
             }
+
             return $range;
         }
 

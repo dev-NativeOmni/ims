@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\ClassRoom;
+use App\Models\ParentProfile;
+use App\Models\Program;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\StudentPoint;
-use App\Models\Role;
-use App\Models\ParentProfile;
-use App\Models\ClassRoom;
-use App\Models\Program;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +21,7 @@ class StudentPointTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -105,7 +105,7 @@ class StudentPointTest extends TestCase
 
         $program = Program::create(['name' => 'Reguler', 'status' => 'active']);
         $classRoom = ClassRoom::create(['name' => 'Kelas A', 'program_id' => $program->id, 'level' => '1']);
-        
+
         $studentUser = User::factory()->create([
             'username' => 'santribaru',
             'role_id' => User::where('username', 'santri')->first()->role_id,
@@ -222,7 +222,7 @@ class StudentPointTest extends TestCase
         // Test Student 1 isolation: can only see their own point
         $responseStudent1 = $this->actingAs($studentUser1)->get('/student-points');
         $responseStudent1->assertStatus(200);
-        
+
         $viewPointsStudent1 = $responseStudent1->viewData('points');
         $this->assertTrue($viewPointsStudent1->contains('id', $point1->id));
         $this->assertFalse($viewPointsStudent1->contains('id', $point2->id));
@@ -238,7 +238,7 @@ class StudentPointTest extends TestCase
 
         $responseParent = $this->actingAs($parentUser)->get('/student-points');
         $responseParent->assertStatus(200);
-        
+
         $viewPointsParent = $responseParent->viewData('points');
         $this->assertTrue($viewPointsParent->contains('id', $point1->id));
         $this->assertFalse($viewPointsParent->contains('id', $point2->id));

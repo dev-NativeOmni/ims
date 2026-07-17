@@ -14,8 +14,7 @@ class StudentAlertNotificationService
 {
     public function __construct(
         private readonly SystemNotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function generate(bool $dryRun = false): array
     {

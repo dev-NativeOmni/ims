@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 

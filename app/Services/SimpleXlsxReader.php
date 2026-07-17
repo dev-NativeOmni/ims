@@ -8,7 +8,7 @@ class SimpleXlsxReader
 {
     public static function read(string $filePath): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($filePath) !== true) {
             throw new \Exception('Gagal membuka berkas Excel (.xlsx). Berkas mungkin rusak atau tidak valid.');
         }
@@ -51,10 +51,10 @@ class SimpleXlsxReader
                     $ref = (string) $cell['r'];
                     $colLetter = preg_replace('/[0-9]/', '', $ref);
                     $colIndex = self::colLetterToIndex($colLetter);
-                    
+
                     $type = (string) $cell['t'];
                     $value = '';
-                    
+
                     if ($type === 's') {
                         $idx = (int) $cell->v;
                         $value = $sharedStrings[$idx] ?? '';
@@ -63,10 +63,10 @@ class SimpleXlsxReader
                     } else {
                         $value = isset($cell->v) ? (string) $cell->v : '';
                     }
-                    
+
                     $row[$colIndex] = $value;
                 }
-                
+
                 if (! empty($row)) {
                     $maxIndex = max(array_keys($row));
                     for ($i = 0; $i <= $maxIndex; $i++) {
@@ -81,6 +81,7 @@ class SimpleXlsxReader
         }
 
         $zip->close();
+
         return $rows;
     }
 
@@ -92,6 +93,7 @@ class SimpleXlsxReader
         for ($i = 0; $i < $len; $i++) {
             $index = $index * 26 + (ord($col[$i]) - ord('A') + 1);
         }
+
         return $index - 1;
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TahfizhExam;
-use App\Models\Student;
-use App\Models\TeacherProfile;
-use App\Models\Surah;
 use App\Models\ClassRoom;
+use App\Models\Student;
+use App\Models\Surah;
+use App\Models\TahfizhExam;
+use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -224,7 +224,7 @@ class TahfizhExamController extends Controller
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
         $classRooms = ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
 

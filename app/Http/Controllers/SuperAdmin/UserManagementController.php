@@ -10,14 +10,13 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-
-
     /**
      * Show a list of all users.
      */
     public function index(): View
     {
         $users = User::orderBy('id')->get();
+
         return view('superadmin.users.index', compact('users'));
     }
 

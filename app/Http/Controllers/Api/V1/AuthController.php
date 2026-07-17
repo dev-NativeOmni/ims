@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\NewAccessToken;
 
 class AuthController extends Controller
@@ -119,7 +118,7 @@ class AuthController extends Controller
     public function tokens(Request $request): JsonResponse
     {
         $currentToken = $request->user()->currentAccessToken();
-        
+
         $tokens = $request->user()->tokens()->latest('id')->get()->map(function ($token) use ($currentToken) {
             return [
                 'id' => $token->id,
@@ -160,7 +159,7 @@ class AuthController extends Controller
     public function logoutOtherDevices(Request $request): JsonResponse
     {
         $currentToken = $request->user()->currentAccessToken();
-        
+
         if ($currentToken) {
             $count = $request->user()->tokens()
                 ->where('id', '!=', $currentToken->id)

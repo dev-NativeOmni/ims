@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use App\Models\MurajaahRecord;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
@@ -56,16 +55,16 @@ class MurajaahRecordTest extends TestCase
     public function admin_can_store_murajaah_record(): void
     {
         $response = $this->actingAs($this->admin)->post(route('murajaah-records.store'), [
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 85,
-            'tajwid_score'  => 90,
+            'tajwid_score' => 90,
             'makhraj_score' => 80,
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('murajaah-records.index'));
@@ -73,8 +72,8 @@ class MurajaahRecordTest extends TestCase
 
         $this->assertDatabaseHas('murajaah_records', [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
-            'status'     => 'passed',
+            'surah_id' => $this->surah->id,
+            'status' => 'passed',
         ]);
     }
 
@@ -82,15 +81,15 @@ class MurajaahRecordTest extends TestCase
     public function teacher_can_store_murajaah_for_own_student(): void
     {
         $response = $this->actingAs($this->teacherUser)->post(route('murajaah-records.store'), [
-            'student_id'    => $this->student->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 75,
-            'tajwid_score'  => 80,
+            'tajwid_score' => 80,
             'makhraj_score' => 78,
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('murajaah-records.index'));
@@ -109,17 +108,17 @@ class MurajaahRecordTest extends TestCase
     public function overall_score_is_auto_calculated_from_component_scores(): void
     {
         $this->actingAs($this->admin)->post(route('murajaah-records.store'), [
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 90,
-            'tajwid_score'  => 90,
+            'tajwid_score' => 90,
             'makhraj_score' => 90,
             // overall_score tidak dikirim → harus dihitung otomatis
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $record = MurajaahRecord::first();
@@ -132,17 +131,17 @@ class MurajaahRecordTest extends TestCase
     public function overall_score_is_not_overwritten_when_already_provided(): void
     {
         $this->actingAs($this->admin)->post(route('murajaah-records.store'), [
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 80,
-            'tajwid_score'  => 80,
+            'tajwid_score' => 80,
             'makhraj_score' => 80,
             'overall_score' => 99, // disediakan manual
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $record = MurajaahRecord::first();
@@ -158,12 +157,12 @@ class MurajaahRecordTest extends TestCase
     public function store_fails_when_ayah_end_exceeds_total_ayah(): void
     {
         $response = $this->actingAs($this->admin)->post(route('murajaah-records.store'), [
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id, // total_ayah = 7
-            'ayah_start'  => 1,
-            'ayah_end'    => 100, // melebihi batas
-            'status'      => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id, // total_ayah = 7
+            'ayah_start' => 1,
+            'ayah_end' => 100, // melebihi batas
+            'status' => 'passed',
             'reviewed_at' => now()->toDateString(),
         ]);
 
@@ -174,14 +173,14 @@ class MurajaahRecordTest extends TestCase
     public function store_fails_when_score_out_of_range(): void
     {
         $response = $this->actingAs($this->admin)->post(route('murajaah-records.store'), [
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 150, // out of range (max 100)
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $response->assertSessionHasErrors('fluency_score');
@@ -195,12 +194,12 @@ class MurajaahRecordTest extends TestCase
     public function admin_can_view_murajaah_detail(): void
     {
         $record = MurajaahRecord::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
-            'status'      => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
             'reviewed_at' => now(),
         ]);
 
@@ -214,26 +213,26 @@ class MurajaahRecordTest extends TestCase
     public function admin_can_update_murajaah_record(): void
     {
         $record = MurajaahRecord::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
-            'status'      => 'repeat',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'repeat',
             'reviewed_at' => now(),
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('murajaah-records.update', $record), [
-            'student_id'    => $this->student->id,
-            'teacher_id'    => $this->teacherProfile->id,
-            'surah_id'      => $this->surah->id,
-            'ayah_start'    => 1,
-            'ayah_end'      => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'fluency_score' => 95,
-            'tajwid_score'  => 95,
+            'tajwid_score' => 95,
             'makhraj_score' => 95,
-            'status'        => 'passed',
-            'reviewed_at'   => now()->toDateString(),
+            'status' => 'passed',
+            'reviewed_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('murajaah-records.index'));
@@ -244,12 +243,12 @@ class MurajaahRecordTest extends TestCase
     public function admin_can_soft_delete_murajaah_record(): void
     {
         $record = MurajaahRecord::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
-            'status'      => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
             'reviewed_at' => now(),
         ]);
 
@@ -268,21 +267,21 @@ class MurajaahRecordTest extends TestCase
     {
         $otherTeacherUser = User::factory()->create([
             'role_id' => $this->teacherUser->role_id,
-            'status'  => 'active',
+            'status' => 'active',
         ]);
         $otherTeacher = TeacherProfile::create([
-            'user_id'         => $otherTeacherUser->id,
+            'user_id' => $otherTeacherUser->id,
             'employee_number' => 'GURU-888',
-            'phone'           => '088800008888',
+            'phone' => '088800008888',
         ]);
 
         $record = MurajaahRecord::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $otherTeacher->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 3,
-            'status'      => 'passed',
+            'student_id' => $this->student->id,
+            'teacher_id' => $otherTeacher->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'status' => 'passed',
             'reviewed_at' => now(),
         ]);
 

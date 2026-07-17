@@ -53,7 +53,7 @@ class HafalanTarget extends Model
 
     public function getAyahRangeAttribute(): string
     {
-        return $this->ayah_start . ' - ' . $this->ayah_end;
+        return $this->ayah_start.' - '.$this->ayah_end;
     }
 
     public function getStatusLabelAttribute(): string

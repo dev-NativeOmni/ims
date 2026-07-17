@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\AdabController;
+use App\Http\Controllers\AdabMaterialController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClassRoomController;
-use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\HafalanRecordController;
 use App\Http\Controllers\HafalanTargetController;
 use App\Http\Controllers\MurajaahRecordController;
@@ -12,21 +14,19 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\QuickInputController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\SystemNotificationController;
-use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\QuranPdfController;
 use App\Http\Controllers\QuranMushafController;
-use App\Http\Controllers\AdabController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuranPdfController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentPointController;
 use App\Http\Controllers\StudentReportController;
-use App\Http\Controllers\TahfizhExamController;
-use App\Http\Controllers\AdabMaterialController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\UserManagementController;
+use App\Http\Controllers\SystemNotificationController;
+use App\Http\Controllers\TahfizhExamController;
+use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -174,11 +174,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/adab-settings', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
     });
 
-        // Super Admin user management routes
-        Route::prefix('superadmin')->name('superadmin.')->middleware(['role:super_admin'])->group(function () {
-            Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
-            Route::post('users/{id}/force-reset', [UserManagementController::class, 'forceReset'])->name('users.force-reset');
-        });
+    // Super Admin user management routes
+    Route::prefix('superadmin')->name('superadmin.')->middleware(['role:super_admin'])->group(function () {
+        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::post('users/{id}/force-reset', [UserManagementController::class, 'forceReset'])->name('users.force-reset');
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -300,7 +300,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
         Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
         Route::post('/adab/student/{student}/mentor-score', [AdabController::class, 'storeMentorScore'])->name('adab.store-mentor-score');
-        
+
         Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
             Route::delete('/adab/{adabRecord}', [AdabController::class, 'destroy'])->name('adab.destroy');
         });
@@ -341,7 +341,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 /*
 |--------------------------------------------------------------------------
 | Local Development API Tester
@@ -369,6 +369,7 @@ if (app()->environment('local', 'testing')) {
         if (! file_exists($path)) {
             abort(404);
         }
+
         return response(file_get_contents($path), 200, [
             'Content-Type' => 'text/yaml',
         ]);

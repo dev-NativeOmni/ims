@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\MurajaahRecord;
-use App\Models\UmmiRecord;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Services\UserAccessService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -76,8 +78,8 @@ class QuickInputController extends Controller
             ->get();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = \App\Models\ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
 
@@ -178,7 +180,7 @@ class QuickInputController extends Controller
                 ->orderBy('number')
                 ->get();
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated, $student, $teacherId) {
+            DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated, $student, $teacherId) {
                 foreach ($surahs as $surah) {
                     $recordData = [
                         'student_id' => $student->id,
@@ -310,7 +312,7 @@ class QuickInputController extends Controller
                 ->orderBy('number')
                 ->get();
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated, $student, $teacherId) {
+            DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated, $student, $teacherId) {
                 foreach ($surahs as $surah) {
                     $recordData = [
                         'student_id' => $student->id,
@@ -394,17 +396,17 @@ class QuickInputController extends Controller
             $surahIds = $request->input('hafalan_surah_ids');
             $ayahs = $request->input('hafalan_ayahs');
             foreach ($surahIds as $idx => $sid) {
-                if (!empty($sid)) {
+                if (! empty($sid)) {
                     $hafalans[] = [
                         'surah_id' => (int) $sid,
-                        'ayah' => $ayahs[$idx] ?? null
+                        'ayah' => $ayahs[$idx] ?? null,
                     ];
                 }
             }
         } elseif ($request->filled('hafalan_surah_id')) {
             $hafalans[] = [
                 'surah_id' => (int) $request->input('hafalan_surah_id'),
-                'ayah' => $request->input('hafalan_ayah')
+                'ayah' => $request->input('hafalan_ayah'),
             ];
         }
 

@@ -2,30 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
-use App\Models\StudentPoint;
-use App\Models\AdabRecord;
 use App\Models\AdabMentorAssessment;
-use App\Models\StudentReport;
+use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
-use App\Models\MurajaahRecord;
 use App\Models\HafalanTarget;
+use App\Models\MurajaahRecord;
+use App\Models\Student;
+use App\Models\StudentPoint;
+use App\Models\StudentReport;
+use App\Models\TahfizhExam;
+use App\Models\UmmiRecord;
 use App\Services\StudentProgressService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class StudentReportController extends Controller
 {
     public function __construct(
         protected StudentProgressService $progressService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $visibleStudentQuery = $this->progressService->visibleStudentQuery($user);
 
         if ($request->filled('class_room_id')) {
@@ -38,7 +38,7 @@ class StudentReportController extends Controller
         }
 
         $students = $visibleStudentQuery->with(['classRoom'])->orderBy('name')->paginate(15)->withQueryString();
-        
+
         $classRooms = ClassRoom::query()->orderBy('name')->get();
 
         return view('reports.digital-report-index', compact('students', 'classRooms'));
@@ -47,7 +47,7 @@ class StudentReportController extends Controller
     public function show(Student $student, Request $request)
     {
         $user = $request->user();
-        
+
         // Authorize
         $canView = $this->progressService->visibleStudentQuery($user)
             ->where('id', $student->id)
@@ -132,13 +132,13 @@ class StudentReportController extends Controller
     public function printClass(ClassRoom $classRoom, Request $request)
     {
         $user = $request->user();
-        
+
         $visibleStudentIds = $this->progressService->visibleStudentQuery($user)
             ->where('class_room_id', $classRoom->id)
             ->pluck('id');
 
         $students = Student::whereIn('id', $visibleStudentIds)->orderBy('name')->get();
-        
+
         if ($students->isEmpty()) {
             abort(404, 'Tidak ada santri di kelas ini yang dapat Anda akses.');
         }
@@ -172,19 +172,19 @@ class StudentReportController extends Controller
                 ->where('ayah_end', '>=', $target->ayah_end)
                 ->latest()
                 ->first();
-            
-            if (!$matchingRecord) {
+
+            if (! $matchingRecord) {
                 $matchingRecord = HafalanRecord::where('student_id', $student->id)
                     ->where('surah_id', $target->surah_id)
                     ->where('status', 'passed')
                     ->latest()
                     ->first();
             }
-            
+
             $target->matching_record = $matchingRecord;
         }
 
-        $tahfizhExams = \App\Models\TahfizhExam::with('surah')
+        $tahfizhExams = TahfizhExam::with('surah')
             ->where('student_id', $student->id)
             ->latest('exam_date')
             ->latest()
@@ -217,7 +217,7 @@ class StudentReportController extends Controller
                 $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
                 $meetings = ($meetingFrequency === 'seminggu sekali') ? 4 : 20;
                 $totalTargetBaris = $levelBaris * $meetings;
-                
+
                 $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
             }
         }
@@ -227,13 +227,13 @@ class StudentReportController extends Controller
         $latestCapaianNotes = '';
 
         if ($student->tahfizh_level === 'ummi') {
-            $latestUmmiRecord = \App\Models\UmmiRecord::where('student_id', $student->id)
+            $latestUmmiRecord = UmmiRecord::where('student_id', $student->id)
                 ->latest('tanggal')
                 ->latest()
                 ->first();
 
             if ($latestUmmiRecord) {
-                $latestUmmiRecords = \App\Models\UmmiRecord::with('surah')
+                $latestUmmiRecords = UmmiRecord::with('surah')
                     ->where('student_id', $student->id)
                     ->where('tanggal', $latestUmmiRecord->getRawOriginal('tanggal'))
                     ->where('tatap_muka', $latestUmmiRecord->tatap_muka)
@@ -242,22 +242,22 @@ class StudentReportController extends Controller
                 $parts = [];
                 $firstRec = $latestUmmiRecords->first();
                 if ($firstRec->ummi_jilid) {
-                    $parts[] = $firstRec->ummi_jilid . ($firstRec->ummi_halaman ? ' Hal. ' . $firstRec->ummi_halaman : '');
+                    $parts[] = $firstRec->ummi_jilid.($firstRec->ummi_halaman ? ' Hal. '.$firstRec->ummi_halaman : '');
                 }
 
                 $surahParts = [];
                 foreach ($latestUmmiRecords as $rec) {
                     if ($rec->hafalan_surah_id) {
-                        $surahParts[] = 'Hafalan QS. ' . $rec->surah?->name_latin . ($rec->hafalan_ayah ? ' Ayat ' . $rec->hafalan_ayah : '');
+                        $surahParts[] = 'Hafalan QS. '.$rec->surah?->name_latin.($rec->hafalan_ayah ? ' Ayat '.$rec->hafalan_ayah : '');
                     }
                 }
-                if (!empty($surahParts)) {
+                if (! empty($surahParts)) {
                     $parts[] = implode(', ', $surahParts);
                 }
 
                 $latestCapaianText = implode(', ', $parts);
                 if ($firstRec->nilai) {
-                    $latestCapaianText .= ' [Nilai: ' . $firstRec->nilai . ']';
+                    $latestCapaianText .= ' [Nilai: '.$firstRec->nilai.']';
                 }
                 $latestCapaianNotes = $latestUmmiRecords->pluck('keterangan')->filter()->unique()->implode('; ');
             } else {
@@ -272,7 +272,7 @@ class StudentReportController extends Controller
                 ->first();
 
             if ($latestHafalan) {
-                $latestCapaianText = 'QS. ' . $latestHafalan->surah?->name_latin . ' (Ayat ' . $latestHafalan->ayah_start . '-' . $latestHafalan->ayah_end . ')';
+                $latestCapaianText = 'QS. '.$latestHafalan->surah?->name_latin.' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
                 $latestCapaianNotes = $latestHafalan->notes;
             } else {
                 $latestCapaianText = 'Belum ada data setoran.';
@@ -281,12 +281,17 @@ class StudentReportController extends Controller
 
         // Adab
         $adabRecords = AdabRecord::where('student_id', $student->id)->get();
-        $avgAllah = 0; $avgTeman = 0; $avgBelajar = 0; $avgLingkungan = 0; $avgQuran = 0; $avgTotal = 0;
+        $avgAllah = 0;
+        $avgTeman = 0;
+        $avgBelajar = 0;
+        $avgLingkungan = 0;
+        $avgQuran = 0;
+        $avgTotal = 0;
         if ($adabRecords->isNotEmpty()) {
             $sums = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
             $counts = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
             foreach ($adabRecords as $r) {
-                if (!empty($r->answers)) {
+                if (! empty($r->answers)) {
                     foreach ($sums as $catIdx => $v) {
                         $catAnswers = $r->answers["cat_{$catIdx}"] ?? [];
                         foreach ($catAnswers as $ans) {

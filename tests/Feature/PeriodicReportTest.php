@@ -2,11 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Role;
-use App\Models\ClassRoom;
-use App\Models\Program;
-use App\Models\Student;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +16,7 @@ class PeriodicReportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -42,7 +39,7 @@ class PeriodicReportTest extends TestCase
         $roles = [
             'supervisor' => 'Koordinator',
             'coordinator_tahfizh' => 'Koordinator Tahfizh',
-            'headmaster' => 'Kepala Sekolah'
+            'headmaster' => 'Kepala Sekolah',
         ];
 
         foreach ($roles as $name => $displayName) {
@@ -68,7 +65,7 @@ class PeriodicReportTest extends TestCase
     public function test_periodic_report_forbidden_for_student_and_parent(): void
     {
         $student = User::where('username', 'santri')->first();
-        
+
         $parentRole = Role::where('name', 'parent')->first();
         $parent = User::factory()->create([
             'role_id' => $parentRole->id,

@@ -21,6 +21,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -33,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
         /*
         |--------------------------------------------------------------------------
         | API Rate Limiting
@@ -82,8 +86,8 @@ class AppServiceProvider extends ServiceProvider
 
             $user = $request->user();
             $key = $user
-                ? 'user:' . $user->id
-                : 'ip:' . $request->ip();
+                ? 'user:'.$user->id
+                : 'ip:'.$request->ip();
 
             return Limit::perMinute($maxAttempts)
                 ->by($key)
@@ -112,7 +116,7 @@ class AppServiceProvider extends ServiceProvider
 
             return [
                 Limit::perMinute($maxAttempts)
-                    ->by('login:' . $email . '|' . $ip)
+                    ->by('login:'.$email.'|'.$ip)
                     ->response(function (Request $request, array $headers) {
                         return response()->json([
                             'success' => false,
@@ -127,7 +131,7 @@ class AppServiceProvider extends ServiceProvider
                     }),
 
                 Limit::perMinute(20)
-                    ->by('login-ip:' . $ip)
+                    ->by('login-ip:'.$ip)
                     ->response(function (Request $request, array $headers) {
                         return response()->json([
                             'success' => false,

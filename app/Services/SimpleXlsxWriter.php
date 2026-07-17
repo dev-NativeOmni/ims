@@ -8,7 +8,7 @@ class SimpleXlsxWriter
 {
     public static function write(string $filePath, array $headers, array $data): void
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($filePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new \Exception('Gagal membuat berkas Excel (.xlsx).');
         }
@@ -55,9 +55,9 @@ class SimpleXlsxWriter
         $colIndex = 0;
         foreach ($headers as $header) {
             $colLetter = self::indexToColLetter($colIndex);
-            $ref = $colLetter . $rowNum;
+            $ref = $colLetter.$rowNum;
             $val = htmlspecialchars($header, ENT_QUOTES, 'UTF-8');
-            $sheetData .= '<c r="' . $ref . '" t="inlineStr"><is><t>' . $val . '</t></is></c>';
+            $sheetData .= '<c r="'.$ref.'" t="inlineStr"><is><t>'.$val.'</t></is></c>';
             $colIndex++;
         }
         $sheetData .= '</row>';
@@ -65,13 +65,13 @@ class SimpleXlsxWriter
         // Write rows
         foreach ($data as $rowData) {
             $rowNum++;
-            $sheetData .= '<row r="' . $rowNum . '">';
+            $sheetData .= '<row r="'.$rowNum.'">';
             $colIndex = 0;
             foreach ($rowData as $val) {
                 $colLetter = self::indexToColLetter($colIndex);
-                $ref = $colLetter . $rowNum;
-                $valStr = htmlspecialchars((string)$val, ENT_QUOTES, 'UTF-8');
-                $sheetData .= '<c r="' . $ref . '" t="inlineStr"><is><t>' . $valStr . '</t></is></c>';
+                $ref = $colLetter.$rowNum;
+                $valStr = htmlspecialchars((string) $val, ENT_QUOTES, 'UTF-8');
+                $sheetData .= '<c r="'.$ref.'" t="inlineStr"><is><t>'.$valStr.'</t></is></c>';
                 $colIndex++;
             }
             $sheetData .= '</row>';
@@ -79,7 +79,7 @@ class SimpleXlsxWriter
 
         $sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<sheetData>' . $sheetData . '</sheetData>
+<sheetData>'.$sheetData.'</sheetData>
 </worksheet>';
         $zip->addFromString('xl/worksheets/sheet1.xml', $sheet);
 
@@ -90,9 +90,10 @@ class SimpleXlsxWriter
     {
         $letter = '';
         while ($index >= 0) {
-            $letter = chr($index % 26 + ord('A')) . $letter;
+            $letter = chr($index % 26 + ord('A')).$letter;
             $index = intval($index / 26) - 1;
         }
+
         return $letter;
     }
 }

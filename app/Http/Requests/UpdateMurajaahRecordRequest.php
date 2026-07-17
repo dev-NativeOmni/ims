@@ -117,7 +117,7 @@ class UpdateMurajaahRecordRequest extends FormRequest
             if ($surah && (int) $this->input('ayah_end') > $surah->total_ayah) {
                 $validator->errors()->add(
                     'ayah_end',
-                    'Ayat akhir tidak boleh melebihi jumlah ayat surah ' . $surah->name_latin . ' (' . $surah->total_ayah . ' ayat).'
+                    'Ayat akhir tidak boleh melebihi jumlah ayat surah '.$surah->name_latin.' ('.$surah->total_ayah.' ayat).'
                 );
             }
 

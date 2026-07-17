@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Setting;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +18,7 @@ class SettingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -61,7 +61,7 @@ class SettingTest extends TestCase
 
         $response->assertRedirect('/settings');
         $response->assertSessionHasNoErrors();
-        
+
         $this->assertEquals('Pondok Pesantren Al-Huda', Setting::get('nama_instansi'));
     }
 
@@ -95,7 +95,7 @@ class SettingTest extends TestCase
     public function test_super_admin_can_reset_logo_and_background(): void
     {
         Storage::fake('public');
-        
+
         Setting::set('logo', 'settings/old_logo.png');
         Setting::set('login_bg', 'settings/old_bg.jpg');
 

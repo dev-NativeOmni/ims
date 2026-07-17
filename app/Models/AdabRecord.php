@@ -30,10 +30,10 @@ class AdabRecord extends Model
 
     protected $casts = [
         'assessment_date' => 'date',
-        'answers'         => 'array',
-        'student_score'   => 'float',
-        'total_score'     => 'float',
-        'mentor_score'    => 'float',
+        'answers' => 'array',
+        'student_score' => 'float',
+        'total_score' => 'float',
+        'mentor_score' => 'float',
     ];
 
     public function student(): BelongsTo
@@ -69,6 +69,7 @@ class AdabRecord extends Model
         if (empty($all)) {
             return 0;
         }
+
         return round((array_sum($all) / count($all)) * 100, 2);
     }
 }

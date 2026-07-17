@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,11 +14,11 @@ return new class extends Migration
         // 1. Create adab_records table
         Schema::create('adab_records', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('student_id')
                 ->constrained('students')
                 ->cascadeOnDelete();
-                
+
             // The person who filled it (can be the student's user_id or evaluator)
             $table->foreignId('evaluator_id')
                 ->nullable()
@@ -26,7 +26,7 @@ return new class extends Migration
                 ->nullOnDelete();
 
             $table->date('assessment_date');
-            
+
             // 20 Adab questions (each value: 1 for Yes, 0 for No)
             $table->boolean('q1');
             $table->boolean('q2');
@@ -48,10 +48,10 @@ return new class extends Migration
             $table->boolean('q18');
             $table->boolean('q19');
             $table->boolean('q20');
-            
+
             $table->integer('total_score');
             $table->text('notes')->nullable();
-            
+
             $table->timestamps();
         });
 
@@ -76,7 +76,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('adab_records');
-        
+
         // Remove supervisor user and role
         $user = User::where('username', 'supervisor')->first();
         if ($user) {

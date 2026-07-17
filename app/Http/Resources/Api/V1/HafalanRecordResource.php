@@ -20,7 +20,7 @@ class HafalanRecordResource extends JsonResource
 
             'ayah_start' => $this->ayah_start,
             'ayah_end' => $this->ayah_end,
-            'ayah_range' => $this->ayah_start . ' - ' . $this->ayah_end,
+            'ayah_range' => $this->ayah_start.' - '.$this->ayah_end,
 
             'submission_type' => $this->submission_type,
             'submission_type_label' => $this->submission_type_label ?? $this->submissionTypeLabel(),

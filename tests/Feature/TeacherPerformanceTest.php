@@ -2,15 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\TeacherProfile;
-use App\Models\Student;
-use App\Models\HafalanRecord;
-use App\Models\MurajaahRecord;
-use App\Models\HafalanTarget;
-use App\Models\Program;
 use App\Models\ClassRoom;
+use App\Models\HafalanRecord;
+use App\Models\HafalanTarget;
+use App\Models\MurajaahRecord;
+use App\Models\Program;
+use App\Models\Role;
+use App\Models\Student;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +24,7 @@ class TeacherPerformanceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed([
             RoleSeeder::class,
             UserSeeder::class,
@@ -40,9 +41,9 @@ class TeacherPerformanceTest extends TestCase
     {
         $superAdmin = User::where('username', 'superadmin')->first();
         $admin = User::where('username', 'admin')->first();
-        
+
         // Ensure headmaster role exists
-        $headmasterRole = \App\Models\Role::updateOrCreate(
+        $headmasterRole = Role::updateOrCreate(
             ['name' => 'headmaster'],
             ['name' => 'headmaster', 'display_name' => 'Kepala Sekolah']
         );
@@ -77,14 +78,14 @@ class TeacherPerformanceTest extends TestCase
     public function test_performance_calculation_formulation(): void
     {
         $superAdmin = User::where('username', 'superadmin')->first();
-        
+
         // Find or create a teacher profile
         $teacherUser = User::where('username', 'guru')->first();
         $teacherProfile = TeacherProfile::updateOrCreate(
             ['user_id' => $teacherUser->id],
             [
                 'phone' => '0812345678',
-                'address' => 'Jl. Tahfidz No. 1'
+                'address' => 'Jl. Tahfidz No. 1',
             ]
         );
 
@@ -177,7 +178,7 @@ class TeacherPerformanceTest extends TestCase
 
         // Student average score: (90 + 80) / 2 = 85.0
         // Student score points (Max 20 points): 85.0 / 100 * 20 = 17.0 points
-        
+
         // Expected total final score: 40 (Keaktifan) + 32 (Target) + 17 (Student Score) = 89.0 points
         // Expected Category: "Sangat Baik" (>= 85.0)
 
@@ -187,7 +188,7 @@ class TeacherPerformanceTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        
+
         $data = $response->viewData('performanceData');
         $this->assertNotEmpty($data);
 

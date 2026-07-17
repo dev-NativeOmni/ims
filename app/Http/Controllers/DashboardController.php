@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdabRecord;
+use App\Models\Student;
 use App\Services\DashboardService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -50,8 +52,8 @@ class DashboardController extends Controller
     {
         $stats = $this->dashboardService->adminStats();
         $today = now()->toDateString();
-        $stats['adab_filled_today'] = \App\Models\AdabRecord::where('assessment_date', $today)->count();
-        $stats['adab_total_students'] = \App\Models\Student::count();
+        $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
+        $stats['adab_total_students'] = Student::count();
 
         return view('dashboards.admin', [
             'title' => 'Super Admin Dashboard',
@@ -64,8 +66,8 @@ class DashboardController extends Controller
     {
         $stats = $this->dashboardService->adminStats();
         $today = now()->toDateString();
-        $stats['adab_filled_today'] = \App\Models\AdabRecord::where('assessment_date', $today)->count();
-        $stats['adab_total_students'] = \App\Models\Student::count();
+        $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
+        $stats['adab_total_students'] = Student::count();
 
         return view('dashboards.admin', [
             'title' => 'Admin Dashboard',
@@ -98,15 +100,15 @@ class DashboardController extends Controller
     public function supervisor(Request $request): View
     {
         $today = now()->toDateString();
-        
-        $students = \App\Models\Student::with(['classRoom', 'adabRecords' => function ($q) use ($today) {
+
+        $students = Student::with(['classRoom', 'adabRecords' => function ($q) use ($today) {
             $q->where('assessment_date', $today);
         }])->orderBy('name')->get();
-        
+
         $totalStudents = $students->count();
-        $filledCount = $students->filter(fn($s) => $s->adabRecords->isNotEmpty())->count();
+        $filledCount = $students->filter(fn ($s) => $s->adabRecords->isNotEmpty())->count();
         $notFilledCount = $totalStudents - $filledCount;
-        
+
         return view('dashboards.supervisor', compact('students', 'totalStudents', 'filledCount', 'notFilledCount', 'today'));
     }
 }

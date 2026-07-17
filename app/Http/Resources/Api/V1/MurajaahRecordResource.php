@@ -20,7 +20,7 @@ class MurajaahRecordResource extends JsonResource
 
             'ayah_start' => $this->ayah_start,
             'ayah_end' => $this->ayah_end,
-            'ayah_range' => $this->ayah_start . ' - ' . $this->ayah_end,
+            'ayah_range' => $this->ayah_start.' - '.$this->ayah_end,
 
             'fluency_score' => $this->fluency_score,
             'tajwid_score' => $this->tajwid_score,

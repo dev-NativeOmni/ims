@@ -8,12 +8,15 @@ use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
 use App\Models\Student;
+use App\Models\StudentPoint;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -236,7 +239,7 @@ class ReportController extends Controller
             ->latest('reviewed_at')
             ->latest();
 
-        $fileName = 'laporan-ims-' . now()->format('Ymd-His') . '.csv';
+        $fileName = 'laporan-ims-'.now()->format('Ymd-His').'.csv';
 
         // Gunakan cursor() agar hanya satu baris dimuat ke memory pada satu waktu.
         return response()->streamDownload(function () use ($hafalanQuery, $murajaahQuery) {
@@ -622,7 +625,7 @@ class ReportController extends Controller
             'months' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
             ],
             'years' => range(date('Y') - 4, date('Y') + 1),
         ]);
@@ -634,24 +637,26 @@ class ReportController extends Controller
             return '';
         }
 
-        return \Illuminate\Support\Carbon::parse($value)->format('Y-m-d');
+        return Carbon::parse($value)->format('Y-m-d');
     }
 
     public function periodicProgress(Request $request)
     {
         $data = $this->getPeriodicProgressData($request);
-        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+        if ($data instanceof RedirectResponse) {
             return $data;
         }
+
         return view('reports.periodic', $data);
     }
 
     public function periodicProgressPrint(Request $request)
     {
         $data = $this->getPeriodicProgressData($request);
-        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+        if ($data instanceof RedirectResponse) {
             return $data;
         }
+
         return view('reports.periodic-print', $data);
     }
 
@@ -697,48 +702,53 @@ class ReportController extends Controller
                 'monthsList' => [
                     1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                ]
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+                ],
             ];
         }
 
         $selectedClassId = $request->integer('class_room_id', $classRooms->first()->id);
         $periodType = $request->input('period_type', 'monthly');
         $selectedMonth = $request->integer('month', date('n'));
-        
+
         $currentMonth = date('n');
         $defaultQuarter = 1;
-        if ($currentMonth >= 7 && $currentMonth <= 9) $defaultQuarter = 1;
-        elseif ($currentMonth >= 10 && $currentMonth <= 12) $defaultQuarter = 2;
-        elseif ($currentMonth >= 1 && $currentMonth <= 3) $defaultQuarter = 3;
-        elseif ($currentMonth >= 4 && $currentMonth <= 6) $defaultQuarter = 4;
+        if ($currentMonth >= 7 && $currentMonth <= 9) {
+            $defaultQuarter = 1;
+        } elseif ($currentMonth >= 10 && $currentMonth <= 12) {
+            $defaultQuarter = 2;
+        } elseif ($currentMonth >= 1 && $currentMonth <= 3) {
+            $defaultQuarter = 3;
+        } elseif ($currentMonth >= 4 && $currentMonth <= 6) {
+            $defaultQuarter = 4;
+        }
 
         $selectedQuarter = $request->integer('quarter', $defaultQuarter);
         $selectedYear = $request->integer('year', date('Y'));
 
         // Calculate Date Range
         if ($periodType === 'monthly') {
-            $startDate = \Illuminate\Support\Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
-            $endDate = \Illuminate\Support\Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth();
+            $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
+            $endDate = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth();
         } else {
             // Quarterly
             switch ($selectedQuarter) {
                 case 1:
-                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 7, 1)->startOfDay();
-                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 9, 30)->endOfDay();
+                    $startDate = Carbon::create($selectedYear, 7, 1)->startOfDay();
+                    $endDate = Carbon::create($selectedYear, 9, 30)->endOfDay();
                     break;
                 case 2:
-                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 10, 1)->startOfDay();
-                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 12, 31)->endOfDay();
+                    $startDate = Carbon::create($selectedYear, 10, 1)->startOfDay();
+                    $endDate = Carbon::create($selectedYear, 12, 31)->endOfDay();
                     break;
                 case 3:
-                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 1, 1)->startOfDay();
-                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 3, 31)->endOfDay();
+                    $startDate = Carbon::create($selectedYear, 1, 1)->startOfDay();
+                    $endDate = Carbon::create($selectedYear, 3, 31)->endOfDay();
                     break;
                 case 4:
                 default:
-                    $startDate = \Illuminate\Support\Carbon::create($selectedYear, 4, 1)->startOfDay();
-                    $endDate = \Illuminate\Support\Carbon::create($selectedYear, 6, 30)->endOfDay();
+                    $startDate = Carbon::create($selectedYear, 4, 1)->startOfDay();
+                    $endDate = Carbon::create($selectedYear, 6, 30)->endOfDay();
                     break;
             }
         }
@@ -784,21 +794,33 @@ class ReportController extends Controller
             $murajaahTrend = [0, 0, 0, 0, 0];
 
             foreach ($hafalanRecords as $record) {
-                $day = \Illuminate\Support\Carbon::parse($record->submitted_at)->day;
-                if ($day <= 7) $hafalanTrend[0]++;
-                elseif ($day <= 14) $hafalanTrend[1]++;
-                elseif ($day <= 21) $hafalanTrend[2]++;
-                elseif ($day <= 28) $hafalanTrend[3]++;
-                else $hafalanTrend[4]++;
+                $day = Carbon::parse($record->submitted_at)->day;
+                if ($day <= 7) {
+                    $hafalanTrend[0]++;
+                } elseif ($day <= 14) {
+                    $hafalanTrend[1]++;
+                } elseif ($day <= 21) {
+                    $hafalanTrend[2]++;
+                } elseif ($day <= 28) {
+                    $hafalanTrend[3]++;
+                } else {
+                    $hafalanTrend[4]++;
+                }
             }
 
             foreach ($murajaahRecords as $record) {
-                $day = \Illuminate\Support\Carbon::parse($record->reviewed_at)->day;
-                if ($day <= 7) $murajaahTrend[0]++;
-                elseif ($day <= 14) $murajaahTrend[1]++;
-                elseif ($day <= 21) $murajaahTrend[2]++;
-                elseif ($day <= 28) $murajaahTrend[3]++;
-                else $murajaahTrend[4]++;
+                $day = Carbon::parse($record->reviewed_at)->day;
+                if ($day <= 7) {
+                    $murajaahTrend[0]++;
+                } elseif ($day <= 14) {
+                    $murajaahTrend[1]++;
+                } elseif ($day <= 21) {
+                    $murajaahTrend[2]++;
+                } elseif ($day <= 28) {
+                    $murajaahTrend[3]++;
+                } else {
+                    $murajaahTrend[4]++;
+                }
             }
         } else {
             // Quarterly
@@ -820,7 +842,7 @@ class ReportController extends Controller
             $murajaahTrend = [0, 0, 0];
 
             foreach ($hafalanRecords as $record) {
-                $m = \Illuminate\Support\Carbon::parse($record->submitted_at)->month;
+                $m = Carbon::parse($record->submitted_at)->month;
                 $idx = array_search($m, $months);
                 if ($idx !== false) {
                     $hafalanTrend[$idx]++;
@@ -828,7 +850,7 @@ class ReportController extends Controller
             }
 
             foreach ($murajaahRecords as $record) {
-                $m = \Illuminate\Support\Carbon::parse($record->reviewed_at)->month;
+                $m = Carbon::parse($record->reviewed_at)->month;
                 $idx = array_search($m, $months);
                 if ($idx !== false) {
                     $murajaahTrend[$idx]++;
@@ -839,8 +861,8 @@ class ReportController extends Controller
         // Summary metrics
         $totalHafalan = $hafalanRecords->count();
         $totalMurajaah = $murajaahRecords->count();
-        $avgHafalanScore = $hafalanRecords->avg('score') ? round((float)$hafalanRecords->avg('score'), 1) : 0;
-        $avgMurajaahScore = $murajaahRecords->avg('overall_score') ? round((float)$murajaahRecords->avg('overall_score'), 1) : 0;
+        $avgHafalanScore = $hafalanRecords->avg('score') ? round((float) $hafalanRecords->avg('score'), 1) : 0;
+        $avgMurajaahScore = $murajaahRecords->avg('overall_score') ? round((float) $murajaahRecords->avg('overall_score'), 1) : 0;
 
         $totalTargets = $targets->count();
         $completedTargets = $targets->where('status', 'completed')->count();
@@ -874,13 +896,13 @@ class ReportController extends Controller
 
             $latestProgressText = '-';
             if ($latestHafalan) {
-                $latestProgressText = 'Hafalan: ' . ($latestHafalan->surah?->name_latin ?? '-') . ' (Ayat ' . $latestHafalan->ayah_start . '-' . $latestHafalan->ayah_end . ')';
+                $latestProgressText = 'Hafalan: '.($latestHafalan->surah?->name_latin ?? '-').' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
             } elseif ($latestMurajaah) {
-                $latestProgressText = 'Murajaah: ' . ($latestMurajaah->surah?->name_latin ?? '-') . ' (Ayat ' . $latestMurajaah->ayah_start . '-' . $latestMurajaah->ayah_end . ')';
+                $latestProgressText = 'Murajaah: '.($latestMurajaah->surah?->name_latin ?? '-').' (Ayat '.$latestMurajaah->ayah_start.'-'.$latestMurajaah->ayah_end.')';
             }
 
             // Average score
-            $avgScore = $studentHafalan->avg('score') ? round((float)$studentHafalan->avg('score'), 1) : null;
+            $avgScore = $studentHafalan->avg('score') ? round((float) $studentHafalan->avg('score'), 1) : null;
 
             // Calculate Capaian Baris (lines of setoran)
             $capaianBaris = 0;
@@ -945,7 +967,7 @@ class ReportController extends Controller
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
             // Violations count during the period
-            $violationsCount = \App\Models\StudentPoint::query()
+            $violationsCount = StudentPoint::query()
                 ->where('student_id', $student->id)
                 ->where('type', 'violation')
                 ->whereBetween('date', [$startDate, $endDate])
@@ -997,8 +1019,8 @@ class ReportController extends Controller
             'monthsList' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-            ]
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+            ],
         ];
     }
 
@@ -1020,7 +1042,7 @@ class ReportController extends Controller
             81 => 1.0, 82 => 1.0, 83 => 2.0, 84 => 1.0, 85 => 1.0, 86 => 1.0, 87 => 1.0, 88 => 1.0, 89 => 1.5, 90 => 1.0,
             91 => 1.0, 92 => 1.0, 93 => 0.5, 94 => 0.5, 95 => 0.5, 96 => 1.0, 97 => 0.5, 98 => 1.0, 99 => 0.5, 100 => 0.5,
             101 => 0.5, 102 => 0.5, 103 => 0.3, 104 => 0.5, 105 => 0.3, 106 => 0.3, 107 => 0.5, 108 => 0.3, 109 => 0.5, 110 => 0.3,
-            111 => 0.3, 112 => 0.3, 113 => 0.3, 114 => 0.3
+            111 => 0.3, 112 => 0.3, 113 => 0.3, 114 => 0.3,
         ];
 
         $pageCount = $pages[$surahNumber] ?? 1.0;

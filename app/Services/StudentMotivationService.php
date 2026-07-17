@@ -143,14 +143,14 @@ class StudentMotivationService
                 'title' => '1% Al-Qur’an',
                 'description' => 'Progress hafalan mencapai minimal 1% dari total ayat.',
                 'status' => $progressPercent >= 1 ? 'earned' : 'locked',
-                'value' => number_format($progressPercent, 2) . '%',
+                'value' => number_format($progressPercent, 2).'%',
             ],
             [
                 'key' => 'five_percent',
                 'title' => '5% Al-Qur’an',
                 'description' => 'Progress hafalan mencapai minimal 5% dari total ayat.',
                 'status' => $progressPercent >= 5 ? 'earned' : 'locked',
-                'value' => number_format($progressPercent, 2) . '%',
+                'value' => number_format($progressPercent, 2).'%',
             ],
             [
                 'key' => 'murajaah_active',
@@ -185,7 +185,7 @@ class StudentMotivationService
                 'title' => 'Kualitas Baik',
                 'description' => 'Rata-rata nilai hafalan atau murajaah minimal 80.',
                 'status' => ($averageHafalanScore >= 80 || $averageMurajaahScore >= 80) ? 'earned' : 'locked',
-                'value' => 'H: ' . number_format($averageHafalanScore, 2) . ' / M: ' . number_format($averageMurajaahScore, 2),
+                'value' => 'H: '.number_format($averageHafalanScore, 2).' / M: '.number_format($averageMurajaahScore, 2),
             ],
         ];
     }

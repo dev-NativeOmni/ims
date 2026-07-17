@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMurajaahRecordRequest;
 use App\Http\Requests\UpdateMurajaahRecordRequest;
+use App\Models\ClassRoom;
 use App\Models\MurajaahRecord;
 use App\Models\Student;
 use App\Models\Surah;
@@ -11,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MurajaahRecordController extends Controller
@@ -81,7 +83,7 @@ class MurajaahRecordController extends Controller
                 ->orderBy('number')
                 ->get();
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated) {
+            DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated) {
                 foreach ($surahs as $surah) {
                     $recordData = $validated;
                     unset($recordData['surah_end_id']);
@@ -185,8 +187,8 @@ class MurajaahRecordController extends Controller
             ->get();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = \App\Models\ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
 

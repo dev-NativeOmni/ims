@@ -2,10 +2,9 @@
 
 namespace Tests\Feature;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use App\Models\HafalanTarget;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
@@ -75,11 +74,11 @@ class HafalanTargetTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-targets.store'), [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
+            'surah_id' => $this->surah->id,
             'ayah_start' => 1,
-            'ayah_end'   => 7,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(7)->toDateString(),
-            'notes'      => 'Target test Al-Fatihah.',
+            'notes' => 'Target test Al-Fatihah.',
         ]);
 
         $response->assertRedirect(route('hafalan-targets.index'));
@@ -87,9 +86,9 @@ class HafalanTargetTest extends TestCase
 
         $this->assertDatabaseHas('hafalan_targets', [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
+            'surah_id' => $this->surah->id,
             'ayah_start' => 1,
-            'ayah_end'   => 7,
+            'ayah_end' => 7,
         ]);
     }
 
@@ -97,17 +96,17 @@ class HafalanTargetTest extends TestCase
     public function teacher_can_create_target_for_own_student(): void
     {
         $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store'), [
-            'student_id'  => $this->student->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 3,
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'target_date' => now()->addDays(3)->toDateString(),
         ]);
 
         $response->assertRedirect(route('hafalan-targets.index'));
         $this->assertDatabaseHas('hafalan_targets', [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
+            'surah_id' => $this->surah->id,
         ]);
     }
 
@@ -120,9 +119,9 @@ class HafalanTargetTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-targets.store'), [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
+            'surah_id' => $this->surah->id,
             'ayah_start' => 1,
-            'ayah_end'   => 7,
+            'ayah_end' => 7,
             // target_date tidak ada
         ]);
 
@@ -133,10 +132,10 @@ class HafalanTargetTest extends TestCase
     public function store_fails_when_ayah_end_exceeds_surah_limit(): void
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-targets.store'), [
-            'student_id'  => $this->student->id,
-            'surah_id'    => $this->surah->id, // total_ayah = 7
-            'ayah_start'  => 1,
-            'ayah_end'    => 999, // melebihi batas
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id, // total_ayah = 7
+            'ayah_start' => 1,
+            'ayah_end' => 999, // melebihi batas
             'target_date' => now()->addDays(7)->toDateString(),
         ]);
 
@@ -151,10 +150,10 @@ class HafalanTargetTest extends TestCase
         // Gunakan student milik guru lain (tidak ada teacher_id yang cocok)
         // Cukup gunakan student_id fiktif
         $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store'), [
-            'student_id'  => 9999, // tidak ada
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 3,
+            'student_id' => 9999, // tidak ada
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'target_date' => now()->addDays(3)->toDateString(),
         ]);
 
@@ -169,13 +168,13 @@ class HafalanTargetTest extends TestCase
     public function admin_can_view_target_detail(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(7),
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('hafalan-targets.show', $target));
@@ -188,28 +187,28 @@ class HafalanTargetTest extends TestCase
     public function admin_can_update_target(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(7),
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('hafalan-targets.update', $target), [
-            'student_id'  => $this->student->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(14)->toDateString(),
-            'status'      => 'active',
-            'notes'       => 'Update target test.',
+            'status' => 'active',
+            'notes' => 'Update target test.',
         ]);
 
         $response->assertRedirect(route('hafalan-targets.index'));
         $this->assertDatabaseHas('hafalan_targets', [
-            'id'     => $target->id,
+            'id' => $target->id,
             'status' => 'active',
         ]);
     }
@@ -222,13 +221,13 @@ class HafalanTargetTest extends TestCase
     public function admin_can_mark_target_as_completed(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(7),
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -236,7 +235,7 @@ class HafalanTargetTest extends TestCase
 
         $response->assertRedirect();
         $this->assertDatabaseHas('hafalan_targets', [
-            'id'     => $target->id,
+            'id' => $target->id,
             'status' => 'completed',
         ]);
     }
@@ -245,13 +244,13 @@ class HafalanTargetTest extends TestCase
     public function admin_can_mark_target_as_missed(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->subDays(3), // sudah lewat
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -259,7 +258,7 @@ class HafalanTargetTest extends TestCase
 
         $response->assertRedirect();
         $this->assertDatabaseHas('hafalan_targets', [
-            'id'     => $target->id,
+            'id' => $target->id,
             'status' => 'missed',
         ]);
     }
@@ -272,13 +271,13 @@ class HafalanTargetTest extends TestCase
     public function admin_can_delete_target(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->addDays(7),
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($this->admin)->delete(route('hafalan-targets.destroy', $target));
@@ -295,13 +294,13 @@ class HafalanTargetTest extends TestCase
     public function target_is_overdue_when_active_and_date_passed(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->subDays(5), // sudah lewat
-            'status'      => 'active',
+            'status' => 'active',
         ]);
 
         $this->assertTrue($target->is_overdue);
@@ -311,13 +310,13 @@ class HafalanTargetTest extends TestCase
     public function target_is_not_overdue_when_completed(): void
     {
         $target = HafalanTarget::create([
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'surah_id'    => $this->surah->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'target_date' => now()->subDays(2),
-            'status'      => 'completed',
+            'status' => 'completed',
         ]);
 
         $this->assertFalse($target->is_overdue);

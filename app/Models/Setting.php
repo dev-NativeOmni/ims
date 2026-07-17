@@ -13,6 +13,7 @@ class Setting extends Model
     {
         return Cache::rememberForever("setting:{$key}", function () use ($key, $default) {
             $setting = self::where('key', $key)->first();
+
             return $setting ? $setting->value : $default;
         });
     }
@@ -21,6 +22,7 @@ class Setting extends Model
     {
         $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget("setting:{$key}");
+
         return $setting;
     }
 
@@ -32,8 +34,8 @@ class Setting extends Model
     {
         $default = [
             [
-                'title'     => '🕋 Adab Kepada Allah',
-                'desc'      => 'Menjaga hubungan ketakwaan dan ibadah sehari-hari kepada Allah Subhanahu wa Ta\'ala.',
+                'title' => '🕋 Adab Kepada Allah',
+                'desc' => 'Menjaga hubungan ketakwaan dan ibadah sehari-hari kepada Allah Subhanahu wa Ta\'ala.',
                 'questions' => [
                     'Apakah Anda melaksanakan shalat fardhu tepat waktu hari ini?',
                     'Apakah Anda mengawali aktivitas hari ini dengan membaca Basmalah?',
@@ -43,8 +45,8 @@ class Setting extends Model
                 ],
             ],
             [
-                'title'     => '👥 Adab Kepada Sesama Teman',
-                'desc'      => 'Menjalin hubungan yang baik, saling menghormati, dan berlaku adil terhadap sesama.',
+                'title' => '👥 Adab Kepada Sesama Teman',
+                'desc' => 'Menjalin hubungan yang baik, saling menghormati, dan berlaku adil terhadap sesama.',
                 'questions' => [
                     'Apakah Anda bersikap sopan dan santun kepada teman-teman hari ini?',
                     'Apakah Anda menghindari perkataan kasar, mengejek, atau menyakiti teman?',
@@ -54,8 +56,8 @@ class Setting extends Model
                 ],
             ],
             [
-                'title'     => '📚 Adab Ketika Belajar',
-                'desc'      => 'Menjaga ketertiban, kebersihan, kepatuhan, dan doa dalam menuntut ilmu.',
+                'title' => '📚 Adab Ketika Belajar',
+                'desc' => 'Menjaga ketertiban, kebersihan, kepatuhan, dan doa dalam menuntut ilmu.',
                 'questions' => [
                     'Apakah Anda datang/masuk kelas tepat waktu dan menyiapkan peralatan belajar?',
                     'Apakah Anda menyimak penjelasan guru dengan khusyuk dan tidak mengobrol saat pelajaran?',
@@ -65,8 +67,8 @@ class Setting extends Model
                 ],
             ],
             [
-                'title'     => '🌿 Adab terhadap Lingkungan',
-                'desc'      => 'Menjaga kebersihan, ketertiban, dan kelestarian lingkungan sebagai bentuk syukur kepada Allah.',
+                'title' => '🌿 Adab terhadap Lingkungan',
+                'desc' => 'Menjaga kebersihan, ketertiban, dan kelestarian lingkungan sebagai bentuk syukur kepada Allah.',
                 'questions' => [
                     'Apakah Anda membuang sampah pada tempatnya hari ini?',
                     'Apakah Anda menjaga kebersihan kamar/asrama Anda hari ini?',
@@ -93,10 +95,19 @@ class Setting extends Model
      */
     public static function getAdabGrade(float $score): string
     {
-        if ($score >= 90) return 'A';
-        if ($score >= 80) return 'B';
-        if ($score >= 70) return 'C';
-        if ($score >= 60) return 'D';
+        if ($score >= 90) {
+            return 'A';
+        }
+        if ($score >= 80) {
+            return 'B';
+        }
+        if ($score >= 70) {
+            return 'C';
+        }
+        if ($score >= 60) {
+            return 'D';
+        }
+
         return 'E';
     }
 

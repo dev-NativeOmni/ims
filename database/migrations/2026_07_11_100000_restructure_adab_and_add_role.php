@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,9 +17,9 @@ return new class extends Migration
             $table->boolean('q18')->nullable()->change();
             $table->boolean('q19')->nullable()->change();
             $table->boolean('q20')->nullable()->change();
-            
+
             $table->integer('mentor_score')->nullable()->after('total_score');
-            
+
             $table->foreignId('mentor_id')
                 ->nullable()
                 ->after('evaluator_id')
@@ -54,7 +54,7 @@ return new class extends Migration
         Schema::table('adab_records', function (Blueprint $table) {
             $table->dropForeign(['mentor_id']);
             $table->dropColumn(['mentor_id', 'mentor_score']);
-            
+
             $table->boolean('q16')->nullable(false)->change();
             $table->boolean('q17')->nullable(false)->change();
             $table->boolean('q18')->nullable(false)->change();

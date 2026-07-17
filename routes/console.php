@@ -20,3 +20,8 @@ Schedule::command('notifications:generate')
 Schedule::command('ims:sync-completed-targets')
     ->dailyAt('01:00')
     ->withoutOverlapping();
+
+// Backup database harian pukul 03:00 pagi dan hapus backup lama
+Schedule::command('ims:backup-database --prune')
+    ->dailyAt('03:00')
+    ->withoutOverlapping();

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassRoom;
+use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\StudentPoint;
-use App\Models\ParentProfile;
+use App\Models\SystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\SystemNotification;
 
 class StudentPointController extends Controller
 {
@@ -21,7 +22,9 @@ class StudentPointController extends Controller
         if ($user->hasRole('student')) {
             $student = Student::where('user_id', $user->id)->first();
             $query->where('student_id', $student?->id ?? 0);
-            if ($student) $visibleStudentIds->push($student->id);
+            if ($student) {
+                $visibleStudentIds->push($student->id);
+            }
         } elseif ($user->hasRole('parent')) {
             $parent = ParentProfile::where('user_id', $user->id)->with('students')->first();
             $studentIds = $parent?->students->pluck('id')->toArray() ?? [];
@@ -34,8 +37,8 @@ class StudentPointController extends Controller
         $classRooms = collect();
         if ($visibleStudentIds->isNotEmpty()) {
             $classRoomIds = Student::whereIn('id', $visibleStudentIds)->pluck('class_room_id')->filter()->unique()->values();
-            $classRooms = \App\Models\ClassRoom::query()
-                ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+            $classRooms = ClassRoom::query()
+                ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
                 ->orderBy('name')
                 ->get();
         }
@@ -51,7 +54,7 @@ class StudentPointController extends Controller
             $search = $request->input('search');
             $query->whereHas('student', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('student_number', 'like', "%{$search}%");
+                    ->orWhere('student_number', 'like', "%{$search}%");
             });
         }
 
@@ -143,8 +146,8 @@ class StudentPointController extends Controller
 
         $students = Student::where('status', 'active')->with('classRoom')->orderBy('name')->get();
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = \App\Models\ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
         $selectedStudentId = $request->input('student_id');
@@ -189,8 +192,8 @@ class StudentPointController extends Controller
 
         $students = Student::where('status', 'active')->with('classRoom')->orderBy('name')->get();
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = \App\Models\ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn($q) => $q->whereIn('id', $classRoomIds))
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
 
@@ -241,26 +244,32 @@ class StudentPointController extends Controller
     {
         $totalViolations = StudentPoint::where('student_id', $studentId)->where('type', 'violation')->sum('points');
         $thresholds = [50, 100, 150, 200];
-        
+
         foreach ($thresholds as $threshold) {
             if ($totalViolations >= $threshold) {
                 $uniqueHash = "student_points_warning_{$studentId}_{$threshold}";
-                
+
                 $student = Student::with(['parents.user', 'teacher.user', 'user'])->find($studentId);
-                if (!$student) continue;
+                if (! $student) {
+                    continue;
+                }
 
                 $usersToNotify = collect();
-                if ($student->user) $usersToNotify->push($student->user);
+                if ($student->user) {
+                    $usersToNotify->push($student->user);
+                }
                 foreach ($student->parents as $parent) {
-                    if ($parent->user) $usersToNotify->push($parent->user);
+                    if ($parent->user) {
+                        $usersToNotify->push($parent->user);
+                    }
                 }
                 if ($student->teacher && $student->teacher->user) {
                     $usersToNotify->push($student->teacher->user);
                 }
 
                 foreach ($usersToNotify as $user) {
-                    $userSpecificHash = $uniqueHash . '_' . $user->id;
-                    if (!SystemNotification::where('unique_hash', $userSpecificHash)->exists()) {
+                    $userSpecificHash = $uniqueHash.'_'.$user->id;
+                    if (! SystemNotification::where('unique_hash', $userSpecificHash)->exists()) {
                         SystemNotification::create([
                             'user_id' => $user->id,
                             'created_by' => Auth::id(),

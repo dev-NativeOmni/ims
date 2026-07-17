@@ -15,7 +15,9 @@ class AdabMaterialTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $teacher;
+
     private User $student;
 
     protected function setUp(): void
@@ -123,7 +125,7 @@ class AdabMaterialTest extends TestCase
 
         // Old file must be deleted, new file must exist
         Storage::disk('public')->assertMissing($material->file_path);
-        
+
         $updatedMaterial = AdabMaterial::first();
         Storage::disk('public')->assertExists($updatedMaterial->file_path);
     }

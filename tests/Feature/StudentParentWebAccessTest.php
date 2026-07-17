@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\ClassRoom;
+use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\TeacherProfile;
-use App\Models\ParentProfile;
-use App\Models\ClassRoom;
+use App\Models\User;
+use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\CoreDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class StudentParentWebAccessTest extends TestCase
@@ -36,7 +35,7 @@ class StudentParentWebAccessTest extends TestCase
 
         $response = $this->actingAs($studentUser)->get('/progress');
 
-        $response->assertRedirect('/progress/' . $student->id);
+        $response->assertRedirect('/progress/'.$student->id);
     }
 
     public function test_student_visiting_reports_is_redirected_to_their_own_report_page(): void
@@ -46,13 +45,13 @@ class StudentParentWebAccessTest extends TestCase
 
         $response = $this->actingAs($studentUser)->get('/reports');
 
-        $response->assertRedirect('/reports/student/' . $student->id);
+        $response->assertRedirect('/reports/student/'.$student->id);
     }
 
     public function test_student_cannot_view_another_student_progress(): void
     {
         $studentUser = User::where('username', 'santri')->first();
-        
+
         // Create another student
         $student2User = User::factory()->create([
             'role_id' => $studentUser->role_id,
@@ -69,7 +68,7 @@ class StudentParentWebAccessTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->actingAs($studentUser)->get('/progress/' . $student2->id);
+        $response = $this->actingAs($studentUser)->get('/progress/'.$student2->id);
 
         $response->assertStatus(403);
     }
@@ -84,9 +83,9 @@ class StudentParentWebAccessTest extends TestCase
         $this->assertEquals(1, $parentProfile->students()->count());
 
         $responseProgress = $this->actingAs($parentUser)->get('/progress');
-        $responseProgress->assertRedirect('/progress/' . $student->id);
+        $responseProgress->assertRedirect('/progress/'.$student->id);
 
         $responseReports = $this->actingAs($parentUser)->get('/reports');
-        $responseReports->assertRedirect('/reports/student/' . $student->id);
+        $responseReports->assertRedirect('/reports/student/'.$student->id);
     }
 }

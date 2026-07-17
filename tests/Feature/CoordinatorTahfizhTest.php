@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\HafalanRecord;
+use App\Models\HafalanTarget;
+use App\Models\MurajaahRecord;
 use App\Models\Role;
 use App\Models\Student;
-use App\Models\TeacherProfile;
-use App\Models\HafalanRecord;
-use App\Models\MurajaahRecord;
-use App\Models\HafalanTarget;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
+use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,7 +21,7 @@ class CoordinatorTahfizhTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seed(DatabaseSeeder::class);
     }
 
@@ -29,7 +29,7 @@ class CoordinatorTahfizhTest extends TestCase
     {
         // 1. Create coordinator_tahfizh role & user
         $role = Role::updateOrCreate([
-            'name' => 'coordinator_tahfizh'
+            'name' => 'coordinator_tahfizh',
         ], [
             'name' => 'coordinator_tahfizh',
             'display_name' => 'Koordinator Tahfizh',

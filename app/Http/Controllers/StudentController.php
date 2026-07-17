@@ -6,16 +6,19 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Models\ClassRoom;
 use App\Models\ParentProfile;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
-use App\Models\Role;
-use Illuminate\Support\Facades\Hash;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentController extends Controller
@@ -229,8 +232,8 @@ class StudentController extends Controller
             ])
             ->get();
 
-        $fileName = 'daftar-santri-' . now()->format('Ymd-His') . '.xlsx';
-        
+        $fileName = 'daftar-santri-'.now()->format('Ymd-His').'.xlsx';
+
         $tempFile = @tempnam(sys_get_temp_dir(), 'export_xlsx');
         if (! $tempFile) {
             abort(500, 'Gagal membuat file sementara.');
@@ -261,13 +264,13 @@ class StudentController extends Controller
                 $student->classRoom?->name,
                 $student->teacher?->user?->username,
                 $student->user?->username,
-                $student->parents->map(fn($p) => $p->user?->username)->implode(','),
-                $student->parents->map(fn($p) => $p->pivot?->relation)->implode(','),
+                $student->parents->map(fn ($p) => $p->user?->username)->implode(','),
+                $student->parents->map(fn ($p) => $p->pivot?->relation)->implode(','),
                 $student->tahfizh_level,
             ];
         }
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         return response()->streamDownload(function () use ($tempFile) {
             readfile($tempFile);
@@ -292,9 +295,9 @@ class StudentController extends Controller
 
         if ($extension === 'xlsx') {
             try {
-                $rows = \App\Services\SimpleXlsxReader::read($filePath);
+                $rows = SimpleXlsxReader::read($filePath);
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal membaca berkas Excel: '.$e->getMessage());
             }
         } else {
             // Fallback to CSV parser
@@ -306,7 +309,7 @@ class StudentController extends Controller
             // Read the first line to check for sep=; instruction (Excel helper)
             $firstLine = fgets($handle);
             $cleanFirstLine = $firstLine !== false ? (string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', $firstLine) : '';
-            
+
             $separator = ',';
             if ($firstLine !== false) {
                 $trimmedFirstLine = trim(strtolower($cleanFirstLine));
@@ -342,28 +345,30 @@ class StudentController extends Controller
         $header = array_map(function ($h): string {
             $h = (string) preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $h); // strip BOM
             $h = (string) preg_replace('/\s+/', ' ', $h);                          // normalize spaces
+
             return trim(strtolower($h));
         }, (array) $header);
 
         // Helper: resolve column index, returning null instead of false when not found
         $col = static function (string $name) use ($header): ?int {
             $result = array_search($name, $header, true);
+
             return $result !== false ? (int) $result : null;
         };
 
         // Map header column names to indexes (null = column not present in file)
         /** @var array<string, int|null> $map */
         $map = [
-            'nama_santri'       => $col('nama santri')       ?? $col('name'),
-            'nomor_induk'       => $col('nomor induk')       ?? $col('student_number'),
-            'jenis_kelamin'     => $col('jenis kelamin')     ?? $col('gender'),
-            'tanggal_lahir'     => $col('tanggal lahir')     ?? $col('birth_date'),
-            'status'            => $col('status'),
-            'kelas'             => $col('kelas')             ?? $col('class_room'),
-            'tahfizh_level'     => $col('level tahfizh')     ?? $col('tahfizh level')     ?? $col('level'),
-            'username_guru'     => $col('username guru')     ?? $col('teacher_username') ?? $col('email guru')     ?? $col('teacher_email'),
-            'username_santri'   => $col('username santri')   ?? $col('student_username')  ?? $col('email santri')   ?? $col('student_email'),
-            'username_orangtua' => $col('username orangtua') ?? $col('parent_usernames')  ?? $col('email orangtua') ?? $col('parent_emails'),
+            'nama_santri' => $col('nama santri') ?? $col('name'),
+            'nomor_induk' => $col('nomor induk') ?? $col('student_number'),
+            'jenis_kelamin' => $col('jenis kelamin') ?? $col('gender'),
+            'tanggal_lahir' => $col('tanggal lahir') ?? $col('birth_date'),
+            'status' => $col('status'),
+            'kelas' => $col('kelas') ?? $col('class_room'),
+            'tahfizh_level' => $col('level tahfizh') ?? $col('tahfizh level') ?? $col('level'),
+            'username_guru' => $col('username guru') ?? $col('teacher_username') ?? $col('email guru') ?? $col('teacher_email'),
+            'username_santri' => $col('username santri') ?? $col('student_username') ?? $col('email santri') ?? $col('student_email'),
+            'username_orangtua' => $col('username orangtua') ?? $col('parent_usernames') ?? $col('email orangtua') ?? $col('parent_emails'),
             'hubungan_orangtua' => $col('hubungan orangtua') ?? $col('parent_relations'),
         ];
 
@@ -372,7 +377,7 @@ class StudentController extends Controller
         }
 
         $importedCount = 0;
-        $updatedCount  = 0;
+        $updatedCount = 0;
 
         $defaultPasswordHash = Hash::make('password123');
 
@@ -403,15 +408,15 @@ class StudentController extends Controller
                     ? trim((string) ($row[$map['tanggal_lahir']] ?? ''))
                     : null;
                 if (! empty($birthDate)) {
-                    if (is_numeric($birthDate) && (int)$birthDate > 10000 && (int)$birthDate < 100000) {
+                    if (is_numeric($birthDate) && (int) $birthDate > 10000 && (int) $birthDate < 100000) {
                         try {
-                            $birthDate = \Carbon\Carbon::createFromTimestamp(($birthDate - 25569) * 86400)->toDateString();
+                            $birthDate = Carbon::createFromTimestamp(($birthDate - 25569) * 86400)->toDateString();
                         } catch (\Exception $e) {
                             $birthDate = null;
                         }
                     } else {
                         try {
-                            $birthDate = \Carbon\Carbon::parse($birthDate)->toDateString();
+                            $birthDate = Carbon::parse($birthDate)->toDateString();
                         } catch (\Exception $e) {
                             $birthDate = null;
                         }
@@ -510,16 +515,32 @@ class StudentController extends Controller
                 if ($student) {
                     // Update only non-null values from import to prevent overwriting existing data with null
                     $updatePayload = [];
-                    if (! empty($name))          $updatePayload['name']           = $name;
-                    if (! empty($gender))         $updatePayload['gender']         = $gender;
-                    if (! empty($status))         $updatePayload['status']         = $status;
-                    if (! empty($studentNumber))  $updatePayload['student_number'] = $studentNumber;
+                    if (! empty($name)) {
+                        $updatePayload['name'] = $name;
+                    }
+                    if (! empty($gender)) {
+                        $updatePayload['gender'] = $gender;
+                    }
+                    if (! empty($status)) {
+                        $updatePayload['status'] = $status;
+                    }
+                    if (! empty($studentNumber)) {
+                        $updatePayload['student_number'] = $studentNumber;
+                    }
 
-                    if ($birthDate !== null)      $updatePayload['birth_date']     = $birthDate;
-                    if ($classRoomId !== null)    $updatePayload['class_room_id']  = $classRoomId;
-                    if ($teacherId !== null)      $updatePayload['teacher_id']     = $teacherId;
-                    if ($studentUserId !== null)  $updatePayload['user_id']        = $studentUserId;
-                    
+                    if ($birthDate !== null) {
+                        $updatePayload['birth_date'] = $birthDate;
+                    }
+                    if ($classRoomId !== null) {
+                        $updatePayload['class_room_id'] = $classRoomId;
+                    }
+                    if ($teacherId !== null) {
+                        $updatePayload['teacher_id'] = $teacherId;
+                    }
+                    if ($studentUserId !== null) {
+                        $updatePayload['user_id'] = $studentUserId;
+                    }
+
                     if ($tahfizhLevel !== null) {
                         $updatePayload['tahfizh_level'] = $tahfizhLevel;
                     }
@@ -528,15 +549,15 @@ class StudentController extends Controller
                     $updatedCount++;
                 } else {
                     $payload = [
-                        'name'           => $name,
-                        'gender'         => $gender,
-                        'birth_date'     => $birthDate,
-                        'status'         => $status,
-                        'class_room_id'  => $classRoomId,
-                        'teacher_id'     => $teacherId,
-                        'user_id'        => $studentUserId,
+                        'name' => $name,
+                        'gender' => $gender,
+                        'birth_date' => $birthDate,
+                        'status' => $status,
+                        'class_room_id' => $classRoomId,
+                        'teacher_id' => $teacherId,
+                        'user_id' => $studentUserId,
                         'student_number' => $studentNumber,
-                        'tahfizh_level'  => $tahfizhLevel,
+                        'tahfizh_level' => $tahfizhLevel,
                     ];
                     $student = Student::create($payload);
                     $importedCount++;
@@ -586,12 +607,12 @@ class StudentController extends Controller
                                         $parentRole = Role::where('name', 'parent')->first();
                                         if ($parentRole) {
                                             $parentUser = User::create([
-                                                'role_id'        => $parentRole->id,
-                                                'name'           => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
-                                                'username'       => $username,
-                                                'password'       => $defaultPasswordHash,
+                                                'role_id' => $parentRole->id,
+                                                'name' => ucwords(str_replace(['.', '_', '-'], ' ', $username)),
+                                                'username' => $username,
+                                                'password' => $defaultPasswordHash,
                                                 'plain_password' => 'password123',
-                                                'status'         => 'active',
+                                                'status' => 'active',
                                             ]);
                                         }
                                     } elseif ($existingUser->hasRole('parent')) {
@@ -602,7 +623,7 @@ class StudentController extends Controller
                                 if ($parentUser) {
                                     $parentProfile = ParentProfile::create([
                                         'user_id' => $parentUser->id,
-                                        'phone'   => null,
+                                        'phone' => null,
                                         'address' => null,
                                     ]);
                                 }
@@ -626,7 +647,8 @@ class StudentController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: '.$e->getMessage());
         }
 
         return redirect()

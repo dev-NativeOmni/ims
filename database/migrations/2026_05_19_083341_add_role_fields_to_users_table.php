@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -22,7 +23,7 @@ return new class extends Migration {
             // status user
             $table->enum('status', [
                 'active',
-                'inactive'
+                'inactive',
             ])->default('active')->after('password');
 
             // soft delete
@@ -42,7 +43,7 @@ return new class extends Migration {
             $table->dropColumn([
                 'role_id',
                 'status',
-                'deleted_at'
+                'deleted_at',
             ]);
         });
     }

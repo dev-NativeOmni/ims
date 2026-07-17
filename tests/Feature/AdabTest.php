@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\ClassRoom;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\AdabRecord;
 use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
@@ -36,7 +35,7 @@ class AdabTest extends TestCase
     public function test_supervisor_can_access_adab_index(): void
     {
         $supervisorRole = Role::where('name', 'supervisor')->first();
-        if (!$supervisorRole) {
+        if (! $supervisorRole) {
             $supervisorRole = Role::create(['name' => 'supervisor', 'display_name' => 'Supervisor']);
         }
         $supervisor = User::factory()->create([
@@ -86,7 +85,7 @@ class AdabTest extends TestCase
             ->post(route('adab.store', $student), $data);
 
         $response->assertRedirect(route('adab.show', $student));
-        
+
         // Assert record exists in database with score 75
         $this->assertDatabaseHas('adab_records', [
             'student_id' => $student->id,
@@ -110,7 +109,7 @@ class AdabTest extends TestCase
 
         // Create mentor user
         $mentorRole = Role::where('name', 'pendamping_adab')->first();
-        if (!$mentorRole) {
+        if (! $mentorRole) {
             $mentorRole = Role::create(['name' => 'pendamping_adab', 'display_name' => 'Pendamping Adab']);
         }
         $mentor = User::factory()->create([
@@ -177,7 +176,7 @@ class AdabTest extends TestCase
     public function test_supervisor_dashboard_shows_filling_progress(): void
     {
         $supervisorRole = Role::where('name', 'supervisor')->first();
-        if (!$supervisorRole) {
+        if (! $supervisorRole) {
             $supervisorRole = Role::create(['name' => 'supervisor', 'display_name' => 'Supervisor']);
         }
         $supervisor = User::factory()->create([
@@ -226,7 +225,7 @@ class AdabTest extends TestCase
     public function test_authorized_user_can_access_and_update_adab_settings(): void
     {
         $supervisorRole = Role::where('name', 'supervisor')->first();
-        if (!$supervisorRole) {
+        if (! $supervisorRole) {
             $supervisorRole = Role::create(['name' => 'supervisor', 'display_name' => 'Supervisor']);
         }
         $supervisor = User::factory()->create([
@@ -240,16 +239,16 @@ class AdabTest extends TestCase
 
         // Prepare test data
         $postData = ['categories' => []];
-        $defaultCategories = \App\Models\Setting::getAdabQuestions();
-        
+        $defaultCategories = Setting::getAdabQuestions();
+
         foreach ($defaultCategories as $catIdx => $category) {
             $postData['categories'][$catIdx] = [
-                'title' => $category['title'] . ' MODIFIED',
-                'desc' => $category['desc'] . ' MODIFIED',
+                'title' => $category['title'].' MODIFIED',
+                'desc' => $category['desc'].' MODIFIED',
                 'questions' => [],
             ];
             foreach ($category['questions'] as $qIdx => $questionText) {
-                $postData['categories'][$catIdx]['questions'][$qIdx] = $questionText . ' MODIFIED';
+                $postData['categories'][$catIdx]['questions'][$qIdx] = $questionText.' MODIFIED';
             }
         }
 
@@ -258,7 +257,7 @@ class AdabTest extends TestCase
         $response->assertRedirect(route('settings.adab'));
 
         // Assert updated in Setting
-        $updatedQuestions = \App\Models\Setting::getAdabQuestions();
+        $updatedQuestions = Setting::getAdabQuestions();
         $this->assertEquals('🕋 Adab Kepada Allah MODIFIED', $updatedQuestions[0]['title']);
         $this->assertEquals('Apakah Anda melaksanakan shalat fardhu tepat waktu hari ini? MODIFIED', $updatedQuestions[0]['questions'][0]);
     }

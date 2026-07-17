@@ -175,18 +175,18 @@ class AuditLogService
         }
 
         if ($model instanceof HafalanRecord) {
-            return 'Hafalan #' . $model->getKey();
+            return 'Hafalan #'.$model->getKey();
         }
 
         if ($model instanceof MurajaahRecord) {
-            return 'Murajaah #' . $model->getKey();
+            return 'Murajaah #'.$model->getKey();
         }
 
         if ($model instanceof HafalanTarget) {
-            return 'Target Hafalan #' . $model->getKey();
+            return 'Target Hafalan #'.$model->getKey();
         }
 
-        return class_basename($model) . ' #' . $model->getKey();
+        return class_basename($model).' #'.$model->getKey();
     }
 
     private function description(string $action, Model $model): string

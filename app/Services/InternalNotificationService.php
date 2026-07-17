@@ -74,7 +74,7 @@ class InternalNotificationService
                     type: 'target_overdue',
                     severity: 'warning',
                     title: 'Target hafalan terlambat',
-                    message: $studentName . ' memiliki target ' . $surahName . ' ayat ' . $target->ayah_range . ' yang melewati tanggal target ' . $target->target_date?->format('d M Y') . '.',
+                    message: $studentName.' memiliki target '.$surahName.' ayat '.$target->ayah_range.' yang melewati tanggal target '.$target->target_date?->format('d M Y').'.',
                     sourceType: HafalanTarget::class,
                     sourceId: $target->id,
                     actionUrl: $this->targetActionUrl($user, $target),
@@ -111,7 +111,7 @@ class InternalNotificationService
                     type: 'hafalan_attention',
                     severity: 'danger',
                     title: 'Hafalan perlu tindak lanjut',
-                    message: $studentName . ' memiliki setoran ' . $surahName . ' ayat ' . $record->ayah_range . ' dengan status ' . $record->status_label . '.',
+                    message: $studentName.' memiliki setoran '.$surahName.' ayat '.$record->ayah_range.' dengan status '.$record->status_label.'.',
                     sourceType: HafalanRecord::class,
                     sourceId: $record->id,
                     actionUrl: $this->recordActionUrl($user, 'hafalan-records', $record->id),
@@ -148,7 +148,7 @@ class InternalNotificationService
                     type: 'murajaah_attention',
                     severity: 'danger',
                     title: 'Murajaah perlu tindak lanjut',
-                    message: $studentName . ' memiliki murajaah ' . $surahName . ' ayat ' . $record->ayah_range . ' dengan status ' . $record->status_label . '.',
+                    message: $studentName.' memiliki murajaah '.$surahName.' ayat '.$record->ayah_range.' dengan status '.$record->status_label.'.',
                     sourceType: MurajaahRecord::class,
                     sourceId: $record->id,
                     actionUrl: $this->recordActionUrl($user, 'murajaah-records', $record->id),
@@ -279,7 +279,7 @@ class InternalNotificationService
     private function targetActionUrl(User $user, HafalanTarget $target): string
     {
         if ($user->hasAnyRole(['super_admin', 'admin', 'teacher'])) {
-            return '/hafalan-targets/' . $target->id;
+            return '/hafalan-targets/'.$target->id;
         }
 
         return '/dashboard';
@@ -288,7 +288,7 @@ class InternalNotificationService
     private function recordActionUrl(User $user, string $resourcePath, int $recordId): string
     {
         if ($user->hasAnyRole(['super_admin', 'admin', 'teacher'])) {
-            return '/' . $resourcePath . '/' . $recordId;
+            return '/'.$resourcePath.'/'.$recordId;
         }
 
         return '/dashboard';

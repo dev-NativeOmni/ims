@@ -18,9 +18,9 @@ class GenerateSystemNotificationsCommand extends Command
         $result = $service->generate($dryRun);
 
         $this->info('Generate notifikasi selesai.');
-        $this->line('Mode: ' . ($dryRun ? 'dry-run' : 'write'));
-        $this->line('Santri dicek: ' . $result['students_checked']);
-        $this->line('Notifikasi ' . ($dryRun ? 'terdeteksi' : 'ditulis') . ': ' . $result['notifications_written']);
+        $this->line('Mode: '.($dryRun ? 'dry-run' : 'write'));
+        $this->line('Santri dicek: '.$result['students_checked']);
+        $this->line('Notifikasi '.($dryRun ? 'terdeteksi' : 'ditulis').': '.$result['notifications_written']);
 
         return self::SUCCESS;
     }

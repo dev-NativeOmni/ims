@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use App\Models\HafalanRecord;
+use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
@@ -67,16 +67,16 @@ class HafalanRecordTest extends TestCase
     public function admin_can_store_hafalan_record(): void
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'new',
-            'score'           => 90,
-            'status'          => 'passed',
-            'notes'           => 'Hafalan perdana Al-Fatihah.',
-            'submitted_at'    => now()->toDateString(),
+            'score' => 90,
+            'status' => 'passed',
+            'notes' => 'Hafalan perdana Al-Fatihah.',
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('hafalan-records.index'));
@@ -84,10 +84,10 @@ class HafalanRecordTest extends TestCase
 
         $this->assertDatabaseHas('hafalan_records', [
             'student_id' => $this->student->id,
-            'surah_id'   => $this->surah->id,
+            'surah_id' => $this->surah->id,
             'ayah_start' => 1,
-            'ayah_end'   => 7,
-            'status'     => 'passed',
+            'ayah_end' => 7,
+            'status' => 'passed',
         ]);
     }
 
@@ -95,22 +95,22 @@ class HafalanRecordTest extends TestCase
     public function teacher_can_store_hafalan_record_for_own_student(): void
     {
         $response = $this->actingAs($this->teacherUser)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 3,
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'submission_type' => 'continuation',
-            'score'           => 80,
-            'status'          => 'passed',
-            'submitted_at'    => now()->toDateString(),
+            'score' => 80,
+            'status' => 'passed',
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('hafalan-records.index'));
         $this->assertDatabaseHas('hafalan_records', [
-            'student_id'  => $this->student->id,
-            'teacher_id'  => $this->teacherProfile->id,
-            'ayah_start'  => 1,
-            'ayah_end'    => 3,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
         ]);
     }
 
@@ -122,14 +122,14 @@ class HafalanRecordTest extends TestCase
     public function store_fails_when_ayah_end_exceeds_total_ayah(): void
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id, // total_ayah = 7
-            'ayah_start'      => 1,
-            'ayah_end'        => 999, // melebihi batas
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id, // total_ayah = 7
+            'ayah_start' => 1,
+            'ayah_end' => 999, // melebihi batas
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now()->toDateString(),
+            'status' => 'passed',
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertSessionHasErrors('ayah_end');
@@ -140,14 +140,14 @@ class HafalanRecordTest extends TestCase
     public function store_fails_when_ayah_end_less_than_ayah_start(): void
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 5,
-            'ayah_end'        => 2, // lebih kecil dari start
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 5,
+            'ayah_end' => 2, // lebih kecil dari start
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now()->toDateString(),
+            'status' => 'passed',
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertSessionHasErrors('ayah_end');
@@ -157,14 +157,14 @@ class HafalanRecordTest extends TestCase
     public function store_fails_with_invalid_status(): void
     {
         $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 3,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'submission_type' => 'new',
-            'status'          => 'invalid_status', // tidak valid
-            'submitted_at'    => now()->toDateString(),
+            'status' => 'invalid_status', // tidak valid
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertSessionHasErrors('status');
@@ -186,14 +186,14 @@ class HafalanRecordTest extends TestCase
     public function admin_can_view_hafalan_record_detail(): void
     {
         $record = HafalanRecord::create([
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now(),
+            'status' => 'passed',
+            'submitted_at' => now(),
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('hafalan-records.show', $record));
@@ -207,31 +207,31 @@ class HafalanRecordTest extends TestCase
     public function admin_can_update_hafalan_record(): void
     {
         $record = HafalanRecord::create([
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'new',
-            'status'          => 'repeat',
-            'submitted_at'    => now(),
+            'status' => 'repeat',
+            'submitted_at' => now(),
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('hafalan-records.update', $record), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'revision',
-            'score'           => 95,
-            'status'          => 'passed', // diubah
-            'submitted_at'    => now()->toDateString(),
+            'score' => 95,
+            'status' => 'passed', // diubah
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('hafalan-records.index'));
         $this->assertDatabaseHas('hafalan_records', [
-            'id'     => $record->id,
+            'id' => $record->id,
             'status' => 'passed',
         ]);
     }
@@ -240,14 +240,14 @@ class HafalanRecordTest extends TestCase
     public function admin_can_delete_hafalan_record(): void
     {
         $record = HafalanRecord::create([
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now(),
+            'status' => 'passed',
+            'submitted_at' => now(),
         ]);
 
         $response = $this->actingAs($this->admin)->delete(route('hafalan-records.destroy', $record));
@@ -266,24 +266,24 @@ class HafalanRecordTest extends TestCase
         // Buat guru lain
         $otherTeacherUser = User::factory()->create([
             'role_id' => $this->teacherUser->role_id,
-            'status'  => 'active',
+            'status' => 'active',
         ]);
         $otherTeacher = TeacherProfile::create([
-            'user_id'         => $otherTeacherUser->id,
+            'user_id' => $otherTeacherUser->id,
             'employee_number' => 'GURU-999',
-            'phone'           => '089900009999',
+            'phone' => '089900009999',
         ]);
 
         // Record milik guru lain
         $record = HafalanRecord::create([
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $otherTeacher->id, // guru lain
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 3,
+            'student_id' => $this->student->id,
+            'teacher_id' => $otherTeacher->id, // guru lain
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now(),
+            'status' => 'passed',
+            'submitted_at' => now(),
         ]);
 
         $response = $this->actingAs($this->teacherUser)->delete(route('hafalan-records.destroy', $record));
@@ -300,14 +300,14 @@ class HafalanRecordTest extends TestCase
     public function index_can_be_filtered_by_status(): void
     {
         HafalanRecord::create([
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 3,
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
             'submission_type' => 'new',
-            'status'          => 'passed',
-            'submitted_at'    => now(),
+            'status' => 'passed',
+            'submitted_at' => now(),
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -320,7 +320,7 @@ class HafalanRecordTest extends TestCase
     #[Test]
     public function admin_can_store_multiple_hafalan_records_at_once(): void
     {
-        $surah2 = \App\Models\Surah::create([
+        $surah2 = Surah::create([
             'number' => 2,
             'name_arabic' => 'البقرة',
             'name_latin' => 'Al-Baqarah',
@@ -329,39 +329,39 @@ class HafalanRecordTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
-            'student_id'      => $this->student->id,
-            'teacher_id'      => $this->teacherProfile->id,
-            'surah_ids'       => [$this->surah->id, $surah2->id],
-            'ayah_starts'     => [1, 5],
-            'ayah_ends'       => [7, 10],
-            'submission_types'=> ['new', 'continuation'],
-            'scores'          => [95, 85],
-            'statuses'        => ['passed', 'repeat'],
-            'notes'           => 'Multi setoran.',
-            'submitted_at'    => now()->toDateString(),
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_ids' => [$this->surah->id, $surah2->id],
+            'ayah_starts' => [1, 5],
+            'ayah_ends' => [7, 10],
+            'submission_types' => ['new', 'continuation'],
+            'scores' => [95, 85],
+            'statuses' => ['passed', 'repeat'],
+            'notes' => 'Multi setoran.',
+            'submitted_at' => now()->toDateString(),
         ]);
 
         $response->assertRedirect(route('hafalan-records.index'));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('hafalan_records', [
-            'student_id'      => $this->student->id,
-            'surah_id'        => $this->surah->id,
-            'ayah_start'      => 1,
-            'ayah_end'        => 7,
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
             'submission_type' => 'new',
-            'score'           => 95.00,
-            'status'          => 'passed',
+            'score' => 95.00,
+            'status' => 'passed',
         ]);
 
         $this->assertDatabaseHas('hafalan_records', [
-            'student_id'      => $this->student->id,
-            'surah_id'        => $surah2->id,
-            'ayah_start'      => 5,
-            'ayah_end'        => 10,
+            'student_id' => $this->student->id,
+            'surah_id' => $surah2->id,
+            'ayah_start' => 5,
+            'ayah_end' => 10,
             'submission_type' => 'continuation',
-            'score'           => 85.00,
-            'status'          => 'repeat',
+            'score' => 85.00,
+            'status' => 'repeat',
         ]);
     }
 }

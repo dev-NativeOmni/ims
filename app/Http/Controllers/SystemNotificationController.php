@@ -143,7 +143,7 @@ class SystemNotificationController extends Controller
 
         return redirect()
             ->route('system-notifications.index', ['scope' => 'all'])
-            ->with('success', 'Notifikasi berhasil dikirim ke ' . $recipients->count() . ' pengguna.');
+            ->with('success', 'Notifikasi berhasil dikirim ke '.$recipients->count().' pengguna.');
     }
 
     public function show(Request $request, SystemNotification $systemNotification): View

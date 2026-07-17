@@ -4,16 +4,16 @@ namespace Tests\Feature;
 
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
-use App\Models\ParentProfile;
 use App\Models\Program;
 use App\Models\Role;
 use App\Models\Student;
-use App\Models\StudentReport;
-use App\Models\TeacherProfile;
-use App\Models\User;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
+use App\Models\User;
+use App\Services\StudentProgressService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class TahfizhLevelAndUmmiTest extends TestCase
@@ -21,9 +21,13 @@ class TahfizhLevelAndUmmiTest extends TestCase
     use RefreshDatabase;
 
     private User $teacherUser;
+
     private TeacherProfile $teacher;
+
     private Student $studentUmmi;
+
     private Student $studentReguler;
+
     private Surah $surah;
 
     protected function setUp(): void
@@ -47,13 +51,13 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
         // Create Programs & ClassRooms
         $program = Program::create(['name' => 'Tahfizh Reguler', 'status' => 'active']);
-        
+
         $classX = ClassRoom::create([
             'name' => 'Kelas X-A',
             'level' => '10',
             'program_id' => $program->id,
         ]);
-        
+
         $classXI = ClassRoom::create([
             'name' => 'Kelas XI-A',
             'level' => '11',
@@ -266,13 +270,13 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
     public function test_progress_computes_correct_completed_juz()
     {
-        $service = new \App\Services\StudentProgressService();
+        $service = new StudentProgressService;
 
         // Seed Al-Fatihah ayahs with Juz 1 in the database
         // Delete any existing ayahs for surah 1 to make it clean
-        \Illuminate\Support\Facades\DB::table('ayahs')->where('surah_id', $this->surah->id)->delete();
+        DB::table('ayahs')->where('surah_id', $this->surah->id)->delete();
         for ($i = 1; $i <= 7; $i++) {
-            \Illuminate\Support\Facades\DB::table('ayahs')->insert([
+            DB::table('ayahs')->insert([
                 'surah_id' => $this->surah->id,
                 'ayah_number' => $i,
                 'juz' => 1,
@@ -287,7 +291,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'total_ayah' => 286,
             'revelation_type' => 'medinan',
         ]);
-        \Illuminate\Support\Facades\DB::table('ayahs')->insert([
+        DB::table('ayahs')->insert([
             'surah_id' => $surah2->id,
             'ayah_number' => 1,
             'juz' => 1,
@@ -312,7 +316,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
         ]);
 
         // Clear static cache in StudentProgressService to reload DB data
-        $ref = new \ReflectionClass(\App\Services\StudentProgressService::class);
+        $ref = new \ReflectionClass(StudentProgressService::class);
         $prop1 = $ref->getProperty('allAyahs');
         $prop1->setAccessible(true);
         $prop1->setValue(null, null);
@@ -334,10 +338,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'total_ayah' => 3,
             'revelation_type' => 'meccan',
         ]);
-        
-        \Illuminate\Support\Facades\DB::table('ayahs')->where('surah_id', $dummySurah->id)->delete();
+
+        DB::table('ayahs')->where('surah_id', $dummySurah->id)->delete();
         for ($i = 1; $i <= 3; $i++) {
-            \Illuminate\Support\Facades\DB::table('ayahs')->insert([
+            DB::table('ayahs')->insert([
                 'surah_id' => $dummySurah->id,
                 'ayah_number' => $i,
                 'juz' => 30,

@@ -19,8 +19,7 @@ class DashboardApiService
 {
     public function __construct(
         private readonly StudentApiService $studentApiService
-    ) {
-    }
+    ) {}
 
     public function build(User $user, string $dashboard): array
     {
@@ -419,7 +418,7 @@ class DashboardApiService
             return 0;
         }
 
-        $model = new $modelClass();
+        $model = new $modelClass;
 
         if (! Schema::hasTable($model->getTable())) {
             return 0;

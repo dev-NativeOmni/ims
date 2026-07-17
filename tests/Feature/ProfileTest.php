@@ -104,7 +104,7 @@ class ProfileTest extends TestCase
         Storage::fake('public');
 
         $user = User::factory()->create();
-        
+
         $tempFile = @tempnam(sys_get_temp_dir(), 'avatar');
         file_put_contents($tempFile, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
         $file = new UploadedFile($tempFile, 'avatar.png', 'image/png', null, true);
@@ -129,11 +129,11 @@ class ProfileTest extends TestCase
         Storage::fake('public');
 
         $user = User::factory()->create();
-        
+
         $tempFile = @tempnam(sys_get_temp_dir(), 'avatar');
         file_put_contents($tempFile, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='));
         $file = new UploadedFile($tempFile, 'avatar.png', 'image/png', null, true);
-        
+
         $path = $file->store('avatars', 'public');
         $user->update(['avatar' => $path]);
 

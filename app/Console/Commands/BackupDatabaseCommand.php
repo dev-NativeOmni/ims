@@ -17,7 +17,7 @@ class BackupDatabaseCommand extends Command
         $defaultConnection = config('database.default');
 
         if ($defaultConnection !== 'mysql') {
-            $this->error('Backup ini hanya mendukung koneksi mysql. Koneksi aktif sekarang: ' . $defaultConnection);
+            $this->error('Backup ini hanya mendukung koneksi mysql. Koneksi aktif sekarang: '.$defaultConnection);
 
             return self::FAILURE;
         }
@@ -36,14 +36,14 @@ class BackupDatabaseCommand extends Command
 
         File::ensureDirectoryExists($backupDirectory);
 
-        $filename = now()->format('Y-m-d_His') . '_' . $this->safeFilename($database) . '.sql';
-        $backupPath = $backupDirectory . DIRECTORY_SEPARATOR . $filename;
+        $filename = now()->format('Y-m-d_His').'_'.$this->safeFilename($database).'.sql';
+        $backupPath = $backupDirectory.DIRECTORY_SEPARATOR.$filename;
 
         $command = $this->buildCommand($connection, $database, $backupPath);
 
         $this->info('Memulai backup database...');
-        $this->line('Database: ' . $database);
-        $this->line('Target: ' . $backupPath);
+        $this->line('Database: '.$database);
+        $this->line('Target: '.$backupPath);
 
         $process = new Process($command);
         $process->setTimeout((int) config('database_backup.timeout', 300));
@@ -79,8 +79,8 @@ class BackupDatabaseCommand extends Command
         }
 
         $this->info('Backup berhasil dibuat.');
-        $this->line('File: ' . $backupPath);
-        $this->line('Ukuran: ' . $this->formatBytes(File::size($backupPath)));
+        $this->line('File: '.$backupPath);
+        $this->line('Ukuran: '.$this->formatBytes(File::size($backupPath)));
 
         return self::SUCCESS;
     }
@@ -94,23 +94,23 @@ class BackupDatabaseCommand extends Command
 
         $command = [
             (string) config('database_backup.mysqldump_path', 'mysqldump'),
-            '--host=' . $host,
-            '--port=' . $port,
+            '--host='.$host,
+            '--port='.$port,
             '--single-transaction',
             '--quick',
             '--routines',
             '--triggers',
             '--databases',
             $database,
-            '--result-file=' . $backupPath,
+            '--result-file='.$backupPath,
         ];
 
         if ($username !== '') {
-            $command[] = '--user=' . $username;
+            $command[] = '--user='.$username;
         }
 
         if ($password !== '') {
-            $command[] = '--password=' . $password;
+            $command[] = '--password='.$password;
         }
 
         return $command;
@@ -154,17 +154,17 @@ class BackupDatabaseCommand extends Command
     private function formatBytes(int $bytes): string
     {
         if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2) . ' GB';
+            return number_format($bytes / 1073741824, 2).' GB';
         }
 
         if ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . ' MB';
+            return number_format($bytes / 1048576, 2).' MB';
         }
 
         if ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2) . ' KB';
+            return number_format($bytes / 1024, 2).' KB';
         }
 
-        return $bytes . ' bytes';
+        return $bytes.' bytes';
     }
 }

@@ -42,7 +42,7 @@ class InternalNotificationSyncService
                 foreach ($targets as $target) {
                     $studentName = $target->student?->name ?? 'Santri';
                     $surahName = $target->surah?->name_latin ?? 'Surah';
-                    $ayahRange = $target->ayah_range ?? ($target->ayah_start . ' - ' . $target->ayah_end);
+                    $ayahRange = $target->ayah_range ?? ($target->ayah_start.' - '.$target->ayah_end);
                     $targetDate = $target->target_date?->format('d M Y') ?? '-';
 
                     $users = $this->usersForStudentAndTeacher(
@@ -85,7 +85,7 @@ class InternalNotificationSyncService
                 foreach ($records as $record) {
                     $studentName = $record->student?->name ?? 'Santri';
                     $surahName = $record->surah?->name_latin ?? 'Surah';
-                    $ayahRange = $record->ayah_range ?? ($record->ayah_start . ' - ' . $record->ayah_end);
+                    $ayahRange = $record->ayah_range ?? ($record->ayah_start.' - '.$record->ayah_end);
                     $statusLabel = $record->status_label ?? $this->statusLabel($record->status);
 
                     $users = $this->usersForStudentAndTeacher(
@@ -128,7 +128,7 @@ class InternalNotificationSyncService
                 foreach ($records as $record) {
                     $studentName = $record->student?->name ?? 'Santri';
                     $surahName = $record->surah?->name_latin ?? 'Surah';
-                    $ayahRange = $record->ayah_range ?? ($record->ayah_start . ' - ' . $record->ayah_end);
+                    $ayahRange = $record->ayah_range ?? ($record->ayah_start.' - '.$record->ayah_end);
                     $statusLabel = $record->status_label ?? $this->statusLabel($record->status);
 
                     $users = $this->usersForStudentAndTeacher(

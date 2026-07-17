@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Throwable $exception, Request $request) {
+        $exceptions->render(function (Throwable $exception, Request $request) {
             return ApiExceptionRenderer::render($exception, $request);
         });
     })

@@ -7,6 +7,8 @@ use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Services\SimpleXlsxReader;
+use App\Services\SimpleXlsxWriter;
 use Database\Seeders\CoreDataSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
@@ -108,7 +110,7 @@ class StudentImportExportTest extends TestCase
         $tempFile = @tempnam(sys_get_temp_dir(), 'test_xlsx');
         file_put_contents($tempFile, $content);
 
-        $rows = \App\Services\SimpleXlsxReader::read($tempFile);
+        $rows = SimpleXlsxReader::read($tempFile);
         @unlink($tempFile);
 
         $this->assertNotEmpty($rows);
@@ -188,10 +190,10 @@ class StudentImportExportTest extends TestCase
                 $studentUser->username,
                 'parent1,parent2',
                 'Ayah,Ibu',
-            ]
+            ],
         ];
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         // Upload the file
         $file = new UploadedFile($tempFile, 'students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
@@ -259,14 +261,14 @@ class StudentImportExportTest extends TestCase
                 '2012-05-10',
                 'active',
                 $classRoom->name,
-                $teacherUser->username . '@hafizplus.test', // email format
+                $teacherUser->username.'@hafizplus.test', // email format
                 'autostudent@hafizplus.test', // email format, non-existent
                 'autoparent1@hafizplus.test,autoparent2', // mix email and username, non-existent
                 'Ibu,Ayah',
-            ]
+            ],
         ];
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         // Upload the file
         $file = new UploadedFile($tempFile, 'students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
@@ -364,10 +366,10 @@ class StudentImportExportTest extends TestCase
                 '', // empty class, should NOT overwrite
                 '', // empty teacher, should NOT overwrite
                 'optstudent',
-            ]
+            ],
         ];
 
-        \App\Services\SimpleXlsxWriter::write($tempFile, $headers, $data);
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
 
         $file = new UploadedFile($tempFile, 'students.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
 
@@ -384,7 +386,7 @@ class StudentImportExportTest extends TestCase
         $this->assertEquals('Updated Name', $student->name);
         $this->assertEquals('male', $student->gender);
         $this->assertEquals('2021-04-03', $student->birth_date->toDateString()); // Serial date parsed!
-        
+
         // Assert old data was NOT overwritten with null/empty
         $this->assertEquals('SNT-OPT', $student->student_number); // kept old student number since imported was empty
         $this->assertEquals('active', $student->status); // kept old status
