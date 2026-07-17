@@ -95,13 +95,17 @@
          <!-- Mobile Logo -->
          <div class="flex-shrink-0 flex items-center px-4">
              <span class="font-bold text-xl text-white tracking-tight flex items-center gap-2">
-                 @if ($logo)
-                     <img src="{{ asset('storage/' . $logo) }}" class="h-8 w-8 object-contain rounded bg-white/10 p-0.5" alt="Logo">
-                 @else
-                     <svg class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                     </svg>
-                 @endif
+                  @if ($logo)
+                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 border border-white/10 flex-shrink-0">
+                          <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
+                      </div>
+                  @else
+                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 border border-white/10 flex-shrink-0 text-indigo-400">
+                          <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                      </div>
+                  @endif
                  <span class="truncate max-w-[160px]">{{ $namaInstansi ?: 'IMS' }}</span>
              </span>
          </div>
@@ -168,11 +172,15 @@
     <div class="flex-shrink-0 h-16 flex items-center justify-between px-6 border-b border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-[#09090b]/40 transition-colors duration-200">
         <a href="{{ route('dashboard') }}" class="font-bold text-lg text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
             @if ($logo)
-                <img src="{{ asset('storage/' . $logo) }}" class="h-8 w-8 object-contain rounded bg-zinc-100 dark:bg-white/10 p-0.5" alt="Logo">
+                <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0">
+                    <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
+                </div>
             @else
-                <svg class="h-8 w-8 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+                <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-500">
+                    <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
             @endif
             <span class="truncate max-w-[120px]">{{ $namaInstansi ?: 'IMS' }}</span>
         </a>
@@ -253,11 +261,15 @@
         <div class="flex items-center gap-3">
             <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
                 @if ($logo)
-                    <img src="{{ asset('storage/' . $logo) }}" class="h-7 w-7 object-contain rounded bg-zinc-100 dark:bg-white/10 p-0.5" alt="Logo">
+                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0">
+                        <img src="{{ asset('storage/' . $logo) }}" class="h-4.5 w-4.5 object-contain" alt="Logo">
+                    </div>
                 @else
-                    <svg class="h-7 w-7 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-500 dark:text-indigo-400">
+                        <svg class="h-4.5 w-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
                 @endif
                 <span class="truncate max-w-[120px]">{{ $namaInstansi ?: 'IMS' }}</span>
             </span>
