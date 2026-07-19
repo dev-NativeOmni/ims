@@ -8,9 +8,17 @@ class SimpleXlsxReader
 {
     public static function read(string $filePath): array
     {
+        if (! class_exists('ZipArchive')) {
+            throw new \Exception('Ekstensi PHP ZipArchive (php-zip) belum aktif di server. Silakan hubungi administrator.');
+        }
+
+        if (! function_exists('simplexml_load_string')) {
+            throw new \Exception('Ekstensi PHP SimpleXML (php-xml) belum aktif di server. Silakan hubungi administrator.');
+        }
+
         $zip = new ZipArchive;
         if ($zip->open($filePath) !== true) {
-            throw new \Exception('Gagal membuka berkas Excel (.xlsx). Berkas mungkin rusak atau tidak valid.');
+            throw new \Exception('Gagal membaca berkas Excel (.xlsx). Berkas mungkin rusak atau tidak valid.');
         }
 
         // 1. Read shared strings

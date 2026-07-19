@@ -151,7 +151,7 @@ class ClassRoomController extends Controller
         if ($extension === 'xlsx') {
             try {
                 $rows = SimpleXlsxReader::read($filePath);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 return redirect()->back()->with('error', 'Gagal membaca berkas Excel: '.$e->getMessage());
             }
         } else {
@@ -239,7 +239,7 @@ class ClassRoomController extends Controller
                 }
             }
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
 
             return redirect()->back()->with('error', 'Gagal mengimpor: '.$e->getMessage());
