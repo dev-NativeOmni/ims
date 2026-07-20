@@ -6,6 +6,7 @@ use App\Http\Requests\StoreClassRoomRequest;
 use App\Http\Requests\UpdateClassRoomRequest;
 use App\Models\ClassRoom;
 use App\Models\Program;
+use App\Models\User;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
 use Illuminate\Contracts\View\View;
@@ -23,7 +24,7 @@ class ClassRoomController extends Controller
             ->get();
 
         $classRooms = ClassRoom::query()
-            ->with('program')
+            ->with(['program', 'pendampingAdab'])
             ->withCount('students')
             ->when($request->filled('program_id'), function ($query) use ($request) {
                 $query->where('program_id', $request->integer('program_id'));
@@ -42,7 +43,13 @@ class ClassRoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('class-rooms.create', compact('programs'));
+        $pendampingList = User::query()
+            ->whereHas('role', fn ($q) => $q->where('name', 'pendamping_adab'))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('class-rooms.create', compact('programs', 'pendampingList'));
     }
 
     public function store(StoreClassRoomRequest $request): RedirectResponse
@@ -56,7 +63,7 @@ class ClassRoomController extends Controller
 
     public function show(ClassRoom $classRoom): View
     {
-        $classRoom->load('program')->loadCount('students');
+        $classRoom->load(['program', 'pendampingAdab'])->loadCount('students');
 
         $students = $classRoom->students()
             ->latest()
@@ -71,7 +78,13 @@ class ClassRoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('class-rooms.edit', compact('classRoom', 'programs'));
+        $pendampingList = User::query()
+            ->whereHas('role', fn ($q) => $q->where('name', 'pendamping_adab'))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('class-rooms.edit', compact('classRoom', 'programs', 'pendampingList'));
     }
 
     public function update(UpdateClassRoomRequest $request, ClassRoom $classRoom): RedirectResponse

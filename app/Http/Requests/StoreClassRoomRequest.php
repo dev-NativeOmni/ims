@@ -21,6 +21,11 @@ class StoreClassRoomRequest extends FormRequest
                 'integer',
                 Rule::exists('programs', 'id'),
             ],
+            'pendamping_adab_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id'),
+            ],
             'name' => [
                 'required',
                 'string',
@@ -38,6 +43,7 @@ class StoreClassRoomRequest extends FormRequest
     {
         return [
             'program_id' => 'program',
+            'pendamping_adab_id' => 'pendamping adab',
             'name' => 'nama kelas',
             'level' => 'level',
         ];

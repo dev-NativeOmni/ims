@@ -67,6 +67,27 @@
                         @enderror
                     </div>
 
+                    <div>
+                        <label for="pendamping_adab_id" class="block text-sm font-medium text-gray-700">
+                            Pendamping Adab
+                        </label>
+                        <select
+                            id="pendamping_adab_id"
+                            name="pendamping_adab_id"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                            <option value="">-- Pilih Pendamping Adab (Opsional) --</option>
+                            @foreach ($pendampingList as $p)
+                                <option value="{{ $p->id }}" @selected((string) old('pendamping_adab_id') === (string) $p->id)>
+                                    {{ $p->name }} ({{ $p->username }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('pendamping_adab_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="flex items-center justify-end gap-3">
                         <a href="{{ route('class-rooms.index') }}" class="text-sm text-gray-600 hover:underline">
                             Batal

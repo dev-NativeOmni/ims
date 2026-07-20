@@ -32,12 +32,16 @@ class AdabController extends Controller
         $isSupervisor = $user->hasRole('supervisor');
         $isTeacher = $user->hasRole('teacher');
         $isParent = $user->hasRole('parent');
+        $isPendampingAdab = $user->hasRole('pendamping_adab');
 
-        $classRooms = ClassRoom::query()->orderBy('name')->get();
-
+        $classRoomsQuery = ClassRoom::query()->orderBy('name');
         $studentQuery = Student::query()->with(['classRoom']);
 
-        if ($isTeacher) {
+        if ($isPendampingAdab && ! $isAdmin && ! $isSupervisor) {
+            $assignedClassIds = ClassRoom::where('pendamping_adab_id', $user->id)->pluck('id');
+            $studentQuery->whereIn('class_room_id', $assignedClassIds);
+            $classRoomsQuery->whereIn('id', $assignedClassIds);
+        } elseif ($isTeacher) {
             $teacherProfile = $user->teacherProfile;
             $studentQuery->where('teacher_id', $teacherProfile?->id);
         } elseif ($isParent) {
@@ -46,6 +50,8 @@ class AdabController extends Controller
                 $q->where('parent_profiles.id', $parentProfile?->id);
             });
         }
+
+        $classRooms = $classRoomsQuery->get();
 
         if ($request->filled('class_room_id')) {
             $studentQuery->where('class_room_id', $request->integer('class_room_id'));
@@ -137,10 +143,11 @@ class AdabController extends Controller
         $user = Auth::user();
 
         $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
-        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
+        $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
+        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
-        abort_unless($isOwn || $isManager || $isTeacher, 403);
+        abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher, 403);
 
         $today = now()->toDateString();
         $alreadyFilled = AdabRecord::where('student_id', $student->id)
@@ -165,10 +172,11 @@ class AdabController extends Controller
         $user = Auth::user();
 
         $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
-        $isManager = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
+        $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
+        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
-        abort_unless($isOwn || $isManager || $isTeacher, 403);
+        abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher, 403);
 
         $today = now()->toDateString();
 
@@ -228,7 +236,9 @@ class AdabController extends Controller
         $user = Auth::user();
         $visible = false;
 
-        if ($user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab'])) {
+        if ($user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
+            $visible = true;
+        } elseif ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null)) {
             $visible = true;
         } elseif ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id) {
             $visible = true;
@@ -295,7 +305,8 @@ class AdabController extends Controller
             ->where('month', $thisMonth)
             ->exists();
 
-        $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']);
+        $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
+            || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null));
 
         return view('adab.show', compact(
             'student', 'adabRecords', 'mentorAssessments',
@@ -329,9 +340,13 @@ class AdabController extends Controller
     public function storeMentorScore(Request $request, Student $student): RedirectResponse
     {
         $user = Auth::user();
+
+        $isAuthorizedMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
+            || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null));
+
         abort_unless(
-            $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'pendamping_adab']),
-            403, 'Hanya pendamping adab atau admin yang dapat memberi nilai.'
+            $isAuthorizedMentor,
+            403, 'Hanya pendamping adab kelas ini atau admin yang dapat memberi nilai.'
         );
 
         $validated = $request->validate([

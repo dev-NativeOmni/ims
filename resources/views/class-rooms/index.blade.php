@@ -77,6 +77,7 @@
                                 <th class="px-4 py-3">Nama Kelas</th>
                                 <th class="px-4 py-3">Program</th>
                                 <th class="px-4 py-3">Level</th>
+                                <th class="px-4 py-3">Pendamping Adab</th>
                                 <th class="px-4 py-3">Jumlah Santri</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>
@@ -95,6 +96,16 @@
 
                                     <td class="px-4 py-3 text-gray-700">
                                         {{ $classRoom->level ?: '-' }}
+                                    </td>
+
+                                    <td class="px-4 py-3 text-gray-700">
+                                        @if($classRoom->pendampingAdab)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                {{ $classRoom->pendampingAdab->name }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400 italic text-xs">Belum diatur</span>
+                                        @endif
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">
@@ -124,7 +135,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                                    <td colspan="6" class="px-4 py-6 text-center text-gray-500">
                                         Belum ada data kelas.
                                     </td>
                                 </tr>

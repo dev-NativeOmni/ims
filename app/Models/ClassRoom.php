@@ -13,6 +13,7 @@ class ClassRoom extends Model
 
     protected $fillable = [
         'program_id',
+        'pendamping_adab_id',
         'name',
         'level',
     ];
@@ -20,6 +21,11 @@ class ClassRoom extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function pendampingAdab(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pendamping_adab_id');
     }
 
     public function students(): HasMany
