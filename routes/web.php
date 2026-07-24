@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('super-admin.dashboard');
 
     Route::get('/admin/dashboard', [DashboardController::class, 'admin'])
-        ->middleware('role:super_admin,admin')
+        ->middleware('role:super_admin,admin,teacher,supervisor,headmaster,tanse,coordinator_tahfizh,pendamping_adab')
         ->name('admin.dashboard');
 
     Route::get('/teacher/dashboard', [DashboardController::class, 'teacher'])

@@ -103,23 +103,33 @@ class AdabController extends Controller
             $catStats[$catIdx] = $count > 0 ? round(($total / $count) * 100, 1) : 0;
         }
 
-        $classRankings = ClassRoom::query()
-            ->with(['students'])
-            ->get()
-            ->map(function ($classRoom) use ($year, $month) {
-                $students = $classRoom->students->where('status', 'active');
-                if ($students->isEmpty()) {
-                    return ['name' => $classRoom->name, 'avg_score' => 0];
-                }
-                $scores = $students->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
-                return [
-                    'name' => $classRoom->name,
-                    'avg_score' => round($scores->avg(), 1),
-                ];
-            })
-            ->sortByDesc('avg_score')
-            ->take(5)
-            ->values();
+        try {
+            $classRankings = ClassRoom::query()
+                ->with(['students'])
+                ->get()
+                ->map(function ($classRoom) use ($year, $month) {
+                    $st = $classRoom->students ? $classRoom->students->filter(fn ($s) => ($s->status ?? 'active') === 'active') : collect();
+                    if ($st->isEmpty()) {
+                        return ['name' => $classRoom->name, 'avg_score' => 0];
+                    }
+                    $scores = $st->map(function ($s) use ($year, $month) {
+                        try {
+                            return Setting::calculateAdabScore($s->id, $year, $month)['final_score'] ?? 0;
+                        } catch (\Throwable $e) {
+                            return 0;
+                        }
+                    });
+                    return [
+                        'name' => $classRoom->name,
+                        'avg_score' => round($scores->avg() ?: 0, 1),
+                    ];
+                })
+                ->sortByDesc('avg_score')
+                ->take(5)
+                ->values();
+        } catch (\Throwable $e) {
+            $classRankings = collect();
+        }
 
         return view('adab.index', compact(
             'students', 'classRooms', 'isAdmin', 'isSupervisor',
