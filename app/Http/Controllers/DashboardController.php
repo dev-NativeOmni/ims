@@ -71,14 +71,24 @@ class DashboardController extends Controller
 
     public function admin(): View
     {
-        $stats = $this->dashboardService->adminStats();
+        try {
+            $stats = $this->dashboardService->adminStats();
+        } catch (\Throwable $e) {
+            $stats = [];
+        }
+
         $today = now()->toDateString();
-        $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
-        $stats['adab_total_students'] = Student::count();
+        try {
+            $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
+            $stats['adab_total_students'] = Student::count();
+        } catch (\Throwable $e) {
+            $stats['adab_filled_today'] = 0;
+            $stats['adab_total_students'] = 0;
+        }
 
         return view('dashboards.admin', [
-            'title' => 'Admin Dashboard',
-            'subtitle' => 'Monitoring operasional santri, guru, hafalan, dan murajaah.',
+            'title' => 'Dashboard Utama IMS',
+            'subtitle' => 'Monitoring operasional murid, guru, hafalan, adab, dan kedisiplinan.',
             'stats' => $stats,
         ]);
     }

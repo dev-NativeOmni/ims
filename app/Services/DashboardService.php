@@ -25,23 +25,24 @@ class DashboardService
 
     public function adminStats(): array
     {
-        return Cache::remember('admin_dashboard_stats', 300, function () {
-            $today = now()->toDateString();
+        try {
+            return Cache::remember('admin_dashboard_stats', 60, function () {
+                $today = now()->toDateString();
 
-            $activeStudents = Student::query()
-                ->with([
-                    'classRoom.program',
-                    'teacher.user',
-                ])
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get();
+                $activeStudents = Student::query()
+                    ->with([
+                        'classRoom.program',
+                        'teacher.user',
+                    ])
+                    ->where('status', 'active')
+                    ->orderBy('name')
+                    ->get();
 
-            return [
-                'total_students' => Student::query()->count(),
-                'active_students' => Student::query()->where('status', 'active')->count(),
-                'inactive_students' => Student::query()->where('status', 'inactive')->count(),
-                'graduated_students' => Student::query()->where('status', 'graduated')->count(),
+                return [
+                    'total_students' => Student::query()->count(),
+                    'active_students' => Student::query()->where('status', 'active')->count(),
+                    'inactive_students' => Student::query()->where('status', 'inactive')->count(),
+                    'graduated_students' => Student::query()->where('status', 'graduated')->count(),
 
                 'total_teachers' => TeacherProfile::query()->count(),
                 'total_parents' => ParentProfile::query()->count(),
@@ -119,6 +120,9 @@ class DashboardService
                 'students_progress' => $this->studentsProgress($activeStudents)->take(10),
             ];
         });
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public function teacherStats(User $user): array
