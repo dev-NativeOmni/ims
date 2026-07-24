@@ -39,4 +39,25 @@ class StudentPoint extends Model
     {
         return $this->belongsTo(User::class, 'logged_by');
     }
+
+    public static function isViolationType(string $type): bool
+    {
+        return in_array($type, ['violation', 'lateness', 'attribute'], true);
+    }
+
+    public static function getTypeLabel(string $type): string
+    {
+        return match ($type) {
+            'violation' => 'Pelanggaran Tata Tertib',
+            'lateness' => 'Pelanggaran Keterlambatan',
+            'attribute' => 'Pelanggaran Atribut/Seragam',
+            'reward' => 'Prestasi / Penghargaan',
+            default => 'Catatan Kedisiplinan',
+        };
+    }
+
+    public function scopeViolations($query)
+    {
+        return $query->whereIn('type', ['violation', 'lateness', 'attribute']);
+    }
 }

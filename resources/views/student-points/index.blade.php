@@ -3,10 +3,10 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex flex-col gap-1">
                 <h2 class="font-semibold text-xl text-gray-900 dark:text-zinc-150 leading-tight">
-                    Poin & Disiplin Santri
+                    Poin & Disiplin Murid
                 </h2>
-                <p class="text-sm text-gray-600 dark:text-zinc-400">
-                    Pencatatan pelanggaran tata tertib dan penghargaan prestasi santri.
+                <p class="mt-1 text-sm text-gray-500 dark:text-zinc-400">
+                    Pencatatan pelanggaran tata tertib dan penghargaan prestasi murid.
                 </p>
             </div>
             
@@ -102,13 +102,13 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm transition-colors duration-200">
                     <form method="GET" action="{{ route('student-points.index') }}" class="flex flex-wrap items-end gap-4">
                         <div class="flex-1 min-w-[200px]">
-                            <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Cari Santri</label>
+                            <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Cari Murid</label>
                             <input
                                 type="text"
                                 name="search"
                                 id="search"
                                 value="{{ request('search') }}"
-                                placeholder="Cari nama atau NIS santri..."
+                                placeholder="Cari nama atau NIS murid..."
                                 class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                             />
                         </div>
@@ -129,8 +129,10 @@
                             <label for="type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tipe Poin</label>
                             <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                 <option value="">Semua Tipe</option>
-                                <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran</option>
-                                <option value="reward" {{ request('type') === 'reward' ? 'selected' : '' }}>Penghargaan</option>
+                                <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
+                                <option value="lateness" {{ request('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
+                                <option value="attribute" {{ request('type') === 'attribute' ? 'selected' : '' }}>Pelanggaran Atribut/Seragam</option>
+                                <option value="reward" {{ request('type') === 'reward' ? 'selected' : '' }}>Prestasi / Penghargaan</option>
                             </select>
                         </div>
 
@@ -163,7 +165,7 @@
                                 <thead class="bg-gray-50 dark:bg-[#09090b]/40">
                                     <tr>
                                         <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tanggal</th>
-                                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Santri</th>
+                                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Murid</th>
                                         <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Kategori / Judul</th>
                                         <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Tipe</th>
                                         <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Poin</th>
@@ -224,21 +226,22 @@
 
                                             <!-- Tipe Badge -->
                                             <td class="px-6 py-4 text-center whitespace-nowrap">
-                                                @if ($item->type === 'violation')
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40 uppercase">
-                                                        Pelanggaran
+                                                @php $isV = \App\Models\StudentPoint::isViolationType($item->type); @endphp
+                                                @if ($isV)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $item->type === 'lateness' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40' : ($item->type === 'attribute' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-900/40' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40') }} uppercase">
+                                                        {{ \App\Models\StudentPoint::getTypeLabel($item->type) }}
                                                     </span>
                                                 @else
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40 uppercase">
-                                                        Penghargaan
+                                                        Prestasi / Penghargaan
                                                     </span>
                                                 @endif
                                             </td>
 
                                             <!-- Poin -->
                                             <td class="px-6 py-4 text-center whitespace-nowrap text-sm font-extrabold">
-                                                <span class="{{ $item->type === 'violation' ? 'text-red-600 dark:text-rose-500' : 'text-green-600 dark:text-emerald-500' }}">
-                                                    {{ $item->type === 'violation' ? '-' : '+' }}{{ $item->points }}
+                                                <span class="{{ $isV ? 'text-red-600 dark:text-rose-500' : 'text-green-600 dark:text-emerald-500' }}">
+                                                    {{ $isV ? '-' : '+' }}{{ $item->points }}
                                                 </span>
                                             </td>
 

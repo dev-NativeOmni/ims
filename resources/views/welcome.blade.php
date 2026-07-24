@@ -93,7 +93,7 @@
 
                         <!-- Description -->
                         <p class="text-base text-zinc-650 dark:text-zinc-400 leading-relaxed max-w-md">
-                            Sistem terintegrasi untuk pelacakan setoran hafalan, murajaah, adab, dan poin disiplin santri secara real-time.
+                            Sistem terintegrasi untuk pelacakan setoran hafalan, murajaah, adab, dan poin disiplin murid secara real-time.
                         </p>
 
                         <!-- CTA Buttons -->

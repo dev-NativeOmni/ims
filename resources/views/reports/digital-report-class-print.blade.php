@@ -84,12 +84,13 @@
             $termTargetText = $data['termTargetText'];
             $latestCapaianText = $data['latestCapaianText'];
             $latestCapaianNotes = $data['latestCapaianNotes'];
-            $avgAllah = $data['avgAllah'];
-            $avgTeman = $data['avgTeman'];
-            $avgBelajar = $data['avgBelajar'];
-            $avgLingkungan = $data['avgLingkungan'];
-            $avgQuran = $data['avgQuran'];
-            $avgTotal = $data['avgTotal'];
+            $adabCategories = $data['adabCategories'] ?? \App\Models\Setting::getAdabQuestions();
+            $adabCategoryScores = $data['adabCategoryScores'] ?? [];
+            $avgAttendanceRate = $data['avgAttendanceRate'] ?? 0;
+            $avgMentorScore = $data['avgMentorScore'] ?? null;
+            $avgTotal = $data['avgTotal'] ?? 0;
+            $adabGrade = $data['adabGrade'] ?? 'E';
+            $adabGradeLabel = $data['adabGradeLabel'] ?? '-';
             $violations = $data['violations'];
             $rewards = $data['rewards'];
             $report = $data['report'] ?? null;
@@ -234,45 +235,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b border-black">
-                            <td class="p-2 border-r border-black text-center align-middle">1</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ALLAH</td>
-                            <td rowspan="4" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
-                                @php
-                                    $pred = \App\Models\Setting::getAdabGrade($avgTotal);
-                                    $predLabel = \App\Models\Setting::getAdabGradeLabel($pred);
-                                    $desc = '';
-                                    if ($avgTotal >= 90) {
-                                        $desc = 'Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.';
-                                    } elseif ($avgTotal >= 80) {
-                                        $desc = 'Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.';
-                                    } elseif ($avgTotal >= 70) {
-                                        $desc = 'Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.';
-                                    } elseif ($avgTotal >= 60) {
-                                        $desc = 'Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.';
-                                    } else {
-                                        $desc = 'Kurang (Dha\'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.';
-                                    }
-                                @endphp
-                                <span class="text-base font-black">{{ $pred }}</span>
-                                <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ round($avgTotal) }}/100</span>
-                            </td>
-                            <td rowspan="4" class="p-3 text-gray-700 leading-relaxed align-middle">
-                                {{ $desc }}
-                            </td>
-                        </tr>
-                        <tr class="border-b border-black">
-                            <td class="p-2 border-r border-black text-center align-middle">2</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA SESAMA TEMAN</td>
-                        </tr>
-                        <tr class="border-b border-black">
-                            <td class="p-2 border-r border-black text-center align-middle">3</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB KETIKA BELAJAR</td>
-                        </tr>
-                        <tr class="border-b border-black">
-                            <td class="p-2 border-r border-black text-center align-middle">4</td>
-                            <td class="p-2 border-r border-black font-semibold align-middle">ADAB TERHADAP LINGKUNGAN</td>
-                        </tr>
+                        @php
+                            $catCount = count($adabCategories);
+                            $pred = $adabGrade;
+                            $predLabel = $adabGradeLabel;
+                            $desc = '';
+                            if ($avgTotal >= 90) {
+                                $desc = 'Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.';
+                            } elseif ($avgTotal >= 80) {
+                                $desc = 'Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.';
+                            } elseif ($avgTotal >= 70) {
+                                $desc = 'Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.';
+                            } elseif ($avgTotal >= 60) {
+                                $desc = 'Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.';
+                            } else {
+                                $desc = 'Kurang (Dha\'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.';
+                            }
+                        @endphp
+                        @foreach ($adabCategories as $catIdx => $cat)
+                            <tr class="border-b border-black">
+                                <td class="p-2 border-r border-black text-center align-middle">{{ $catIdx + 1 }}</td>
+                                <td class="p-2 border-r border-black font-semibold align-middle uppercase">{{ $cat['title'] }}</td>
+                                @if ($catIdx === 0)
+                                    <td rowspan="{{ $catCount }}" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
+                                        <span class="text-base font-black">{{ $pred }}</span>
+                                        <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ round($avgTotal) }}/100</span>
+                                    </td>
+                                    <td rowspan="{{ $catCount }}" class="p-3 text-gray-700 leading-relaxed align-middle">
+                                        <div class="font-bold text-black mb-1">{{ $predLabel }}</div>
+                                        {{ $desc }}
+                                    </td>
+                                @endif
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

@@ -7,6 +7,7 @@ use App\Models\ParentProfile;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\SystemNotification;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -76,19 +77,19 @@ class StudentPointController extends Controller
             $statsQuery->whereIn('student_id', $studentIds);
         }
 
-        $totalViolations = (clone $statsQuery)->where('type', 'violation')->sum('points');
+        $totalViolations = (clone $statsQuery)->whereIn('type', ['violation', 'lateness', 'attribute'])->sum('points');
         $totalRewards = (clone $statsQuery)->where('type', 'reward')->sum('points');
 
         // Extended dashboard statistics
         $violationsByCategory = (clone $statsQuery)
-            ->where('type', 'violation')
+            ->whereIn('type', ['violation', 'lateness', 'attribute'])
             ->selectRaw('category, count(*) as count, sum(points) as points')
             ->groupBy('category')
             ->get()
             ->keyBy('category');
 
         $violationsByLocation = (clone $statsQuery)
-            ->where('type', 'violation')
+            ->whereIn('type', ['violation', 'lateness', 'attribute'])
             ->selectRaw('location, count(*) as count, sum(points) as points')
             ->whereNotNull('location')
             ->where('location', '!=', '')
@@ -119,7 +120,7 @@ class StudentPointController extends Controller
         $topViolators = Student::query()
             ->select('students.id', 'students.name')
             ->join('student_points', 'students.id', '=', 'student_points.student_id')
-            ->where('student_points.type', 'violation')
+            ->whereIn('student_points.type', ['violation', 'lateness', 'attribute'])
             ->selectRaw('sum(student_points.points) as total_points')
             ->groupBy('students.id', 'students.name')
             ->orderByDesc('total_points')
@@ -161,7 +162,7 @@ class StudentPointController extends Controller
 
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'type' => 'required|in:violation,reward',
+            'type' => 'required|in:violation,lateness,attribute,reward',
             'points' => 'required|integer|min:1|max:1000',
             'category' => 'nullable|string|max:50',
             'title' => 'required|string|max:255',
@@ -177,7 +178,7 @@ class StudentPointController extends Controller
 
         $point = StudentPoint::create($validated);
 
-        if ($point->type === 'violation') {
+        if (StudentPoint::isViolationType($point->type)) {
             $this->checkThresholds($point->student_id);
         }
 
@@ -206,7 +207,7 @@ class StudentPointController extends Controller
 
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'type' => 'required|in:violation,reward',
+            'type' => 'required|in:violation,lateness,attribute,reward',
             'points' => 'required|integer|min:1|max:1000',
             'category' => 'nullable|string|max:50',
             'title' => 'required|string|max:255',
@@ -220,13 +221,130 @@ class StudentPointController extends Controller
 
         $studentPoint->update($validated);
 
-        if ($studentPoint->type === 'violation') {
+        if (StudentPoint::isViolationType($studentPoint->type)) {
             $this->checkThresholds($studentPoint->student_id);
         }
 
         return redirect()
             ->route('student-points.index')
             ->with('success', 'Catatan poin kedisiplinan berhasil diperbarui.');
+    }
+
+    public function chart(Request $request): View
+    {
+        $user = Auth::user();
+        $year = (int) $request->input('year', date('Y'));
+        $month = (int) $request->input('month', date('n'));
+        $classRoomId = $request->input('class_room_id');
+
+        $classRoomsQuery = ClassRoom::query()->with(['students' => function ($q) {
+            $q->where('status', 'active');
+        }])->orderBy('name');
+
+        if ($user->hasRole('pendamping_adab') && ! $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
+            $classRoomsQuery->where('pendamping_adab_id', $user->id);
+        }
+
+        $classRooms = $classRoomsQuery->get();
+
+        $violationsQuery = StudentPoint::violations()
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month);
+
+        if ($classRoomId) {
+            $violationsQuery->whereHas('student', fn ($q) => $q->where('class_room_id', $classRoomId));
+        }
+
+        $monthViolationsCount = (clone $violationsQuery)->count();
+        $monthViolationsPoints = (clone $violationsQuery)->sum('points');
+
+        $monthsList = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+            10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        $monthlyTrends = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $mCount = StudentPoint::violations()
+                ->whereYear('date', $year)
+                ->whereMonth('date', $m)
+                ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
+                ->count();
+
+            $mPoints = StudentPoint::violations()
+                ->whereYear('date', $year)
+                ->whereMonth('date', $m)
+                ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
+                ->sum('points');
+
+            $monthlyTrends[$m] = [
+                'month_name' => substr($monthsList[$m], 0, 3),
+                'full_month_name' => $monthsList[$m],
+                'count' => $mCount,
+                'points' => $mPoints,
+            ];
+        }
+
+        $classReport = $classRooms->map(function ($classRoom) use ($year, $month) {
+            $students = $classRoom->students;
+            $totalStudents = $students->count();
+
+            $classViolations = StudentPoint::violations()
+                ->whereHas('student', fn ($q) => $q->where('class_room_id', $classRoom->id))
+                ->whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->get();
+
+            $totalViolationCount = $classViolations->count();
+            $totalViolationPoints = $classViolations->sum('points');
+
+            $studentsDetail = $students->map(function ($student) use ($year, $month) {
+                $stViolations = StudentPoint::violations()
+                    ->where('student_id', $student->id)
+                    ->whereYear('date', $year)
+                    ->whereMonth('date', $month)
+                    ->get();
+
+                $vCount = $stViolations->count();
+                $vPoints = $stViolations->sum('points');
+
+                $latenessCount = $stViolations->where('type', 'lateness')->count();
+                $attributeCount = $stViolations->where('type', 'attribute')->count();
+                $tatibCount = $stViolations->where('type', 'violation')->count();
+
+                return [
+                    'student' => $student,
+                    'violation_count' => $vCount,
+                    'violation_points' => $vPoints,
+                    'lateness_count' => $latenessCount,
+                    'attribute_count' => $attributeCount,
+                    'tatib_count' => $tatibCount,
+                    'recent_sanctions' => $stViolations->pluck('sanction')->filter()->values()->all(),
+                ];
+            })->sortByDesc('violation_points')->values()->all();
+
+            return [
+                'class_room' => $classRoom,
+                'total_students' => $totalStudents,
+                'violation_count' => $totalViolationCount,
+                'violation_points' => $totalViolationPoints,
+                'students_detail' => $studentsDetail,
+            ];
+        })->sortByDesc('violation_count')->values();
+
+        $typeBreakdown = [
+            'lateness' => (clone $violationsQuery)->where('type', 'lateness')->count(),
+            'attribute' => (clone $violationsQuery)->where('type', 'attribute')->count(),
+            'violation' => (clone $violationsQuery)->where('type', 'violation')->count(),
+        ];
+
+        return view('student-points.chart', compact(
+            'classReport', 'year', 'month', 'classRoomId',
+            'monthViolationsCount', 'monthViolationsPoints',
+            'monthlyTrends', 'monthsList', 'classRooms', 'typeBreakdown'
+        ));
     }
 
     public function destroy(StudentPoint $studentPoint)

@@ -72,7 +72,7 @@
         <!-- Class Summary Metrics -->
         <div class="grid grid-cols-5 border border-zinc-300 rounded-xl mb-8 divide-x divide-zinc-300 text-center">
             <div class="p-3">
-                <span class="block text-[10px] font-bold text-zinc-400 uppercase">Total Santri</span>
+                <span class="block text-[10px] font-bold text-zinc-400 uppercase">Total Murid</span>
                 <span class="text-lg font-extrabold text-zinc-900 mt-1 block">{{ $summary['total_students'] }}</span>
             </div>
             <div class="p-3">
@@ -135,7 +135,7 @@
 
         <!-- Detailed List of Students grouped by Teacher & Halaqah -->
         <div class="mb-10 space-y-10">
-            <h3 class="text-xs font-bold text-zinc-900 mb-3 uppercase tracking-wider">Rincian Capaian Dan Ketuntasan Santri per Halaqah</h3>
+            <h3 class="text-xs font-bold text-zinc-900 mb-3 uppercase tracking-wider">Rincian Capaian Dan Ketuntasan Murid per Halaqah</h3>
             
             @forelse ($groupedReports as $teacherName => $halaqahs)
                 <div class="space-y-6" style="page-break-inside: avoid; break-inside: avoid;">
@@ -151,7 +151,7 @@
                             <!-- Halaqah Header -->
                             <div class="flex justify-between items-center bg-zinc-50 border border-zinc-350 px-4 py-1.5 mb-1.5">
                                 <span class="text-[10px] font-bold text-zinc-900 uppercase">Halaqah: {{ $halaqahLabel }}</span>
-                                <span class="text-[9px] text-zinc-500 font-semibold">{{ count($reports) }} Santri</span>
+                                <span class="text-[9px] text-zinc-500 font-semibold">{{ count($reports) }} Murid</span>
                             </div>
 
                             <table class="min-w-full border-collapse border border-zinc-350 text-left text-[11px]">

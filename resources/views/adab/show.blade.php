@@ -1,4 +1,8 @@
 <x-app-layout>
+    @php
+        $thisYear = $year ?? (int) date('Y');
+        $thisMonth = $month ?? (int) date('n');
+    @endphp
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-zinc-800 dark:text-zinc-200 leading-tight">
             {{ __('Laporan Perkembangan Adab') }}

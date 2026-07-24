@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Santri
+                Murid
             </h2>
 
             <div class="flex items-center gap-2">
@@ -28,7 +28,7 @@
                     href="{{ route('students.create') }}"
                     class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
                 >
-                    Tambah Santri
+                    Tambah Murid
                 </a>
             </div>
         </div>
@@ -54,7 +54,7 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari nama / nomor santri"
+                        placeholder="Cari nama / nomor murid"
                         class="rounded-md border-gray-300 shadow-sm"
                     >
 
@@ -91,7 +91,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
-                                <th class="px-4 py-3">Santri</th>
+                                <th class="px-4 py-3">Murid</th>
                                 <th class="px-4 py-3">Kelas</th>
                                 <th class="px-4 py-3">Guru</th>
                                 <th class="px-4 py-3">Orangtua/Wali</th>
@@ -166,7 +166,7 @@
                                                 Edit
                                             </a>
 
-                                            <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('Hapus santri ini? Data akan soft delete.')">
+                                            <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('Hapus murid ini? Data akan soft delete.')">
                                                 @csrf
                                                 @method('DELETE')
 
@@ -180,7 +180,7 @@
                             @empty
                                 <tr>
                                     <td colspan="6" class="px-4 py-6 text-center text-gray-500">
-                                        Belum ada data santri.
+                                        Belum ada data murid.
                                     </td>
                                 </tr>
                             @endforelse
@@ -201,25 +201,25 @@
             @csrf
 
             <h2 class="text-lg font-medium text-gray-900">
-                Impor Data Santri
+                Impor Data Murid
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Unggah berkas Excel (.xlsx / .xls) untuk mengimpor atau memperbarui data santri secara massal.
+                Unggah berkas Excel (.xlsx / .xls) untuk mengimpor atau memperbarui data murid secara massal.
             </p>
 
             <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1 border border-gray-100 max-h-60 overflow-y-auto">
                 <p class="font-semibold text-gray-700">Format Kolom Berkas Excel:</p>
                 <ul class="list-disc pl-4 space-y-1">
-                    <li><strong>Nama Santri</strong> (Wajib): Nama lengkap santri</li>
-                    <li><strong>Nomor Induk</strong> (Opsional, kunci pencocokan): Jika diisi dan sudah ada, data santri akan diperbarui. Jika belum ada, data santri baru akan dibuat.</li>
+                    <li><strong>Nama Murid</strong> (Wajib): Nama lengkap murid</li>
+                    <li><strong>Nomor Induk</strong> (Opsional, kunci pencocokan): Jika diisi dan sudah ada, data murid akan diperbarui. Jika belum ada, data murid baru akan dibuat.</li>
                     <li><strong>Jenis Kelamin</strong> (Opsional): male / female</li>
                     <li><strong>Tanggal Lahir</strong> (Opsional): format YYYY-MM-DD</li>
                     <li><strong>Status</strong> (Opsional): active / inactive / graduated</li>
                     <li><strong>Kelas</strong> (Opsional): Nama kelas yang sesuai di sistem</li>
                     <li><strong>Level Tahfizh</strong> (Opsional): <code>tahsin</code>, <code>reguler</code>, <code>akselerasi</code>, atau <code>ummi</code></li>
                     <li><strong>Username Guru</strong> (Opsional): Username akun guru pembimbing</li>
-                    <li><strong>Username Santri</strong> (Opsional): Username akun santri</li>
+                    <li><strong>Username Murid</strong> (Opsional): Username akun murid</li>
                     <li><strong>Username Orangtua</strong> (Opsional): Username akun orangtua, pisahkan dengan koma jika memiliki lebih dari satu orangtua (contoh: <code>ortu1,ortu2</code>).</li>
                     <li><strong>Hubungan Orangtua</strong> (Opsional): Relasi orangtua, pisahkan dengan koma (contoh: <code>Ayah,Ibu</code>). Harus berurutan sesuai dengan Username Orangtua.</li>
                 </ul>

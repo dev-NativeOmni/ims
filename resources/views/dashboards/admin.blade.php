@@ -22,7 +22,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Total Santri</p>
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Total Murid</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'total_students', 0) }}</p>
                     <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Aktif: {{ data_get($stats, 'active_students', 0) }}</p>
                 </div>
@@ -50,7 +50,7 @@
                     <p class="text-3xl font-bold text-gray-900 dark:text-white">
                         {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-sm text-gray-500 dark:text-zinc-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
                     </p>
-                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Status Pengisian Santri</p>
+                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Status Pengisian Murid</p>
                 </div>
             </div>
 
@@ -62,8 +62,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-150">Kelola Santri</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Data santri, kelas, guru, dan wali murid.</p>
+                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-150">Kelola Murid</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Data murid, kelas, guru, dan wali murid.</p>
                     </div>
                 </a>
 

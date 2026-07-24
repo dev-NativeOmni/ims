@@ -72,7 +72,7 @@
                         <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
                             <thead class="bg-zinc-50 dark:bg-zinc-900/60">
                                 <tr>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Santri</th>
+                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Murid</th>
                                     <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Kelas</th>
                                     <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Progress</th>
                                     <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Hafalan</th>

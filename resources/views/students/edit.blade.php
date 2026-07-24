@@ -12,7 +12,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Edit Santri
+            Edit Murid
         </h2>
     </x-slot>
 
@@ -26,7 +26,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700">
-                                Nama Santri
+                                Nama Murid
                             </label>
                             <input
                                 id="name"
@@ -43,7 +43,7 @@
 
                         <div>
                             <label for="student_number" class="block text-sm font-medium text-gray-700">
-                                Nomor Santri / NIS
+                                Nomor Murid / NIS
                             </label>
                             <input
                                 id="student_number"
@@ -175,7 +175,7 @@
 
                         <div>
                             <label for="user_id" class="block text-sm font-medium text-gray-700">
-                                Akun Login Santri
+                                Akun Login Murid
                             </label>
                             <select
                                 id="user_id"

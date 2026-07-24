@@ -28,6 +28,18 @@
                 </div>
             @endif
 
+            <!-- Hafalan Category Tabs -->
+            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
+                <a href="{{ route('hafalan-records.index', array_merge(request()->query(), ['category' => 'reguler'])) }}"
+                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                    📖 Hafalan Reguler (Juz 1–30)
+                </a>
+                <a href="{{ route('hafalan-records.index', array_merge(request()->query(), ['category' => 'ummi'])) }}"
+                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                    🌱 Hafalan Metode Ummi <span class="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-amber-400 text-black ml-1">Khusus Mulai Kelas 10</span>
+                </a>
+            </div>
+
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3">
                     <select name="class_room_id" class="rounded-md border-gray-300 shadow-sm">

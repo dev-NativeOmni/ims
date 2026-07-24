@@ -239,9 +239,9 @@
                                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-50 dark:bg-amber-950/20 text-xs font-bold text-amber-700 dark:text-amber-400">
                                                 {{ $rank + 1 }}
                                             </span>
-                                            <span class="font-medium text-gray-700 dark:text-zinc-250">{{ $class->name }}</span>
+                                            <span class="font-medium text-gray-700 dark:text-zinc-250">{{ is_array($class) ? $class['name'] : $class->name }}</span>
                                         </div>
-                                        <span class="font-extrabold text-indigo-600 dark:text-indigo-400">{{ round($class->avg_score, 1) }} / 100</span>
+                                        <span class="font-extrabold text-indigo-600 dark:text-indigo-400">{{ round(is_array($class) ? $class['avg_score'] : $class->avg_score, 1) }} / 100</span>
                                     </div>
                                 @endforeach
                             </div>

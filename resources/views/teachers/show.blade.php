@@ -47,7 +47,7 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Jumlah Santri Bimbingan</p>
+                        <p class="text-sm text-gray-500">Jumlah Murid Bimbingan</p>
                         <p class="font-semibold text-gray-900">{{ $teacher->students_count }}</p>
                     </div>
                 </div>
@@ -55,13 +55,13 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6 overflow-x-auto">
                 <h3 class="font-semibold text-gray-900 mb-4">
-                    Santri Bimbingan
+                    Murid Bimbingan
                 </h3>
 
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
-                            <th class="px-4 py-3">Santri</th>
+                            <th class="px-4 py-3">Murid</th>
                             <th class="px-4 py-3">Kelas</th>
                             <th class="px-4 py-3">Program</th>
                             <th class="px-4 py-3">Status</th>
@@ -89,20 +89,32 @@
                                     {{ $student->classRoom?->program?->name ?: '-' }}
                                 </td>
 
-                                <td class="px-4 py-3 text-gray-700">
-                                    {{ $student->status === 'active' ? 'Aktif' : ($student->status === 'inactive' ? 'Nonaktif' : 'Lulus') }}
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold
+                                        {{ $student->status === 'active' ? 'bg-green-100 text-green-700' : '' }}
+                                        {{ $student->status === 'inactive' ? 'bg-gray-100 text-gray-700' : '' }}
+                                        {{ $student->status === 'graduated' ? 'bg-blue-100 text-blue-700' : '' }}
+                                    ">
+                                        @if ($student->status === 'active')
+                                            Aktif
+                                        @elseif ($student->status === 'inactive')
+                                            Nonaktif
+                                        @else
+                                            Lulus
+                                        @endif
+                                    </span>
                                 </td>
 
                                 <td class="px-4 py-3 text-right">
-                                    <a href="{{ route('students.show', $student) }}" class="text-sm text-blue-600 hover:underline">
-                                        Detail Santri
+                                    <a href="{{ route('students.show', $student) }}" class="text-sm text-gray-600 hover:underline">
+                                        Detail Murid
                                     </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                                    Belum ada santri bimbingan.
+                                    Belum ada murid bimbingan.
                                 </td>
                             </tr>
                         @endforelse

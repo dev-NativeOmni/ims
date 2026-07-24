@@ -5,7 +5,7 @@
                 Catat Poin Baru
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
-                Pencatatan pelanggaran tata tertib atau pemberian penghargaan santri.
+                Pencatatan pelanggaran tata tertib atau pemberian penghargaan murid.
             </p>
         </div>
     </x-slot>
@@ -58,7 +58,7 @@
                     <!-- Student Select -->
                     <div class="space-y-2">
                         <label for="student_id" class="block text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                            Pilih Santri
+                            Pilih Murid
                         </label>
                         <select
                             name="student_id"
@@ -67,7 +67,7 @@
                             required
                             class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                         >
-                            <option value="">-- Pilih Santri --</option>
+                            <option value="">-- Pilih Murid --</option>
                             <template x-for="student in filteredStudents" :key="student.id">
                                 <option :value="student.id" x-text="student.name + (student.nis ? ' (NIS: ' + student.nis + ')' : '') + ' - ' + student.className" :selected="student.id == selectedStudent"></option>
                             </template>
@@ -91,6 +91,8 @@
                                 class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                             >
                                 <option value="violation" {{ old('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
+                                <option value="lateness" {{ old('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
+                                <option value="attribute" {{ old('type') === 'attribute' ? 'selected' : '' }}>Pelanggaran Atribut/Seragam</option>
                                 <option value="reward" {{ old('type') === 'reward' ? 'selected' : '' }}>Penghargaan / Prestasi</option>
                             </select>
                             @error('type')
@@ -120,7 +122,7 @@
                     </div>
 
                     <!-- Violation specific fields -->
-                    <div x-show="type === 'violation'" x-transition class="space-y-6">
+                    <div x-show="type !== 'reward'" x-transition class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Category Select -->
                             <div class="space-y-2">

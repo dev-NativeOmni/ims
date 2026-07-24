@@ -73,9 +73,9 @@ class SettingController extends Controller
     {
         $input = $request->input('categories', []);
 
-        // Validate: must have at least 2 categories, max 6
-        if (count($input) < 2 || count($input) > 6) {
-            return back()->withErrors(['categories' => 'Jumlah kategori harus antara 2 dan 6.'])->withInput();
+        // Validate: must have at least 1 category, max 10
+        if (count($input) < 1 || count($input) > 10) {
+            return back()->withErrors(['categories' => 'Jumlah kategori minimal 1 dan maksimal 10.'])->withInput();
         }
 
         $rules = [];

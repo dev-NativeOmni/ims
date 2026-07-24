@@ -128,41 +128,41 @@
         <div class="mb-6 space-y-3">
             <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIDZ</h3>
             
-            <!-- Table 1: Targets Summary -->
+            <!-- Table 1: Targets & Capaian Terakhir -->
             <table class="w-full table-fixed border border-black text-xs text-left">
                 <thead>
                     <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                        <th class="p-1.5 border-r border-black w-[8%]">No.</th>
-                        <th class="p-1.5 border-r border-black w-[32%]">TARGET</th>
-                        <th class="p-1.5 border-r border-black w-[32%]">CAPAIAN</th>
-                        <th class="p-1.5 border-r border-black w-[12%]">KETERANGAN</th>
-                        <th class="p-1.5 w-[16%]">Deskripsi</th>
+                        <th class="p-1.5 border-r border-black w-[6%]">No.</th>
+                        <th class="p-1.5 border-r border-black w-[36%]">TARGET SURAH YANG DIHAFAL</th>
+                        <th class="p-1.5 border-r border-black w-[36%]">CAPAIAN TERAKHIR YANG DIHAFALKAN</th>
+                        <th class="p-1.5 border-r border-black w-[10%]">STATUS</th>
+                        <th class="p-1.5 w-[12%]">Deskripsi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($targetRecords as $idx => $target)
                         <tr class="border-b border-black">
                             <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
-                            <td class="p-1.5 border-r border-black align-middle">
+                            <td class="p-1.5 border-r border-black align-middle font-semibold">
                                 QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_start }}-{{ $target->ayah_end }})
                             </td>
-                            <td class="p-1.5 border-r border-black align-middle">
+                            <td class="p-1.5 border-r border-black align-middle font-semibold">
                                 @if($target->matching_record)
                                     QS. {{ $target->matching_record->surah?->name_latin ?? '-' }} (Ayat {{ $target->matching_record->ayah_start }}-{{ $target->matching_record->ayah_end }})
                                 @else
-                                    -
+                                    {{ $latestCapaianText ?: '-' }}
                                 @endif
                             </td>
-                            <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $target->status === 'completed' ? 'text-green-700' : 'text-red-650' }}">
-                                {{ $target->status === 'completed' ? 'Tuntas' : 'Tidak Tuntas' }}
+                            <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $target->status === 'completed' ? 'text-green-700' : 'text-amber-700' }}">
+                                {{ $target->status === 'completed' ? 'Tuntas' : 'Dalam Proses' }}
                             </td>
                             <td class="p-1.5 align-middle text-gray-700">
-                                {{ $target->notes ?: ($target->status === 'completed' ? 'Target hafalan term ini telah tercapai.' : 'Belum menyelesaikan target hafalan.') }}
+                                {{ $target->notes ?: ($target->status === 'completed' ? 'Tercapai.' : 'Sedang berjalan.') }}
                             </td>
                         </tr>
                     @empty
                         <tr class="border-b border-black">
-                            <td colspan="5" class="p-3 text-center text-gray-500 italic">Belum ada data target tahfizh.</td>
+                            <td colspan="5" class="p-3 text-center text-gray-500 italic">Target surah yang dihafal: {{ $termTargetText ?: '-' }} | Capaian terakhir: {{ $latestCapaianText ?: '-' }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -209,43 +209,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center align-middle">1</td>
-                        <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA ALLAH</td>
-                        <td rowspan="4" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
-                            @php
-                                $pred = \App\Models\Setting::getAdabGrade($avgTotal);
-                                $predLabel = \App\Models\Setting::getAdabGradeLabel($pred);
-                            @endphp
-                            <span class="text-base font-black">{{ $pred }}</span>
-                            <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ round($avgTotal) }}/100</span>
-                        </td>
-                        <td rowspan="4" class="p-3 text-gray-700 leading-relaxed align-middle">
-                            @if($avgTotal >= 90)
-                                Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.
-                            @elseif($avgTotal >= 80)
-                                Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.
-                            @elseif($avgTotal >= 70)
-                                Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.
-                            @elseif($avgTotal >= 60)
-                                Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.
-                            @else
-                                Kurang (Dha'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.
+                    @php
+                        $catCount = count($adabCategories);
+                    @endphp
+                    @foreach ($adabCategories as $catIdx => $cat)
+                        <tr class="border-b border-black">
+                            <td class="p-2 border-r border-black text-center align-middle">{{ $catIdx + 1 }}</td>
+                            <td class="p-2 border-r border-black font-semibold align-middle uppercase">{{ $cat['title'] }}</td>
+                            @if ($catIdx === 0)
+                                <td rowspan="{{ $catCount }}" class="p-2 border-r border-black text-center align-middle font-bold text-sm text-black">
+                                    <span class="text-base font-black">{{ $adabGrade }}</span>
+                                    <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ round($avgTotal) }}/100</span>
+                                </td>
+                                <td rowspan="{{ $catCount }}" class="p-3 text-gray-700 leading-relaxed align-middle">
+                                    <div class="font-bold text-black mb-1">{{ $adabGradeLabel }}</div>
+                                    @if($avgTotal >= 90)
+                                        Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.
+                                    @elseif($avgTotal >= 80)
+                                        Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.
+                                    @elseif($avgTotal >= 70)
+                                        Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.
+                                    @elseif($avgTotal >= 60)
+                                        Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.
+                                    @else
+                                        Kurang (Dha'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.
+                                    @endif
+                                </td>
                             @endif
-                        </td>
-                    </tr>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center align-middle">2</td>
-                        <td class="p-2 border-r border-black font-semibold align-middle">ADAB KEPADA SESAMA TEMAN</td>
-                    </tr>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center align-middle">3</td>
-                        <td class="p-2 border-r border-black font-semibold align-middle">ADAB KETIKA BELAJAR</td>
-                    </tr>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center align-middle">4</td>
-                        <td class="p-2 border-r border-black font-semibold align-middle">ADAB TERHADAP LINGKUNGAN</td>
-                    </tr>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

@@ -73,7 +73,7 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Data santri berhasil ditambahkan.');
+            ->with('success', 'Data murid berhasil ditambahkan.');
     }
 
     public function show(Student $student): View
@@ -118,7 +118,7 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Data santri berhasil diperbarui.');
+            ->with('success', 'Data murid berhasil diperbarui.');
     }
 
     public function destroy(Student $student): RedirectResponse
@@ -128,7 +128,7 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Data santri berhasil dihapus.');
+            ->with('success', 'Data murid berhasil dihapus.');
     }
 
     private function formData(?Student $student = null): array
@@ -653,6 +653,6 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', "Impor selesai. {$importedCount} data santri ditambahkan, {$updatedCount} data diperbarui.");
+            ->with('success', "Impor selesai. {$importedCount} data murid ditambahkan, {$updatedCount} data diperbarui.");
     }
 }

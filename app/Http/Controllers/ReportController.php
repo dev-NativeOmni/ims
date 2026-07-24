@@ -618,6 +618,8 @@ class ReportController extends Controller
             ];
         }
 
+        usort($performanceData, fn ($a, $b) => $b['final_score'] <=> $a['final_score']);
+
         return view('reports.teachers', [
             'performanceData' => $performanceData,
             'selectedMonth' => $month,

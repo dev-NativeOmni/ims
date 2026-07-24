@@ -27,6 +27,18 @@
                 </div>
             @endif
 
+            <!-- Murajaah Category Tabs -->
+            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
+                <a href="{{ route('murajaah-records.index', array_merge(request()->query(), ['category' => 'reguler'])) }}"
+                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                    🔄 Muraja'ah Reguler
+                </a>
+                <a href="{{ route('murajaah-records.index', array_merge(request()->query(), ['category' => 'ummi'])) }}"
+                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                    🌱 Muraja'ah Metode Ummi
+                </a>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">

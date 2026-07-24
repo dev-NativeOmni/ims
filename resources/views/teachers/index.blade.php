@@ -76,7 +76,7 @@
                                 <th class="px-4 py-3">Guru</th>
                                 <th class="px-4 py-3">Nomor Pegawai</th>
                                 <th class="px-4 py-3">Telepon</th>
-                                <th class="px-4 py-3">Santri Bimbingan</th>
+                                <th class="px-4 py-3">Murid Bimbingan</th>
                                 <th class="px-4 py-3">Status</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>

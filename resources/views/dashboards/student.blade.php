@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-gray-900">
-                Dashboard Santri
+                Dashboard Murid
             </h2>
             <p class="mt-1 text-sm text-gray-600">
                 Ringkasan progres hafalan, target, murajaah, dan motivasi.
@@ -29,13 +29,13 @@
 
             @if (! $student)
                 <div class="rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-950/20 p-5 text-sm text-amber-800 dark:text-amber-300">
-                    Profil santri belum terhubung dengan akun ini.
+                    Profil murid belum terhubung dengan akun ini.
                 </div>
             @else
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
-                            Profil Santri
+                            Profil Murid
                         </h3>
 
                         <dl class="mt-4 space-y-3 text-sm">
@@ -45,7 +45,7 @@
                             </div>
 
                             <div>
-                                <dt class="text-zinc-500 dark:text-zinc-400">Nomor Santri</dt>
+                                <dt class="text-zinc-500 dark:text-zinc-400">Nomor Murid</dt>
                                 <dd class="font-semibold text-zinc-900 dark:text-white">{{ $student->student_number ?? '-' }}</dd>
                             </div>
 

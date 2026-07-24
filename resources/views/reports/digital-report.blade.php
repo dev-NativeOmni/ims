@@ -3,7 +3,7 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex flex-col gap-1">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-200 leading-tight">
-                    Rapor Digital Terpadu Santri
+                    Rapor Digital Terpadu Murid
                 </h2>
                 <p class="text-sm text-gray-500">
                     Kompilasi perkembangan Tahfizh, Adab, dan Tanse dalam satu dokumen terpadu.
@@ -39,7 +39,7 @@
                 <!-- Profile Card -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between lg:col-span-2">
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Santri yang Dipantau</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Murid yang Dipantau</span>
                         <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $student->name }}</h3>
                         <p class="text-sm text-gray-500 mt-0.5">NIS: {{ $student->student_number ?: '-' }}</p>
                         
@@ -155,25 +155,19 @@
                         <div class="text-[10px] text-teal-600 dark:text-teal-400 italic font-semibold">{{ $totalLabel }}</div>
 
                         <div class="space-y-2 text-xs pt-1">
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Adab kpd Allah</span>
-                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgAllah }}%</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Adab kpd Sesama Teman</span>
-                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgTeman }}%</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Adab Belajar</span>
-                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgBelajar }}%</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Adab Lingkungan</span>
-                                <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $avgLingkungan }}%</span>
-                            </div>
+                            @foreach ($adabCategories as $catIdx => $cat)
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">{{ $cat['title'] }}</span>
+                                    <span class="font-bold text-gray-800 dark:text-zinc-300">{{ $adabCategoryScores[$catIdx] ?? 0 }}%</span>
+                                </div>
+                            @endforeach
                             <div class="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-1.5 mt-1">
-                                <span class="text-gray-500 font-medium">Nilai Pendamping</span>
-                                <span class="font-bold text-purple-600 dark:text-purple-400">{{ $avgQuran > 0 ? round($avgQuran) : '-' }}</span>
+                                <span class="text-gray-500 font-medium">Kerajinan Kuisioner (40%)</span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $avgAttendanceRate }}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500 font-medium">Nilai Pendamping Adab (60%)</span>
+                                <span class="font-bold text-purple-600 dark:text-purple-400">{{ $avgMentorScore !== null ? round($avgMentorScore) : '-' }}</span>
                             </div>
                         </div>
                 </div>
@@ -211,6 +205,21 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Automated Tanse Report Narrative -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800 mb-4">
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                        <span>🛡️ Catatan Evaluasi Kedisiplinan & Ketahanan Sekolah (Tanse)</span>
+                    </h4>
+                    <span class="px-3 py-1 rounded-full text-xs font-black {{ $tanseScore >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }}">
+                        Skor Tanse: {{ $tanseScore }} (Predikat {{ $tanseGrade }})
+                    </span>
+                </div>
+                <div class="p-4 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-xl text-xs text-indigo-900 dark:text-indigo-200 leading-relaxed font-medium">
+                    {{ $autoTanseNotes }}
+                </div>
             </div>
 
             <!-- Detailed Logs (Violations & Rewards) -->
@@ -292,7 +301,7 @@
                                 name="tahfizh_target_term" 
                                 id="tahfizh_target_term" 
                                 value="{{ old('tahfizh_target_term', $report->tahfizh_target_term) }}"
-                                placeholder="Biarkan kosong untuk menggunakan target default sesuai level santri..."
+                                placeholder="Biarkan kosong untuk menggunakan target default sesuai level murid..."
                                 class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white mb-4"
                             />
                         </div>
@@ -303,7 +312,7 @@
                                 name="teacher_notes" 
                                 id="teacher_notes" 
                                 rows="4" 
-                                placeholder="Ketik catatan evaluasi perkembangan belajar dan karakter mulia santri di sini..."
+                                placeholder="Ketik catatan evaluasi perkembangan belajar dan karakter mulia murid di sini..."
                                 class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
                             >{{ old('teacher_notes', $report->teacher_notes) }}</textarea>
                         </div>

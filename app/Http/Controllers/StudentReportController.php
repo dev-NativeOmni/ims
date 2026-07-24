@@ -8,6 +8,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
@@ -281,45 +282,79 @@ class StudentReportController extends Controller
 
         // Adab
         $adabRecords = AdabRecord::where('student_id', $student->id)->get();
-        $avgAllah = 0;
-        $avgTeman = 0;
-        $avgBelajar = 0;
-        $avgLingkungan = 0;
-        $avgQuran = 0;
-        $avgTotal = 0;
-        if ($adabRecords->isNotEmpty()) {
-            $sums = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
-            $counts = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
+        // Dynamic Adab Evaluation & Scores
+        $adabCategories = Setting::getAdabQuestions();
+        $adabCategoryScores = [];
+
+        foreach ($adabCategories as $catIdx => $cat) {
+            $total = 0;
+            $count = 0;
             foreach ($adabRecords as $r) {
-                if (! empty($r->answers)) {
-                    foreach ($sums as $catIdx => $v) {
-                        $catAnswers = $r->answers["cat_{$catIdx}"] ?? [];
-                        foreach ($catAnswers as $ans) {
-                            $sums[$catIdx] += $ans ? 1 : 0;
-                            $counts[$catIdx]++;
-                        }
+                if (! empty($r->answers) && isset($r->answers["cat_{$catIdx}"])) {
+                    $catAns = $r->answers["cat_{$catIdx}"];
+                    foreach ($catAns as $ans) {
+                        $total += $ans ? 1 : 0;
+                        $count++;
                     }
                 }
             }
-            $avgAllah = $counts[0] > 0 ? round(($sums[0] / $counts[0]) * 100, 1) : 0;
-            $avgTeman = $counts[1] > 0 ? round(($sums[1] / $counts[1]) * 100, 1) : 0;
-            $avgBelajar = $counts[2] > 0 ? round(($sums[2] / $counts[2]) * 100, 1) : 0;
-            $avgLingkungan = $counts[3] > 0 ? round(($sums[3] / $counts[3]) * 100, 1) : 0;
-
-            $avgQuran = round(AdabMentorAssessment::where('student_id', $student->id)->avg('mentor_score') ?? 0, 1);
-
-            $studentAvg = $adabRecords->avg('student_score') ?? 0;
-            $mentorAvg = AdabMentorAssessment::where('student_id', $student->id)->avg('mentor_score');
-            if ($mentorAvg !== null) {
-                $avgTotal = round(($studentAvg * 0.5) + ($mentorAvg * 0.5), 1);
-            } else {
-                $avgTotal = round($studentAvg, 1);
-            }
+            $adabCategoryScores[$catIdx] = $count > 0 ? round(($total / $count) * 100, 1) : 0;
         }
 
-        // Tanse
-        $violations = StudentPoint::where('student_id', $student->id)->where('type', 'violation')->get();
+        $thisYear = (int) now()->format('Y');
+        $thisMonth = (int) now()->format('n');
+        $adabScoreData = Setting::calculateAdabScore($student->id, $thisYear, $thisMonth);
+
+        $avgAttendanceRate = $adabScoreData['attendance_rate'];
+        $avgMentorScore = $adabScoreData['mentor_score'];
+        $avgTotal = $adabScoreData['final_score'];
+        $adabGrade = $adabScoreData['grade'];
+        $adabGradeLabel = $adabScoreData['grade_label'];
+
+        // Tanse (Ketahanan Sekolah)
+        $violations = StudentPoint::violations()->where('student_id', $student->id)->get();
         $rewards = StudentPoint::where('student_id', $student->id)->where('type', 'reward')->get();
+
+        $totalViolationPoints = $violations->sum('points');
+        $latenessCount = $violations->where('type', 'lateness')->count();
+        $attributeCount = $violations->where('type', 'attribute')->count();
+        $tatibCount = $violations->where('type', 'violation')->count();
+
+        if ($violations->isEmpty()) {
+            $autoTanseNotes = "Murid menunjukkan kedisiplinan dan kepatuhan yang sangat baik terhadap tata tertib, atribut seragam, dan ketepatan waktu di sekolah (0 Poin Pelanggaran).";
+            $tanseScore = 100;
+            $tanseGrade = 'A';
+        } else {
+            $detailsArr = [];
+            if ($latenessCount > 0) {
+                $detailsArr[] = "{$latenessCount} Pelanggaran Keterlambatan";
+            }
+            if ($attributeCount > 0) {
+                $detailsArr[] = "{$attributeCount} Pelanggaran Atribut/Seragam";
+            }
+            if ($tatibCount > 0) {
+                $detailsArr[] = "{$tatibCount} Pelanggaran Tata Tertib";
+            }
+            $detailsStr = implode(', ', $detailsArr);
+
+            $sanctions = $violations->pluck('sanction')->filter()->unique()->implode('; ');
+            $sanctionStr = $sanctions ? " Sanksi/pembinaan: {$sanctions}." : "";
+
+            $autoTanseNotes = "Murid memiliki total {$totalViolationPoints} poin pelanggaran pada semester ini ({$detailsStr}).{$sanctionStr} Diharapkan tingkat kedisiplinan murid lebih ditingkatkan.";
+
+            $tanseScore = max(0, 100 - $totalViolationPoints);
+            if ($tanseScore >= 90) {
+                $tanseGrade = 'A';
+            } elseif ($tanseScore >= 80) {
+                $tanseGrade = 'B';
+            } elseif ($tanseScore >= 70) {
+                $tanseGrade = 'C';
+            } elseif ($tanseScore >= 60) {
+                $tanseGrade = 'D';
+            } else {
+                $tanseGrade = 'E';
+            }
+        }
 
         return compact(
             'student',
@@ -334,15 +369,49 @@ class StudentReportController extends Controller
             'termTargetText',
             'latestCapaianText',
             'latestCapaianNotes',
-            'avgAllah',
-            'avgTeman',
-            'avgBelajar',
-            'avgLingkungan',
-            'avgQuran',
+            'adabCategories',
+            'adabCategoryScores',
+            'avgAttendanceRate',
+            'avgMentorScore',
             'avgTotal',
+            'adabGrade',
+            'adabGradeLabel',
             'violations',
             'rewards',
+            'totalViolationPoints',
+            'latenessCount',
+            'attributeCount',
+            'tatibCount',
+            'autoTanseNotes',
+            'tanseScore',
+            'tanseGrade',
             'report'
         );
+    }
+
+    public function settings(Request $request)
+    {
+        $classRooms = ClassRoom::orderBy('name')->get();
+        $academicYear = Setting::get('academic_year', '2025/2026');
+        $semester = (int) Setting::get('semester', 1);
+
+        $showTahfizh = Setting::get('report_show_tahfizh', '1') === '1';
+        $showAdab = Setting::get('report_show_adab', '1') === '1';
+        $showTanse = Setting::get('report_show_tanse', '1') === '1';
+
+        return view('reports.digital-report-settings', compact(
+            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse'
+        ));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        Setting::set('academic_year', $request->input('academic_year', '2025/2026'));
+        Setting::set('semester', $request->input('semester', 1));
+        Setting::set('report_show_tahfizh', $request->has('report_show_tahfizh') ? '1' : '0');
+        Setting::set('report_show_adab', $request->has('report_show_adab') ? '1' : '0');
+        Setting::set('report_show_tanse', $request->has('report_show_tanse') ? '1' : '0');
+
+        return redirect()->back()->with('success', 'Pengaturan Rapor Digital berhasil disimpan.');
     }
 }

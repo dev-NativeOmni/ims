@@ -5,7 +5,7 @@
                 Dashboard Koordinator Keagamaan
             </h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-zinc-400">
-                Pemantauan progres pengisian kuisioner adab & akhlak santri harian.
+                Pemantauan progres pengisian kuisioner adab & akhlak murid harian.
             </p>
         </div>
     </x-slot>
@@ -24,7 +24,7 @@
                     <h3 class="text-lg font-semibold opacity-90">Hari Ini</h3>
                     <p class="text-3xl font-black mt-1">{{ \Carbon\Carbon::parse($today)->translatedFormat('l, d F Y') }}</p>
                     <p class="text-xs text-teal-100 mt-2">
-                        Pastikan seluruh santri mengisi evaluasi adab mereka sebelum hari berganti untuk menjaga konsistensi catatan perkembangan karakter.
+                        Pastikan seluruh murid mengisi evaluasi adab mereka sebelum hari berganti untuk menjaga konsistensi catatan perkembangan karakter.
                     </p>
                 </div>
             </div>
@@ -32,7 +32,7 @@
             <!-- Kartu Statistik -->
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 
-                <!-- Total Santri -->
+                <!-- Total Murid -->
                 <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                     <div class="p-3.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,7 +40,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total Santri</p>
+                        <p class="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total Murid</p>
                         <h4 class="text-2xl font-bold text-zinc-900 dark:text-white mt-1">{{ $totalStudents }}</h4>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
 
             <!-- Progress Bar Besar -->
             <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-6">
-                <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wider">Progres Pengisian Seluruh Santri</h3>
+                <h3 class="text-sm font-semibold text-zinc-850 dark:text-zinc-200 uppercase tracking-wider">Progres Pengisian Seluruh Murid</h3>
                 @php
                     $percent = $totalStudents > 0 ? ($filledCount / $totalStudents) * 100 : 0;
                 @endphp
@@ -100,7 +100,7 @@
                     <div class="bg-gradient-to-r from-teal-400 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
                 </div>
                 <div class="flex justify-between items-center text-xs text-zinc-400 mt-2">
-                    <span>{{ $filledCount }} Santri Selesai</span>
+                    <span>{{ $filledCount }} Murid Selesai</span>
                     <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ round($percent, 1) }}% Terisi</span>
                 </div>
             </div>
@@ -108,15 +108,15 @@
             <!-- Daftar Progres Pengisian Hari Ini -->
             <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
                 <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/80 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Santri Hari Ini</h3>
-                    <span class="text-xs text-zinc-400">Total: {{ $totalStudents }} Santri</span>
+                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Murid Hari Ini</h3>
+                    <span class="text-xs text-zinc-400">Total: {{ $totalStudents }} Murid</span>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-zinc-250 dark:divide-zinc-800">
                         <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-left text-xs font-semibold text-zinc-550 dark:text-zinc-400 uppercase tracking-wider">
                             <tr>
-                                <th class="px-6 py-4">Nama Santri</th>
+                                <th class="px-6 py-4">Nama Murid</th>
                                 <th class="px-6 py-4">Kelas</th>
                                 <th class="px-6 py-4 text-center">Status Pengisian</th>
                                 <th class="px-6 py-4 text-center">Skor Adab Hari Ini</th>

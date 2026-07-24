@@ -5,7 +5,7 @@
                 Dashboard Guru
             </h2>
             <p class="text-sm text-gray-500">
-                Monitoring santri bimbingan, setoran, murajaah, dan target hafalan.
+                Monitoring murid bimbingan, setoran, murajaah, dan target hafalan.
             </p>
         </div>
     </x-slot>
@@ -28,7 +28,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Santri Bimbingan</p>
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Murid Bimbingan</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'total_students', 0) }}</p>
                 </div>
 
@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-150">Input Setoran</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Catat setoran hafalan baru santri.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Catat setoran hafalan baru murid.</p>
                     </div>
                 </a>
 
@@ -87,21 +87,21 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-150">Buat Target</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Tetapkan sasaran/target hafalan santri.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Tetapkan sasaran/target hafalan murid.</p>
                     </div>
                 </a>
             </div>
 
             <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
                 <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
-                    <h3 class="font-semibold text-gray-900">Progress Santri Bimbingan</h3>
+                    <h3 class="font-semibold text-gray-900">Progress Murid Bimbingan</h3>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
-                                <th class="px-5 py-3 text-left">Santri</th>
+                                <th class="px-5 py-3 text-left">Murid</th>
                                 <th class="px-5 py-3 text-left">Kelas</th>
                                 <th class="px-5 py-3 text-left">Progress</th>
                                 <th class="px-5 py-3 text-left">Target Aktif</th>
@@ -128,7 +128,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-5 py-6 text-center text-gray-500">Belum ada santri bimbingan.</td>
+                                    <td colspan="5" class="px-5 py-6 text-center text-gray-500">Belum ada murid bimbingan.</td>
                                 </tr>
                             @endforelse
                         </tbody>

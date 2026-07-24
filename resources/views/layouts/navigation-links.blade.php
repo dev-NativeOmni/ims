@@ -1,5 +1,49 @@
 @php
     $routeIs = fn($patterns) => request()->routeIs($patterns);
+    $user = auth()->user();
+
+    $hasRole = function (string $role) use ($user): bool {
+        if (! $user) {
+            return false;
+        }
+
+        if (method_exists($user, 'hasRole')) {
+            return $user->hasRole($role);
+        }
+
+        return ($user->role?->name ?? null) === $role;
+    };
+
+    $isSuperAdmin = $hasRole('super_admin');
+    $isAdminUser = $hasRole('admin');
+    $isTeacher = $hasRole('teacher');
+    $isParent = $hasRole('parent');
+    $isStudent = $hasRole('student');
+    $isSupervisor = $hasRole('supervisor');
+    $isHeadmaster = $hasRole('headmaster');
+    $isTanse = $hasRole('tanse');
+    $isCoordinatorTahfizh = $hasRole('coordinator_tahfizh');
+    $isPendampingAdab = $hasRole('pendamping_adab');
+
+    $isAdmin = $isSuperAdmin || $isAdminUser;
+
+    $isPureTahfizhCoordinator = $isCoordinatorTahfizh && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
+    $isPureAdabCoordinator = $isPendampingAdab && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
+    $isPureTanseCoordinator = $isTanse && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
+
+    $canViewTahfizhGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isCoordinatorTahfizh) && ! $isPureAdabCoordinator && ! $isPureTanseCoordinator;
+    $canViewAdabGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isPendampingAdab) && ! $isPureTahfizhCoordinator && ! $isPureTanseCoordinator;
+    $canViewTanseGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isTanse) && ! $isPureTahfizhCoordinator && ! $isPureAdabCoordinator;
+
+    $canManageRecords = $isSuperAdmin || $isAdminUser || $isTeacher || $isSupervisor || $isCoordinatorTahfizh;
+    $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isCoordinatorTahfizh;
+    $canViewReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh;
+    $canViewDigitalReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh || $isPendampingAdab;
+    $canViewTeacherPerformance = $isSuperAdmin || $isAdminUser || $isHeadmaster;
+    $canViewAdab = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isPendampingAdab;
+    $canViewStudentPoints = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isTanse;
+    $canViewMushaf = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isCoordinatorTahfizh;
+    $canViewAudit = $isSuperAdmin || $isAdminUser;
 @endphp
 
 <!-- UTAMA Group -->
@@ -63,29 +107,20 @@
                 <svg class="{{ $getIconClasses($routeIs('students.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span>Santri</span>
+                <span>Murid</span>
             </a>
         @endif
     </div>
 @endif
 
 <!-- AKADEMIK & TAHFIZH Group -->
-@if ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers')))
+@if ($canViewTahfizhGroup && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
     <div class="mt-6 space-y-1">
         <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
             Tahfizh
         </span>
 
         @if ($canManageRecords)
-            @if ($hasRoute('quick-inputs.index'))
-                <a href="{{ route('quick-inputs.index') }}" class="{{ $getLinkClasses($routeIs('quick-inputs.*')) }}">
-                    <svg class="{{ $getIconClasses($routeIs('quick-inputs.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span>Input Cepat</span>
-                </a>
-            @endif
-
             @if ($hasRoute('hafalan-records.index'))
                 <a href="{{ route('hafalan-records.index') }}" class="{{ $getLinkClasses($routeIs('hafalan-records.*')) }}">
                     <svg class="{{ $getIconClasses($routeIs('hafalan-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,21 +130,21 @@
                 </a>
             @endif
 
-            @if ($hasRoute('tahfizh-exams.index'))
-                <a href="{{ route('tahfizh-exams.index') }}" class="{{ $getLinkClasses($routeIs('tahfizh-exams.*')) }}">
-                    <svg class="{{ $getIconClasses($routeIs('tahfizh-exams.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Ujian Tahfizh</span>
-                </a>
-            @endif
-
             @if ($hasRoute('murajaah-records.index'))
                 <a href="{{ route('murajaah-records.index') }}" class="{{ $getLinkClasses($routeIs('murajaah-records.*')) }}">
                     <svg class="{{ $getIconClasses($routeIs('murajaah-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
                     </svg>
                     <span>Murajaah</span>
+                </a>
+            @endif
+
+            @if ($hasRoute('tahfizh-exams.index'))
+                <a href="{{ route('tahfizh-exams.index') }}" class="{{ $getLinkClasses($routeIs('tahfizh-exams.*')) }}">
+                    <svg class="{{ $getIconClasses($routeIs('tahfizh-exams.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Ujian Tahfizh</span>
                 </a>
             @endif
 
@@ -132,24 +167,6 @@
             </a>
         @endif
 
-        @if ($canViewProgress && $hasRoute('progress.index'))
-            <a href="{{ route('progress.index') }}" class="{{ $getLinkClasses($routeIs('progress.*')) }}">
-                <svg class="{{ $getIconClasses($routeIs('progress.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Progress</span>
-            </a>
-        @endif
-
-        @if ($canViewReports && $hasRoute('reports.index'))
-            <a href="{{ route('reports.index') }}" class="{{ $getLinkClasses($routeIs('reports.*') && ! $routeIs('reports.teachers') && ! $routeIs('reports.periodic') && ! $routeIs('reports.periodic.print')) }}">
-                <svg class="{{ $getIconClasses($routeIs('reports.*') && ! $routeIs('reports.teachers') && ! $routeIs('reports.periodic') && ! $routeIs('reports.periodic.print')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Laporan</span>
-            </a>
-        @endif
-
         @if ($canViewReports && $hasRoute('reports.periodic'))
             <a href="{{ route('reports.periodic') }}" class="{{ $getLinkClasses($routeIs('reports.periodic') || $routeIs('reports.periodic.print')) }}">
                 <svg class="{{ $getIconClasses($routeIs('reports.periodic') || $routeIs('reports.periodic.print')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -161,11 +178,21 @@
         @endif
 
         @if ($canViewDigitalReports && $hasRoute('digital-reports.index'))
-            <a href="{{ route('digital-reports.index') }}" class="{{ $getLinkClasses($routeIs('digital-reports.*')) }}">
-                <svg class="{{ $getIconClasses($routeIs('digital-reports.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <a href="{{ route('digital-reports.index') }}" class="{{ $getLinkClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}">
+                <svg class="{{ $getIconClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span>Rapor Digital</span>
+            </a>
+        @endif
+
+        @if ($canViewDigitalReports && $hasRoute('digital-reports.settings'))
+            <a href="{{ route('digital-reports.settings') }}" class="{{ $getLinkClasses($routeIs('digital-reports.settings')) }}">
+                <svg class="{{ $getIconClasses($routeIs('digital-reports.settings')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Pengaturan Rapor</span>
             </a>
         @endif
 
@@ -181,18 +208,28 @@
 @endif
 
 <!-- KEAGAMAAN Group -->
-@if ($canViewAdab && $hasRoute('adab.index'))
+@if ($canViewAdabGroup && ($canViewAdab && $hasRoute('adab.index')))
     <div class="mt-6 space-y-1">
         <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
             Keagamaan
         </span>
 
-        <a href="{{ route('adab.index') }}" class="{{ $getLinkClasses($routeIs('adab.*') && !$routeIs('settings.adab')) }}">
-            <svg class="{{ $getIconClasses($routeIs('adab.*') && !$routeIs('settings.adab')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="{{ route('adab.index') }}" class="{{ $getLinkClasses($routeIs('adab.index') || $routeIs('adab.show')) }}">
+            <svg class="{{ $getIconClasses($routeIs('adab.index') || $routeIs('adab.show')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
             <span>Adab</span>
         </a>
+
+        @if ($hasRoute('adab.chart'))
+            <a href="{{ route('adab.chart') }}" class="{{ $getLinkClasses($routeIs('adab.chart')) }}">
+                <svg class="{{ $getIconClasses($routeIs('adab.chart')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+                <span>Grafik Pengisian Adab</span>
+            </a>
+        @endif
 
         @if ($hasRoute('adab-materials.index'))
             <a href="{{ route('adab-materials.index') }}" class="{{ $getLinkClasses($routeIs('adab-materials.*')) }}">
@@ -216,18 +253,28 @@
 @endif
 
 <!-- KETAHANAN SEKOLAH Group -->
-@if ($canViewStudentPoints && $hasRoute('student-points.index'))
+@if ($canViewTanseGroup && ($canViewStudentPoints && $hasRoute('student-points.index')))
     <div class="mt-6 space-y-1">
         <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
             Ketahanan Sekolah
         </span>
 
-        <a href="{{ route('student-points.index') }}" class="{{ $getLinkClasses($routeIs('student-points.*')) }}">
-            <svg class="{{ $getIconClasses($routeIs('student-points.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="{{ route('student-points.index') }}" class="{{ $getLinkClasses($routeIs('student-points.*') && ! $routeIs('student-points.chart')) }}">
+            <svg class="{{ $getIconClasses($routeIs('student-points.*') && ! $routeIs('student-points.chart')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
             <span>Poin & Disiplin</span>
         </a>
+
+        @if ($hasRoute('student-points.chart'))
+            <a href="{{ route('student-points.chart') }}" class="{{ $getLinkClasses($routeIs('student-points.chart')) }}">
+                <svg class="{{ $getIconClasses($routeIs('student-points.chart')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+                <span>Grafik Perkembangan</span>
+            </a>
+        @endif
     </div>
 @endif
 
