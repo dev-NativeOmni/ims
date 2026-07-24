@@ -24,6 +24,8 @@
     $isCoordinatorTahfizh = $hasRole('coordinator_tahfizh');
     $isPendampingAdab = $hasRole('pendamping_adab');
 
+    $isAdmin = $isSuperAdmin || $isAdminUser;
+
     $logo = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
     $namaInstansi = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
 

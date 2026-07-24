@@ -213,7 +213,7 @@ class DashboardController extends Controller
             'avg_adab_score_month' => $avgScoreMonth,
             'adab_grade_month' => $adabGradeMonth,
             'total_materials' => AdabMaterial::count(),
-            'effective_days' => Setting::getEffectiveWorkdaysInMonth($year, $month),
+            'effective_days' => Setting::getEffectiveDaysCount($year, $month),
         ];
 
         return view('dashboards.pendamping-adab', compact('stats', 'classRankings'));
