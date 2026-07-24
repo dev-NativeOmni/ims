@@ -48,19 +48,28 @@ class DashboardController extends Controller
             'student' => redirect()->route('student.dashboard'),
             'supervisor' => redirect()->route('supervisor.dashboard'),
             'headmaster' => redirect()->route('reports.teachers'),
-            'tanse' => redirect()->route('admin.dashboard'),
-            'coordinator_tahfizh' => redirect()->route('admin.dashboard'),
-            'pendamping_adab' => redirect()->route('admin.dashboard'),
+            'tanse' => redirect()->route('tanse.dashboard'),
+            'coordinator_tahfizh' => redirect()->route('coordinator-tahfizh.dashboard'),
+            'pendamping_adab' => redirect()->route('pendamping-adab.dashboard'),
             default => redirect()->route('admin.dashboard'),
         };
     }
 
     public function superAdmin(): View
     {
-        $stats = $this->dashboardService->adminStats();
+        try {
+            $stats = $this->dashboardService->adminStats();
+        } catch (\Throwable $e) {
+            $stats = [];
+        }
         $today = now()->toDateString();
-        $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
-        $stats['adab_total_students'] = Student::count();
+        try {
+            $stats['adab_filled_today'] = AdabRecord::where('assessment_date', $today)->count();
+            $stats['adab_total_students'] = Student::count();
+        } catch (\Throwable $e) {
+            $stats['adab_filled_today'] = 0;
+            $stats['adab_total_students'] = 0;
+        }
 
         return view('dashboards.admin', [
             'title' => 'Super Admin Dashboard',
@@ -131,25 +140,39 @@ class DashboardController extends Controller
 
     public function coordinatorTahfizh(Request $request): View
     {
-        $today = now()->toDateString();
-        $startOfMonth = now()->startOfMonth();
-        $endOfMonth = now()->endOfMonth();
+        try {
+            $today = now()->toDateString();
+            $startOfMonth = now()->startOfMonth();
+            $endOfMonth = now()->endOfMonth();
 
-        $stats = [
-            'hafalan_this_month' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])->count(),
-            'hafalan_today' => HafalanRecord::whereDate('submitted_at', $today)->count(),
-            'murajaah_this_month' => MurajaahRecord::whereBetween('reviewed_at', [$startOfMonth, $endOfMonth])->count(),
-            'murajaah_today' => MurajaahRecord::whereDate('reviewed_at', $today)->count(),
-            'active_targets' => HafalanTarget::where('status', 'in_progress')->count(),
-            'completed_targets' => HafalanTarget::where('status', 'completed')->count(),
-            'exams_this_month' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->count(),
-            'passed_exams' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->where('total_score', '>=', 70)->count(),
-        ];
+            $stats = [
+                'hafalan_this_month' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])->count(),
+                'hafalan_today' => HafalanRecord::whereDate('submitted_at', $today)->count(),
+                'murajaah_this_month' => MurajaahRecord::whereBetween('reviewed_at', [$startOfMonth, $endOfMonth])->count(),
+                'murajaah_today' => MurajaahRecord::whereDate('reviewed_at', $today)->count(),
+                'active_targets' => HafalanTarget::where('status', 'in_progress')->count(),
+                'completed_targets' => HafalanTarget::where('status', 'completed')->count(),
+                'exams_this_month' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->count(),
+                'passed_exams' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->where('total_score', '>=', 70)->count(),
+            ];
 
-        $recentHafalan = HafalanRecord::with(['student', 'surah'])
-            ->latest('submitted_at')
-            ->take(5)
-            ->get();
+            $recentHafalan = HafalanRecord::with(['student', 'surah'])
+                ->latest('submitted_at')
+                ->take(5)
+                ->get();
+        } catch (\Throwable $e) {
+            $stats = [
+                'hafalan_this_month' => 0,
+                'hafalan_today' => 0,
+                'murajaah_this_month' => 0,
+                'murajaah_today' => 0,
+                'active_targets' => 0,
+                'completed_targets' => 0,
+                'exams_this_month' => 0,
+                'passed_exams' => 0,
+            ];
+            $recentHafalan = collect();
+        }
 
         return view('dashboards.coordinator-tahfizh', compact('stats', 'recentHafalan'));
     }
