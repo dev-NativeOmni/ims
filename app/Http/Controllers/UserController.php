@@ -37,7 +37,7 @@ class UserController extends Controller
             $query->where('status', $request->string('status')->toString());
         }
 
-        $users = $query->orderBy('name')->paginate(10)->withQueryString();
+        $users = $query->orderBy('name')->paginate(20)->withQueryString();
         $roles = Role::orderBy('display_name')->get();
 
         return view('users.index', compact('users', 'roles'));

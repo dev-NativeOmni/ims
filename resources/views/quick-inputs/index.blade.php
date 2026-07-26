@@ -238,15 +238,18 @@
 
                             <div>
                                 <label for="hafalan_score" class="block text-sm font-medium text-gray-700">
-                                    Nilai
+                                    Nilai (Skala Huruf)
                                 </label>
-                                <input id="hafalan_score"
-                                       type="number"
-                                       name="score"
-                                       min="0"
-                                       max="100"
-                                       value="{{ old('score') }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <select id="hafalan_score"
+                                        name="score"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Nilai</option>
+                                    <option value="95" @selected(old('score') == '95' || old('score') === 'A')>A (Sangat Baik)</option>
+                                    <option value="85" @selected(old('score') == '85' || old('score') === 'B')>B (Baik)</option>
+                                    <option value="75" @selected(old('score') == '75' || old('score') === 'C')>C (Cukup)</option>
+                                    <option value="65" @selected(old('score') == '65' || old('score') === 'D')>D (Kurang)</option>
+                                    <option value="55" @selected(old('score') == '55' || old('score') === 'E')>E (Sangat Kurang)</option>
+                                </select>
                             </div>
                         </div>
 

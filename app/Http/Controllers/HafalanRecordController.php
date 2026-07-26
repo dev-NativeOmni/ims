@@ -46,7 +46,7 @@ class HafalanRecordController extends Controller
             })
             ->latest('submitted_at')
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('hafalan-records.index', array_merge(

@@ -36,7 +36,7 @@ class TeacherController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('teachers.index', compact('teachers'));

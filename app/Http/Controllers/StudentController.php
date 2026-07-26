@@ -52,7 +52,7 @@ class StudentController extends Controller
                 $query->where('status', $request->string('status')->toString());
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('students.index', compact('students', 'classRooms'));
@@ -93,7 +93,7 @@ class StudentController extends Controller
             ])
             ->latest('submitted_at')
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
         return view('students.show', compact('student', 'hafalanRecords'));
     }

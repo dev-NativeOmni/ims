@@ -46,7 +46,7 @@ class MurajaahRecordController extends Controller
             })
             ->latest('reviewed_at')
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('murajaah-records.index', array_merge(

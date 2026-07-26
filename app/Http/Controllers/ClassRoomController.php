@@ -30,7 +30,7 @@ class ClassRoomController extends Controller
                 $query->where('program_id', $request->integer('program_id'));
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('class-rooms.index', compact('classRooms', 'programs'));
@@ -67,7 +67,7 @@ class ClassRoomController extends Controller
 
         $students = $classRoom->students()
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
         return view('class-rooms.show', compact('classRoom', 'students'));
     }

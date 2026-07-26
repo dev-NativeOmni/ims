@@ -105,7 +105,7 @@ class ReportController extends Controller
             ])
             ->latest('submitted_at')
             ->latest()
-            ->paginate(10, ['*'], 'hafalan_page')
+            ->paginate(20, ['*'], 'hafalan_page')
             ->withQueryString();
 
         $murajaahRecords = (clone $murajaahQuery)
@@ -117,7 +117,7 @@ class ReportController extends Controller
             ])
             ->latest('reviewed_at')
             ->latest()
-            ->paginate(10, ['*'], 'murajaah_page')
+            ->paginate(20, ['*'], 'murajaah_page')
             ->withQueryString();
 
         $hafalanTargets = (clone $targetQuery)
@@ -136,7 +136,7 @@ class ReportController extends Controller
                 END
             ")
             ->orderBy('target_date')
-            ->paginate(10, ['*'], 'target_page')
+            ->paginate(20, ['*'], 'target_page')
             ->withQueryString();
 
         return view('reports.index', array_merge([

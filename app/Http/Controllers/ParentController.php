@@ -36,7 +36,7 @@ class ParentController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('parents.index', compact('parents'));

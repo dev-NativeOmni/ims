@@ -151,7 +151,7 @@ class ProgressController extends Controller
             ->where('student_id', $student->id)
             ->latest('submitted_at')
             ->latest()
-            ->paginate(10, ['*'], 'hafalan_page')
+            ->paginate(20, ['*'], 'hafalan_page')
             ->withQueryString();
 
         $murajaahRecords = MurajaahRecord::query()
@@ -159,7 +159,7 @@ class ProgressController extends Controller
             ->where('student_id', $student->id)
             ->latest('reviewed_at')
             ->latest()
-            ->paginate(10, ['*'], 'murajaah_page')
+            ->paginate(20, ['*'], 'murajaah_page')
             ->withQueryString();
 
         $targets = HafalanTarget::query()
@@ -168,7 +168,7 @@ class ProgressController extends Controller
             ->orderByRaw("CASE WHEN status IN ('active', 'planned', 'in_progress') THEN 0 ELSE 1 END")
             ->orderBy('target_date')
             ->latest()
-            ->paginate(10, ['*'], 'target_page')
+            ->paginate(20, ['*'], 'target_page')
             ->withQueryString();
 
         return view('progress.show', compact(

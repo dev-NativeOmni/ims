@@ -156,19 +156,21 @@
 
                         <div>
                             <label for="score" class="block text-sm font-medium text-gray-700">
-                                Nilai
+                                Nilai (Skala A - E)
                             </label>
 
-                            <input
+                            <select
                                 id="score"
                                 name="score"
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                value="{{ old('score', $hafalanRecord->score) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"
                             >
+                                <option value="">Pilih Nilai</option>
+                                <option value="95" @selected(old('score', $hafalanRecord->score) == 95 || ($hafalanRecord->score >= 90))>A (Sangat Baik)</option>
+                                <option value="85" @selected(old('score', $hafalanRecord->score) == 85 || ($hafalanRecord->score >= 80 && $hafalanRecord->score < 90))>B (Baik)</option>
+                                <option value="75" @selected(old('score', $hafalanRecord->score) == 75 || ($hafalanRecord->score >= 70 && $hafalanRecord->score < 80))>C (Cukup)</option>
+                                <option value="65" @selected(old('score', $hafalanRecord->score) == 65 || ($hafalanRecord->score >= 60 && $hafalanRecord->score < 70))>D (Kurang)</option>
+                                <option value="55" @selected(old('score', $hafalanRecord->score) == 55 || ($hafalanRecord->score < 60 && $hafalanRecord->score !== null))>E (Sangat Kurang)</option>
+                            </select>
 
                             @error('score')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

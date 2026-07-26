@@ -76,4 +76,18 @@ class HafalanRecord extends Model
             default => '-',
         };
     }
+
+    public function getScoreLetterAttribute(): string
+    {
+        if ($this->score === null) {
+            return '-';
+        }
+
+        $val = (float) $this->score;
+        if ($val >= 90) return 'A';
+        if ($val >= 80) return 'B';
+        if ($val >= 70) return 'C';
+        if ($val >= 60) return 'D';
+        return 'E';
+    }
 }

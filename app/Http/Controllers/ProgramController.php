@@ -20,7 +20,7 @@ class ProgramController extends Controller
         $programs = Program::query()
             ->withCount('classRooms')
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
         return view('programs.index', compact('programs'));
     }
@@ -46,7 +46,7 @@ class ProgramController extends Controller
         $classRooms = $program->classRooms()
             ->withCount('students')
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
         return view('programs.show', compact('program', 'classRooms'));
     }

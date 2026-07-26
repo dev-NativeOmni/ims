@@ -43,7 +43,7 @@ class TahfizhExamController extends Controller
             })
             ->latest('exam_date')
             ->latest()
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         return view('tahfizh-exams.index', array_merge(

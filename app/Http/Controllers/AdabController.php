@@ -61,7 +61,7 @@ class AdabController extends Controller
             $studentQuery->where('name', 'like', "%{$search}%");
         }
 
-        $students = $studentQuery->orderBy('name')->paginate(10)->withQueryString();
+        $students = $studentQuery->orderBy('name')->paginate(20)->withQueryString();
 
         $today = now()->toDateString();
         $year = $request->integer('year', (int) now()->format('Y'));
@@ -356,7 +356,7 @@ class AdabController extends Controller
         $adabRecords = AdabRecord::where('student_id', $student->id)
             ->with(['evaluator'])
             ->orderBy('assessment_date', 'desc')
-            ->paginate(10);
+            ->paginate(20);
 
         // Mentor assessments (periodic)
         $mentorAssessments = AdabMentorAssessment::where('student_id', $student->id)

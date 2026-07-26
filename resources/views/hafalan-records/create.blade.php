@@ -226,17 +226,20 @@
                                         <!-- Nilai -->
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 mb-1">
-                                                Nilai
+                                                Nilai (Skala A - E)
                                             </label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.01"
+                                            <select
                                                 :name="'scores['+index+']'"
                                                 x-model="item.score"
                                                 class="block w-full rounded-md border-gray-300 shadow-sm text-xs focus:border-indigo-500 focus:ring-indigo-500"
                                             >
+                                                <option value="">Pilih Nilai</option>
+                                                <option value="95">A (Sangat Baik)</option>
+                                                <option value="85">B (Baik)</option>
+                                                <option value="75">C (Cukup)</option>
+                                                <option value="65">D (Kurang)</option>
+                                                <option value="55">E (Sangat Kurang)</option>
+                                            </select>
                                         </div>
 
                                         <!-- Status Setoran -->
