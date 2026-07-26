@@ -138,8 +138,8 @@
                                         {{ $record->submission_type_label }}
                                     </td>
 
-                                    <td class="px-4 py-3 text-gray-700">
-                                        {{ $record->score !== null ? number_format((float) $record->score, 2) : '-' }}
+                                    <td class="px-4 py-3 font-bold text-gray-800 dark:text-zinc-200">
+                                        {{ $record->score_letter ?? '-' }}
                                     </td>
 
                                     <td class="px-4 py-3">

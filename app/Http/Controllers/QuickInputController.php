@@ -446,6 +446,12 @@ class QuickInputController extends Controller
             }
         }
 
+        if ($request->input('redirect_to') === 'hafalan') {
+            return redirect()
+                ->route('hafalan-records.index', ['category' => 'ummi'])
+                ->with('success', 'Catatan Tahsin UMMI berhasil disimpan.');
+        }
+
         return redirect()
             ->route('quick-inputs.index')
             ->with('success', 'Catatan Tahsin UMMI berhasil disimpan.');
