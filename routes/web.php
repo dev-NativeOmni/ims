@@ -393,3 +393,19 @@ if (app()->environment('local', 'testing')) {
         ->middleware(['auth', 'role:super_admin'])
         ->name('dev.openapi-yaml');
 }
+
+Route::get('/storage/{path}', function (string $path) {
+    $filePath = storage_path('app/public/' . $path);
+
+    if (! file_exists($filePath)) {
+        abort(404);
+    }
+
+    $mimeType = mime_content_type($filePath) ?: 'image/png';
+
+    return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->where('path', '.*')->name('storage.fallback');
+
