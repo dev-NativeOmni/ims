@@ -20,6 +20,8 @@ class AdabMaterialTest extends TestCase
 
     private User $student;
 
+    private User $parent;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,6 +32,8 @@ class AdabMaterialTest extends TestCase
         $superAdminRole = Role::firstOrCreate(['name' => 'super_admin'], ['display_name' => 'Super Admin']);
         $teacherRole = Role::firstOrCreate(['name' => 'teacher'], ['display_name' => 'Guru']);
         $studentRole = Role::firstOrCreate(['name' => 'student'], ['display_name' => 'Santri']);
+
+        $parentRole = Role::firstOrCreate(['name' => 'parent'], ['display_name' => 'Orangtua']);
 
         // Create users
         $this->admin = User::factory()->create([
@@ -44,6 +48,10 @@ class AdabMaterialTest extends TestCase
             'role_id' => $studentRole->id,
             'status' => 'active',
         ]);
+        $this->parent = User::factory()->create([
+            'role_id' => $parentRole->id,
+            'status' => 'active',
+        ]);
     }
 
     public function test_guest_cannot_access_adab_materials_index()
@@ -52,13 +60,13 @@ class AdabMaterialTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_all_authenticated_users_can_access_adab_materials_index()
+    public function test_authorized_users_can_access_adab_materials_index_while_student_and_parent_cannot()
     {
-        $response = $this->actingAs($this->student)->get(route('adab-materials.index'));
-        $response->assertStatus(200);
+        $this->actingAs($this->student)->get(route('adab-materials.index'))->assertStatus(403);
+        $this->actingAs($this->parent)->get(route('adab-materials.index'))->assertStatus(403);
 
-        $response2 = $this->actingAs($this->teacher)->get(route('adab-materials.index'));
-        $response2->assertStatus(200);
+        $this->actingAs($this->teacher)->get(route('adab-materials.index'))->assertStatus(200);
+        $this->actingAs($this->admin)->get(route('adab-materials.index'))->assertStatus(200);
     }
 
     public function test_authorized_user_can_create_adab_material_with_file_and_link()

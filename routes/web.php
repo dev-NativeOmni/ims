@@ -344,7 +344,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     |
     */
-    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,supervisor,coordinator_tahfizh,tanse'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,supervisor,headmaster,tanse,coordinator_tahfizh,pendamping_adab'])->group(function () {
         Route::get('/adab-materials', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
     });
 
