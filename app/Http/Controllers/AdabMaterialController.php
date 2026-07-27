@@ -18,7 +18,7 @@ class AdabMaterialController extends Controller
     {
         $user = $request->user();
         abort_unless(
-            $user && $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'coordinator_tahfizh']),
+            $user && $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'coordinator_tahfizh', 'pendamping_adab', 'headmaster']),
             403,
             'Anda tidak memiliki akses untuk mengelola materi adab.'
         );
@@ -43,7 +43,7 @@ class AdabMaterialController extends Controller
 
         $canManage = false;
         $user = $request->user();
-        if ($user && $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'coordinator_tahfizh'])) {
+        if ($user && $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'coordinator_tahfizh', 'pendamping_adab', 'headmaster'])) {
             $canManage = true;
         }
 

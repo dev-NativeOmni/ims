@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <a href="{{ url('/students') }}" class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-5 hover:shadow-md hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
                     <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
@@ -63,7 +63,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-150">Kelola Murid</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Data murid, kelas, guru, dan wali murid.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Data murid, kelas, guru, dan wali.</p>
                     </div>
                 </a>
 
@@ -75,7 +75,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">Target Hafalan</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Pantau target aktif, selesai, dan terlambat.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Pantau target aktif & selesai.</p>
                     </div>
                 </a>
 
@@ -87,7 +87,19 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-150">Monitoring Adab</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Kuisioner penilaian adab harian santri.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Kuisioner penilaian adab santri.</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('adab-materials.index') }}" class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-5 hover:shadow-md hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-150">Materi Adab</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Berkas & panduan halaqoh adab.</p>
                     </div>
                 </a>
 
@@ -99,7 +111,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors duration-150">Laporan & Rapor</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Ekspor progres & pencetakan rapor digital.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Ekspor & rapor digital.</p>
                     </div>
                 </a>
             </div>

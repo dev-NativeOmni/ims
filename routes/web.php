@@ -348,7 +348,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/materi-adab', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
     });
 
-    Route::middleware(['role:super_admin,admin,teacher,supervisor,coordinator_tahfizh'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,supervisor,coordinator_tahfizh,pendamping_adab,headmaster'])->group(function () {
         Route::get('/materi-adab/create', [AdabMaterialController::class, 'create'])->name('adab-materials.create');
         Route::post('/materi-adab', [AdabMaterialController::class, 'store'])->name('adab-materials.store');
         Route::get('/materi-adab/{adabMaterial}/edit', [AdabMaterialController::class, 'edit'])->name('adab-materials.edit');
