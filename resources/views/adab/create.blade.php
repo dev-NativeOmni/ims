@@ -22,11 +22,19 @@
                 </a>
             </div>
 
+            @php
+                $totalQuestionsCount = 0;
+                foreach ($categories as $cat) {
+                    $totalQuestionsCount += count($cat['questions'] ?? []);
+                }
+                $questionCounter = 0;
+            @endphp
+
             {{-- Form Penilaian --}}
             <form method="POST" action="{{ route('adab.store', $student) }}" class="space-y-6" id="adabForm">
                 @csrf
 
-                {{-- Header: Tanggal & Live Score --}}
+                {{-- Header: Tanggal & Status Pengisian --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-6 flex flex-col justify-between">
                         <div>
@@ -36,11 +44,11 @@
                             </div>
                         </div>
                         <div class="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border border-zinc-200 dark:border-zinc-800">
-                            <strong>Petunjuk:</strong> Jawab semua pertanyaan dengan jujur. Setiap jawaban <strong>Ya</strong> menambah skor. Nilai mandiri bobot 50% dari total akhir. Pendamping adab mengisi nilai 50% sisanya setiap bulan.
+                            <strong>Petunjuk:</strong> Jawab semua pertanyaan dengan jujur. Pengisian kuisioner harian ini mencatat kehadiran dan keaktifan Adab Anda untuk hari ini. Nilai Adab bulanan dihitung berdasarkan <strong>kerajinan pengisian kuisioner harian</strong> selama sebulan.
                         </div>
                     </div>
 
-                    {{-- Live Score Widget --}}
+                    {{-- Live Status Widget --}}
                     <div class="bg-gradient-to-br from-indigo-900 to-purple-900 text-white rounded-xl shadow-lg p-6 md:col-span-2 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute -right-6 -bottom-6 opacity-10">
                             <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24">
@@ -48,12 +56,12 @@
                             </svg>
                         </div>
                         <div class="relative z-10">
-                            <h4 class="text-sm font-semibold uppercase text-indigo-200 tracking-wider">Perkiraan Nilai Mandiri Hari Ini</h4>
+                            <h4 class="text-sm font-semibold uppercase text-indigo-200 tracking-wider">Status Pengisian Hari Ini</h4>
                             <div class="flex items-baseline gap-3 mt-4">
                                 <span class="text-6xl font-black tracking-tight" id="liveScore">0</span>
                                 <div class="flex flex-col">
-                                    <span class="text-xl text-indigo-300">/ 100</span>
-                                    <span class="text-3xl font-black text-yellow-300 leading-none" id="liveGrade">-</span>
+                                    <span class="text-xl text-indigo-300">/ {{ $totalQuestionsCount }} Pertanyaan</span>
+                                    <span class="text-2xl font-black text-amber-300 leading-none mt-1" id="liveGrade">Belum Lengkap</span>
                                 </div>
                             </div>
                         </div>
@@ -62,8 +70,8 @@
                                 <div class="bg-gradient-to-r from-emerald-400 to-teal-400 h-full rounded-full transition-all duration-300" id="progressBar" style="width: 0%"></div>
                             </div>
                             <div class="flex justify-between items-center text-xs text-indigo-200 mt-2">
-                                <span id="scoreCategory">Kategori: -</span>
-                                <span id="filledCount">0 dari 20 pertanyaan terjawab</span>
+                                <span id="scoreCategory">Status: Belum Lengkap</span>
+                                <span id="filledCount">0 dari {{ $totalQuestionsCount }} pertanyaan terjawab</span>
                             </div>
                         </div>
                     </div>
@@ -79,11 +87,14 @@
 
                         <div class="space-y-4">
                             @foreach ($category['questions'] as $qIdx => $questionText)
-                                @php $inputName = "cat_{$catIdx}_q{$qIdx}"; @endphp
+                                @php
+                                    $questionCounter++;
+                                    $inputName = "cat_{$catIdx}_q{$qIdx}";
+                                @endphp
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-none gap-3">
                                     <div class="flex items-start gap-3 flex-1">
                                         <span class="inline-flex items-center justify-center h-5 w-5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0">
-                                            {{ ($catIdx * 5) + $qIdx + 1 }}
+                                            {{ $questionCounter }}
                                         </span>
                                         <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 leading-relaxed">{{ $questionText }}</p>
                                     </div>
@@ -136,15 +147,7 @@
             const progressBar   = document.getElementById('progressBar');
             const catEl         = document.getElementById('scoreCategory');
             const filledCountEl = document.getElementById('filledCount');
-            const totalQ        = 20; // 4 categories × 5 questions
-
-            function getGrade(score) {
-                if (score >= 90) return { grade: 'A', label: 'Mumtaz (Sangat Baik)' };
-                if (score >= 80) return { grade: 'B', label: 'Jayyid Jiddan (Baik Sekali)' };
-                if (score >= 70) return { grade: 'C', label: 'Jayyid (Baik)' };
-                if (score >= 60) return { grade: 'D', label: 'Maqbul (Cukup)' };
-                return { grade: 'E', label: "Dha'if (Kurang)" };
-            }
+            const totalQ        = {{ $totalQuestionsCount }};
 
             function updateCalc() {
                 const answered = new Set();
@@ -168,14 +171,20 @@
                     }
                 });
 
-                const score    = answered.size > 0 ? Math.round((yesCount / totalQ) * 100) : 0;
-                const gradeObj = answered.size === totalQ ? getGrade(score) : { grade: '-', label: '-' };
+                const isComplete  = totalQ > 0 && answered.size === totalQ;
+                const progressPct = totalQ > 0 ? Math.round((answered.size / totalQ) * 100) : 0;
 
-                liveScoreEl.textContent = score;
-                liveGradeEl.textContent = gradeObj.grade;
-                progressBar.style.width = score + '%';
+                liveScoreEl.textContent = answered.size;
+                if (isComplete) {
+                    liveGradeEl.textContent = 'Lengkap';
+                    liveGradeEl.className   = 'text-2xl font-black text-emerald-400 leading-none mt-1';
+                } else {
+                    liveGradeEl.textContent = 'Belum Lengkap';
+                    liveGradeEl.className   = 'text-2xl font-black text-amber-300 leading-none mt-1';
+                }
+                progressBar.style.width = progressPct + '%';
                 filledCountEl.textContent = `${answered.size} dari ${totalQ} pertanyaan terjawab`;
-                catEl.textContent = answered.size === totalQ ? `Nilai: ${gradeObj.label}` : 'Kategori: -';
+                catEl.textContent = isComplete ? 'Status: Kuisioner Siap Dikirim' : 'Status: Belum Lengkap';
             }
 
             radios.forEach(r => r.addEventListener('change', updateCalc));
