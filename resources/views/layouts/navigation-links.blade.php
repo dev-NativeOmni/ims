@@ -123,6 +123,15 @@
         </span>
 
         @if ($canManageRecords)
+            @if ($hasRoute('quick-inputs.index'))
+                <a href="{{ route('quick-inputs.index') }}" class="{{ $getLinkClasses($routeIs('quick-inputs.*')) }}">
+                    <svg class="{{ $getIconClasses($routeIs('quick-inputs.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Input Cepat</span>
+                </a>
+            @endif
+
             @if ($hasRoute('hafalan-records.index'))
                 <a href="{{ route('hafalan-records.index') }}" class="{{ $getLinkClasses($routeIs('hafalan-records.*')) }}">
                     <svg class="{{ $getIconClasses($routeIs('hafalan-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,6 +175,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
                 <span>Mushaf Al-Qur'an</span>
+            </a>
+        @endif
+
+        @if ($canViewProgress && $hasRoute('progress.index'))
+            <a href="{{ route('progress.index') }}" class="{{ $getLinkClasses($routeIs('progress.*')) }}">
+                <svg class="{{ $getIconClasses($routeIs('progress.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span>Progress</span>
             </a>
         @endif
 

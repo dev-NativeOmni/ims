@@ -182,8 +182,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
-        Route::get('/adab-settings', [SettingController::class, 'editAdab'])->name('settings.adab');
-        Route::post('/adab-settings', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
+        Route::get('/pengaturan-adab', [SettingController::class, 'editAdab'])->name('settings.adab');
+        Route::post('/pengaturan-adab', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
     });
 
     // Super Admin user management routes
@@ -345,15 +345,15 @@ Route::middleware(['auth'])->group(function () {
     |
     */
     Route::middleware(['role:super_admin,admin,teacher,supervisor,headmaster,tanse,coordinator_tahfizh,pendamping_adab'])->group(function () {
-        Route::get('/adab-materials', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
+        Route::get('/materi-adab', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
     });
 
     Route::middleware(['role:super_admin,admin,teacher,supervisor,coordinator_tahfizh'])->group(function () {
-        Route::get('/adab-materials/create', [AdabMaterialController::class, 'create'])->name('adab-materials.create');
-        Route::post('/adab-materials', [AdabMaterialController::class, 'store'])->name('adab-materials.store');
-        Route::get('/adab-materials/{adabMaterial}/edit', [AdabMaterialController::class, 'edit'])->name('adab-materials.edit');
-        Route::put('/adab-materials/{adabMaterial}', [AdabMaterialController::class, 'update'])->name('adab-materials.update');
-        Route::delete('/adab-materials/{adabMaterial}', [AdabMaterialController::class, 'destroy'])->name('adab-materials.destroy');
+        Route::get('/materi-adab/create', [AdabMaterialController::class, 'create'])->name('adab-materials.create');
+        Route::post('/materi-adab', [AdabMaterialController::class, 'store'])->name('adab-materials.store');
+        Route::get('/materi-adab/{adabMaterial}/edit', [AdabMaterialController::class, 'edit'])->name('adab-materials.edit');
+        Route::put('/materi-adab/{adabMaterial}', [AdabMaterialController::class, 'update'])->name('adab-materials.update');
+        Route::delete('/materi-adab/{adabMaterial}', [AdabMaterialController::class, 'destroy'])->name('adab-materials.destroy');
     });
 });
 
