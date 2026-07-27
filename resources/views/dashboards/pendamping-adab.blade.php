@@ -57,7 +57,7 @@
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
                     <span>⚡</span> Akses Cepat Menu Adab
                 </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor'])) lg:grid-cols-4 @endif gap-3">
                     <a href="{{ route('adab.index') }}" class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl hover:bg-emerald-100 transition text-center group">
                         <span class="text-2xl block mb-1">🕋</span>
                         <span class="text-xs font-bold text-emerald-900 dark:text-emerald-300">Monitoring Adab</span>
@@ -70,10 +70,12 @@
                         <span class="text-2xl block mb-1">📚</span>
                         <span class="text-xs font-bold text-indigo-900 dark:text-indigo-300">Materi Adab</span>
                     </a>
-                    <a href="{{ route('settings.adab') }}" class="p-4 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-2xl hover:bg-purple-100 transition text-center group">
-                        <span class="text-2xl block mb-1">⚙️</span>
-                        <span class="text-xs font-bold text-purple-900 dark:text-purple-300">Pengaturan Adab</span>
-                    </a>
+                    @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor']))
+                        <a href="{{ route('settings.adab') }}" class="p-4 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-2xl hover:bg-purple-100 transition text-center group">
+                            <span class="text-2xl block mb-1">⚙️</span>
+                            <span class="text-xs font-bold text-purple-900 dark:text-purple-300">Pengaturan Adab</span>
+                        </a>
+                    @endif
                 </div>
             </div>
 

@@ -23,7 +23,12 @@ class AdabController extends Controller
         $isStudent = $user->hasRole('student');
 
         if ($isStudent) {
-            $student = Student::where('user_id', $user->id)->firstOrFail();
+            $student = Student::where('user_id', $user->id)->first() ?? $user->studentProfile;
+
+            if (! $student) {
+                return redirect()->route('student.dashboard')
+                    ->with('error', 'Profil murid Anda belum terhubung dengan akun ini. Silakan hubungi Admin.');
+            }
 
             return redirect()->route('adab.show', $student);
         }
@@ -259,7 +264,7 @@ class AdabController extends Controller
     {
         $user = Auth::user();
 
-        $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
+        $isOwn = $user->hasRole('student') && ((int) $student->user_id === (int) $user->id || $student->id === $user->studentProfile?->id);
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
         $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
@@ -278,12 +283,15 @@ class AdabController extends Controller
     {
         $user = Auth::user();
 
-        $isOwn = $user->hasRole('student') && $student->user_id === $user->id;
+        $isOwn = $user->hasRole('student') && ((int) $student->user_id === (int) $user->id || $student->id === $user->studentProfile?->id);
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
         $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
-        abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher, 403);
+        if (! ($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher)) {
+            return redirect()->route('student.dashboard')
+                ->with('error', 'Anda tidak memiliki izin untuk menyimpan data ini.');
+        }
 
         $today = now()->toDateString();
         $categories = Setting::getAdabQuestions();
@@ -297,7 +305,7 @@ class AdabController extends Controller
             $catAnswers = $request->input("answers.{$catKey}", []);
             $processedAnswers = [];
             foreach ($cat['questions'] as $qIdx => $_) {
-                $val = (bool) ($catAnswers[$qIdx] ?? false);
+                $val = (bool) ($catAnswers[$qIdx] ?? $request->input("{$catKey}_q{$qIdx}", false));
                 $processedAnswers[] = $val;
                 $totalAnswers++;
                 if ($val) {
@@ -318,6 +326,7 @@ class AdabController extends Controller
                 'evaluator_id' => $user->id,
                 'answers' => $answers,
                 'student_score' => $studentScore,
+                'total_score' => $studentScore,
                 'notes' => $request->input('notes'),
             ]
         );
@@ -329,7 +338,7 @@ class AdabController extends Controller
     /* -----------------------------------------------------------------------
      | SHOW — detail adab santri
      * -------------------------------------------------------------------- */
-    public function show(Student $student, Request $request): View
+    public function show(Student $student, Request $request): View|RedirectResponse
     {
         $user = Auth::user();
 
@@ -342,7 +351,7 @@ class AdabController extends Controller
             $visible = true;
         } elseif ($user->hasRole('parent') && $student->parents->contains($user->parentProfile?->id)) {
             $visible = true;
-        } elseif ($user->hasRole('student') && $student->user_id === $user->id) {
+        } elseif ($user->hasRole('student') && ((int) $student->user_id === (int) $user->id || $student->id === $user->studentProfile?->id)) {
             $visible = true;
         }
 

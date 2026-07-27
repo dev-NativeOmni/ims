@@ -187,8 +187,8 @@ class AdabTest extends TestCase
 
         $response = $this->actingAs($supervisor)->get(route('supervisor.dashboard'));
         $response->assertStatus(200);
-        $response->assertSee('Progres Pengisian Seluruh Santri');
-        $response->assertSee('Status Pengisian Santri Hari Ini');
+        $response->assertSee('Progres Pengisian Seluruh Murid');
+        $response->assertSee('Status Pengisian Murid Hari Ini');
     }
 
     public function test_superadmin_dashboard_shows_adab_monitoring(): void

@@ -118,7 +118,7 @@
                     <div class="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-3 gap-4 text-center text-xs">
                         <div>
                             <div class="font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Nilai Mandiri</div>
-                            <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">{{ round($studentAvg) }}<span class="text-sm font-medium">/100</span></div>
+                            <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">{{ round($attendanceRate) }}<span class="text-sm font-medium">/100</span></div>
                         </div>
                         <div>
                             <div class="font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Nilai Pendamping</div>

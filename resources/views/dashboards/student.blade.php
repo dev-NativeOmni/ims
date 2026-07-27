@@ -27,9 +27,20 @@
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
+            @if (session('success'))
+                <div class="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-sm text-emerald-800 dark:text-emerald-300">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 p-4 text-sm text-rose-800 dark:text-rose-300">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @if (! $student)
                 <div class="rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-950/20 p-5 text-sm text-amber-800 dark:text-amber-300">
-                    Profil murid belum terhubung dengan akun ini.
+                    Profil murid belum terhubung dengan akun ini. Silakan hubungi Administrator untuk menghubungkan data murid Anda.
                 </div>
             @else
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -136,6 +147,54 @@
                     'motivation' => $motivation,
                     'showStudentName' => false,
                 ])
+
+                @php
+                    $todayDate = now()->toDateString();
+                    $adabFilledToday = \App\Models\AdabRecord::where('student_id', $student->id)->where('assessment_date', $todayDate)->exists();
+                @endphp
+
+                {{-- Quick Access Card for Adab Questionnaire --}}
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 border border-emerald-100 dark:border-emerald-900/30">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl flex-shrink-0">
+                                🕋
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                    <span>Kuisioner Adab Harian</span>
+                                </h3>
+                                <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Pengisian mandiri adab, ketakwaan, dan pembinaan karakter harian.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            @if ($adabFilledToday)
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    <span>✅</span> Sudah Diisi Hari Ini
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    <span>⚠️</span> Belum Diisi Hari Ini
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-wrap items-center gap-3">
+                        @if (! $adabFilledToday)
+                            <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white transition shadow-sm">
+                                ✏️ Isi Kuisioner Hari Ini
+                            </a>
+                        @endif
+
+                        <a href="{{ route('adab.show', $student) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 px-4 py-2.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 transition">
+                            📊 Lihat Laporan & Grafik Adab
+                        </a>
+                    </div>
+                </div>
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
