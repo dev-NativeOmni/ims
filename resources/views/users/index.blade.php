@@ -121,14 +121,16 @@
                             @forelse ($users as $u)
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150" x-data="{ showPass: false }">
                                     <td class="px-6 py-4">
-                                        <div class="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
-                                            <span>{{ $u->name }}</span>
-                                            @if ($u->studentProfile?->classRoom)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30">
-                                                    {{ $u->studentProfile->classRoom->name }}
-                                                </span>
-                                            @endif
+                                        <div class="font-semibold text-zinc-900 dark:text-white">
+                                            {{ $u->name }}
                                         </div>
+                                        @if ($u->studentProfile?->classRoom)
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30 whitespace-nowrap">
+                                                    Kelas {{ $u->studentProfile->classRoom->name }}
+                                                </span>
+                                            </div>
+                                        @endif
                                     </td>
 
                                     <td class="px-6 py-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
