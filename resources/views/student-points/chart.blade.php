@@ -96,13 +96,20 @@
                 </div>
 
                 {{-- Rincian Tipe Pelanggaran --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                    <div class="flex flex-col justify-center h-full">
-                        <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran Tipe Pelanggaran</p>
-                        <div class="flex items-center justify-between text-xs space-x-1">
-                            <span class="px-2 py-1 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 rounded-lg font-bold">⏰ Keterlambatan: {{ $typeBreakdown['lateness'] }}</span>
-                            <span class="px-2 py-1 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 rounded-lg font-bold">👔 Atribut: {{ $typeBreakdown['attribute'] }}</span>
-                            <span class="px-2 py-1 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 rounded-lg font-bold">📜 Tatib: {{ $typeBreakdown['violation'] }}</span>
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran Tipe Pelanggaran</p>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <div class="p-2 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/30 rounded-xl text-center flex flex-col items-center justify-center">
+                            <span class="text-[10px] font-bold text-amber-700 dark:text-amber-300 block truncate max-w-full" title="Keterlambatan">⏰ Telat</span>
+                            <span class="text-base font-black text-amber-900 dark:text-amber-100 mt-0.5">{{ $typeBreakdown['lateness'] }}</span>
+                        </div>
+                        <div class="p-2 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/30 rounded-xl text-center flex flex-col items-center justify-center">
+                            <span class="text-[10px] font-bold text-blue-700 dark:text-blue-300 block truncate max-w-full" title="Atribut">👔 Atribut</span>
+                            <span class="text-base font-black text-blue-900 dark:text-blue-100 mt-0.5">{{ $typeBreakdown['attribute'] }}</span>
+                        </div>
+                        <div class="p-2 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/30 rounded-xl text-center flex flex-col items-center justify-center">
+                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-300 block truncate max-w-full" title="Tata Tertib">📜 Tatib</span>
+                            <span class="text-base font-black text-rose-900 dark:text-rose-100 mt-0.5">{{ $typeBreakdown['violation'] }}</span>
                         </div>
                     </div>
                 </div>
