@@ -114,7 +114,19 @@ class Setting extends Model
     }
 
     /**
-     * Calculate count of effective workdays (Senin-Jumat, excluding national holidays) for a month.
+     * Check if a date is an effective day for Adab questionnaire (Selasa-Jumat, excluding national holidays).
+     */
+    public static function isEffectiveAdabDay(\Carbon\Carbon $date, array $holidays = []): bool
+    {
+        // ISO day of week: 1=Senin, 2=Selasa, 3=Rabu, 4=Kamis, 5=Jumat, 6=Sabtu, 7=Minggu
+        $dayIso = $date->dayOfWeekIso;
+        $isTuesdayToFriday = ($dayIso >= 2 && $dayIso <= 5);
+
+        return $isTuesdayToFriday && ! in_array($date->toDateString(), $holidays, true);
+    }
+
+    /**
+     * Calculate count of effective workdays (Selasa-Jumat, excluding national holidays) for a month.
      */
     public static function getEffectiveDaysCount(int $year, int $month, ?string $untilDate = null): int
     {
@@ -137,8 +149,7 @@ class Setting extends Model
 
         $current = $startDate->copy();
         while ($current->lte($endDate) && $current->month === $month) {
-            // Check if weekday (Monday=1 to Friday=5) and not in national holidays
-            if ($current->isWeekday() && ! in_array($current->toDateString(), $holidays, true)) {
+            if (self::isEffectiveAdabDay($current, $holidays)) {
                 $effectiveCount++;
             }
             $current->addDay();
@@ -168,7 +179,7 @@ class Setting extends Model
         $effectiveDaysFilled = 0;
         foreach ($filledDates as $dateStr) {
             $cDate = \Carbon\Carbon::parse($dateStr);
-            if ($cDate->isWeekday() && ! in_array($cDate->toDateString(), $holidays, true)) {
+            if (self::isEffectiveAdabDay($cDate, $holidays)) {
                 $effectiveDaysFilled++;
             }
         }
