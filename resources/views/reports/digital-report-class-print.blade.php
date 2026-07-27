@@ -99,15 +99,15 @@
         <!-- Official Report Card Layout -->
         <div class="print-container max-w-4xl mx-auto bg-white p-8 sm:p-12 border shadow-sm rounded-none min-h-[330mm] {{ $index > 0 ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
             
-            <!-- Kop Surat Terpadu (Sesuai PDF Baru Integrasi) -->
-            <div class="flex items-center justify-between border-b border-black pb-4 mb-6">
-                <!-- Left Logo: Al Azhar (cropped from image2.png) -->
-                <div class="shrink-0">
-                    <img src="{{ asset('images/image2.png') }}" class="logo-left" alt="Logo Al Azhar" />
+            <!-- Kop Surat Terpadu -->
+            <div class="grid grid-cols-[85px_1fr_85px] items-center border-b border-black pb-4 mb-6">
+                <!-- Left Logo: SMA Islam Al Azhar 7 -->
+                <div class="shrink-0 flex justify-start">
+                    <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" />
                 </div>
                 
                 <!-- Title & Basmalah -->
-                <div class="flex-1 flex flex-col items-center px-4">
+                <div class="flex-1 flex flex-col items-center px-2">
                     <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
                     <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">LAPORAN PENILAIAN ADAB, TAHFIDZ, DAN TANSE</h1>
                     <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">SMA ISLAM AL AZHAR 7 SUKOHARJO</h2>
@@ -120,10 +120,8 @@
                     <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran {{ $academicYear }}</p>
                 </div>
                 
-                <!-- Right Logo: Makarimah (cropped from image2.png) -->
-                <div class="shrink-0">
-                    <img src="{{ asset('images/image2.png') }}" class="logo-right" alt="Logo Makarimah" />
-                </div>
+                <!-- Right Spacer for Header Balance -->
+                <div class="shrink-0 w-[85px]"></div>
             </div>
 
             <!-- Identitas Siswa -->
