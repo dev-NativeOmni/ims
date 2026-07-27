@@ -19,7 +19,7 @@ class UserController extends Controller
     {
         $this->authorizeSuperAdmin();
 
-        $query = User::query()->with('role');
+        $query = User::query()->with(['role', 'studentProfile.classRoom']);
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
@@ -33,14 +33,22 @@ class UserController extends Controller
             $query->where('role_id', $request->integer('role_id'));
         }
 
+        if ($request->filled('class_room_id')) {
+            $classRoomId = $request->integer('class_room_id');
+            $query->whereHas('studentProfile', function ($q) use ($classRoomId) {
+                $q->where('class_room_id', $classRoomId);
+            });
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->string('status')->toString());
         }
 
         $users = $query->orderBy('name')->paginate(20)->withQueryString();
         $roles = Role::orderBy('display_name')->get();
+        $classRooms = \App\Models\ClassRoom::orderBy('name')->get();
 
-        return view('users.index', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles', 'classRooms'));
     }
 
     public function edit(User $user): View

@@ -44,7 +44,7 @@
 
             <!-- Filter & Pencarian -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
-                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
                         <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari User</label>
                         <input
@@ -70,6 +70,18 @@
                     </div>
 
                     <div>
+                        <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas (Santri)</label>
+                        <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                            <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
+                            @foreach ($classRooms as $cRoom)
+                                <option value="{{ $cRoom->id }}" @selected((string) request('class_room_id') === (string) $cRoom->id) class="dark:bg-zinc-900">
+                                    {{ $cRoom->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="status" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Status Akun</label>
                         <select name="status" id="status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
                             <option value="" class="dark:bg-zinc-900">Semua Status</option>
@@ -78,7 +90,7 @@
                         </select>
                     </div>
 
-                    <div class="flex items-end gap-3">
+                    <div class="flex items-end gap-2">
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
                             Cari
                         </button>
@@ -109,8 +121,13 @@
                             @forelse ($users as $u)
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150" x-data="{ showPass: false }">
                                     <td class="px-6 py-4">
-                                        <div class="font-semibold text-zinc-900 dark:text-white">
-                                            {{ $u->name }}
+                                        <div class="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                                            <span>{{ $u->name }}</span>
+                                            @if ($u->studentProfile?->classRoom)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30">
+                                                    {{ $u->studentProfile->classRoom->name }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </td>
 
