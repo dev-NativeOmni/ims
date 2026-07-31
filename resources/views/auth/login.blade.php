@@ -215,13 +215,13 @@
                             required
                             autocomplete="current-password"
                             placeholder="Ketik password Anda"
-                            class="premium-input block w-full pl-11 pr-11 py-3 text-sm focus:outline-none"
+                            class="premium-input block w-full pl-11 pr-12 py-3 text-sm focus:outline-none"
                         />
                         <button
                             type="button"
                             @click="show = !show"
                             tabindex="-1"
-                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all focus:outline-none flex items-center justify-center"
                             title="Tampilkan / Sembunyikan Password"
                         >
                             <svg x-show="show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">

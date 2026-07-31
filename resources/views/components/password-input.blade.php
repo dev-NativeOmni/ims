@@ -5,13 +5,13 @@
         :type="show ? 'text' : 'password'"
         @disabled($disabled)
         @if($placeholder) placeholder="{{ $placeholder }}" @endif
-        {{ $attributes->merge(['class' => 'border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-zinc-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm w-full pr-11 text-sm']) }}
+        {{ $attributes->merge(['class' => 'border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-zinc-100 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm w-full pr-12 text-sm']) }}
     />
     <button
         type="button"
         @click="show = !show"
         tabindex="-1"
-        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors focus:outline-none"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all focus:outline-none flex items-center justify-center"
         title="Tampilkan / Sembunyikan Password"
     >
         <!-- Eye Open Icon (when show is true) -->
