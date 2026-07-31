@@ -202,65 +202,62 @@
                             {{ __('Password') }}
                         </label>
                     </div>
-                    <div class="relative" x-data="{ show: false }">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                        </span>
-                        <input
-                            id="password"
-                            :type="show ? 'text' : 'password'"
-                            name="password"
-                            required
-                            autocomplete="current-password"
-                            placeholder="Ketik password Anda"
-                            class="premium-input block w-full pl-11 pr-12 py-3 text-sm focus:outline-none"
-                        />
-                        <button
-                            type="button"
-                            @click="show = !show"
-                            tabindex="-1"
-                            class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
-                            title="Tampilkan / Sembunyikan Password"
-                        >
-                            <svg x-show="show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.015 10.015 0 014.122-.963c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                            </svg>
-                        </button>
-                    </div>
-                    @if ($errors->has('password'))
-                        <div class="text-xs font-medium text-rose-600 flex items-center gap-1.5 mt-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                            </svg>
-                            <span>{{ $errors->first('password') }}</span>
+                    <div class="space-y-2.5" x-data="{ show: false }">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                </svg>
+                            </span>
+                            <input
+                                id="password"
+                                :type="show ? 'text' : 'password'"
+                                name="password"
+                                required
+                                autocomplete="current-password"
+                                placeholder="Ketik password Anda"
+                                class="premium-input block w-full pl-11 pr-4 py-3 text-sm focus:outline-none"
+                            />
                         </div>
-                    @endif
-                </div>
+                        @if ($errors->has('password'))
+                            <div class="text-xs font-medium text-rose-600 flex items-center gap-1.5 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                                <span>{{ $errors->first('password') }}</span>
+                            </div>
+                        @endif
 
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between text-xs pt-1">
-                    <label for="remember_me" class="inline-flex items-center cursor-pointer text-slate-500 select-none hover:text-slate-800 transition-colors duration-150">
-                        <input
-                            id="remember_me"
-                            type="checkbox"
-                            name="remember"
-                            class="rounded border-slate-300 bg-white text-indigo-650 focus:ring-indigo-500 focus:outline-none w-4 h-4 mr-2"
-                        />
-                        <span>Ingat saya</span>
-                    </label>
+                        <!-- Google style "Tampilkan sandi" & "Ingat saya" -->
+                        <div class="flex items-center justify-between text-xs pt-1">
+                            <div class="flex items-center gap-4">
+                                <label class="inline-flex items-center cursor-pointer text-slate-600 font-medium select-none hover:text-slate-900 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        x-model="show"
+                                        class="rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500 focus:outline-none w-4 h-4 mr-1.5"
+                                    />
+                                    <span>Tampilkan sandi</span>
+                                </label>
 
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="font-semibold text-indigo-600 hover:text-indigo-750 transition-colors duration-150">
-                            Lupa password?
-                        </a>
-                    @endif
-                </div>
+                                <label for="remember_me" class="inline-flex items-center cursor-pointer text-slate-500 select-none hover:text-slate-800 transition-colors duration-150">
+                                    <input
+                                        id="remember_me"
+                                        type="checkbox"
+                                        name="remember"
+                                        class="rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500 focus:outline-none w-4 h-4 mr-1.5"
+                                    />
+                                    <span>Ingat saya</span>
+                                </label>
+                            </div>
+
+                            @if (Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="font-semibold text-indigo-600 hover:text-indigo-750 transition-colors duration-150">
+                                    Lupa password?
+                                </a>
+                            @endif
+                        </div>
+                    </div>
 
                 <!-- Submit Button -->
                 <div class="pt-2">
