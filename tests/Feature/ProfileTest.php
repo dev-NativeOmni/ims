@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -23,36 +24,42 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_profile_information_can_be_updated(): void
+    public function test_admin_can_update_profile_name_and_username(): void
     {
-        $user = User::factory()->create();
+        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['display_name' => 'Admin']);
+        $admin = User::factory()->create(['role_id' => $adminRole->id]);
 
         $response = $this
-            ->actingAs($user)
+            ->actingAs($admin)
             ->patch('/profile', [
-                'name' => 'Test User',
-                'username' => 'testusernamed',
+                'name' => 'Updated Admin',
+                'username' => 'adminupdated',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
-        $user->refresh();
+        $admin->refresh();
 
-        $this->assertSame('Test User', $user->name);
-        $this->assertSame('testusernamed', $user->username);
+        $this->assertSame('Updated Admin', $admin->name);
+        $this->assertSame('adminupdated', $admin->username);
     }
 
-    public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
+    public function test_non_admin_cannot_update_name_and_username_from_profile(): void
     {
-        $user = User::factory()->create();
+        $teacherRole = Role::firstOrCreate(['name' => 'teacher'], ['display_name' => 'Guru']);
+        $user = User::factory()->create([
+            'role_id' => $teacherRole->id,
+            'name' => 'Original Name',
+            'username' => 'originaluser',
+        ]);
 
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => 'Test User',
-                'username' => $user->username,
+                'name' => 'Hacker Name',
+                'username' => 'hackerusername',
             ]);
 
         $response
@@ -60,7 +67,10 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $user->refresh();
-        $this->assertSame($user->username, $user->fresh()->username);
+
+        // Name and username must remain unchanged
+        $this->assertSame('Original Name', $user->name);
+        $this->assertSame('originaluser', $user->username);
     }
 
     public function test_user_cannot_delete_their_own_account_from_profile(): void
@@ -90,8 +100,6 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
                 'avatar' => $file,
             ]);
 
@@ -121,8 +129,6 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => $user->name,
-                'username' => $user->username,
                 'remove_avatar' => 1,
             ]);
 

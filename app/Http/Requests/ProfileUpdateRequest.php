@@ -16,15 +16,17 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isAdmin = $this->user()?->hasAnyRole(['super_admin', 'admin']);
+
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'username' => [
+            'name' => $isAdmin ? ['required', 'string', 'max:255'] : ['nullable', 'string', 'max:255'],
+            'username' => $isAdmin ? [
                 'required',
                 'string',
                 'lowercase',
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            ] : ['nullable', 'string', 'max:255'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_avatar' => ['nullable', 'boolean'],
         ];

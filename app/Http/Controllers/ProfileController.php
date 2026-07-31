@@ -45,10 +45,14 @@ class ProfileController extends Controller
             $user->avatar = $path;
         }
 
-        $user->fill([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-        ]);
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            if (isset($validated['name'])) {
+                $user->name = $validated['name'];
+            }
+            if (isset($validated['username'])) {
+                $user->username = $validated['username'];
+            }
+        }
 
         $user->save();
 
