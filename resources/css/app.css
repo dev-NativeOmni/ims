@@ -42,6 +42,20 @@
     --color-purple-800: #92400e;
     --color-purple-900: #78350f;
     --color-purple-950: #451a03;
+
+    --animate-spin-slow: spin 30s linear infinite;
+    --animate-float: float 6s ease-in-out infinite;
+    --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.35; }
 }
 
 /* Custom Scrollbar */
@@ -638,4 +652,140 @@ button.bg-gray-900 * {
     background-color: #e5dac1 !important;
     border-color: #d1c1a5 !important;
     color: #4a3c31 !important;
+}
+
+/* =========================================================
+   Gcore-Style Landing Page Lighting & Animation Overrides
+   ========================================================= */
+
+.spotlight-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        350px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+        rgba(255, 255, 255, 0.05),
+        transparent 50%
+    );
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
+}
+
+.spotlight-border-card {
+    position: relative;
+    background: rgba(24, 24, 27, 0.55);
+    border-radius: 1.25rem;
+    z-index: 1;
+}
+
+.spotlight-border-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.25rem;
+    background: radial-gradient(
+        220px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+        rgba(13, 148, 136, 0.35), /* Mapped to Teal (primary theme) */
+        transparent 55%
+    );
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.spotlight-border-card:hover::after {
+    opacity: 1;
+}
+
+.spotlight-border-card-amber {
+    position: relative;
+    background: rgba(24, 24, 27, 0.55);
+    border-radius: 1.25rem;
+    z-index: 1;
+}
+
+.spotlight-border-card-amber::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.25rem;
+    background: radial-gradient(
+        220px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+        rgba(217, 119, 6, 0.35), /* Mapped to Amber/Gold */
+        transparent 55%
+    );
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.spotlight-border-card-amber:hover::after {
+    opacity: 1;
+}
+
+.bg-grid-pattern {
+    background-size: 50px 50px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.bg-grid-pattern-light {
+    background-size: 50px 50px;
+    background-image: 
+        linear-gradient(to right, rgba(9, 9, 11, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(9, 9, 11, 0.025) 1px, transparent 1px);
+}
+
+.glow-horizon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 1400px;
+    height: 400px;
+    background: radial-gradient(
+        ellipse at top,
+        rgba(217, 119, 6, 0.22) 0%,
+        rgba(13, 148, 136, 0.08) 45%,
+        transparent 70%
+    );
+    filter: blur(80px);
+    pointer-events: none;
+    bottom: 0;
+    z-index: 0;
+}
+
+.glow-horizon-core {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-width: 700px;
+    height: 140px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 100%);
+    filter: blur(35px);
+    pointer-events: none;
+    bottom: 0;
+    z-index: 1;
+    border-radius: 50% 50% 0 0;
+}
+
+.halo-ring {
+    border-radius: 50%;
+    box-shadow: 0 0 100px 20px rgba(217, 119, 6, 0.15), inset 0 0 80px 10px rgba(13, 148, 136, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
