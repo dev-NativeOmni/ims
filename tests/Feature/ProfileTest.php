@@ -63,7 +63,7 @@ class ProfileTest extends TestCase
         $this->assertSame($user->username, $user->fresh()->username);
     }
 
-    public function test_user_can_delete_their_account(): void
+    public function test_user_cannot_delete_their_own_account_from_profile(): void
     {
         $user = User::factory()->create();
 
@@ -73,29 +73,7 @@ class ProfileTest extends TestCase
                 'password' => 'password',
             ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertSoftDeleted($user);
-    }
-
-    public function test_correct_password_must_be_provided_to_delete_account(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
-
+        $response->assertStatus(403);
         $this->assertNotNull($user->fresh());
     }
 

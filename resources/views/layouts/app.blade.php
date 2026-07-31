@@ -34,14 +34,14 @@
                 <!-- Page Heading -->
                 @isset($header)
                     <header class="bg-white/80 dark:bg-[#09090b]/50 backdrop-blur-lg border-b border-zinc-200/50 dark:border-white/5 sticky top-0 z-10 transition-colors duration-200">
-                        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                        <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
                     </header>
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8">
+                <main class="flex-1 py-4 px-3 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </main>
             </div>

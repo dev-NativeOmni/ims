@@ -1,48 +1,49 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="font-bold text-lg sm:text-xl text-zinc-900 dark:text-white leading-tight">
                 Setoran Hafalan
             </h2>
 
             <a
                 href="{{ route('hafalan-records.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
+                class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]"
             >
-                Input Setoran
+                + Input Setoran
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+    <div class="py-3 sm:py-6">
+        <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4">
             @if (session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-3 rounded-xl text-sm font-semibold">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 px-4 py-3 rounded-xl text-sm font-semibold">
                     {{ session('error') }}
                 </div>
             @endif
 
-            <!-- Hafalan Category Tabs -->
-            <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
+            <!-- Hafalan Category Tabs (Scrollable on Mobile) -->
+            <div class="flex overflow-x-auto items-center gap-2 sm:gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-3 scrollbar-none">
                 <a href="{{ route('hafalan-records.index', array_merge(request()->query(), ['category' => 'reguler'])) }}"
-                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
                     📖 Hafalan Reguler (Juz 1–30)
                 </a>
                 <a href="{{ route('hafalan-records.index', array_merge(request()->query(), ['category' => 'ummi'])) }}"
-                   class="px-4 py-2 rounded-xl font-bold text-sm transition {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200' }}">
+                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
                     🌱 Hafalan Metode Ummi <span class="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-amber-400 text-black ml-1">Khusus Mulai Kelas 10</span>
                 </a>
             </div>
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-3">
-                    <select name="class_room_id" class="rounded-md border-gray-300 shadow-sm">
+            <!-- Filter Section -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
+                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                    <select name="class_room_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Kelas</option>
                         @foreach ($classRooms as $class)
                             <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
@@ -55,11 +56,11 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari santri / surah"
-                        class="rounded-md border-gray-300 shadow-sm"
+                        placeholder="Cari santri / surah..."
+                        class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
                     >
 
-                    <select name="surah_id" class="rounded-md border-gray-300 shadow-sm">
+                    <select name="surah_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Surah</option>
                         @foreach ($surahs as $surah)
                             <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
@@ -68,37 +69,105 @@
                         @endforeach
                     </select>
 
-                    <select name="submission_type" class="rounded-md border-gray-300 shadow-sm">
+                    <select name="submission_type" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Jenis</option>
                         <option value="new" @selected(request('submission_type') === 'new')>Baru</option>
                         <option value="continuation" @selected(request('submission_type') === 'continuation')>Lanjutan</option>
                         <option value="revision" @selected(request('submission_type') === 'revision')>Perbaikan</option>
                     </select>
 
-                    <select name="status" class="rounded-md border-gray-300 shadow-sm">
+                    <select name="status" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Status</option>
                         <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
                         <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
                         <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
                     </select>
 
-                    <div class="flex gap-2">
-                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-800 rounded-md text-xs font-semibold text-white uppercase hover:bg-gray-700">
+                    <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
                             Filter
                         </button>
 
-                        <a href="{{ route('hafalan-records.index') }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-100 rounded-md text-xs font-semibold text-gray-700 uppercase hover:bg-gray-200">
+                        <a href="{{ route('hafalan-records.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
                             Reset
                         </a>
                     </div>
                 </form>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+            <!-- Mobile View: Card Stack (< md) -->
+            <div class="block md:hidden space-y-3">
+                @forelse ($hafalanRecords as $record)
+                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                            <div>
+                                <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                                    {{ $record->student?->name }}
+                                </h3>
+                                <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                    <span>•</span>
+                                    <span>{{ $record->submitted_at?->format('d M Y') }}</span>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0
+                                {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                            ">
+                                {{ $record->status_label }}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Surah & Ayat</span>
+                                <span class="font-bold text-zinc-800 dark:text-zinc-200">
+                                    {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }})
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jenis & Nilai</span>
+                                <span class="font-semibold text-zinc-700 dark:text-zinc-300">
+                                    {{ $record->submission_type_label }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->score_letter ?? '-' }}</strong>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar Mobile -->
+                        <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1">
+                                🔍 Detail
+                            </a>
+                            <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1">
+                                ✏️ Edit
+                            </a>
+                            <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-action-delete w-full">
+                                    🗑️ Hapus
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
+                        Belum ada data setoran hafalan.
+                    </div>
+                @endforelse
+
+                <div class="mt-4">
+                    {{ $hafalanRecords->links() }}
+                </div>
+            </div>
+
+            <!-- Desktop View: Table (>= md) -->
+            <div class="hidden md:block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm rounded-xl">
+                <div class="p-4 sm:p-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
                         <thead>
-                            <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
+                            <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                 <th class="px-4 py-3">Tanggal</th>
                                 <th class="px-4 py-3">Santri</th>
                                 <th class="px-4 py-3">Surah</th>
@@ -110,50 +179,50 @@
                             </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             @forelse ($hafalanRecords as $record)
-                                <tr>
-                                    <td class="px-4 py-3 text-gray-700">
+                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                         {{ $record->submitted_at?->format('d M Y') }}
                                     </td>
 
-                                    <td class="px-4 py-3">
-                                        <div class="font-medium text-gray-900">
+                                    <td class="px-4 py-3.5">
+                                        <div class="font-bold text-xs text-zinc-900 dark:text-white">
                                             {{ $record->student?->name }}
                                         </div>
-                                        <div class="text-sm text-gray-500">
+                                        <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
                                             {{ $record->student?->classRoom?->name ?: '-' }}
                                         </div>
                                     </td>
 
-                                    <td class="px-4 py-3 text-gray-700">
+                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                         {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
                                     </td>
 
-                                    <td class="px-4 py-3 text-gray-700">
+                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                         {{ $record->ayah_start }} - {{ $record->ayah_end }}
                                     </td>
 
-                                    <td class="px-4 py-3 text-gray-700">
+                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                         {{ $record->submission_type_label }}
                                     </td>
 
-                                    <td class="px-4 py-3 font-bold text-gray-800 dark:text-zinc-200">
+                                    <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
                                         {{ $record->score_letter ?? '-' }}
                                     </td>
 
-                                    <td class="px-4 py-3">
-                                        <span class="px-2 py-1 rounded text-xs font-semibold
-                                            {{ $record->status === 'passed' ? 'bg-green-100 text-green-700' : '' }}
-                                            {{ $record->status === 'repeat' ? 'bg-red-100 text-red-700' : '' }}
-                                            {{ $record->status === 'needs_improvement' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                    <td class="px-4 py-3.5">
+                                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
+                                            {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                            {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                            {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
                                         ">
                                             {{ $record->status_label }}
                                         </span>
                                     </td>
 
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-end gap-2">
+                                    <td class="px-4 py-3.5">
+                                        <div class="flex justify-end items-center gap-2">
                                             <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
                                                 Detail
                                             </a>
@@ -175,7 +244,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-4 py-6 text-center text-gray-500">
+                                    <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
                                         Belum ada data setoran hafalan.
                                     </td>
                                 </tr>
