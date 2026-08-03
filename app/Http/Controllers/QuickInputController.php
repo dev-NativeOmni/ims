@@ -352,6 +352,8 @@ class QuickInputController extends Controller
     {
         Gate::authorize('create', HafalanRecord::class);
 
+        $visibleStudentIds = $accessService->visibleStudentIds($request->user());
+
         if (! $request->filled('class_room_id') && $request->filled('student_id')) {
             $student = Student::query()->find((int) $request->input('student_id'));
             if ($student) {
