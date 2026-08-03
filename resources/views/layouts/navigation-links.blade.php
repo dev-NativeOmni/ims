@@ -123,8 +123,14 @@
         </span>
 
         @if ($canManageRecords)
-
-
+            @if ($hasRoute('quick-inputs.index'))
+                <a href="{{ route('quick-inputs.index') }}" class="{{ $getLinkClasses($routeIs('quick-inputs.*')) }}">
+                    <svg class="{{ $getIconClasses($routeIs('quick-inputs.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Input Cepat</span>
+                </a>
+            @endif
             @if ($hasRoute('hafalan-records.index'))
                 <a href="{{ route('hafalan-records.index') }}" class="{{ $getLinkClasses($routeIs('hafalan-records.*')) }}">
                     <svg class="{{ $getIconClasses($routeIs('hafalan-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
