@@ -59,10 +59,10 @@
                      }"
                      class="rounded-2xl border p-4 sm:p-5 shadow-lg transition-all duration-300">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-center">
                         
                         <!-- Search and Navigation Jump -->
-                        <div class="md:col-span-5 grid grid-cols-2 gap-3">
+                        <div class="col-span-12 sm:col-span-1 lg:col-span-5 grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider opacity-70 mb-1">Pilih Surah</label>
                                 <select x-model="surah" 
@@ -97,7 +97,7 @@
                         </div>
                         
                         <!-- Page Input and Arrow Controls -->
-                        <div class="md:col-span-3 flex items-center justify-center gap-3">
+                        <div class="col-span-12 sm:col-span-1 lg:col-span-3 flex items-center justify-center gap-3">
                             <button @click="prevPage()" 
                                     :disabled="page <= 1"
                                     class="p-2.5 rounded-xl border hover:opacity-80 transition-all disabled:opacity-30 shrink-0"
@@ -142,7 +142,7 @@
                         </div>
                         
                         <!-- Settings: Reciter & Theme Toggles -->
-                        <div class="md:col-span-4 flex flex-wrap items-center justify-end gap-3 w-full">
+                        <div class="col-span-12 lg:col-span-4 flex flex-wrap items-center justify-end gap-3 w-full">
                             
                             <!-- Reciter -->
                             <div class="flex-grow sm:flex-grow-0 min-w-[150px]">
@@ -244,14 +244,14 @@
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         
                         <!-- COLUMN 1: MUSHAF PAGE IMAGE (Left on desktop) -->
                         <div x-show="window.innerWidth >= 768 || mobileTab === 'image'" 
-                             class="md:col-span-6 lg:col-span-5 flex flex-col justify-start">
+                             class="col-span-12 lg:col-span-5 flex flex-col justify-start">
                             
                             <!-- Elegant book representation wrapper -->
-                            <div class="relative w-full rounded-2xl p-4 sm:p-6 shadow-2xl border transition-all duration-300 overflow-hidden flex items-center justify-center"
+                            <div class="relative w-full rounded-2xl p-4 sm:p-6 shadow-2xl border transition-all duration-300 overflow-hidden flex flex-col items-center justify-center h-[75vh] lg:h-[82vh] min-h-[500px] lg:min-h-[600px]"
                                  :class="{
                                      'bg-white border-gray-200': theme === 'light',
                                      'bg-[#fcf7e6] border-[#dfd6bc]': theme === 'sepia',
@@ -262,13 +262,12 @@
                                 <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-yellow-600/30 via-yellow-600/5 to-yellow-600/30"></div>
                                 
                                 <!-- Page Image with beautiful filters for Sepia and Dark mode -->
-                                <div class="relative w-full max-w-[500px] border border-yellow-700/20 p-2 sm:p-4 rounded-xl shadow-sm select-none"
+                                <div class="relative w-full max-w-[500px] border border-yellow-700/20 p-2 sm:p-4 rounded-xl shadow-sm select-none flex flex-col justify-between items-center h-full w-full"
                                      :class="{
                                          'bg-white': theme === 'light',
                                          'bg-[#fdfbf7]': theme === 'sepia',
                                          'bg-[#282830]': theme === 'dark'
-                                     }"
-                                     style="min-height: 500px;">
+                                     }">
                                     
                                     <!-- Dynamic Loading Overlay -->
                                     <div x-show="loading" class="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl transition-all">
@@ -282,11 +281,11 @@
                                     <img :src="`https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/${pagePadded}.png`" 
                                          alt="Mushaf Page" 
                                          :style="imageFilterStyle"
-                                         class="w-full h-auto object-contain rounded transition-all duration-300"
+                                         class="w-full h-0 flex-grow object-contain rounded transition-all duration-300"
                                          loading="eager" />
                                          
                                     <!-- Bottom page label helper -->
-                                    <div class="text-center mt-3 text-[10px] tracking-wider opacity-60 font-bold uppercase">
+                                    <div class="text-center mt-3 text-[10px] tracking-wider opacity-60 font-bold uppercase shrink-0">
                                         Madinah Mushaf Layout — Halaman <span x-text="page"></span>
                                     </div>
                                 </div>
@@ -302,15 +301,14 @@
 
                         <!-- COLUMN 2: INTERACTIVE VERSES & TRANSLATIONS (Right on desktop) -->
                         <div x-show="window.innerWidth >= 768 || mobileTab === 'text'" 
-                             class="md:col-span-6 lg:col-span-7 flex flex-col justify-start">
+                             class="col-span-12 lg:col-span-7 flex flex-col justify-start">
                              
-                            <div class="rounded-2xl border p-4 sm:p-6 shadow-xl transition-all duration-300 flex flex-col"
+                            <div class="rounded-2xl border p-4 sm:p-6 shadow-xl transition-all duration-300 flex flex-col h-[75vh] lg:h-[82vh] min-h-[500px] lg:min-h-[600px]"
                                  :class="{
                                      'bg-white border-gray-200': theme === 'light',
                                      'bg-[#f5edd2] border-[#dfd5b2]': theme === 'sepia',
                                      'bg-[#19191d] border-[#292931]': theme === 'dark'
-                                 }"
-                                 style="height: 82vh; min-height: 600px;">
+                                 }">
                                  
                                 <div class="border-b pb-4 flex items-center justify-between shrink-0"
                                      :class="{ 'border-gray-150': theme === 'light', 'border-[#d3c7a0]': theme === 'sepia', 'border-[#2d2d38]': theme === 'dark' }">

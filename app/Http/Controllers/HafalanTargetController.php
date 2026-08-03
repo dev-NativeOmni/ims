@@ -143,7 +143,7 @@ class HafalanTargetController extends Controller
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         $students = Student::query()
-            ->with(['classRoom.program'])
+            ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
             ->where('status', 'active')
             ->orderBy('name')
@@ -220,7 +220,7 @@ class HafalanTargetController extends Controller
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         $students = Student::query()
-            ->with(['classRoom.program'])
+            ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
             ->orderBy('name')
             ->get();

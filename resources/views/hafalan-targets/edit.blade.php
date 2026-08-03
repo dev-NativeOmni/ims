@@ -28,11 +28,19 @@
                 <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6" x-data="{
                     selectedClass: '',
                     selectedStudent: '{{ old('student_id', $target->student_id) }}',
-                    allStudents: [
-                        @foreach($students as $student)
-                            { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}', teacherName: '{{ $student->teacher?->user?->name ?? '' }}' },
+                    selectedSurah: '{{ old('surah_id', $target->surah_id) }}',
+                    allStudents: @json($students->map(fn($student) => [
+                        'id' => $student->id,
+                        'name' => $student->name,
+                        'classId' => (string) $student->class_room_id,
+                        'className' => $student->classRoom?->name ?? '',
+                        'teacherName' => $student->teacher?->user?->name ?? ''
+                    ])),
+                    surahDetails: {
+                        @foreach ($surahs as $surah)
+                            '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
                         @endforeach
-                    ],
+                    },
                     get filteredStudents() {
                         if (!this.selectedClass) return this.allStudents;
                         return this.allStudents.filter(s => s.classId == this.selectedClass);
@@ -60,22 +68,83 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Santri</label>
-                        <select name="student_id" x-model="selectedStudent" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
-                            <option value="">Pilih santri</option>
-                            <template x-for="student in filteredStudents" :key="student.id">
-                                <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '') + (student.teacherName ? ' — Guru: ' + student.teacherName : '')" :selected="student.id == selectedStudent"></option>
-                            </template>
-                        </select>
+                        <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative mt-1">
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="flex items-center justify-between w-full rounded-lg border border-gray-300 bg-white text-left text-sm px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <span x-text="selectedStudent && allStudents.find(s => s.id == selectedStudent) ? allStudents.find(s => s.id == selectedStudent).name + (allStudents.find(s => s.id == selectedStudent).className ? ' — ' + allStudents.find(s => s.id == selectedStudent).className : '') + (allStudents.find(s => s.id == selectedStudent).teacherName ? ' — Guru: ' + allStudents.find(s => s.id == selectedStudent).teacherName : '') : 'Pilih santri'"></span>
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            <div x-show="open" 
+                                 class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200"
+                                 style="display: none;">
+                                <div class="p-2 border-b border-gray-200 bg-gray-50">
+                                    <input type="text" 
+                                           x-model="search" 
+                                           placeholder="Cari nama santri..." 
+                                           class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <ul class="max-h-[180px] overflow-y-auto py-1 text-xs">
+                                    <template x-for="student in filteredStudents.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="student.id">
+                                        <li @click="selectedStudent = student.id; open = false; search = ''" 
+                                            class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
+                                            x-text="student.name + (student.className ? ' — ' + student.className : '') + (student.teacherName ? ' — Guru: ' + student.teacherName : '')">
+                                        </li>
+                                    </template>
+                                    <li x-show="filteredStudents.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                                        class="px-3 py-2 text-gray-500 text-center">
+                                        Santri tidak ditemukan
+                                    </li>
+                                </ul>
+                            </div>
+                            <input type="hidden" name="student_id" x-model="selectedStudent" required>
+                        </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Surah</label>
-                        <select name="surah_id" required data-surah-select class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative mt-1">
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    class="flex items-center justify-between w-full rounded-lg border border-gray-300 bg-white text-left text-sm px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <span x-text="selectedSurah && surahDetails[selectedSurah] ? surahDetails[selectedSurah].number + '. ' + surahDetails[selectedSurah].name + ' — ' + surahDetails[selectedSurah].totalAyah + ' ayat' : 'Pilih surah'"></span>
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            <div x-show="open" 
+                                 class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200"
+                                 style="display: none;">
+                                <div class="p-2 border-b border-gray-200 bg-gray-50">
+                                    <input type="text" 
+                                           x-model="search" 
+                                           placeholder="Cari nama surat..." 
+                                           class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <ul class="max-h-[180px] overflow-y-auto py-1 text-xs">
+                                    <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
+                                        <li @click="selectedSurah = surah.id; $nextTick(() => { const el = document.getElementById('surah_id'); el.dispatchEvent(new Event('change')); }); open = false; search = ''" 
+                                            class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
+                                            x-text="surah.number + '. ' + surah.name + ' — ' + surah.totalAyah + ' ayat'">
+                                        </li>
+                                    </template>
+                                    <li x-show="Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                                        class="px-3 py-2 text-gray-500 text-center">
+                                        Surah tidak ditemukan
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <select id="surah_id" name="surah_id" x-model="selectedSurah" required data-surah-select class="hidden">
                             <option value="">Pilih surah</option>
                             @foreach ($surahs as $surah)
                                 <option value="{{ $surah->id }}"
-                                        data-total-ayah="{{ $surah->total_ayah }}"
-                                        @selected((string) old('surah_id', $target->surah_id) === (string) $surah->id)>
+                                        data-total-ayah="{{ $surah->total_ayah }}">
                                     {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
                                 </option>
                             @endforeach

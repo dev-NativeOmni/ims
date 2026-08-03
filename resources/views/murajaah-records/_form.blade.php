@@ -86,7 +86,7 @@
                            placeholder="Cari nama surat..." 
                            class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-                <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                <ul class="max-h-[180px] overflow-y-auto py-1 text-xs">
                     <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
                         <li @click="surahStart = surah.id; if (!surahEnd || surahEnd == '') { surahEnd = surahStart; }; open = false; search = ''" 
                             class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
@@ -132,7 +132,7 @@
                            placeholder="Cari nama surat..." 
                            class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-                <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                <ul class="max-h-[180px] overflow-y-auto py-1 text-xs">
                     <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
                         <li @click="surahEnd = surah.id; open = false; search = ''" 
                             class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
