@@ -143,9 +143,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('programs/import', [ProgramController::class, 'import'])->name('programs.import');
         Route::resource('programs', ProgramController::class);
 
-        // Class Rooms
         Route::get('class-rooms/export', [ClassRoomController::class, 'export'])->name('class-rooms.export');
         Route::post('class-rooms/import', [ClassRoomController::class, 'import'])->name('class-rooms.import');
+        Route::get('class-rooms/{class_room}/export-capaian', [ClassRoomController::class, 'exportCapaian'])->name('class-rooms.export-capaian');
         Route::resource('class-rooms', ClassRoomController::class);
 
         // Teachers
@@ -222,17 +222,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 
-        Route::get('/quick-inputs', [QuickInputController::class, 'index'])
-            ->name('quick-inputs.index');
-
-        Route::post('/quick-inputs/hafalan', [QuickInputController::class, 'storeHafalan'])
-            ->name('quick-inputs.hafalan.store');
-
-        Route::post('/quick-inputs/murajaah', [QuickInputController::class, 'storeMurajaah'])
-            ->name('quick-inputs.murajaah.store');
-
-        Route::post('/quick-inputs/ummi', [QuickInputController::class, 'storeUmmi'])
-            ->name('quick-inputs.ummi.store');
+        Route::post('/ummi-records', [QuickInputController::class, 'storeUmmi'])
+            ->name('ummi-records.store');
     });
 
     /*
@@ -257,6 +248,12 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,supervisor,coordinator_tahfizh'])->group(function () {
+        Route::get('/hafalan-records/student/{student}/ummi-card', [HafalanRecordController::class, 'ummiCard'])
+            ->name('hafalan-records.student.ummi-card');
+
+        Route::get('/class-rooms/{class_room}/print-ummi-cards', [ClassRoomController::class, 'printUmmiCards'])
+            ->name('class-rooms.print-ummi-cards');
+
         Route::get('/progress', [ProgressController::class, 'index'])
             ->name('progress.index');
 

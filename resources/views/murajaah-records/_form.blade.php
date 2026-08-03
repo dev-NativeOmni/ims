@@ -12,6 +12,11 @@
             { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', nis: '{{ $student->student_number ?? '' }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}' },
         @endforeach
     ],
+    surahDetails: {
+        @foreach ($surahs as $surah)
+            '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
+        @endforeach
+    },
     get filteredStudents() {
         if (!this.selectedClass) return this.allStudents;
         return this.allStudents.filter(s => s.classId == this.selectedClass);
@@ -62,19 +67,40 @@
             {{ $record ? 'Surah' : 'Surah Mulai' }}
         </label>
 
-        <select id="surah_id"
-                name="surah_id"
-                x-model="surahStart"
-                @change="if (!surahEnd || surahEnd == '') { surahEnd = surahStart; }"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                required>
-            <option value="">Pilih Surah{{ $record ? '' : ' Mulai' }}</option>
-            @foreach ($surahs as $surah)
-                <option value="{{ $surah->id }}" @selected(old('surah_id', $record?->surah_id) == $surah->id)>
-                    {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
-                </option>
-            @endforeach
-        </select>
+        <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative mt-1">
+            <button type="button" 
+                    @click="open = !open" 
+                    class="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white text-left text-xs px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                <span x-text="surahStart && surahDetails[surahStart] ? surahDetails[surahStart].number + '. ' + surahDetails[surahStart].name + ' — ' + surahDetails[surahStart].totalAyah + ' ayat' : 'Pilih Surah{{ $record ? \'\' : \' Mulai\' }}'"></span>
+                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            
+            <div x-show="open" 
+                 class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200"
+                 style="display: none;">
+                <div class="p-2 border-b border-gray-200 bg-gray-50">
+                    <input type="text" 
+                           x-model="search" 
+                           placeholder="Cari nama surat..." 
+                           class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                    <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
+                        <li @click="surahStart = surah.id; if (!surahEnd || surahEnd == '') { surahEnd = surahStart; }; open = false; search = ''" 
+                            class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
+                            x-text="surah.number + '. ' + surah.name + ' — ' + surah.totalAyah + ' ayat'">
+                        </li>
+                    </template>
+                    <li x-show="Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                        class="px-3 py-2 text-gray-500 text-center">
+                        Surah tidak ditemukan
+                    </li>
+                </ul>
+            </div>
+            <input type="hidden" id="surah_id" name="surah_id" x-model="surahStart" required>
+        </div>
 
         @error('surah_id')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -87,18 +113,40 @@
             Surah Akhir
         </label>
 
-        <select id="surah_end_id"
-                name="surah_end_id"
-                x-model="surahEnd"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                required>
-            <option value="">Pilih Surah Akhir</option>
-            @foreach ($surahs as $surah)
-                <option value="{{ $surah->id }}">
-                    {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
-                </option>
-            @endforeach
-        </select>
+        <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative mt-1">
+            <button type="button" 
+                    @click="open = !open" 
+                    class="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white text-left text-xs px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                <span x-text="surahEnd && surahDetails[surahEnd] ? surahDetails[surahEnd].number + '. ' + surahDetails[surahEnd].name + ' — ' + surahDetails[surahEnd].totalAyah + ' ayat' : 'Pilih Surah Akhir'"></span>
+                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            
+            <div x-show="open" 
+                 class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200"
+                 style="display: none;">
+                <div class="p-2 border-b border-gray-200 bg-gray-50">
+                    <input type="text" 
+                           x-model="search" 
+                           placeholder="Cari nama surat..." 
+                           class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                    <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
+                        <li @click="surahEnd = surah.id; open = false; search = ''" 
+                            class="px-3 py-2 hover:bg-indigo-600 hover:text-white cursor-pointer transition-colors"
+                            x-text="surah.number + '. ' + surah.name + ' — ' + surah.totalAyah + ' ayat'">
+                        </li>
+                    </template>
+                    <li x-show="Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                        class="px-3 py-2 text-gray-500 text-center">
+                        Surah tidak ditemukan
+                    </li>
+                </ul>
+            </div>
+            <input type="hidden" id="surah_end_id" name="surah_end_id" x-model="surahEnd" required>
+        </div>
 
         @error('surah_end_id')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

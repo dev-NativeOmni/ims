@@ -9,6 +9,7 @@ use App\Models\HafalanRecord;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,34 +21,86 @@ class HafalanRecordController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        $category = $request->query('category', 'reguler');
 
-        $hafalanRecords = HafalanRecord::query()
-            ->with([
-                'student.classRoom.program',
-                'teacher.user',
-                'surah',
-            ])
-            ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                $query->where('teacher_id', $user->teacherProfile?->id);
-            })
-            ->when($request->filled('class_room_id'), function ($query) use ($request) {
-                $query->whereHas('student', function ($q) use ($request) {
-                    $q->where('class_room_id', $request->integer('class_room_id'));
-                });
-            })
-            ->when($request->filled('student_id'), function ($query) use ($request) {
-                $query->where('student_id', $request->integer('student_id'));
-            })
-            ->when($request->filled('surah_id'), function ($query) use ($request) {
-                $query->where('surah_id', $request->integer('surah_id'));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->string('status')->toString());
-            })
-            ->latest('submitted_at')
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+        if ($category === 'ummi') {
+            $hafalanRecords = UmmiRecord::query()
+                ->with([
+                    'student.classRoom.program',
+                    'teacher.user',
+                    'surah',
+                ])
+                ->when($user->hasRole('teacher'), function ($query) use ($user) {
+                    $query->where('teacher_id', $user->teacherProfile?->id);
+                })
+                ->when($request->filled('class_room_id'), function ($query) use ($request) {
+                    $query->whereHas('student', function ($q) use ($request) {
+                        $q->where('class_room_id', $request->integer('class_room_id'));
+                    });
+                })
+                ->when($request->filled('student_id'), function ($query) use ($request) {
+                    $query->where('student_id', $request->integer('student_id'));
+                })
+                ->when($request->filled('surah_id'), function ($query) use ($request) {
+                    $query->where('hafalan_surah_id', $request->integer('surah_id'));
+                })
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    $search = $request->string('search')->trim()->toString();
+                    $query->where(function ($q) use ($search) {
+                        $q->whereHas('student', function ($sub) use ($search) {
+                            $sub->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('surah', function ($sub) use ($search) {
+                            $sub->where('name_latin', 'like', "%{$search}%");
+                        })
+                        ->orWhere('ummi_jilid', 'like', "%{$search}%")
+                        ->orWhere('materi', 'like', "%{$search}%");
+                    });
+                })
+                ->latest('tanggal')
+                ->latest()
+                ->paginate(20)
+                ->withQueryString();
+        } else {
+            $hafalanRecords = HafalanRecord::query()
+                ->with([
+                    'student.classRoom.program',
+                    'teacher.user',
+                    'surah',
+                ])
+                ->when($user->hasRole('teacher'), function ($query) use ($user) {
+                    $query->where('teacher_id', $user->teacherProfile?->id);
+                })
+                ->when($request->filled('class_room_id'), function ($query) use ($request) {
+                    $query->whereHas('student', function ($q) use ($request) {
+                        $q->where('class_room_id', $request->integer('class_room_id'));
+                    });
+                })
+                ->when($request->filled('student_id'), function ($query) use ($request) {
+                    $query->where('student_id', $request->integer('student_id'));
+                })
+                ->when($request->filled('surah_id'), function ($query) use ($request) {
+                    $query->where('surah_id', $request->integer('surah_id'));
+                })
+                ->when($request->filled('status'), function ($query) use ($request) {
+                    $query->where('status', $request->string('status')->toString());
+                })
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    $search = $request->string('search')->trim()->toString();
+                    $query->where(function ($q) use ($search) {
+                        $q->whereHas('student', function ($sub) use ($search) {
+                            $sub->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('surah', function ($sub) use ($search) {
+                            $sub->where('name_latin', 'like', "%{$search}%");
+                        });
+                    });
+                })
+                ->latest('submitted_at')
+                ->latest()
+                ->paginate(20)
+                ->withQueryString();
+        }
 
         return view('hafalan-records.index', array_merge(
             [
@@ -206,5 +259,33 @@ class HafalanRecordController extends Controller
             'surahs' => $surahs,
             'classRooms' => $classRooms,
         ];
+    }
+
+    public function ummiCard(Request $request, Student $student): View
+    {
+        $user = $request->user();
+
+        // Check if student belongs to the visible students for this user
+        $visibleStudentIds = app(\App\Services\StudentProgressService::class)
+            ->visibleStudentQuery($user)
+            ->pluck('id');
+
+        abort_unless($visibleStudentIds->contains($student->id), 403, 'Akses tidak diperbolehkan.');
+
+        $student->load([
+            'classRoom.program',
+            'teacher.user',
+        ]);
+
+        $records = UmmiRecord::with('surah')
+            ->where('student_id', $student->id)
+            ->orderBy('tanggal')
+            ->orderBy('tatap_muka')
+            ->orderBy('id')
+            ->get();
+
+        $latestUmmiRecord = $records->last();
+
+        return view('hafalan-records.ummi-card', compact('student', 'records', 'latestUmmiRecord'));
     }
 }

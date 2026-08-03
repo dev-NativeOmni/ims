@@ -355,7 +355,7 @@ class QuickInputController extends Controller
         $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
         $validator = Validator::make($request->all(), [
-            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
             'tatap_muka' => ['required', 'integer', 'min:1'],
             'tanggal' => ['required', 'date'],
             'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
@@ -371,24 +371,54 @@ class QuickInputController extends Controller
             'disimak_guru' => ['required', Rule::in(['Ya', 'Tidak'])],
             'disimak_ortu' => ['required', Rule::in(['Ya', 'Tidak'])],
             'keterangan' => ['nullable', 'string', 'max:2000'],
+            'student_ids' => ['nullable', 'array'],
+            'student_ids.*' => ['integer', 'exists:students,id'],
+            'student_scores' => ['nullable', 'array'],
+            'student_notes' => ['nullable', 'array'],
         ]);
 
         $validator->after(function ($validator) use ($request, $visibleStudentIds) {
-            if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
-                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+            $classRoomId = (int) $request->input('class_room_id');
+            $hasAccess = Student::query()
+                ->where('class_room_id', $classRoomId)
+                ->whereIn('id', $visibleStudentIds)
+                ->where('status', 'active')
+                ->exists();
+
+            if (! $hasAccess) {
+                $validator->errors()->add('class_room_id', 'Kelas halaqoh tidak memiliki santri aktif atau Anda tidak memiliki akses ke kelas ini.');
             }
         });
 
         $validated = $validator->validate();
 
-        $student = Student::query()->findOrFail($validated['student_id']);
+        $classRoomId = (int) $validated['class_room_id'];
+        $selectedStudentIds = $request->input('student_ids');
 
-        $teacherId = $this->resolveTeacherId($request, $student);
+        if ($selectedStudentIds === null) {
+            $students = Student::query()
+                ->where('class_room_id', $classRoomId)
+                ->whereIn('id', $visibleStudentIds)
+                ->where('status', 'active')
+                ->get();
+        } else {
+            if (empty($selectedStudentIds)) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Silakan pilih minimal satu santri untuk diinput.');
+            }
+            $students = Student::query()
+                ->whereIn('id', array_map('intval', $selectedStudentIds))
+                ->where('class_room_id', $classRoomId)
+                ->whereIn('id', $visibleStudentIds)
+                ->where('status', 'active')
+                ->get();
+        }
 
-        if (! $teacherId) {
+        if ($students->isEmpty()) {
             return back()
                 ->withInput()
-                ->with('error', 'Santri ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data santri.');
+                ->with('error', 'Tidak ada santri aktif di kelas halaqoh yang dipilih.');
         }
 
         $hafalans = [];
@@ -410,51 +440,66 @@ class QuickInputController extends Controller
             ];
         }
 
-        if (empty($hafalans)) {
-            UmmiRecord::query()->create([
-                'student_id' => $student->id,
-                'teacher_id' => $teacherId,
-                'tatap_muka' => $validated['tatap_muka'],
-                'tanggal' => $validated['tanggal'],
-                'hafalan_surah_id' => null,
-                'hafalan_ayah' => null,
-                'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                'ummi_halaman' => $validated['ummi_halaman'] ?? null,
-                'materi' => $validated['materi'] ?? null,
-                'nilai' => $validated['nilai'] ?? null,
-                'disimak_guru' => $validated['disimak_guru'],
-                'disimak_ortu' => $validated['disimak_ortu'],
-                'keterangan' => $validated['keterangan'] ?? null,
-            ]);
-        } else {
-            foreach ($hafalans as $hafalan) {
-                UmmiRecord::query()->create([
-                    'student_id' => $student->id,
-                    'teacher_id' => $teacherId,
-                    'tatap_muka' => $validated['tatap_muka'],
-                    'tanggal' => $validated['tanggal'],
-                    'hafalan_surah_id' => $hafalan['surah_id'],
-                    'hafalan_ayah' => $hafalan['ayah'],
-                    'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                    'ummi_halaman' => $validated['ummi_halaman'] ?? null,
-                    'materi' => $validated['materi'] ?? null,
-                    'nilai' => $validated['nilai'] ?? null,
-                    'disimak_guru' => $validated['disimak_guru'],
-                    'disimak_ortu' => $validated['disimak_ortu'],
-                    'keterangan' => $validated['keterangan'] ?? null,
-                ]);
+        $studentScores = $request->input('student_scores', []);
+        $studentNotes = $request->input('student_notes', []);
+
+        DB::transaction(function () use ($students, $hafalans, $validated, $request, $studentScores, $studentNotes) {
+            foreach ($students as $student) {
+                $teacherId = $this->resolveTeacherId($request, $student);
+                if (! $teacherId) {
+                    continue; // Skip student without teacher profile
+                }
+
+                $individualScore = !empty($studentScores[$student->id]) ? $studentScores[$student->id] : ($validated['nilai'] ?? null);
+                $individualNote = !empty($studentNotes[$student->id]) ? $studentNotes[$student->id] : ($validated['keterangan'] ?? null);
+
+                if (empty($hafalans)) {
+                    UmmiRecord::query()->create([
+                        'student_id' => $student->id,
+                        'teacher_id' => $teacherId,
+                        'tatap_muka' => $validated['tatap_muka'],
+                        'tanggal' => $validated['tanggal'],
+                        'hafalan_surah_id' => null,
+                        'hafalan_ayah' => null,
+                        'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                        'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                        'materi' => $validated['materi'] ?? null,
+                        'nilai' => $individualScore,
+                        'disimak_guru' => $validated['disimak_guru'],
+                        'disimak_ortu' => $validated['disimak_ortu'],
+                        'keterangan' => $individualNote,
+                    ]);
+                } else {
+                    foreach ($hafalans as $hafalan) {
+                        UmmiRecord::query()->create([
+                            'student_id' => $student->id,
+                            'teacher_id' => $teacherId,
+                            'tatap_muka' => $validated['tatap_muka'],
+                            'tanggal' => $validated['tanggal'],
+                            'hafalan_surah_id' => $hafalan['surah_id'],
+                            'hafalan_ayah' => $hafalan['ayah'],
+                            'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                            'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                            'materi' => $validated['materi'] ?? null,
+                            'nilai' => $individualScore,
+                            'disimak_guru' => $validated['disimak_guru'],
+                            'disimak_ortu' => $validated['disimak_ortu'],
+                            'keterangan' => $individualNote,
+                        ]);
+                    }
+                }
             }
-        }
+        });
 
         if ($request->input('redirect_to') === 'hafalan') {
             return redirect()
                 ->route('hafalan-records.index', ['category' => 'ummi'])
-                ->with('success', 'Catatan Tahsin UMMI berhasil disimpan.');
+                ->with('success', 'Catatan Tahsin UMMI berhasil disimpan untuk seluruh kelas.');
         }
 
         return redirect()
             ->route('quick-inputs.index')
-            ->with('success', 'Catatan Tahsin UMMI berhasil disimpan.');
+            ->with('success', 'Catatan Tahsin UMMI berhasil disimpan untuk seluruh kelas.');
     }
 
     private function resolveTeacherId(Request $request, Student $student): ?int

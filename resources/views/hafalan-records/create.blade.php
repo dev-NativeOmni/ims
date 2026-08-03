@@ -27,7 +27,14 @@
                     },
                 @endforeach
             @else
-                { surah_id: '', ayah_start: '', ayah_end: '', submission_type: 'new', score: '', status: 'passed' }
+                {
+                    surah_id: '{{ request('surah_id', '') }}',
+                    ayah_start: '{{ request('ayah_start', '') }}',
+                    ayah_end: '{{ request('ayah_end', '') }}',
+                    submission_type: 'new',
+                    score: '',
+                    status: 'passed'
+                }
             @endif
         ],
         ummiHafalans: [
@@ -38,11 +45,133 @@
                 { id: {{ $student->id }}, name: '{{ addslashes($student->name) }}', nis: '{{ $student->student_number ?? '' }}', classId: '{{ $student->class_room_id }}', className: '{{ $student->classRoom?->name ?? '' }}', level: '{{ $student->tahfizh_level }}' },
             @endforeach
         ],
+        surahDetails: {
+            @foreach ($surahs as $surah)
+                '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
+            @endforeach
+        },
+        calculateLines(surahId, startAyah, endAyah) {
+            if (!surahId || !startAyah || !endAyah) return 0;
+            const details = this.surahDetails[surahId];
+            if (!details) return 0;
+            const surahNumber = details.number;
+            const totalAyah = details.totalAyah;
+
+            const start = parseInt(startAyah);
+            const end = parseInt(endAyah);
+            if (isNaN(start) || isNaN(end) || start > end) return 0;
+
+            if (window.quranPageMapping) {
+                const keyStart = surahNumber + ':' + start;
+                const keyEnd = surahNumber + ':' + end;
+
+                const pageStart = window.quranPageMapping[keyStart];
+                const pageEnd = window.quranPageMapping[keyEnd];
+
+                if (pageStart !== undefined && pageEnd !== undefined) {
+                    if (pageStart === pageEnd) {
+                        let totalVersesOnPage = 0;
+                        for (let k in window.quranPageMapping) {
+                            if (window.quranPageMapping[k] === pageStart) {
+                                totalVersesOnPage++;
+                            }
+                        }
+                        const versesInSetoran = end - start + 1;
+                        const pageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
+                        const lines = (versesInSetoran / Math.max(1, totalVersesOnPage)) * pageCapacity;
+                        return Math.round(lines * 10) / 10;
+                    } else {
+                        // Start Page
+                        let totalVersesOnStartPage = 0;
+                        let versesInSetoranStartPage = 0;
+                        for (let k in window.quranPageMapping) {
+                            if (window.quranPageMapping[k] === pageStart) {
+                                totalVersesOnStartPage++;
+                                const parts = k.split(':');
+                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) >= start) {
+                                    versesInSetoranStartPage++;
+                                }
+                            }
+                        }
+                        const startPageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
+                        const startPageLines = (versesInSetoranStartPage / Math.max(1, totalVersesOnStartPage)) * startPageCapacity;
+
+                        // End Page
+                        let totalVersesOnEndPage = 0;
+                        let versesInSetoranEndPage = 0;
+                        for (let k in window.quranPageMapping) {
+                            if (window.quranPageMapping[k] === pageEnd) {
+                                totalVersesOnEndPage++;
+                                const parts = k.split(':');
+                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) <= end) {
+                                    versesInSetoranEndPage++;
+                                }
+                            }
+                        }
+                        const endPageCapacity = (pageEnd === 1 || pageEnd === 2) ? 7.0 : 15.0;
+                        const endPageLines = (versesInSetoranEndPage / Math.max(1, totalVersesOnEndPage)) * endPageCapacity;
+
+                        // Middle Pages
+                        let middleLines = 0.0;
+                        for (let p = pageStart + 1; p < pageEnd; p++) {
+                            const pageCapacity = (p === 1 || p === 2) ? 7.0 : 15.0;
+                            middleLines += pageCapacity;
+                        }
+
+                        return Math.round((startPageLines + middleLines + endPageLines) * 10) / 10;
+                    }
+                }
+            }
+
+            const pages = {
+                1: 1.0, 2: 48.0, 3: 27.0, 4: 29.0, 5: 22.0, 6: 23.0, 7: 26.0, 8: 10.0, 9: 21.0, 10: 13.0,
+                11: 14.0, 12: 12.0, 13: 7.0, 14: 7.0, 15: 6.0, 16: 15.0, 17: 12.0, 18: 12.0, 19: 7.0, 20: 10.0,
+                21: 10.0, 22: 10.0, 23: 8.0, 24: 10.0, 25: 6.0, 26: 11.0, 27: 9.0, 28: 11.0, 29: 7.0, 30: 6.0,
+                31: 4.0, 32: 3.0, 33: 9.0, 34: 6.0, 35: 6.0, 36: 6.0, 37: 7.0, 38: 5.0, 39: 8.0, 40: 9.0,
+                41: 6.0, 42: 6.0, 43: 7.0, 44: 3.0, 45: 3.0, 46: 4.0, 47: 4.0, 48: 4.0, 49: 2.5, 50: 3.0,
+                51: 2.5, 52: 2.5, 53: 2.5, 54: 2.5, 55: 3.0, 56: 3.0, 57: 4.0, 58: 3.0, 59: 3.0, 60: 2.5,
+                61: 1.5, 62: 1.5, 63: 1.5, 64: 2.0, 65: 2.0, 66: 2.0, 67: 2.5, 68: 2.0, 69: 2.0, 70: 2.0,
+                71: 1.5, 72: 2.0, 73: 1.5, 74: 2.0, 75: 2.0, 76: 2.0, 77: 2.0, 78: 2.0, 79: 2.0, 80: 1.5,
+                81: 1.0, 82: 1.0, 83: 2.0, 84: 1.0, 85: 1.0, 86: 1.0, 87: 1.0, 88: 1.0, 89: 1.5, 90: 1.0,
+                91: 1.0, 92: 1.0, 93: 0.5, 94: 0.5, 95: 0.5, 96: 1.0, 97: 0.5, 98: 1.0, 99: 0.5, 100: 0.5,
+                101: 0.5, 102: 0.5, 103: 0.3, 104: 0.5, 105: 0.3, 106: 0.3, 107: 0.5, 108: 0.3, 109: 0.5, 110: 0.3,
+                111: 0.3, 112: 0.3, 113: 0.3, 114: 0.3
+            };
+            const pageCount = pages[surahNumber] || 1.0;
+            const totalLines = pageCount * 15.0;
+            const versesCount = Math.max(1, end - start + 1);
+            const ratio = Math.min(1.0, versesCount / totalAyah);
+            return Math.round(ratio * totalLines * 10) / 10;
+        },
+        parseAyahRange(ayahStr) {
+            if (!ayahStr) return null;
+            const clean = ayahStr.toString().replace(/\s+/g, '');
+            const matchRange = clean.match(/^(\d+)-(\d+)$/);
+            if (matchRange) {
+                return { start: parseInt(matchRange[1]), end: parseInt(matchRange[2]) };
+            }
+            const matchSingle = clean.match(/^(\d+)$/);
+            if (matchSingle) {
+                return { start: parseInt(matchSingle[1]), end: parseInt(matchSingle[1]) };
+            }
+            return null;
+        },
+        calculateUmmiLines(surahId, ayahStr) {
+            if (!surahId || !ayahStr) return 0;
+            const range = this.parseAyahRange(ayahStr);
+            if (!range) return 0;
+            return this.calculateLines(surahId, range.start, range.end);
+        },
         get filteredStudents() {
             if (!this.selectedClass) return this.allStudents;
             return this.allStudents.filter(s => s.classId == this.selectedClass);
         }
     }" x-init="
+        fetch('/quran_page_mapping.json')
+            .then(res => res.json())
+            .then(data => { window.quranPageMapping = data; })
+            .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
+
         if (selectedStudent) {
             let s = allStudents.find(x => x.id == selectedStudent);
             if (s) selectedClass = s.classId;
@@ -180,17 +309,40 @@
                                             <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                                 Surah
                                             </label>
-                                            <select :name="'surah_ids['+index+']'"
-                                                    x-model="item.surah_id"
-                                                    class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
-                                                    required>
-                                                <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                @foreach ($surahs as $surah)
-                                                    <option value="{{ $surah->id }}" class="dark:bg-zinc-900">
-                                                        {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative">
+                                                <button type="button" 
+                                                        @click="open = !open" 
+                                                        class="flex items-center justify-between w-full rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-left text-xs px-3 py-2 text-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                                    <span x-text="item.surah_id && surahDetails[item.surah_id] ? surahDetails[item.surah_id].number + '. ' + surahDetails[item.surah_id].name + ' — ' + surahDetails[item.surah_id].totalAyah + ' ayat' : 'Pilih Surah'"></span>
+                                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                
+                                                <div x-show="open" 
+                                                     class="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-gray-200 dark:border-zinc-800"
+                                                     style="display: none;">
+                                                    <div class="p-2 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+                                                        <input type="text" 
+                                                               x-model="search" 
+                                                               placeholder="Cari nama surat..." 
+                                                               class="w-full rounded border border-gray-300 dark:border-zinc-700 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                                                    </div>
+                                                    <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                                                        <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
+                                                            <li @click="item.surah_id = surah.id; open = false; search = ''" 
+                                                                class="px-3 py-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-700 cursor-pointer transition-colors"
+                                                                x-text="surah.number + '. ' + surah.name + ' — ' + surah.totalAyah + ' ayat'">
+                                                            </li>
+                                                        </template>
+                                                        <li x-show="Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                                                            class="px-3 py-2 text-gray-500 text-center">
+                                                            Surah tidak ditemukan
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <input type="hidden" :name="'surah_ids['+index+']'" x-model="item.surah_id" required>
+                                            </div>
                                         </div>
 
                                         <div>
@@ -302,7 +454,7 @@
                     </span>
                 </div>
 
-                <form method="POST" action="{{ route('quick-inputs.ummi.store') }}" class="space-y-6">
+                <form method="POST" action="{{ route('ummi-records.store') }}" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="ummi">
                     <input type="hidden" name="redirect_to" value="hafalan">
@@ -385,17 +537,40 @@
                                             <label :for="'ummi_hafalan_surah_' + index" class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                                 Surah
                                             </label>
-                                            <select :id="'ummi_hafalan_surah_' + index"
-                                                    :name="'hafalan_surah_ids['+index+']'"
-                                                    x-model="item.surah_id"
-                                                    class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                                <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                @foreach ($surahs as $surah)
-                                                    <option value="{{ $surah->id }}" class="dark:bg-zinc-900">
-                                                        {{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative">
+                                                 <button type="button" 
+                                                         @click="open = !open" 
+                                                         class="flex items-center justify-between w-full rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-left text-xs px-3 py-2 text-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                                     <span x-text="item.surah_id && surahDetails[item.surah_id] ? surahDetails[item.surah_id].number + '. ' + surahDetails[item.surah_id].name + ' — ' + surahDetails[item.surah_id].totalAyah + ' ayat' : 'Pilih Surah'"></span>
+                                                     <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                     </svg>
+                                                 </button>
+                                                 
+                                                 <div x-show="open" 
+                                                      class="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-900 rounded-md shadow-lg border border-gray-200 dark:border-zinc-800"
+                                                      style="display: none;">
+                                                     <div class="p-2 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900">
+                                                         <input type="text" 
+                                                                x-model="search" 
+                                                                placeholder="Cari nama surat..." 
+                                                                class="w-full rounded border border-gray-300 dark:border-zinc-700 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                                                     </div>
+                                                     <ul class="max-h-48 overflow-y-auto py-1 text-xs">
+                                                         <template x-for="surah in Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase()))" :key="surah.id">
+                                                             <li @click="item.surah_id = surah.id; open = false; search = ''" 
+                                                                 class="px-3 py-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-700 cursor-pointer transition-colors"
+                                                                 x-text="surah.number + '. ' + surah.name + ' — ' + surah.totalAyah + ' ayat'">
+                                                             </li>
+                                                         </template>
+                                                         <li x-show="Object.values(surahDetails).filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
+                                                             class="px-3 py-2 text-gray-500 text-center">
+                                                             Surah tidak ditemukan
+                                                         </li>
+                                                     </ul>
+                                                 </div>
+                                                 <input type="hidden" :id="'ummi_hafalan_surah_' + index" :name="'hafalan_surah_ids['+index+']'" x-model="item.surah_id">
+                                             </div>
                                         </div>
                                         <div class="col-span-4">
                                             <label :for="'ummi_hafalan_ayah_' + index" class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
@@ -422,24 +597,24 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="ummi_jilid" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
-                                        UMMI / Al-Qur'an (Jilid/Surat)
+                                        UMMI (Jilid)
                                     </label>
                                     <input id="ummi_jilid"
                                            type="text"
                                            name="ummi_jilid"
                                            value="{{ old('ummi_jilid') }}"
-                                           placeholder="e.g. Jilid 4 atau QS. Al-Mulk"
+                                           placeholder="e.g. Jilid 4"
                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                 </div>
                                 <div>
                                     <label for="ummi_halaman" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
-                                        Halaman / Ayat
+                                        Halaman
                                     </label>
                                     <input id="ummi_halaman"
                                            type="text"
                                            name="ummi_halaman"
                                            value="{{ old('ummi_halaman') }}"
-                                           placeholder="e.g. Hal 12 atau Ayat 1-5"
+                                           placeholder="e.g. Hal 12"
                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                 </div>
                             </div>

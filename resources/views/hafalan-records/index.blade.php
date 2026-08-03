@@ -40,9 +40,11 @@
                 </a>
             </div>
 
-            <!-- Filter Section -->
+             <!-- Filter Section -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-6' }} gap-2.5 sm:gap-3">
+                    <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
+
                     <select name="class_room_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Kelas</option>
                         @foreach ($classRooms as $class)
@@ -69,6 +71,7 @@
                         @endforeach
                     </select>
 
+                    @if (request('category') !== 'ummi')
                     <select name="submission_type" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Jenis</option>
                         <option value="new" @selected(request('submission_type') === 'new')>Baru</option>
@@ -82,13 +85,14 @@
                         <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
                         <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
                     </select>
+                    @endif
 
                     <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
                             Filter
                         </button>
 
-                        <a href="{{ route('hafalan-records.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
+                        <a href="{{ route('hafalan-records.index', ['category' => request('category', 'reguler')]) }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
                             Reset
                         </a>
                     </div>
@@ -97,65 +101,120 @@
 
             <!-- Mobile View: Card Stack (< md) -->
             <div class="block md:hidden space-y-3">
-                @forelse ($hafalanRecords as $record)
-                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3">
-                        <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
-                            <div>
-                                <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
-                                    {{ $record->student?->name }}
-                                </h3>
-                                <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
-                                    <span>•</span>
-                                    <span>{{ $record->submitted_at?->format('d M Y') }}</span>
+                @if (request('category') === 'ummi')
+                    @forelse ($hafalanRecords as $record)
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3">
+                            <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                                <div>
+                                    <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                                        {{ $record->student?->name }}
+                                    </h3>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                        <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                        <span>•</span>
+                                        <span>{{ $record->tanggal?->format('d M Y') }}</span>
+                                        <span>•</span>
+                                        <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
+                                           target="_blank"
+                                           class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
+                                            📄 Kartu
+                                        </a>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50">
+                                    TM-{{ $record->tatap_muka }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jilid / Hal</span>
+                                    <span class="font-bold text-zinc-800 dark:text-zinc-200">
+                                        {{ $record->ummi_jilid ?: '-' }} {{ $record->ummi_halaman ? 'Hal. ' . $record->ummi_halaman : '' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Materi & Nilai</span>
+                                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">
+                                        {{ $record->materi ?: '-' }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->nilai ?? '-' }}</strong>
+                                    </span>
+                                </div>
+                                @if($record->surah)
+                                <div class="col-span-2 mt-1">
+                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Hafalan UMMI</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">
+                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }})
+                                    </span>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
+                            Belum ada data catatan Tahsin UMMI.
+                        </div>
+                    @endforelse
+                @else
+                    @forelse ($hafalanRecords as $record)
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3">
+                            <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                                <div>
+                                    <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                                        {{ $record->student?->name }}
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                        <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                        <span>•</span>
+                                        <span>{{ $record->submitted_at?->format('d M Y') }}</span>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0
+                                    {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                    {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                    {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                                ">
+                                    {{ $record->status_label }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Surah & Ayat</span>
+                                    <span class="font-bold text-zinc-800 dark:text-zinc-200">
+                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }})
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jenis & Nilai</span>
+                                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">
+                                        {{ $record->submission_type_label }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->score_letter ?? '-' }}</strong>
+                                    </span>
                                 </div>
                             </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0
-                                {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
-                                {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
-                                {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
-                            ">
-                                {{ $record->status_label }}
-                            </span>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                                <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Surah & Ayat</span>
-                                <span class="font-bold text-zinc-800 dark:text-zinc-200">
-                                    {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }})
-                                </span>
-                            </div>
-                            <div>
-                                <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jenis & Nilai</span>
-                                <span class="font-semibold text-zinc-700 dark:text-zinc-300">
-                                    {{ $record->submission_type_label }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->score_letter ?? '-' }}</strong>
-                                </span>
+                            <!-- Action Bar Mobile -->
+                            <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1">
+                                    🔍 Detail
+                                </a>
+                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1">
+                                    ✏️ Edit
+                                </a>
+                                <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-action-delete w-full">
+                                        🗑️ Hapus
+                                    </button>
+                                </form>
                             </div>
                         </div>
-
-                        <!-- Action Bar Mobile -->
-                        <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                            <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1">
-                                🔍 Detail
-                            </a>
-                            <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1">
-                                ✏️ Edit
-                            </a>
-                            <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action-delete w-full">
-                                    🗑️ Hapus
-                                </button>
-                            </form>
+                    @empty
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
+                            Belum ada data setoran hafalan.
                         </div>
-                    </div>
-                @empty
-                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
-                        Belum ada data setoran hafalan.
-                    </div>
-                @endforelse
+                    @endforelse
+                @endif
 
                 <div class="mt-4">
                     {{ $hafalanRecords->links() }}
@@ -166,90 +225,167 @@
             <div class="hidden md:block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm rounded-xl">
                 <div class="p-4 sm:p-6 overflow-x-auto">
                     <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-                        <thead>
-                            <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                                <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">Santri</th>
-                                <th class="px-4 py-3">Surah</th>
-                                <th class="px-4 py-3">Ayat</th>
-                                <th class="px-4 py-3">Jenis</th>
-                                <th class="px-4 py-3">Nilai</th>
-                                <th class="px-4 py-3">Status</th>
-                                <th class="px-4 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-                            @forelse ($hafalanRecords as $record)
-                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
-                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
-                                        {{ $record->submitted_at?->format('d M Y') }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5">
-                                        <div class="font-bold text-xs text-zinc-900 dark:text-white">
-                                            {{ $record->student?->name }}
-                                        </div>
-                                        <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                            {{ $record->student?->classRoom?->name ?: '-' }}
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
-                                        {{ $record->ayah_start }} - {{ $record->ayah_end }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                        {{ $record->submission_type_label }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
-                                        {{ $record->score_letter ?? '-' }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5">
-                                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
-                                            {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
-                                            {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
-                                            {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
-                                        ">
-                                            {{ $record->status_label }}
-                                        </span>
-                                    </td>
-
-                                    <td class="px-4 py-3.5">
-                                        <div class="flex justify-end items-center gap-2">
-                                            <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
-                                                Detail
-                                            </a>
-
-                                            <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit">
-                                                Edit
-                                            </a>
-
-                                            <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit" class="btn-action-delete">
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                        @if (request('category') === 'ummi')
+                            <thead>
+                                <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3">Tanggal</th>
+                                    <th class="px-4 py-3">Santri</th>
+                                    <th class="px-4 py-3">Tatap Muka</th>
+                                    <th class="px-4 py-3">Jilid / Hal</th>
+                                    <th class="px-4 py-3">Materi</th>
+                                    <th class="px-4 py-3">Hafalan UMMI</th>
+                                    <th class="px-4 py-3">Nilai</th>
+                                    <th class="px-4 py-3">Simak</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
-                                        Belum ada data setoran hafalan.
-                                    </td>
+                            </thead>
+
+                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                                @forelse ($hafalanRecords as $record)
+                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                            {{ $record->tanggal?->format('d M Y') }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5">
+                                            <div class="font-bold text-xs text-zinc-900 dark:text-white">
+                                                {{ $record->student?->name }}
+                                            </div>
+                                            <div class="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                                                <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                                <span>•</span>
+                                                <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
+                                                   target="_blank"
+                                                   class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
+                                                    📄 Kartu
+                                                </a>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                            TM-{{ $record->tatap_muka }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 font-semibold whitespace-nowrap">
+                                            {{ $record->ummi_jilid ?: '-' }} {{ $record->ummi_halaman ? 'Hal. ' . $record->ummi_halaman : '' }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                            {{ $record->materi ?: '-' }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                            @if($record->surah)
+                                                {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }})
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
+                                            <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold">
+                                                {{ $record->nilai ?: '-' }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                                            Guru: <span class="font-semibold {{ $record->disimak_guru === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_guru }}</span> | 
+                                            Ortu: <span class="font-semibold {{ $record->disimak_ortu === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_ortu }}</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                            Belum ada data catatan Tahsin UMMI.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        @else
+                            <thead>
+                                <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3">Tanggal</th>
+                                    <th class="px-4 py-3">Santri</th>
+                                    <th class="px-4 py-3">Surah</th>
+                                    <th class="px-4 py-3">Ayat</th>
+                                    <th class="px-4 py-3">Jenis</th>
+                                    <th class="px-4 py-3">Nilai</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right">Aksi</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
+                            </thead>
+
+                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                                @forelse ($hafalanRecords as $record)
+                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                            {{ $record->submitted_at?->format('d M Y') }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5">
+                                            <div class="font-bold text-xs text-zinc-900 dark:text-white">
+                                                {{ $record->student?->name }}
+                                            </div>
+                                            <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                                {{ $record->student?->classRoom?->name ?: '-' }}
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                            {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                            {{ $record->submission_type_label }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
+                                            {{ $record->score_letter ?? '-' }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5">
+                                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
+                                                {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                                {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                                {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                                            ">
+                                                {{ $record->status_label }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-4 py-3.5">
+                                            <div class="flex justify-end items-center gap-2">
+                                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
+                                                    Detail
+                                                </a>
+
+                                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit">
+                                                    Edit
+                                                </a>
+
+                                                <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')">
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button type="submit" class="btn-action-delete">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                            Belum ada data setoran hafalan.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        @endif
                     </table>
 
                     <div class="mt-4">

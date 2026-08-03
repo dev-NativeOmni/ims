@@ -19,12 +19,22 @@
                 </p>
             </div>
 
-            @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'teacher']) || (auth()->user()->hasRole('parent') && auth()->user()->parentProfile?->students()->count() > 1))
-                <a href="{{ route('progress.index') }}"
-                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
-                    Kembali ke Progress
-                </a>
-            @endif
+            <div class="flex items-center gap-2">
+                @if ($student->tahfizh_level === 'ummi' || $student->ummiRecords()->exists())
+                    <a href="{{ route('hafalan-records.student.ummi-card', $student->id) }}"
+                       target="_blank"
+                       class="inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
+                        📄 Cetak Kartu UMMI
+                    </a>
+                @endif
+
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'teacher']) || (auth()->user()->hasRole('parent') && auth()->user()->parentProfile?->students()->count() > 1))
+                    <a href="{{ route('progress.index') }}"
+                       class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                        Kembali ke Progress
+                    </a>
+                @endif
+            </div>
         </div>
     </x-slot>
 

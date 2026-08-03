@@ -61,7 +61,7 @@ class ClassRoomController extends Controller
             ->with('success', 'Kelas berhasil ditambahkan.');
     }
 
-    public function show(ClassRoom $classRoom): View
+    public function show(Request $request, ClassRoom $classRoom): View
     {
         $classRoom->load(['program', 'pendampingAdab'])->loadCount('students');
 
@@ -69,7 +69,199 @@ class ClassRoomController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('class-rooms.show', compact('classRoom', 'students'));
+        // Capaian Hafalan logic
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+        
+        $currentDay = now()->day;
+        if ($currentDay <= 7) $defaultWeek = 1;
+        elseif ($currentDay <= 14) $defaultWeek = 2;
+        elseif ($currentDay <= 21) $defaultWeek = 3;
+        elseif ($currentDay <= 28) $defaultWeek = 4;
+        else $defaultWeek = 5;
+
+        $week = (int) $request->input('week', $defaultWeek);
+
+        // Date ranges for weeks
+        if ($week === 1) {
+            $startDate = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 7)->endOfDay();
+        } elseif ($week === 2) {
+            $startDate = \Carbon\Carbon::create($year, $month, 8)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 14)->endOfDay();
+        } elseif ($week === 3) {
+            $startDate = \Carbon\Carbon::create($year, $month, 15)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 21)->endOfDay();
+        } elseif ($week === 4) {
+            $startDate = \Carbon\Carbon::create($year, $month, 22)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 28)->endOfDay();
+        } else {
+            $startDate = \Carbon\Carbon::create($year, $month, 29)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        }
+
+        $capaianData = [];
+        $allStudents = $classRoom->students()->with(['teacher.user'])->orderBy('name')->get();
+        
+        foreach ($allStudents as $index => $std) {
+            $records = \App\Models\HafalanRecord::with('surah')
+                ->where('student_id', $std->id)
+                ->whereBetween('submitted_at', [$startDate, $endDate])
+                ->where('status', 'passed')
+                ->get();
+                
+            $surahNames = [];
+            $ayatRanges = [];
+            $totalLines = 0;
+            $scores = [];
+            
+            foreach ($records as $rec) {
+                if ($rec->surah) {
+                    $surahNames[] = $rec->surah->name_latin;
+                    $ayatRanges[] = $rec->ayah_start . '-' . $rec->ayah_end;
+                    $totalLines += \App\Http\Controllers\ReportController::calculateLines(
+                        $rec->surah->number,
+                        $rec->ayah_start,
+                        $rec->ayah_end,
+                        $rec->surah->total_ayah
+                    );
+                }
+                if ($rec->score !== null) {
+                    $scores[] = $rec->score_letter;
+                }
+            }
+            
+            $avgScoreLetter = '-';
+            if (!empty($scores)) {
+                $avgScoreLetter = implode(', ', array_unique($scores));
+            }
+            
+            $capaianData[] = [
+                'no' => $index + 1,
+                'student' => $std,
+                'halaqah' => $classRoom->name,
+                'musyrif' => $std->teacher?->user?->name ?? '-',
+                'surah' => implode(', ', $surahNames) ?: '-',
+                'ayat' => implode(', ', $ayatRanges) ?: '-',
+                'baris' => $totalLines,
+                'nilai' => $avgScoreLetter,
+                'kehadiran' => $records->isNotEmpty() ? 'Hadir' : '-'
+            ];
+        }
+
+        return view('class-rooms.show', compact(
+            'classRoom',
+            'students',
+            'capaianData',
+            'month',
+            'year',
+            'week'
+        ));
+    }
+
+    public function exportCapaian(Request $request, ClassRoom $classRoom): StreamedResponse
+    {
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+        $week = (int) $request->input('week', 1);
+
+        // Date ranges for weeks
+        if ($week === 1) {
+            $startDate = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 7)->endOfDay();
+        } elseif ($week === 2) {
+            $startDate = \Carbon\Carbon::create($year, $month, 8)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 14)->endOfDay();
+        } elseif ($week === 3) {
+            $startDate = \Carbon\Carbon::create($year, $month, 15)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 21)->endOfDay();
+        } elseif ($week === 4) {
+            $startDate = \Carbon\Carbon::create($year, $month, 22)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 28)->endOfDay();
+        } else {
+            $startDate = \Carbon\Carbon::create($year, $month, 29)->startOfDay();
+            $endDate = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        }
+
+        $headers = [
+            'No',
+            'Nama Murid',
+            'Halaqah',
+            'Musyrif',
+            'Setoran Surah',
+            'Setoran Ayat',
+            'Jumlah Baris',
+            'Nilai',
+            'Kehadiran'
+        ];
+
+        $data = [];
+        $allStudents = $classRoom->students()->with(['teacher.user'])->orderBy('name')->get();
+        
+        foreach ($allStudents as $index => $std) {
+            $records = \App\Models\HafalanRecord::with('surah')
+                ->where('student_id', $std->id)
+                ->whereBetween('submitted_at', [$startDate, $endDate])
+                ->where('status', 'passed')
+                ->get();
+                
+            $surahNames = [];
+            $ayatRanges = [];
+            $totalLines = 0;
+            $scores = [];
+            
+            foreach ($records as $rec) {
+                if ($rec->surah) {
+                    $surahNames[] = $rec->surah->name_latin;
+                    $ayatRanges[] = $rec->ayah_start . '-' . $rec->ayah_end;
+                    $totalLines += \App\Http\Controllers\ReportController::calculateLines(
+                        $rec->surah->number,
+                        $rec->ayah_start,
+                        $rec->ayah_end,
+                        $rec->surah->total_ayah
+                    );
+                }
+                if ($rec->score !== null) {
+                    $scores[] = $rec->score_letter;
+                }
+            }
+            
+            $avgScoreLetter = '-';
+            if (!empty($scores)) {
+                $avgScoreLetter = implode(', ', array_unique($scores));
+            }
+
+            $data[] = [
+                $index + 1,
+                $std->name,
+                $classRoom->name,
+                $std->teacher?->user?->name ?? '-',
+                implode(', ', $surahNames) ?: '-',
+                implode(', ', $ayatRanges) ?: '-',
+                $totalLines,
+                $avgScoreLetter,
+                $records->isNotEmpty() ? 'Hadir' : '-'
+            ];
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'capaian_export_').'.xlsx';
+        
+        $monthsIndo = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 
+            9 => 'September', 10 => 'Oktobers', 11 => 'November', 12 => 'Desember'
+        ];
+        $monthName = $monthsIndo[$month] ?? 'Bulan';
+        $fileName = 'Capaian_Hafalan_' . str_replace(' ', '_', $classRoom->name) . '_' . $monthName . '_Pekan_' . $week . '.xlsx';
+
+        SimpleXlsxWriter::write($tempFile, $headers, $data);
+
+        return response()->streamDownload(function () use ($tempFile) {
+            readfile($tempFile);
+            @unlink($tempFile);
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function edit(ClassRoom $classRoom): View
@@ -260,5 +452,43 @@ class ClassRoomController extends Controller
 
         return redirect()->route('class-rooms.index')
             ->with('success', "Impor selesai. {$imported} kelas ditambahkan, {$updated} diperbarui.");
+    }
+
+    public function printUmmiCards(Request $request, ClassRoom $classRoom): View
+    {
+        $user = $request->user();
+
+        // Get visible students to ensure access control
+        $visibleStudentIds = app(\App\Services\StudentProgressService::class)
+            ->visibleStudentQuery($user)
+            ->pluck('id');
+
+        $students = $classRoom->students()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn($std) => $visibleStudentIds->contains($std->id))
+            ->values();
+
+        abort_if($students->isEmpty(), 403, 'Akses tidak diperbolehkan atau tidak ada santri aktif di kelas ini.');
+
+        $studentsData = [];
+        foreach ($students as $student) {
+            $records = \App\Models\UmmiRecord::with('surah')
+                ->where('student_id', $student->id)
+                ->orderBy('tanggal')
+                ->orderBy('tatap_muka')
+                ->orderBy('id')
+                ->get();
+
+            $latestUmmiRecord = $records->last();
+            $studentsData[] = [
+                'student' => $student,
+                'records' => $records,
+                'latestUmmiRecord' => $latestUmmiRecord
+            ];
+        }
+
+        return view('class-rooms.print-ummi-cards', compact('classRoom', 'studentsData'));
     }
 }

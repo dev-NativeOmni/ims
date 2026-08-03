@@ -1026,12 +1026,87 @@ class ReportController extends Controller
         ];
     }
 
+    private static ?array $quranMapping = null;
+
     /**
      * Estimates the lines count of a setoran based on the mushaf page layout (15 lines per page)
      */
     public static function calculateLines(int $surahNumber, int $ayahStart, int $ayahEnd, int $totalAyah): float
     {
-        // Page counts of all 114 surahs in standard Medina mushaf (15 lines per page)
+        if (self::$quranMapping === null) {
+            $path = storage_path('app/quran_page_mapping.json');
+            if (file_exists($path)) {
+                self::$quranMapping = json_decode(file_get_contents($path), true) ?: [];
+            } else {
+                self::$quranMapping = [];
+            }
+        }
+
+        $mapping = self::$quranMapping;
+
+        if (!empty($mapping)) {
+            $keyStart = "{$surahNumber}:{$ayahStart}";
+            $keyEnd = "{$surahNumber}:{$ayahEnd}";
+
+            $pageStart = $mapping[$keyStart] ?? null;
+            $pageEnd = $mapping[$keyEnd] ?? null;
+
+            if ($pageStart !== null && $pageEnd !== null) {
+                if ($pageStart == $pageEnd) {
+                    $totalVersesOnPage = 0;
+                    foreach ($mapping as $k => $p) {
+                        if ($p == $pageStart) {
+                            $totalVersesOnPage++;
+                        }
+                    }
+                    $versesInSetoran = max(1, $ayahEnd - $ayahStart + 1);
+                    $pageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
+                    $lines = ($versesInSetoran / max(1, $totalVersesOnPage)) * $pageCapacity;
+                    return round($lines, 1);
+                } else {
+                    // Start Page lines
+                    $totalVersesOnStartPage = 0;
+                    $versesInSetoranStartPage = 0;
+                    foreach ($mapping as $k => $p) {
+                        if ($p == $pageStart) {
+                            $totalVersesOnStartPage++;
+                            list($s, $v) = explode(':', $k);
+                            if ((int)$s == $surahNumber && (int)$v >= $ayahStart) {
+                                $versesInSetoranStartPage++;
+                            }
+                        }
+                    }
+                    $startPageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
+                    $startPageLines = ($versesInSetoranStartPage / max(1, $totalVersesOnStartPage)) * $startPageCapacity;
+
+                    // End Page lines
+                    $totalVersesOnEndPage = 0;
+                    $versesInSetoranEndPage = 0;
+                    foreach ($mapping as $k => $p) {
+                        if ($p == $pageEnd) {
+                            $totalVersesOnEndPage++;
+                            list($s, $v) = explode(':', $k);
+                            if ((int)$s == $surahNumber && (int)$v <= $ayahEnd) {
+                                $versesInSetoranEndPage++;
+                            }
+                        }
+                    }
+                    $endPageCapacity = ($pageEnd == 1 || $pageEnd == 2) ? 7.0 : 15.0;
+                    $endPageLines = ($versesInSetoranEndPage / max(1, $totalVersesOnEndPage)) * $endPageCapacity;
+
+                    // Middle Pages lines
+                    $middleLines = 0.0;
+                    for ($p = $pageStart + 1; $p < $pageEnd; $p++) {
+                        $pageCapacity = ($p == 1 || $p == 2) ? 7.0 : 15.0;
+                        $middleLines += $pageCapacity;
+                    }
+
+                    return round($startPageLines + $middleLines + $endPageLines, 1);
+                }
+            }
+        }
+
+        // Fallback to original ratio calculator if mapping not loaded
         $pages = [
             1 => 1.0, 2 => 48.0, 3 => 27.0, 4 => 29.0, 5 => 22.0, 6 => 23.0, 7 => 26.0, 8 => 10.0, 9 => 21.0, 10 => 13.0,
             11 => 14.0, 12 => 12.0, 13 => 7.0, 14 => 7.0, 15 => 6.0, 16 => 15.0, 17 => 12.0, 18 => 12.0, 19 => 7.0, 20 => 10.0,

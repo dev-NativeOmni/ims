@@ -100,16 +100,24 @@ class HafalanTargetController extends Controller
                 ->count(),
         ];
 
+        $allVisibleStudents = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->get();
+
+        $classRoomIds = $allVisibleStudents->pluck('class_room_id')->filter()->unique()->values();
+        $classRooms = ClassRoom::query()
+            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
+            ->orderBy('name')
+            ->get();
+
         $students = Student::query()
             ->with(['classRoom.program'])
             ->whereIn('id', $visibleStudentIds)
             ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
-        $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
-        $classRooms = ClassRoom::query()
-            ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
+            ->when($request->filled('class_room_id'), function ($q) use ($request) {
+                $q->where('class_room_id', $request->integer('class_room_id'));
+            })
             ->orderBy('name')
             ->get();
 

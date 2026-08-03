@@ -20,6 +20,13 @@ class StoreHafalanRecordRequest extends FormRequest
             $this->merge([
                 'teacher_id' => $this->user()->teacherProfile?->id,
             ]);
+        } else {
+            $student = Student::find($this->input('student_id'));
+            if ($student) {
+                $this->merge([
+                    'teacher_id' => $student->teacher_id,
+                ]);
+            }
         }
 
         if (! $this->has('surah_ids')) {
