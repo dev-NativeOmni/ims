@@ -10,12 +10,16 @@
         </div>
     </x-slot>
 
+    <script>
+        window.latestTatapMukaPerStudent = @json($latestTatapMukaPerStudent ?? []);
+    </script>
+
     <div class="py-8" x-data="{
         method: '{{ old('method', request('method', 'reguler')) }}',
         selectedClass: '',
         selectedStudent: '{{ old('student_id') }}',
         tatapMuka: {{ old('tatap_muka', 1) }},
-        latestTatapMukaPerStudent: @json($latestTatapMukaPerStudent ?? []),
+        latestTatapMukaPerStudent: window.latestTatapMukaPerStudent || {},
         hafalans: [
             @if(old('surah_ids'))
                 @foreach(old('surah_ids') as $index => $oldSurahId)

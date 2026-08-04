@@ -54,12 +54,16 @@
                 </div>
             @endif
 
+    <script>
+        window.latestTatapMukaPerClass = @json($latestTatapMukaPerClass ?? []);
+    </script>
+
              <div x-data="{
                 inputMode: '{{ old('input_mode', 'reguler') }}',
                 selectedClass: '',
                 selectedStudentId: '{{ old('student_id', request('student_id', '')) }}',
                 tatapMuka: {{ old('tatap_muka', 1) }},
-                latestTatapMukaPerClass: @json($latestTatapMukaPerClass ?? []),
+                latestTatapMukaPerClass: window.latestTatapMukaPerClass || {},
                 surahStartHafalan: '{{ old('surah_id', '') }}',
                 surahEndHafalan: '{{ old('surah_end_id', '') }}',
                 surahStartMurajaah: '{{ old('surah_id', '') }}',
