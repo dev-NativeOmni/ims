@@ -286,6 +286,10 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:super_admin,admin,teacher,supervisor,coordinator_tahfizh')
             ->name('attendances.save');
 
+        Route::get('/admin/reports/quarterly', [\App\Http\Controllers\QuarterlyReportController::class, 'index'])
+            ->middleware('role:super_admin,admin')
+            ->name('reports.quarterly');
+
         Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
             ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
             ->name('reports.periodic.print');
