@@ -84,6 +84,11 @@ class Student extends Model
         return $this->hasMany(StudentPoint::class);
     }
 
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function getTahfizhLevelLabelAttribute(): string
     {
         return match ($this->tahfizh_level) {

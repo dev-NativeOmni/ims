@@ -290,6 +290,14 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
             ->name('reports.whatsapp');
 
+        Route::get('/attendances/check', [\App\Http\Controllers\AttendanceController::class, 'check'])
+            ->middleware('role:super_admin,admin,teacher,supervisor,coordinator_tahfizh')
+            ->name('attendances.check');
+
+        Route::post('/attendances/save', [\App\Http\Controllers\AttendanceController::class, 'save'])
+            ->middleware('role:super_admin,admin,teacher,supervisor,coordinator_tahfizh')
+            ->name('attendances.save');
+
         Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
             ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
             ->name('reports.periodic.print');

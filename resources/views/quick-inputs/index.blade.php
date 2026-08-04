@@ -62,8 +62,55 @@
                 inputMode: '{{ old('input_mode', 'reguler') }}',
                 selectedClass: '',
                 selectedStudentId: '{{ old('student_id', request('student_id', '')) }}',
+                selectedDate: '{{ now()->format('Y-m-d') }}',
                 tatapMuka: {{ old('tatap_muka', 1) }},
                 latestTatapMukaPerClass: window.latestTatapMukaPerClass || {},
+                attendances: {},
+                isLoadingAttendance: false,
+                fetchAttendances() {
+                    if (!this.selectedClass) {
+                        this.attendances = {};
+                        return;
+                    }
+                    this.isLoadingAttendance = true;
+                    axios.get('/attendances/check', {
+                        params: {
+                            class_room_id: this.selectedClass,
+                            date: this.selectedDate
+                        }
+                    })
+                    .then(res => {
+                        if (res.data && res.data.attendances) {
+                            let map = {};
+                            res.data.attendances.forEach(att => {
+                                map[att.id] = att.status;
+                            });
+                            this.attendances = map;
+                        }
+                    })
+                    .catch(err => console.error('Gagal mengambil presensi:', err))
+                    .finally(() => {
+                        this.isLoadingAttendance = false;
+                    });
+                },
+                saveAttendance(studentId, status) {
+                    this.attendances[studentId] = status;
+                    axios.post('/attendances/save', {
+                        student_id: studentId,
+                        class_room_id: this.selectedClass,
+                        tanggal: this.selectedDate,
+                        status: status
+                    })
+                    .then(res => {
+                        if (!res.data.success) {
+                            alert('Gagal menyimpan presensi: ' + res.data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Gagal menyimpan presensi:', err);
+                        alert('Gagal menyimpan presensi. Pastikan koneksi internet aktif.');
+                    });
+                },
                 surahStartHafalan: '{{ old('surah_id', '') }}',
                 surahEndHafalan: '{{ old('surah_end_id', '') }}',
                 surahStartMurajaah: '{{ old('surah_id', '') }}',
@@ -193,14 +240,17 @@
                     if (!range) return 0;
                     return this.calculateLines(surahId, range.start, range.end);
                 },
-                get filteredStudents() {
+                 get filteredStudents() {
                     if (!this.selectedClass) return this.allStudents;
-                    return this.allStudents.filter(s => s.classId == this.selectedClass);
+                    return this.allStudents.filter(s => {
+                        if (s.classId != this.selectedClass) return false;
+                        return this.attendances[s.id] === 'hadir';
+                    });
                 },
                 get isUmmiSelected() {
                     return this.inputMode === 'ummi';
                 }
-            }" x-init="
+             }" x-init="
                 fetch('{{ asset('quran_page_mapping.json') }}')
                     .then(res => res.json())
                     .then(data => { window.quranPageMapping = data; })
@@ -218,12 +268,18 @@
 
                 if (selectedClass) {
                     tatapMuka = (latestTatapMukaPerClass[selectedClass] || 0) + 1;
+                    fetchAttendances();
                 }
 
                 $watch('selectedClass', (val) => {
                     if (val) {
                         tatapMuka = (latestTatapMukaPerClass[val] || 0) + 1;
                     }
+                    fetchAttendances();
+                });
+
+                $watch('selectedDate', (val) => {
+                    fetchAttendances();
                 });
             " class="space-y-6">
 
@@ -274,6 +330,85 @@
                                 class="flex-1 md:flex-initial px-4 py-2 text-xs rounded-md transition-all duration-150 whitespace-nowrap">
                             Tahsin UMMI (Per Kelas Halaqoh)
                         </button>
+                    </div>
+                </div>
+
+                <!-- TABEL PRESENSI HARIAN -->
+                <div x-show="selectedClass" class="bg-white border rounded-xl p-5 shadow-sm space-y-4" style="display: none;">
+                    <div class="border-b pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-sm">Tabel Presensi Kelas</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Isi kehadiran santri terlebih dahulu untuk hari ini. Hanya murid yang ditandai <strong>Hadir</strong> yang dapat dipilih untuk setoran hafalan.</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span>Tanggal Presensi:</span>
+                            <span class="font-bold text-gray-800" x-text="selectedDate"></span>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div x-show="isLoadingAttendance" class="py-8 text-center text-sm text-gray-500">
+                        <svg class="animate-spin h-5 w-5 text-indigo-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Memuat data presensi...
+                    </div>
+
+                    <!-- Attendance Table -->
+                    <div x-show="!isLoadingAttendance" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">No</th>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Santri</th>
+                                    <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Hadir</th>
+                                    <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Sakit</th>
+                                    <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Izin</th>
+                                    <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Alpa</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-150">
+                                <template x-for="(student, index) in allStudents.filter(s => s.classId == selectedClass)" :key="student.id">
+                                    <tr class="hover:bg-gray-55/50">
+                                        <td class="px-4 py-2 text-xs font-bold text-gray-400" x-text="index + 1"></td>
+                                        <td class="px-4 py-2 text-xs font-bold text-gray-900" x-text="student.name"></td>
+                                        <td class="px-4 py-2 text-center">
+                                            <input type="radio" 
+                                                   :name="'attendance_global_' + student.id" 
+                                                   value="hadir" 
+                                                   :checked="attendances[student.id] === 'hadir'"
+                                                   @change="saveAttendance(student.id, 'hadir')"
+                                                   class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <input type="radio" 
+                                                   :name="'attendance_global_' + student.id" 
+                                                   value="sakit" 
+                                                   :checked="attendances[student.id] === 'sakit'"
+                                                   @change="saveAttendance(student.id, 'sakit')"
+                                                   class="h-4 w-4 text-yellow-600 border-gray-300 focus:ring-yellow-500 cursor-pointer">
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <input type="radio" 
+                                                   :name="'attendance_global_' + student.id" 
+                                                   value="izin" 
+                                                   :checked="attendances[student.id] === 'izin'"
+                                                   @change="saveAttendance(student.id, 'izin')"
+                                                   class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <input type="radio" 
+                                                   :name="'attendance_global_' + student.id" 
+                                                   value="alpa" 
+                                                   :checked="attendances[student.id] === 'alpa'"
+                                                   @change="saveAttendance(student.id, 'alpa')"
+                                                   class="h-4 w-4 text-red-650 border-gray-300 focus:ring-red-500 cursor-pointer">
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -444,7 +579,7 @@
                                        type="date"
                                        name="submitted_at"
                                        required
-                                       value="{{ old('submitted_at', now()->toDateString()) }}"
+                                       x-model="selectedDate"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
                         </div>
@@ -650,7 +785,7 @@
                                        type="date"
                                        name="reviewed_at"
                                        required
-                                       value="{{ old('reviewed_at', now()->toDateString()) }}"
+                                       x-model="selectedDate"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
                         </div>
@@ -738,7 +873,7 @@
                                            type="date"
                                            name="tanggal"
                                            required
-                                           value="{{ old('tanggal', now()->toDateString()) }}"
+                                           x-model="selectedDate"
                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 </div>
                             </div>

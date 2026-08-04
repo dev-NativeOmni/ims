@@ -18,8 +18,55 @@
         method: '{{ old('method', request('method', 'reguler')) }}',
         selectedClass: '',
         selectedStudent: '{{ old('student_id') }}',
+        selectedDate: '{{ now()->format('Y-m-d') }}',
         tatapMuka: {{ old('tatap_muka', 1) }},
         latestTatapMukaPerStudent: window.latestTatapMukaPerStudent || {},
+        attendances: {},
+        isLoadingAttendance: false,
+        fetchAttendances() {
+            if (!this.selectedClass) {
+                this.attendances = {};
+                return;
+            }
+            this.isLoadingAttendance = true;
+            axios.get('/attendances/check', {
+                params: {
+                    class_room_id: this.selectedClass,
+                    date: this.selectedDate
+                }
+            })
+            .then(res => {
+                if (res.data && res.data.attendances) {
+                    let map = {};
+                    res.data.attendances.forEach(att => {
+                        map[att.id] = att.status;
+                    });
+                    this.attendances = map;
+                }
+            })
+            .catch(err => console.error('Gagal mengambil presensi:', err))
+            .finally(() => {
+                this.isLoadingAttendance = false;
+            });
+        },
+        saveAttendance(studentId, status) {
+            this.attendances[studentId] = status;
+            axios.post('/attendances/save', {
+                student_id: studentId,
+                class_room_id: this.selectedClass,
+                tanggal: this.selectedDate,
+                status: status
+            })
+            .then(res => {
+                if (!res.data.success) {
+                    alert('Gagal menyimpan presensi: ' + res.data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Gagal menyimpan presensi:', err);
+                alert('Gagal menyimpan presensi. Pastikan koneksi internet aktif.');
+            });
+        },
         hafalans: [
             @if(old('surah_ids'))
                 @foreach(old('surah_ids') as $index => $oldSurahId)
@@ -170,7 +217,10 @@
         },
         get filteredStudents() {
             if (!this.selectedClass) return this.allStudents;
-            return this.allStudents.filter(s => s.classId == this.selectedClass);
+            return this.allStudents.filter(s => {
+                if (s.classId != this.selectedClass) return false;
+                return this.attendances[s.id] === 'hadir';
+            });
         }
     }" x-init="
         fetch('{{ asset('quran_page_mapping.json') }}')
@@ -191,6 +241,18 @@
                 tatapMuka = (latestTatapMukaPerStudent[val] || 0) + 1;
             }
         });
+
+        $watch('selectedClass', (val) => {
+            fetchAttendances();
+        });
+
+        $watch('selectedDate', (val) => {
+            fetchAttendances();
+        });
+
+        if (selectedClass) {
+            fetchAttendances();
+        }
     ">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
@@ -226,6 +288,85 @@
                     </ul>
                 </div>
             @endif
+
+            <!-- TABEL PRESENSI HARIAN -->
+            <div x-show="selectedClass" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6" style="display: none;">
+                <div class="border-b dark:border-zinc-800 pb-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-bold text-gray-900 dark:text-white text-base">Tabel Presensi Kelas</h3>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Isi kehadiran santri terlebih dahulu untuk hari ini. Hanya murid yang ditandai <strong>Hadir</strong> yang dapat dipilih untuk setoran hafalan.</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                        <span>Tanggal Presensi:</span>
+                        <span class="font-bold text-gray-800 dark:text-zinc-200" x-text="selectedDate"></span>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="isLoadingAttendance" class="py-8 text-center text-sm text-gray-500">
+                    <svg class="animate-spin h-5 w-5 text-indigo-655 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memuat data presensi...
+                </div>
+
+                <!-- Attendance Table -->
+                <div x-show="!isLoadingAttendance" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-250 dark:divide-zinc-800">
+                        <thead class="bg-gray-50 dark:bg-zinc-850">
+                            <tr>
+                                <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-12">No</th>
+                                <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Nama Santri</th>
+                                <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Hadir</th>
+                                <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Sakit</th>
+                                <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Izin</th>
+                                <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Alpa</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-150 dark:divide-zinc-800">
+                            <template x-for="(student, index) in allStudents.filter(s => s.classId == selectedClass)" :key="student.id">
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
+                                    <td class="px-4 py-2 text-xs font-bold text-gray-400 dark:text-zinc-600" x-text="index + 1"></td>
+                                    <td class="px-4 py-2 text-xs font-bold text-gray-900 dark:text-zinc-200" x-text="student.name"></td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="radio" 
+                                               :name="'attendance_' + student.id" 
+                                               value="hadir" 
+                                               :checked="attendances[student.id] === 'hadir'"
+                                               @change="saveAttendance(student.id, 'hadir')"
+                                               class="h-4 w-4 text-indigo-600 border-gray-300 dark:border-zinc-700 focus:ring-indigo-500 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="radio" 
+                                               :name="'attendance_' + student.id" 
+                                               value="sakit" 
+                                               :checked="attendances[student.id] === 'sakit'"
+                                               @change="saveAttendance(student.id, 'sakit')"
+                                               class="h-4 w-4 text-yellow-600 border-gray-300 dark:border-zinc-700 focus:ring-yellow-500 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="radio" 
+                                               :name="'attendance_' + student.id" 
+                                               value="izin" 
+                                               :checked="attendances[student.id] === 'izin'"
+                                               @change="saveAttendance(student.id, 'izin')"
+                                               class="h-4 w-4 text-blue-600 border-gray-300 dark:border-zinc-700 focus:ring-blue-500 cursor-pointer">
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="radio" 
+                                               :name="'attendance_' + student.id" 
+                                               value="alpa" 
+                                               :checked="attendances[student.id] === 'alpa'"
+                                               @change="saveAttendance(student.id, 'alpa')"
+                                               class="h-4 w-4 text-red-650 border-gray-300 dark:border-zinc-700 focus:ring-red-500 cursor-pointer">
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <!-- FORM 1: METODE REGULER -->
             <div x-show="method === 'reguler'" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
@@ -285,7 +426,7 @@
                             <input id="submitted_at_reguler"
                                    name="submitted_at"
                                    type="date"
-                                   value="{{ old('submitted_at', now()->format('Y-m-d')) }}"
+                                   x-model="selectedDate"
                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
                                    required>
                             @error('submitted_at')
@@ -532,7 +673,7 @@
                                            type="date"
                                            name="tanggal"
                                            required
-                                           value="{{ old('tanggal', now()->toDateString()) }}"
+                                           x-model="selectedDate"
                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                 </div>
                             </div>
