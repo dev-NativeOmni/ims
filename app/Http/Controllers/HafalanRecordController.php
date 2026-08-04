@@ -253,11 +253,17 @@ class HafalanRecordController extends Controller
             ->orderBy('name')
             ->get();
 
+        $latestTatapMukaPerStudent = DB::table('ummi_records')
+            ->select('student_id', DB::raw('MAX(tatap_muka) as max_tatap_muka'))
+            ->groupBy('student_id')
+            ->pluck('max_tatap_muka', 'student_id');
+
         return [
             'students' => $students,
             'teachers' => $teachers,
             'surahs' => $surahs,
             'classRooms' => $classRooms,
+            'latestTatapMukaPerStudent' => $latestTatapMukaPerStudent,
         ];
     }
 

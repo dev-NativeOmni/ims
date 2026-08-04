@@ -286,6 +286,10 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
             ->name('reports.periodic');
 
+        Route::get('/reports/whatsapp', [ReportController::class, 'whatsappDaily'])
+            ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
+            ->name('reports.whatsapp');
+
         Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
             ->middleware('role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh')
             ->name('reports.periodic.print');

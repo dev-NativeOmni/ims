@@ -14,6 +14,8 @@
         method: '{{ old('method', request('method', 'reguler')) }}',
         selectedClass: '',
         selectedStudent: '{{ old('student_id') }}',
+        tatapMuka: {{ old('tatap_muka', 1) }},
+        latestTatapMukaPerStudent: @json($latestTatapMukaPerStudent ?? []),
         hafalans: [
             @if(old('surah_ids'))
                 @foreach(old('surah_ids') as $index => $oldSurahId)
@@ -167,15 +169,24 @@
             return this.allStudents.filter(s => s.classId == this.selectedClass);
         }
     }" x-init="
-        fetch('/quran_page_mapping.json')
+        fetch('{{ asset('quran_page_mapping.json') }}')
             .then(res => res.json())
             .then(data => { window.quranPageMapping = data; })
             .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
 
         if (selectedStudent) {
             let s = allStudents.find(x => x.id == selectedStudent);
-            if (s) selectedClass = s.classId;
+            if (s) {
+                selectedClass = s.classId;
+                tatapMuka = (latestTatapMukaPerStudent[selectedStudent] || 0) + 1;
+            }
         }
+
+        $watch('selectedStudent', (val) => {
+            if (val) {
+                tatapMuka = (latestTatapMukaPerStudent[val] || 0) + 1;
+            }
+        });
     ">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
@@ -413,6 +424,10 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="mt-2 text-right text-xs text-gray-500 font-semibold" x-show="item.surah_id && item.ayah_start && item.ayah_end && parseInt(item.ayah_start) <= parseInt(item.ayah_end)">
+                                        <span>Taksiran Capaian:</span>
+                                        <span class="px-2 py-0.5 rounded bg-zinc-150 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-extrabold" x-text="calculateLines(item.surah_id, item.ayah_start, item.ayah_end) + ' Baris'"></span>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -502,7 +517,7 @@
                                            name="tatap_muka"
                                            min="1"
                                            required
-                                           value="{{ old('tatap_muka', 1) }}"
+                                           x-model.number="tatapMuka"
                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                 </div>
                                 <div>

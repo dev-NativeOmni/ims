@@ -58,6 +58,8 @@
                 inputMode: '{{ old('input_mode', 'reguler') }}',
                 selectedClass: '',
                 selectedStudentId: '{{ old('student_id', request('student_id', '')) }}',
+                tatapMuka: {{ old('tatap_muka', 1) }},
+                latestTatapMukaPerClass: @json($latestTatapMukaPerClass ?? []),
                 surahStartHafalan: '{{ old('surah_id', '') }}',
                 surahEndHafalan: '{{ old('surah_end_id', '') }}',
                 surahStartMurajaah: '{{ old('surah_id', '') }}',
@@ -195,7 +197,7 @@
                     return this.inputMode === 'ummi';
                 }
             }" x-init="
-                fetch('/quran_page_mapping.json')
+                fetch('{{ asset('quran_page_mapping.json') }}')
                     .then(res => res.json())
                     .then(data => { window.quranPageMapping = data; })
                     .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
@@ -209,7 +211,17 @@
                         }
                     }
                 }
-            }" class="space-y-6">
+
+                if (selectedClass) {
+                    tatapMuka = (latestTatapMukaPerClass[selectedClass] || 0) + 1;
+                }
+
+                $watch('selectedClass', (val) => {
+                    if (val) {
+                        tatapMuka = (latestTatapMukaPerClass[val] || 0) + 1;
+                    }
+                });
+            " class="space-y-6">
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white rounded-xl shadow-sm border p-5">
@@ -711,7 +723,7 @@
                                            name="tatap_muka"
                                            min="1"
                                            required
-                                           value="{{ old('tatap_muka', 1) }}"
+                                           x-model.number="tatapMuka"
                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 </div>
                                 <div>

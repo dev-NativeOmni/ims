@@ -1035,6 +1035,9 @@ class ReportController extends Controller
     {
         if (self::$quranMapping === null) {
             $path = storage_path('app/quran_page_mapping.json');
+            if (!file_exists($path)) {
+                $path = public_path('quran_page_mapping.json');
+            }
             if (file_exists($path)) {
                 self::$quranMapping = json_decode(file_get_contents($path), true) ?: [];
             } else {
@@ -1133,5 +1136,164 @@ class ReportController extends Controller
         $ratio = min(1.0, $versesCount / $totalAyah);
 
         return round($ratio * $totalLines, 1);
+    }
+
+    public function whatsappDaily(Request $request)
+    {
+        $user = $request->user();
+        $visibleStudentIds = $this->visibleStudentIds($user);
+
+        // Fetch classrooms available to user
+        $classRooms = ClassRoom::query()
+            ->whereHas('students', function ($q) use ($visibleStudentIds) {
+                $q->whereIn('id', $visibleStudentIds);
+            })
+            ->orderBy('name')
+            ->get();
+
+        if ($classRooms->isEmpty()) {
+            return view('reports.whatsapp', [
+                'classRooms' => collect(),
+                'selectedClass' => null,
+                'students' => [],
+                'selectedDate' => date('Y-m-d'),
+                'selectedClassId' => null,
+                'hasUmmiRecords' => false,
+                'classUmmiJilid' => '',
+                'classUmmiHalaman' => '',
+                'classUmmiHafalanSurah' => '',
+                'musyrifName' => 'Tanpa Pembimbing',
+            ]);
+        }
+
+        $selectedClassId = $request->integer('class_room_id', $classRooms->first()->id);
+        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+        $selectedDate = $request->input('date', date('Y-m-d'));
+
+        // Get class students
+        $students = Student::query()
+            ->with(['teacher.user'])
+            ->whereIn('id', $visibleStudentIds)
+            ->where('class_room_id', $selectedClassId)
+            ->orderBy('name')
+            ->get();
+
+        $studentIds = $students->pluck('id');
+
+        // Fetch records for this date
+        $hafalanRecords = \App\Models\HafalanRecord::query()
+            ->with(['surah'])
+            ->whereIn('student_id', $studentIds)
+            ->whereDate('submitted_at', $selectedDate)
+            ->get();
+
+        $murajaahRecords = \App\Models\MurajaahRecord::query()
+            ->with(['surah'])
+            ->whereIn('student_id', $studentIds)
+            ->whereDate('reviewed_at', $selectedDate)
+            ->get();
+
+        $ummiRecords = \App\Models\UmmiRecord::query()
+            ->with(['surah'])
+            ->whereIn('student_id', $studentIds)
+            ->whereDate('tanggal', $selectedDate)
+            ->get();
+
+        // Check if there is any UmmiRecord to suggest the default layout type
+        $hasUmmiRecords = $ummiRecords->isNotEmpty();
+
+        // Extract class-wide Ummi details if they exist
+        $classUmmiJilid = '';
+        $classUmmiHalaman = '';
+        $classUmmiHafalanSurah = '';
+        
+        if ($hasUmmiRecords) {
+            $firstUmmi = $ummiRecords->first();
+            $classUmmiJilid = $firstUmmi->ummi_jilid;
+            $classUmmiHalaman = $firstUmmi->ummi_halaman;
+            if ($firstUmmi->surah) {
+                $classUmmiHafalanSurah = $firstUmmi->surah->name_latin;
+            }
+        }
+
+        // We will build the student records map for the frontend:
+        $studentData = [];
+        foreach ($students as $student) {
+            $hRecs = $hafalanRecords->where('student_id', $student->id);
+            $mRecs = $murajaahRecords->where('student_id', $student->id);
+            $uRecs = $ummiRecords->where('student_id', $student->id);
+
+            $progressParts = [];
+            $totalLines = 0;
+
+            // Ziyadah / Hafalan
+            foreach ($hRecs as $rec) {
+                if ($rec->surah) {
+                    $lines = self::calculateLines(
+                        $rec->surah->number,
+                        $rec->ayah_start,
+                        $rec->ayah_end,
+                        $rec->surah->total_ayah
+                    );
+                    $totalLines += $lines;
+                    $progressParts[] = "{$rec->surah->name_latin} // {$rec->ayah_start}-{$rec->ayah_end} ({$lines} Baris)";
+                }
+            }
+
+            // Murojaah
+            foreach ($mRecs as $rec) {
+                if ($rec->surah) {
+                    $lines = self::calculateLines(
+                        $rec->surah->number,
+                        $rec->ayah_start,
+                        $rec->ayah_end,
+                        $rec->surah->total_ayah
+                    );
+                    $progressParts[] = "murojaah {$rec->surah->name_latin} // {$rec->ayah_start}-{$rec->ayah_end} ({$lines} Baris)";
+                }
+            }
+
+            // Ummi progress
+            $ummiProgressStr = '';
+            if ($uRecs->isNotEmpty()) {
+                $up = $uRecs->first();
+                if ($up->ummi_jilid) {
+                    $ummiProgressStr = "{$up->ummi_jilid} Halaman {$up->ummi_halaman}";
+                }
+            }
+
+            $hasRecord = ($hRecs->isNotEmpty() || $mRecs->isNotEmpty() || $uRecs->isNotEmpty());
+
+            $studentData[] = [
+                'id' => $student->id,
+                'name' => $student->name,
+                'has_record' => $hasRecord,
+                'progress' => implode(', ', $progressParts),
+                'ummi_progress' => $ummiProgressStr,
+                'total_lines' => $totalLines ?: null,
+            ];
+        }
+
+        // Musyrif / Teacher Name for the halaqah
+        $musyrifName = 'Tanpa Pembimbing';
+        if ($students->isNotEmpty()) {
+            $firstStudent = $students->first();
+            if ($firstStudent->teacher && $firstStudent->teacher->user) {
+                $musyrifName = $firstStudent->teacher->user->name;
+            }
+        }
+
+        return view('reports.whatsapp', [
+            'classRooms' => $classRooms,
+            'selectedClass' => $selectedClass,
+            'selectedClassId' => $selectedClassId,
+            'selectedDate' => $selectedDate,
+            'students' => $studentData,
+            'hasUmmiRecords' => $hasUmmiRecords,
+            'classUmmiJilid' => $classUmmiJilid,
+            'classUmmiHalaman' => $classUmmiHalaman,
+            'classUmmiHafalanSurah' => $classUmmiHafalanSurah,
+            'musyrifName' => $musyrifName,
+        ]);
     }
 }

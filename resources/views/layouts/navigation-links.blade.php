@@ -196,6 +196,15 @@
             </a>
         @endif
 
+        @if ($canViewReports && $hasRoute('reports.whatsapp'))
+            <a href="{{ route('reports.whatsapp') }}" class="{{ $getLinkClasses($routeIs('reports.whatsapp')) }}">
+                <svg class="{{ $getIconClasses($routeIs('reports.whatsapp')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>Laporan WA Harian</span>
+            </a>
+        @endif
+
         @if ($canViewDigitalReports && $hasRoute('digital-reports.index'))
             <a href="{{ route('digital-reports.index') }}" class="{{ $getLinkClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}">
                 <svg class="{{ $getIconClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
