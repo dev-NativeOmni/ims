@@ -8,15 +8,94 @@ use Illuminate\Http\Request;
 
 class QuarterlyReportController extends Controller
 {
+    public static function mapScoreToGrade($score): string
+    {
+        if (empty($score)) {
+            return 'A';
+        }
+        if (is_string($score) && !is_numeric($score)) {
+            return $score;
+        }
+        $scoreVal = (float)$score;
+        if ($scoreVal >= 90) return 'A+';
+        if ($scoreVal >= 80) return 'A';
+        if ($scoreVal >= 70) return 'B+';
+        if ($scoreVal >= 60) return 'B';
+        if ($scoreVal >= 50) return 'B-';
+        return 'C';
+    }
+
     public function index(Request $request)
     {
         // Load all classrooms with their program
         $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
         $selectedClassId = $request->input('class_room_id', $classRooms->first()?->id);
         $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
-        
-        $academicYear = $request->input('academic_year', '2025/2026');
-        $selectedTerm = $request->input('term', '1'); // 1, 2, 3, 4
+
+        // Auto-detect defaults from latest database record to ensure the dashboard works on seeded data
+        $latestRecord = \App\Models\HafalanRecord::query()->latest('submitted_at')->first();
+        $detectedYearString = '2025/2026';
+        $detectedTerm = '1';
+        $detectedMonth = '09';
+
+        if ($latestRecord) {
+            $latestDate = strtotime($latestRecord->submitted_at);
+            $detectedMonth = date('m', $latestDate);
+            $yearVal = (int)date('Y', $latestDate);
+            
+            if (in_array($detectedMonth, ['07', '08', '09'])) {
+                $detectedTerm = '1';
+                $detectedYearString = "{$yearVal}/" . ($yearVal + 1);
+            } elseif (in_array($detectedMonth, ['10', '11', '12'])) {
+                $detectedTerm = '2';
+                $detectedYearString = "{$yearVal}/" . ($yearVal + 1);
+            } elseif (in_array($detectedMonth, ['01', '02', '03'])) {
+                $detectedTerm = '3';
+                $detectedYearString = ($yearVal - 1) . "/{$yearVal}";
+            } else {
+                $detectedTerm = '4';
+                $detectedYearString = ($yearVal - 1) . "/{$yearVal}";
+            }
+        }
+
+        $academicYear = $request->input('academic_year', $detectedYearString);
+        $selectedTerm = $request->input('term', $detectedTerm);
+
+        // Determine months of the selected term
+        $monthsMap = [];
+        if ($selectedTerm == '1') {
+            $monthsMap = ['07' => 'Juli', '08' => 'Agustus', '09' => 'September'];
+        } elseif ($selectedTerm == '2') {
+            $monthsMap = ['10' => 'Oktober', '11' => 'November', '12' => 'Desember'];
+        } elseif ($selectedTerm == '3') {
+            $monthsMap = ['01' => 'Januari', '02' => 'Februari', '03' => 'Maret'];
+        } else {
+            $monthsMap = ['04' => 'April', '05' => 'Mei', '06' => 'Juni'];
+        }
+
+        $selectedMonth = $request->input('month');
+        if (!$selectedMonth || !isset($monthsMap[$selectedMonth])) {
+            $selectedMonth = (string)array_key_last($monthsMap);
+        }
+
+        // Parse start and end years
+        $years = explode('/', $academicYear);
+        $startYear = (int)$years[0];
+        $endYear = isset($years[1]) ? (int)$years[1] : ($startYear + 1);
+
+        // Calculate selected month year
+        $monthYear = in_array($selectedMonth, ['01', '02', '03', '04', '05', '06']) ? $endYear : $startYear;
+        $startDate = "{$monthYear}-{$selectedMonth}-01";
+        $endDate = date('Y-m-t', strtotime($startDate));
+
+        // Term range (3 months)
+        $termMonths = array_keys($monthsMap);
+        $firstMonth = $termMonths[0];
+        $lastMonth = $termMonths[2];
+        $termStartYear = in_array($firstMonth, ['01', '02', '03', '04', '05', '06']) ? $endYear : $startYear;
+        $termEndYear = in_array($lastMonth, ['01', '02', '03', '04', '05', '06']) ? $endYear : $startYear;
+        $termStartDate = "{$termStartYear}-{$firstMonth}-01";
+        $termEndDate = date('Y-m-t', strtotime("{$termEndYear}-{$lastMonth}-01"));
 
         // Detect program type
         $programName = strtolower($selectedClass?->program?->name ?? '');
@@ -30,228 +109,394 @@ class QuarterlyReportController extends Controller
             ->orderBy('name')
             ->get();
 
-        // If no students in the class, load some active ones from other classes for demo purposes
+        // Fallback for empty seeded classrooms
         if ($students->isEmpty()) {
             $students = Student::query()
                 ->with(['classRoom', 'teacher.user'])
                 ->where('status', 'active')
                 ->orderBy('name')
-                ->take(12)
+                ->take(10)
                 ->get();
         }
 
-        // Group students by their Musyrif (teacher)
+        $studentIds = $students->pluck('id')->toArray();
+
+        // 1. Fetch real monthly data
+        $attendances = \App\Models\Attendance::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        $hafalanRecords = \App\Models\HafalanRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('submitted_at', [$startDate, $endDate])
+            ->orderBy('submitted_at')
+            ->get();
+
+        $violations = \App\Models\StudentPoint::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('type', 'violation')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        // 2. Fetch real term-wide data
+        $termHafalanRecords = \App\Models\HafalanRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('submitted_at', [$termStartDate, $termEndDate])
+            ->get();
+
+        $termAttendances = \App\Models\Attendance::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('date', [$termStartDate, $termEndDate])
+            ->get();
+
+        $termViolations = \App\Models\StudentPoint::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('type', 'violation')
+            ->whereBetween('date', [$termStartDate, $termEndDate])
+            ->get();
+
+        // Group students by their Musyrif
         $studentsByHalaqah = $students->groupBy(function($student) {
             return $student->teacher?->user?->name ?? 'Ust. Fuad Faris Ghazi';
         });
 
-        $halaqahData = [];
-        $surahs = ['Al-Mulk', 'Al-Qalam', 'Al-Haaqqa', 'Al-Ma\'arij', 'Nuh', 'Al-Jinn', 'Al-Muzzammil', 'Al-Muddathir', 'Al-Qiyamah', 'Al-Insan'];
+        // Determine unique dates for harian jurnal / tatap muka
+        $uniqueDates = $attendances->pluck('date')
+            ->merge($hafalanRecords->pluck('submitted_at')->map(fn($d) => $d->toDateString()))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
-        // Determine months based on term
-        $months = [];
-        if ($selectedTerm == '1') {
-            $months = ['Juli', 'Agustus', 'September'];
-        } elseif ($selectedTerm == '2') {
-            $months = ['Oktober', 'November', 'Desember'];
-        } elseif ($selectedTerm == '3') {
-            $months = ['Januari', 'Februari', 'Maret'];
-        } else {
-            $months = ['April', 'Mei', 'Juni'];
+        $meetingDates = array_slice($uniqueDates, 0, 12);
+        while (count($meetingDates) < 12) {
+            $meetingDates[] = null;
         }
 
-        // Process data for each Musyrif's Halaqah group
+        $halaqahData = [];
+
         foreach ($studentsByHalaqah as $musyrifName => $groupStudents) {
             $tahfizhRecords = [];
             $regulerRecords = [];
-
-            // 1. Generate Presensi Data
             $presensiData = [];
+
+            $gStudentIds = $groupStudents->pluck('id')->toArray();
+            $gAttendances = $attendances->whereIn('student_id', $gStudentIds);
+            $gHafalanRecords = $hafalanRecords->whereIn('student_id', $gStudentIds);
+
+            // A. Presensi & Setoran Mapping
             if ($isTahfizhProgram) {
-                // Tahfizh: 3 months, each with 12 tatap muka columns
-                foreach ($groupStudents as $idx => $student) {
+                // Tahfizh: 3 months grid
+                foreach ($groupStudents as $student) {
                     $studentPresensi = [];
-                    foreach ($months as $month) {
-                        $daily = [];
-                        $sakit = $idx % 7 === 0 ? 1 : 0;
-                        $izin = $idx % 9 === 0 ? 1 : 0;
-                        $alpa = $idx % 11 === 0 ? 1 : 0;
-                        
-                        // Generate 12 tatap muka markers
+                    $studentTermAtt = $termAttendances->where('student_id', $student->id);
+                    $studentTermHaf = $termHafalanRecords->where('student_id', $student->id);
+
+                    foreach ($monthsMap as $mCode => $mName) {
+                        $mStart = "{$monthYear}-{$mCode}-01";
+                        $mEnd = date('Y-m-t', strtotime($mStart));
+
+                        $mAtt = $studentTermAtt->whereBetween('date', [$mStart, $mEnd]);
+                        $mHaf = $studentTermHaf->whereBetween('submitted_at', [$mStart, $mEnd]);
+
+                        // Compute unique meeting dates for this month
+                        $mUniqueDates = $termAttendances->whereBetween('date', [$mStart, $mEnd])->pluck('date')
+                            ->merge($termHafalanRecords->whereBetween('submitted_at', [$mStart, $mEnd])->pluck('submitted_at')->map(fn($d) => $d->toDateString()))
+                            ->unique()
+                            ->sort()
+                            ->values()
+                            ->toArray();
+                        $mMeetings = array_slice($mUniqueDates, 0, 12);
+
+                        $mDays = [];
                         for ($i = 1; $i <= 12; $i++) {
-                            if ($sakit > 0 && $i == 4) {
-                                $daily[$i] = 'S';
-                            } elseif ($izin > 0 && $i == 8) {
-                                $daily[$i] = 'I';
-                            } elseif ($alpa > 0 && $i == 12) {
-                                $daily[$i] = 'A';
+                            $date = $mMeetings[$i-1] ?? null;
+                            if ($date) {
+                                $att = $mAtt->firstWhere('date', $date);
+                                if ($att) {
+                                    $mDays[$i] = match($att->status) {
+                                        'hadir' => 'H',
+                                        'sakit' => 'S',
+                                        'izin' => 'I',
+                                        'alpa' => 'A',
+                                        default => 'H'
+                                    };
+                                } else {
+                                    $hasSetoran = $mHaf->contains(fn($h) => $h->submitted_at->toDateString() === $date);
+                                    $mDays[$i] = $hasSetoran ? 'H' : 'H';
+                                }
                             } else {
-                                $daily[$i] = 'H';
+                                $mDays[$i] = '-';
                             }
                         }
-                        $studentPresensi[$month] = [
-                            'days' => $daily,
-                            'sakit' => $sakit,
-                            'izin' => $izin,
-                            'alpa' => $alpa
+
+                        $studentPresensi[$mName] = [
+                            'days' => $mDays,
+                            'sakit' => $mAtt->where('status', 'sakit')->count(),
+                            'izin' => $mAtt->where('status', 'izin')->count(),
+                            'alpa' => $mAtt->where('status', 'alpa')->count(),
                         ];
                     }
                     $presensiData[$student->id] = $studentPresensi;
                 }
             } else {
-                // Reguler: Pekan 1 - Pekan 5
-                foreach ($groupStudents as $idx => $student) {
+                // Reguler: Pekan 1 - 5 grid
+                foreach ($groupStudents as $student) {
                     $pekan = [];
-                    $sakit = $idx % 6 === 0 ? 1 : 0;
-                    $izin = $idx % 8 === 0 ? 1 : 0;
-                    $alpa = $idx % 10 === 0 ? 1 : 0;
+                    $sAtt = $gAttendances->where('student_id', $student->id);
+                    $sHaf = $gHafalanRecords->where('student_id', $student->id);
+
                     for ($p = 1; $p <= 5; $p++) {
-                        if ($sakit > 0 && $p == 3) {
-                            $pekan[$p] = 'Sakit';
-                        } elseif ($izin > 0 && $p == 4) {
-                            $pekan[$p] = 'Izin';
-                        } elseif ($alpa > 0 && $p == 5) {
-                            $pekan[$p] = 'Alpa';
+                        $pStart = 1 + ($p - 1) * 7;
+                        $pEnd = $p === 5 ? 31 : $p * 7;
+
+                        $att = $sAtt->first(function($a) use ($pStart, $pEnd) {
+                            $dayNum = (int)date('d', strtotime($a->date));
+                            return $dayNum >= $pStart && $dayNum <= $pEnd;
+                        });
+
+                        if ($att) {
+                            $pekan[$p] = match($att->status) {
+                                'hadir' => 'Hadir',
+                                'sakit' => 'Sakit',
+                                'izin' => 'Izin',
+                                'alpa' => 'Alpa',
+                                default => 'Hadir'
+                            };
                         } else {
-                            $pekan[$p] = 'Hadir';
+                            $hasSetoran = $sHaf->contains(function($h) use ($pStart, $pEnd) {
+                                $dayNum = (int)$h->submitted_at->format('d');
+                                return $dayNum >= $pStart && $dayNum <= $pEnd;
+                            });
+                            $pekan[$p] = $hasSetoran ? 'Hadir' : 'Hadir';
                         }
                     }
+
                     $presensiData[$student->id] = [
                         'pekan' => $pekan,
-                        'hadir' => 5 - ($sakit + $izin + $alpa),
-                        'sakit' => $sakit,
-                        'izin' => $izin,
-                        'alpa' => $alpa
+                        'hadir' => $sAtt->where('status', 'hadir')->count() ?: 5,
+                        'sakit' => $sAtt->where('status', 'sakit')->count(),
+                        'izin' => $sAtt->where('status', 'izin')->count(),
+                        'alpa' => $sAtt->where('status', 'alpa')->count(),
                     ];
                 }
             }
 
-            // 2. Generate Jurnal Data
+            // B. Jurnal Mapping
             $jurnalData = [];
             if ($isTahfizhProgram) {
-                // Jurnal Harian (12 Tatap Muka)
-                for ($tm = 1; $tm <= 12; $tm++) {
-                    $dayOffset = ($tm - 1) * 2;
+                foreach ($uniqueDates as $date) {
+                    if (!$date) continue;
+                    $dailyHafalans = $gHafalanRecords->filter(fn($h) => $h->submitted_at->toDateString() === $date);
+                    $surahNames = $dailyHafalans->pluck('surah.name_latin')->unique()->implode(', ');
+                    $materi = $surahNames ? "Ziyadah & Muroja'ah Surah $surahNames" : "Ziyadah & Muroja'ah Hafalan";
+                    
                     $jurnalData[] = [
-                        'tanggal' => date('Y-m-d', strtotime("2026-09-01 + {$dayOffset} days")),
-                        'materi' => "Ziyadah & Muroja'ah Hafalan Surah " . $surahs[$tm % count($surahs)],
-                        'jumlah_murid' => count($groupStudents),
+                        'tanggal' => date('d-m-Y', strtotime($date)),
+                        'materi' => $materi,
+                        'jumlah_murid' => $gAttendances->where('date', $date)->where('status', 'hadir')->count() ?: count($groupStudents),
                         'paraf' => '✓'
+                    ];
+                }
+                if (empty($jurnalData)) {
+                    $jurnalData[] = [
+                        'tanggal' => 'Belum ada kegiatan',
+                        'materi' => 'Murojaah & Ziyadah Hafalan',
+                        'jumlah_murid' => 0,
+                        'paraf' => '-'
                     ];
                 }
             } else {
-                // Jurnal Mingguan (Pekan 1 - Pekan 5)
                 for ($p = 1; $p <= 5; $p++) {
+                    $pStart = 1 + ($p - 1) * 7;
+                    $pEnd = $p === 5 ? 31 : $p * 7;
+
+                    $weeklyHafalans = $gHafalanRecords->filter(function($h) use ($pStart, $pEnd) {
+                        $dayNum = (int)$h->submitted_at->format('d');
+                        return $dayNum >= $pStart && $dayNum <= $pEnd;
+                    });
+                    
+                    $surahNames = $weeklyHafalans->pluck('surah.name_latin')->unique()->implode(', ');
+                    $materi = $surahNames ? "Setoran Surah $surahNames" : "Murojaah & Ziyadah Hafalan Kelas Reguler";
+
                     $jurnalData[] = [
                         'tanggal' => "Pekan $p",
-                        'materi' => "Ziyadah & Muroja'ah Hafalan Kelas Reguler",
+                        'materi' => $materi,
                         'jumlah_murid' => count($groupStudents),
                         'paraf' => '✓'
                     ];
                 }
             }
 
-            // 3. Generate Setoran Data
+            // C. Capaian Setoran Mapping
             if ($isTahfizhProgram) {
-                // Format Tahfizh (Pekan 1-5, Senin-Jumat per murid)
-                foreach ($groupStudents as $idx => $student) {
+                foreach ($groupStudents as $student) {
+                    $sHaf = $gHafalanRecords->where('student_id', $student->id);
+                    $sAtt = $gAttendances->where('student_id', $student->id);
+                    
                     $pekanRecords = [];
                     $totalCapaianLines = 0;
-                    
+
                     for ($p = 1; $p <= 5; $p++) {
                         $dailyLogs = [];
                         $weekLines = 0;
+
+                        $pStart = 1 + ($p - 1) * 7;
+                        $pEnd = $p === 5 ? 31 : $p * 7;
+
+                        $pRecords = $sHaf->filter(function($h) use ($pStart, $pEnd) {
+                            $dayNum = (int)$h->submitted_at->format('d');
+                            return $dayNum >= $pStart && $dayNum <= $pEnd;
+                        });
+
                         $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-                        
-                        foreach ($days as $dayIdx => $day) {
-                            $isAbsent = ($idx % 7 === 0 && $p === 2 && $day === 'Rabu');
-                            if ($isAbsent) {
-                                $dailyLogs[$day] = [
-                                    'surah' => 'Tidak Masuk',
-                                    'ayat_start' => '',
-                                    'ayat_end' => '',
-                                    'baris' => 0,
-                                    'nilai' => 'S'
+                        $dayMap = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat'];
+
+                        foreach ($days as $dayName) {
+                            $record = $pRecords->first(function($r) use ($dayName, $dayMap) {
+                                $wDay = (int)date('w', strtotime($r->submitted_at));
+                                return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
+                            });
+
+                            if ($record && $record->surah) {
+                                $lines = \App\Http\Controllers\ReportController::calculateLines(
+                                    $record->surah->number,
+                                    $record->ayah_start,
+                                    $record->ayah_end,
+                                    $record->surah->total_ayah
+                                );
+                                $dailyLogs[$dayName] = [
+                                    'surah' => $record->surah->name_latin,
+                                    'ayat_start' => $record->ayah_start,
+                                    'ayat_end' => $record->ayah_end,
+                                    'baris' => $lines,
+                                    'nilai' => self::mapScoreToGrade($record->score)
                                 ];
+                                $weekLines += $lines;
                             } else {
-                                $surahName = $surahs[($idx + $p + $dayIdx) % count($surahs)];
-                                $baris = $idx % 2 === 0 ? 15 : 10;
-                                $dailyLogs[$day] = [
-                                    'surah' => $surahName,
-                                    'ayat_start' => $dayIdx * 5 + 1,
-                                    'ayat_end' => $dayIdx * 5 + 5,
-                                    'baris' => $baris,
-                                    'nilai' => $idx % 3 === 0 ? 'B+' : 'A'
-                                ];
-                                $weekLines += $baris;
+                                $attRecord = $sAtt->first(function($a) use ($dayName, $dayMap, $pStart, $pEnd) {
+                                    $dayNum = (int)date('d', strtotime($a->date));
+                                    if ($dayNum < $pStart || $dayNum > $pEnd) return false;
+                                    $wDay = (int)date('w', strtotime($a->date));
+                                    return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
+                                });
+
+                                if ($attRecord && $attRecord->status !== 'hadir') {
+                                    $dailyLogs[$dayName] = [
+                                        'surah' => ucfirst($attRecord->status),
+                                        'ayat_start' => '',
+                                        'ayat_end' => '',
+                                        'baris' => 0,
+                                        'nilai' => '-'
+                                    ];
+                                } else {
+                                    $dailyLogs[$dayName] = [
+                                        'surah' => '-',
+                                        'ayat_start' => '',
+                                        'ayat_end' => '',
+                                        'baris' => 0,
+                                        'nilai' => '-'
+                                    ];
+                                }
                             }
                         }
-                        
+
                         $pekanRecords[$p] = [
                             'days' => $dailyLogs,
                             'week_lines' => $weekLines
                         ];
                         $totalCapaianLines += $weekLines;
                     }
-                    
-                    $targetLines = $idx % 2 === 0 ? 150 : 120;
-                    $isTuntas = $totalCapaianLines >= $targetLines;
+
+                    $levelBaris = match ($student->tahfizh_level) {
+                        'tahsin' => 3,
+                        'reguler' => 5,
+                        'akselerasi' => 7,
+                        'ummi' => null,
+                        default => 5,
+                    };
+                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * 20);
+                    $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
+                    $pCount = $violations->where('student_id', $student->id)->count();
 
                     $tahfizhRecords[] = [
                         'student_id' => $student->id,
                         'name' => $student->name,
-                        'nis' => $student->student_number ?? '4407-2526' . sprintf('%03d', $idx + 1),
+                        'nis' => $student->student_number ?? '4407-2526' . sprintf('%03d', $student->id),
                         'level' => ucfirst($student->tahfizh_level ?? 'reguler'),
                         'pekan' => $pekanRecords,
                         'target_lines' => $targetLines,
                         'total_lines' => $totalCapaianLines,
                         'is_tuntas' => $isTuntas,
-                        'pelanggaran' => $idx % 8 === 0 ? 1 : 0
+                        'pelanggaran' => $pCount
                     ];
                 }
             } else {
-                // Format Reguler (Pekan 1-5 in a single table)
-                foreach ($groupStudents as $idx => $student) {
+                foreach ($groupStudents as $student) {
+                    $sHaf = $gHafalanRecords->where('student_id', $student->id);
                     $pekanRecords = [];
                     $totalCapaianLines = 0;
-                    
+
                     for ($p = 1; $p <= 5; $p++) {
-                        $isAbsent = ($presensiData[$student->id]['pekan'][$p] !== 'Hadir');
-                        if ($isAbsent) {
+                        $pStart = 1 + ($p - 1) * 7;
+                        $pEnd = $p === 5 ? 31 : $p * 7;
+
+                        $record = $sHaf->first(function($h) use ($pStart, $pEnd) {
+                            $dayNum = (int)$h->submitted_at->format('d');
+                            return $dayNum >= $pStart && $dayNum <= $pEnd;
+                        });
+
+                        if ($record && $record->surah) {
+                            $lines = \App\Http\Controllers\ReportController::calculateLines(
+                                $record->surah->number,
+                                $record->ayah_start,
+                                $record->ayah_end,
+                                $record->surah->total_ayah
+                            );
+                            $pekanRecords[$p] = [
+                                'surah' => $record->surah->name_latin,
+                                'ayat' => "{$record->ayah_start}-{$record->ayah_end}",
+                                'baris' => $lines,
+                                'nilai' => self::mapScoreToGrade($record->score),
+                                'kehadiran' => 'Hadir'
+                            ];
+                            $totalCapaianLines += $lines;
+                        } else {
+                            $status = $presensiData[$student->id]['pekan'][$p];
                             $pekanRecords[$p] = [
                                 'surah' => '-',
                                 'ayat' => '-',
                                 'baris' => 0,
                                 'nilai' => '-',
-                                'kehadiran' => $presensiData[$student->id]['pekan'][$p]
+                                'kehadiran' => $status
                             ];
-                        } else {
-                            $surahName = $surahs[($idx + $p) % count($surahs)];
-                            $baris = $idx % 2 === 0 ? 10 : 8;
-                            $pekanRecords[$p] = [
-                                'surah' => $surahName,
-                                'ayat' => (($p - 1) * 10 + 1) . '-' . ($p * 10),
-                                'baris' => $baris,
-                                'nilai' => 'A',
-                                'kehadiran' => 'Hadir'
-                            ];
-                            $totalCapaianLines += $baris;
                         }
                     }
 
-                    $targetLines = 40; // Default target
-                    $isTuntas = $totalCapaianLines >= $targetLines;
+                    $levelBaris = match ($student->tahfizh_level) {
+                        'tahsin' => 3,
+                        'reguler' => 5,
+                        'akselerasi' => 7,
+                        'ummi' => null,
+                        default => 5,
+                    };
+                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * 4);
+                    $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
+                    $pCount = $violations->where('student_id', $student->id)->count();
 
                     $regulerRecords[] = [
                         'student_id' => $student->id,
                         'name' => $student->name,
-                        'nis' => $student->student_number ?? '4407-2526' . sprintf('%03d', $idx + 1),
+                        'nis' => $student->student_number ?? '4407-2526' . sprintf('%03d', $student->id),
                         'level' => ucfirst($student->tahfizh_level ?? 'reguler'),
                         'pekan' => $pekanRecords,
                         'target_lines' => $targetLines,
                         'total_lines' => $totalCapaianLines,
                         'is_tuntas' => $isTuntas,
-                        'pelanggaran' => $idx % 7 === 0 ? 1 : 0
+                        'pelanggaran' => $pCount
                     ];
                 }
             }
@@ -265,7 +510,7 @@ class QuarterlyReportController extends Controller
                 'jurnal' => $jurnalData,
                 'tahfizh_records' => $tahfizhRecords,
                 'reguler_records' => $regulerRecords,
-                'months' => $months,
+                'months' => array_values($monthsMap),
                 'total_students' => count($groupStudents),
                 'tuntas_count' => $isTahfizhProgram 
                     ? collect($tahfizhRecords)->where('is_tuntas', true)->count()
@@ -279,8 +524,10 @@ class QuarterlyReportController extends Controller
             'isTahfizhProgram' => $isTahfizhProgram,
             'academicYear' => $academicYear,
             'selectedTerm' => $selectedTerm,
+            'selectedMonth' => $selectedMonth,
+            'monthsMap' => $monthsMap,
             'halaqahData' => $halaqahData,
-            'months' => $months
+            'months' => array_values($monthsMap)
         ]);
     }
 }

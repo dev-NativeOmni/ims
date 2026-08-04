@@ -62,11 +62,26 @@
                     </div>
 
                     <div>
-                        <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold shadow-sm transition gap-2 cursor-pointer">
-                            📥 Ekspor Seluruh Kelas (.xlsx)
-                        </button>
+                        <label for="month" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                            Pilih Bulan Laporan
+                        </label>
+                        <select name="month" id="month" class="block w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white" onchange="this.form.submit()">
+                            @foreach ($monthsMap as $mCode => $mName)
+                                <option value="{{ $mCode }}" @selected($selectedMonth == $mCode) class="dark:bg-zinc-900">{{ $mName }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </form>
+            </div>
+
+            <!-- Export Bar -->
+            <div class="flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
+                <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400">
+                    💡 <strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama bulan terpilih.
+                </span>
+                <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-2 cursor-pointer">
+                    📥 Ekspor Seluruh Kelas ke Excel (.xlsx)
+                </button>
             </div>
 
             <!-- HALAQOH GROUPINGS -->
