@@ -414,6 +414,11 @@
                                     <option :value="student.id" x-text="student.name + (student.nis ? ' - ' + student.nis : '') + (student.className ? ' - ' + student.className : '')" :selected="student.id == selectedStudent" class="dark:bg-zinc-900"></option>
                                 </template>
                             </select>
+                            <template x-if="selectedClass && filteredStudents.length === 0">
+                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
+                                    ⚠️ Belum ada santri yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                </p>
+                            </template>
                             @error('student_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -650,6 +655,11 @@
                                         <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudent" class="dark:bg-zinc-900"></option>
                                     </template>
                                 </select>
+                                <template x-if="selectedClass && filteredStudents.length === 0">
+                                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
+                                        ⚠️ Belum ada santri yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                    </p>
+                                </template>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -857,7 +867,18 @@
                     </div>
 
                     <!-- Student Checklist & Override Section (Only shown if selectedClass is chosen AND no single selectedStudent is chosen) -->
-                    <div x-show="selectedClass && !selectedStudent" class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4 space-y-4 student-checklist-container">
+                    <!-- Empty State Checklist warning -->
+                    <template x-if="selectedClass && !selectedStudent && filteredStudents.length === 0">
+                        <div class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4">
+                            <div class="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
+                                <p class="text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                                    ⚠️ Tidak ada santri yang ditandai Hadir di kelas ini untuk hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                </p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div x-show="selectedClass && !selectedStudent && filteredStudents.length > 0" class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4 space-y-4 student-checklist-container" style="display: none;">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b dark:border-zinc-800">
                             <div>
                                 <h4 class="font-bold text-gray-900 dark:text-white text-sm">Daftar Santri & Penyesuaian Nilai Individu</h4>
