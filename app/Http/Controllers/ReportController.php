@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
@@ -975,6 +976,19 @@ class ReportController extends Controller
                 ->whereBetween('date', [$startDate, $endDate])
                 ->count();
 
+            // Attendance counts during the period
+            $attendanceCounts = Attendance::query()
+                ->where('student_id', $student->id)
+                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->selectRaw("status, count(*) as count")
+                ->groupBy('status')
+                ->pluck('count', 'status');
+
+            $sakit = $attendanceCounts->get('sakit', 0);
+            $izin = $attendanceCounts->get('izin', 0);
+            $alpa = $attendanceCounts->get('alpa', 0);
+            $hadir = $attendanceCounts->get('hadir', 0);
+
             $studentReports[] = [
                 'student' => $student,
                 'total_hafalan' => $studentHafalan->count(),
@@ -989,6 +1003,10 @@ class ReportController extends Controller
                 'capaian_surah' => $capaianSurah,
                 'capaian_ayat' => $capaianAyat,
                 'violations_count' => $violationsCount,
+                'sakit' => $sakit,
+                'izin' => $izin,
+                'alpa' => $alpa,
+                'hadir' => $hadir,
                 'teacher_name' => $student->teacher?->user?->name ?? 'Tanpa Pembimbing',
                 'halaqah_label' => $student->tahfizh_level_label,
             ];

@@ -206,10 +206,9 @@
                                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-450 border border-rose-200 dark:border-rose-900/30 uppercase">Tidak Tuntas</span>
                                                             @endif
                                                         </td>
-                                                        <!-- Kehadiran (A/I/S) defaults to - as it is not tracked in DB -->
-                                                        <td class="px-2 py-3 text-gray-400">-</td>
-                                                        <td class="px-2 py-3 text-gray-400">-</td>
-                                                        <td class="px-2 py-3 text-gray-400">-</td>
+                                                         <td class="px-2 py-3 font-semibold {{ $row['alpa'] > 0 ? 'text-rose-650' : 'text-gray-400' }}">{{ $row['alpa'] ?: '-' }}</td>
+                                                         <td class="px-2 py-3 font-semibold {{ $row['izin'] > 0 ? 'text-amber-500' : 'text-gray-400' }}">{{ $row['izin'] ?: '-' }}</td>
+                                                         <td class="px-2 py-3 font-semibold {{ $row['sakit'] > 0 ? 'text-blue-500' : 'text-gray-400' }}">{{ $row['sakit'] ?: '-' }}</td>
                                                         <!-- Pelanggaran -->
                                                         <td class="px-4 py-3 font-bold {{ $row['violations_count'] > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400' }}">
                                                             {{ $row['violations_count'] }}

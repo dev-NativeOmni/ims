@@ -198,10 +198,10 @@
                                                     <span class="text-rose-700 font-bold uppercase text-[9px]">Belum Tuntas</span>
                                                 @endif
                                             </td>
-                                            <!-- Kehadiran (A/I/S) defaults to - as it is not tracked in DB -->
-                                            <td class="border border-zinc-350 px-1 py-1.5 text-zinc-400">-</td>
-                                            <td class="border border-zinc-350 px-1 py-1.5 text-zinc-400">-</td>
-                                            <td class="border border-zinc-350 px-1 py-1.5 text-zinc-400">-</td>
+                                            <!-- Kehadiran (A/I/S) -->
+                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['alpa'] > 0 ? 'text-rose-700' : 'text-zinc-400' }}">{{ $row['alpa'] ?: '-' }}</td>
+                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['izin'] > 0 ? 'text-amber-600' : 'text-zinc-400' }}">{{ $row['izin'] ?: '-' }}</td>
+                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['sakit'] > 0 ? 'text-blue-600' : 'text-zinc-400' }}">{{ $row['sakit'] ?: '-' }}</td>
                                             <td class="border border-zinc-350 px-3 py-1.5 font-bold {{ $row['violations_count'] > 0 ? 'text-rose-700' : 'text-zinc-400' }}">
                                                 {{ $row['violations_count'] }}
                                             </td>
