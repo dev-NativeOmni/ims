@@ -410,11 +410,21 @@ class QuickInputController extends Controller
         $selectedStudentIds = $request->input('student_ids');
 
         if ($selectedStudentIds === null) {
-            $students = Student::query()
-                ->where('class_room_id', $classRoomId)
-                ->whereIn('id', $visibleStudentIds)
-                ->where('status', 'active')
-                ->get();
+            if ($request->filled('student_id')) {
+                $selectedStudentIds = [$request->integer('student_id')];
+                $students = Student::query()
+                    ->whereIn('id', $selectedStudentIds)
+                    ->where('class_room_id', $classRoomId)
+                    ->whereIn('id', $visibleStudentIds)
+                    ->where('status', 'active')
+                    ->get();
+            } else {
+                $students = Student::query()
+                    ->where('class_room_id', $classRoomId)
+                    ->whereIn('id', $visibleStudentIds)
+                    ->where('status', 'active')
+                    ->get();
+            }
         } else {
             if (empty($selectedStudentIds)) {
                 return back()

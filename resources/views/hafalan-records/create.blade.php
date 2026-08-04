@@ -486,6 +486,7 @@
                                     Saring Berdasarkan Kelas
                                 </label>
                                 <select id="class_room_filter_ummi"
+                                        name="class_room_id"
                                         x-model="selectedClass"
                                         class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                     <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
@@ -501,10 +502,9 @@
                                 </label>
                                 <select id="student_id_ummi"
                                         name="student_id"
-                                        required
                                         x-model="selectedStudent"
                                         class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                    <option value="" class="dark:bg-zinc-900">Pilih Santri</option>
+                                    <option value="" class="dark:bg-zinc-900">Semua Santri (Input Kelas/Bulk)</option>
                                     <template x-for="student in filteredStudents" :key="student.id">
                                         <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudent" class="dark:bg-zinc-900"></option>
                                     </template>
@@ -712,6 +712,65 @@
                                           class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
                                           placeholder="Catatan perkembangan atau arahan tajwid dari guru.">{{ old('keterangan') }}</textarea>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Checklist & Override Section (Only shown if selectedClass is chosen AND no single selectedStudent is chosen) -->
+                    <div x-show="selectedClass && !selectedStudent" class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4 space-y-4 student-checklist-container">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b dark:border-zinc-800">
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Daftar Santri & Penyesuaian Nilai Individu</h4>
+                                <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Daftar santri aktif di kelas halaqoh terpilih. Anda dapat mengecualikan santri yang absen dan menyesuaikan nilai/catatan mereka secara individual jika dibutuhkan.</p>
+                            </div>
+                            <div class="flex items-center gap-3 text-xs shrink-0 mt-1 sm:mt-0">
+                                <button type="button" @click="$el.closest('.student-checklist-container').querySelectorAll('input[type=checkbox]').forEach(el => { el.checked = true; el.dispatchEvent(new Event('change')) })" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold transition">Centang Semua</button>
+                                <span class="text-gray-300 dark:text-zinc-700">|</span>
+                                <button type="button" @click="$el.closest('.student-checklist-container').querySelectorAll('input[type=checkbox]').forEach(el => { el.checked = false; el.dispatchEvent(new Event('change')) })" class="text-red-650 dark:text-red-400 hover:underline font-semibold transition">Hapus Semua</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto pr-1">
+                            <template x-for="student in filteredStudents" :key="student.id">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-gray-55/70 dark:bg-zinc-800/30 rounded-xl border border-gray-250 dark:border-zinc-850 gap-3 hover:bg-gray-55 dark:hover:bg-zinc-800/50 transition duration-150">
+                                    <div class="flex items-center gap-3">
+                                        <input type="checkbox" 
+                                               name="student_ids[]" 
+                                               :id="'checkbox_std_' + student.id"
+                                               :value="student.id" 
+                                               checked 
+                                               class="rounded border-gray-350 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                        <label :for="'checkbox_std_' + student.id" class="cursor-pointer select-none">
+                                            <span class="font-bold text-xs text-gray-800 dark:text-zinc-200 block" x-text="student.name"></span>
+                                            <span class="text-[10px] text-gray-500 dark:text-zinc-400 block mt-0.5" x-text="student.className ? student.className : '-'"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <!-- Individual Score -->
+                                        <div class="w-24">
+                                            <select :name="'student_scores[' + student.id + ']'" 
+                                                    class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1 pl-2 pr-6 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                                <option value="" class="dark:bg-zinc-900">Nilai Default</option>
+                                                <option value="A+" class="dark:bg-zinc-900">A+</option>
+                                                <option value="A" class="dark:bg-zinc-900">A</option>
+                                                <option value="B+" class="dark:bg-zinc-900">B+</option>
+                                                <option value="B" class="dark:bg-zinc-900">B</option>
+                                                <option value="B-" class="dark:bg-zinc-900">B-</option>
+                                                <option value="C+" class="dark:bg-zinc-900">C+</option>
+                                                <option value="C" class="dark:bg-zinc-900">C</option>
+                                                <option value="C-" class="dark:bg-zinc-900">C-</option>
+                                                <option value="D" class="dark:bg-zinc-900">D</option>
+                                            </select>
+                                        </div>
+                                        <!-- Individual Note -->
+                                        <div class="w-32 sm:w-40">
+                                            <input type="text" 
+                                                   :name="'student_notes[' + student.id + ']'" 
+                                                   placeholder="Catatan khusus" 
+                                                   class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1 px-2.5 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
