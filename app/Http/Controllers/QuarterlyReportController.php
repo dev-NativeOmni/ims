@@ -39,9 +39,9 @@ class QuarterlyReportController extends Controller
         $detectedMonth = '09';
 
         if ($latestRecord) {
-            $latestDate = strtotime($latestRecord->submitted_at);
-            $detectedMonth = date('m', $latestDate);
-            $yearVal = (int)date('Y', $latestDate);
+            $latestDate = \Carbon\Carbon::parse($latestRecord->submitted_at);
+            $detectedMonth = $latestDate->format('m');
+            $yearVal = $latestDate->year;
             
             if (in_array($detectedMonth, ['07', '08', '09'])) {
                 $detectedTerm = '1';
@@ -121,10 +121,10 @@ class QuarterlyReportController extends Controller
 
         $studentIds = $students->pluck('id')->toArray();
 
-        // 1. Fetch real monthly data
+        // 1. Fetch real monthly data (column is 'tanggal', not 'date')
         $attendances = \App\Models\Attendance::query()
             ->whereIn('student_id', $studentIds)
-            ->whereBetween('date', [$startDate, $endDate])
+            ->whereBetween('tanggal', [$startDate, $endDate])
             ->get();
 
         $hafalanRecords = \App\Models\HafalanRecord::query()
@@ -149,7 +149,7 @@ class QuarterlyReportController extends Controller
 
         $termAttendances = \App\Models\Attendance::query()
             ->whereIn('student_id', $studentIds)
-            ->whereBetween('date', [$termStartDate, $termEndDate])
+            ->whereBetween('tanggal', [$termStartDate, $termEndDate])
             ->get();
 
         $termViolations = \App\Models\StudentPoint::query()
@@ -164,8 +164,9 @@ class QuarterlyReportController extends Controller
         });
 
         // Determine unique dates for harian jurnal / tatap muka
-        $uniqueDates = $attendances->pluck('date')
-            ->merge($hafalanRecords->pluck('submitted_at')->map(fn($d) => $d->toDateString()))
+        $uniqueDates = $attendances->pluck('tanggal')
+            ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->toDateString() : \Carbon\Carbon::parse($d)->toDateString())
+            ->merge($hafalanRecords->pluck('submitted_at')->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->toDateString() : \Carbon\Carbon::parse($d)->toDateString()))
             ->unique()
             ->sort()
             ->values()
@@ -199,12 +200,13 @@ class QuarterlyReportController extends Controller
                         $mStart = "{$monthYear}-{$mCode}-01";
                         $mEnd = date('Y-m-t', strtotime($mStart));
 
-                        $mAtt = $studentTermAtt->whereBetween('date', [$mStart, $mEnd]);
+                        $mAtt = $studentTermAtt->whereBetween('tanggal', [$mStart, $mEnd]);
                         $mHaf = $studentTermHaf->whereBetween('submitted_at', [$mStart, $mEnd]);
 
                         // Compute unique meeting dates for this month
-                        $mUniqueDates = $termAttendances->whereBetween('date', [$mStart, $mEnd])->pluck('date')
-                            ->merge($termHafalanRecords->whereBetween('submitted_at', [$mStart, $mEnd])->pluck('submitted_at')->map(fn($d) => $d->toDateString()))
+                        $mUniqueDates = $termAttendances->whereBetween('tanggal', [$mStart, $mEnd])->pluck('tanggal')
+                            ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->toDateString() : \Carbon\Carbon::parse($d)->toDateString())
+                            ->merge($termHafalanRecords->whereBetween('submitted_at', [$mStart, $mEnd])->pluck('submitted_at')->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->toDateString() : \Carbon\Carbon::parse($d)->toDateString()))
                             ->unique()
                             ->sort()
                             ->values()
@@ -215,7 +217,7 @@ class QuarterlyReportController extends Controller
                         for ($i = 1; $i <= 12; $i++) {
                             $date = $mMeetings[$i-1] ?? null;
                             if ($date) {
-                                $att = $mAtt->firstWhere('date', $date);
+                                $att = $mAtt->first(fn($a) => ($a->tanggal instanceof \Carbon\Carbon ? $a->tanggal->toDateString() : $a->tanggal) === $date);
                                 if ($att) {
                                     $mDays[$i] = match($att->status) {
                                         'hadir' => 'H',
@@ -254,7 +256,7 @@ class QuarterlyReportController extends Controller
                         $pEnd = $p === 5 ? 31 : $p * 7;
 
                         $att = $sAtt->first(function($a) use ($pStart, $pEnd) {
-                            $dayNum = (int)date('d', strtotime($a->date));
+                            $dayNum = (int)date('d', strtotime($a->tanggal));
                             return $dayNum >= $pStart && $dayNum <= $pEnd;
                         });
 
@@ -297,7 +299,7 @@ class QuarterlyReportController extends Controller
                     $jurnalData[] = [
                         'tanggal' => date('d-m-Y', strtotime($date)),
                         'materi' => $materi,
-                        'jumlah_murid' => $gAttendances->where('date', $date)->where('status', 'hadir')->count() ?: count($groupStudents),
+                        'jumlah_murid' => $gAttendances->filter(fn($a) => ($a->tanggal instanceof \Carbon\Carbon ? $a->tanggal->toDateString() : $a->tanggal) === $date)->where('status', 'hadir')->count() ?: count($groupStudents),
                         'paraf' => '✓'
                     ];
                 }
@@ -378,9 +380,9 @@ class QuarterlyReportController extends Controller
                                 $weekLines += $lines;
                             } else {
                                 $attRecord = $sAtt->first(function($a) use ($dayName, $dayMap, $pStart, $pEnd) {
-                                    $dayNum = (int)date('d', strtotime($a->date));
+                                    $dayNum = (int)date('d', strtotime($a->tanggal));
                                     if ($dayNum < $pStart || $dayNum > $pEnd) return false;
-                                    $wDay = (int)date('w', strtotime($a->date));
+                                    $wDay = (int)date('w', strtotime($a->tanggal));
                                     return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
                                 });
 
