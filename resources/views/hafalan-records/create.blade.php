@@ -731,24 +731,26 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto pr-1">
                             <template x-for="student in filteredStudents" :key="student.id">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-gray-55/70 dark:bg-zinc-800/30 rounded-xl border border-gray-250 dark:border-zinc-850 gap-3 hover:bg-gray-55 dark:hover:bg-zinc-800/50 transition duration-150">
-                                    <div class="flex items-center gap-3">
+                                <div class="flex flex-col p-3.5 bg-gray-50/70 dark:bg-zinc-800/30 rounded-xl border border-gray-250 dark:border-zinc-850 gap-3 hover:bg-gray-100 dark:hover:bg-zinc-800/50 transition duration-150">
+                                    <!-- Top Row: Checkbox and Name -->
+                                    <div class="flex items-start gap-3">
                                         <input type="checkbox" 
                                                name="student_ids[]" 
                                                :id="'checkbox_std_' + student.id"
                                                :value="student.id" 
                                                checked 
-                                               class="rounded border-gray-350 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                        <label :for="'checkbox_std_' + student.id" class="cursor-pointer select-none">
-                                            <span class="font-bold text-xs text-gray-800 dark:text-zinc-200 block" x-text="student.name"></span>
+                                               class="mt-0.5 rounded border-gray-350 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                        <label :for="'checkbox_std_' + student.id" class="cursor-pointer select-none min-w-0 flex-1">
+                                            <span class="font-bold text-xs text-gray-900 dark:text-zinc-200 block" x-text="student.name"></span>
                                             <span class="text-[10px] text-gray-500 dark:text-zinc-400 block mt-0.5" x-text="student.className ? student.className : '-'"></span>
                                         </label>
                                     </div>
-                                    <div class="flex items-center gap-2 shrink-0">
+                                    <!-- Bottom Row: Inputs -->
+                                    <div class="flex items-center gap-2 pt-2.5 border-t border-gray-200/60 dark:border-zinc-800">
                                         <!-- Individual Score -->
-                                        <div class="w-24">
+                                        <div class="flex-1 min-w-0">
                                             <select :name="'student_scores[' + student.id + ']'" 
-                                                    class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1 pl-2 pr-6 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                                    class="block w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1.5 pl-2 pr-7 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                                                 <option value="" class="dark:bg-zinc-900">Nilai Default</option>
                                                 <option value="A+" class="dark:bg-zinc-900">A+</option>
                                                 <option value="A" class="dark:bg-zinc-900">A</option>
@@ -762,11 +764,11 @@
                                             </select>
                                         </div>
                                         <!-- Individual Note -->
-                                        <div class="w-32 sm:w-40">
+                                        <div class="flex-[1.5] min-w-0">
                                             <input type="text" 
                                                    :name="'student_notes[' + student.id + ']'" 
                                                    placeholder="Catatan khusus" 
-                                                   class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1 px-2.5 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                                   class="block w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] py-1.5 px-2.5 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                                         </div>
                                     </div>
                                 </div>
