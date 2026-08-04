@@ -128,7 +128,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
     public function test_teacher_can_save_ummi_record_for_ummi_student()
     {
-        $response = $this->actingAs($this->teacherUser)->post(route('quick-inputs.ummi.store'), [
+        $response = $this->actingAs($this->teacherUser)->post(route('ummi-records.store'), [
             'student_id' => $this->studentUmmi->id,
             'tatap_muka' => 5,
             'tanggal' => now()->toDateString(),
@@ -141,9 +141,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'disimak_guru' => 'Ya',
             'disimak_ortu' => 'Tidak',
             'keterangan' => 'Salah 1 kali pada mad munfashil.',
+            'redirect_to' => 'hafalan',
         ]);
 
-        $response->assertRedirect(route('quick-inputs.index'));
+        $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('ummi_records', [
@@ -164,7 +165,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'revelation_type' => 'medinan',
         ]);
 
-        $response = $this->actingAs($this->teacherUser)->post(route('quick-inputs.ummi.store'), [
+        $response = $this->actingAs($this->teacherUser)->post(route('ummi-records.store'), [
             'student_id' => $this->studentUmmi->id,
             'tatap_muka' => 6,
             'tanggal' => now()->toDateString(),
@@ -177,9 +178,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'disimak_guru' => 'Ya',
             'disimak_ortu' => 'Ya',
             'keterangan' => 'Lancar jaya.',
+            'redirect_to' => 'hafalan',
         ]);
 
-        $response->assertRedirect(route('quick-inputs.index'));
+        $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('ummi_records', [

@@ -222,18 +222,6 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 
-        Route::get('/quick-inputs', [QuickInputController::class, 'index'])
-            ->name('quick-inputs.index');
-
-        Route::post('/quick-inputs/hafalan', [QuickInputController::class, 'storeHafalan'])
-            ->name('quick-inputs.hafalan.store');
-
-        Route::post('/quick-inputs/murajaah', [QuickInputController::class, 'storeMurajaah'])
-            ->name('quick-inputs.murajaah.store');
-
-        Route::post('/quick-inputs/ummi', [QuickInputController::class, 'storeUmmi'])
-            ->name('quick-inputs.ummi.store');
-
         Route::post('/ummi-records', [QuickInputController::class, 'storeUmmi'])
             ->name('ummi-records.store');
     });
