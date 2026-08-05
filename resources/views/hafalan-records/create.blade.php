@@ -116,83 +116,39 @@
             const end = parseInt(endAyah);
             if (isNaN(start) || isNaN(end) || start > end) return 0;
 
-            if (window.quranPageMapping) {
+            if (window.quranVerseLines) {
                 const keyStart = surahNumber + ':' + start;
                 const keyEnd = surahNumber + ':' + end;
 
-                const pageStart = window.quranPageMapping[keyStart];
-                const pageEnd = window.quranPageMapping[keyEnd];
+                const startInfo = window.quranVerseLines[keyStart];
+                const endInfo = window.quranVerseLines[keyEnd];
 
-                if (pageStart !== undefined && pageEnd !== undefined) {
-                    let useCharLength = false;
-                    if (window.quranVerseLengths) {
-                        useCharLength = true;
-                    }
+                if (startInfo && endInfo) {
+                    const pageStart = startInfo.page;
+                    const pageEnd = endInfo.page;
 
-                    const getVerseWeight = (k) => {
-                        if (useCharLength && window.quranVerseLengths[k] !== undefined) {
-                            return parseFloat(window.quranVerseLengths[k]) || 1.0;
-                        }
-                        return 1.0;
-                    };
+                    const lineStart = startInfo.start;
+                    const lineEnd = endInfo.end;
 
                     if (pageStart === pageEnd) {
-                        let totalPageWeight = 0.0;
-                        let setoranWeight = 0.0;
-                        for (let k in window.quranPageMapping) {
-                            if (window.quranPageMapping[k] === pageStart) {
-                                const w = getVerseWeight(k);
-                                totalPageWeight += w;
-                                const parts = k.split(':');
-                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) >= start && parseInt(parts[1]) <= end) {
-                                    setoranWeight += w;
-                                }
-                            }
-                        }
-                        const pageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
-                        const lines = (setoranWeight / Math.max(1.0, totalPageWeight)) * pageCapacity;
-                        return Math.round(lines * 10) / 10;
+                        const lines = lineEnd - lineStart + 1;
+                        return Math.max(0, lines);
                     } else {
                         // Start Page
-                        let totalStartPageWeight = 0.0;
-                        let setoranStartPageWeight = 0.0;
-                        for (let k in window.quranPageMapping) {
-                            if (window.quranPageMapping[k] === pageStart) {
-                                const w = getVerseWeight(k);
-                                totalStartPageWeight += w;
-                                const parts = k.split(':');
-                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) >= start) {
-                                    setoranStartPageWeight += w;
-                                }
-                            }
-                        }
-                        const startPageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
-                        const startPageLines = (setoranStartPageWeight / Math.max(1.0, totalStartPageWeight)) * startPageCapacity;
+                        const startPageCapacity = (pageStart === 1 || pageStart === 2) ? 7 : 15;
+                        const startPageLines = startPageCapacity - lineStart + 1;
 
                         // End Page
-                        let totalEndPageWeight = 0.0;
-                        let setoranEndPageWeight = 0.0;
-                        for (let k in window.quranPageMapping) {
-                            if (window.quranPageMapping[k] === pageEnd) {
-                                const w = getVerseWeight(k);
-                                totalEndPageWeight += w;
-                                const parts = k.split(':');
-                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) <= end) {
-                                    setoranEndPageWeight += w;
-                                }
-                            }
-                        }
-                        const endPageCapacity = (pageEnd === 1 || pageEnd === 2) ? 7.0 : 15.0;
-                        const endPageLines = (setoranEndPageWeight / Math.max(1.0, totalEndPageWeight)) * endPageCapacity;
+                        const endPageLines = lineEnd;
 
                         // Middle Pages
-                        let middleLines = 0.0;
+                        let middleLines = 0;
                         for (let p = pageStart + 1; p < pageEnd; p++) {
-                            const pageCapacity = (p === 1 || p === 2) ? 7.0 : 15.0;
+                            const pageCapacity = (p === 1 || p === 2) ? 7 : 15;
                             middleLines += pageCapacity;
                         }
 
-                        return Math.round((startPageLines + middleLines + endPageLines) * 10) / 10;
+                        return Math.max(0, startPageLines + middleLines + endPageLines);
                     }
                 }
             }
@@ -249,10 +205,10 @@
             .then(data => { window.quranPageMapping = data; })
             .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
 
-        fetch('{{ asset('quran_verse_lengths.json') }}')
+        fetch('{{ asset('quran_verse_lines.json') }}')
             .then(res => res.json())
-            .then(data => { window.quranVerseLengths = data; })
-            .catch(err => console.error('Gagal memuat panjang ayat Quran:', err));
+            .then(data => { window.quranVerseLines = data; })
+            .catch(err => console.error('Gagal memuat batas baris ayat Quran:', err));
 
         if (selectedStudent) {
             let s = allStudents.find(x => x.id == selectedStudent);

@@ -1039,48 +1039,26 @@ class ReportController extends Controller
         ];
     }
 
-    private static ?array $quranMapping = null;
-    private static ?array $quranVerseLengths = null;
+    private static ?array $quranVerseLines = null;
 
-    public static function getVerseLengths(): array
+    public static function getVerseLines(): array
     {
-        if (self::$quranVerseLengths !== null) {
-            return self::$quranVerseLengths;
+        if (self::$quranVerseLines !== null) {
+            return self::$quranVerseLines;
         }
 
-        $path = public_path('quran_verse_lengths.json');
+        $path = public_path('quran_verse_lines.json');
         if (!file_exists($path)) {
-            $path = storage_path('app/quran_verse_lengths.json');
+            $path = storage_path('app/quran_verse_lines.json');
         }
 
         if (file_exists($path)) {
-            self::$quranVerseLengths = json_decode(file_get_contents($path), true) ?: [];
-            return self::$quranVerseLengths;
+            self::$quranVerseLines = json_decode(file_get_contents($path), true) ?: [];
+        } else {
+            self::$quranVerseLines = [];
         }
 
-        $lengths = [];
-        try {
-            $dbVerses = \DB::table('ayahs')
-                ->join('surahs', 'ayahs.surah_id', '=', 'surahs.id')
-                ->select('surahs.number as surah_num', 'ayahs.ayah_number', 'ayahs.text_ar')
-                ->get();
-
-            if ($dbVerses->isNotEmpty()) {
-                $diacritics = ['ُ', 'ِ', 'َ', 'ْ', 'ّ', 'ً', 'ٍ', 'ٌ', 'ٰ', 'ٓ', 'ۜ', 'ۘ', 'ۙ', 'ۚ', 'ۗ', 'ۛ', 'ۖ', 'ۤ', 'ۥ', 'ۦ', 'ۧ', 'ۨ', '۩', '۪', '۫', '۬', 'ۭ', ' '];
-                foreach ($dbVerses as $v) {
-                    $cleanText = str_replace($diacritics, '', $v->text_ar);
-                    $lengths["{$v->surah_num}:{$v->ayah_number}"] = mb_strlen($cleanText);
-                }
-                
-                @file_put_contents(public_path('quran_verse_lengths.json'), json_encode($lengths, JSON_PRETTY_PRINT));
-                @file_put_contents(storage_path('app/quran_verse_lengths.json'), json_encode($lengths, JSON_PRETTY_PRINT));
-            }
-        } catch (\Exception $e) {
-            // Silence DB errors if table doesn't exist
-        }
-
-        self::$quranVerseLengths = $lengths;
-        return $lengths;
+        return self::$quranVerseLines;
     }
 
     /**
@@ -1088,101 +1066,48 @@ class ReportController extends Controller
      */
     public static function calculateLines(int $surahNumber, int $ayahStart, int $ayahEnd, int $totalAyah): float
     {
-        if (self::$quranMapping === null) {
-            $path = storage_path('app/quran_page_mapping.json');
-            if (!file_exists($path)) {
-                $path = public_path('quran_page_mapping.json');
-            }
-            if (file_exists($path)) {
-                self::$quranMapping = json_decode(file_get_contents($path), true) ?: [];
-            } else {
-                self::$quranMapping = [];
-            }
-        }
+        $linesMapping = self::getVerseLines();
 
-        $mapping = self::$quranMapping;
-
-        if (empty($mapping)) {
+        if (empty($linesMapping)) {
             return 0.0;
         }
 
         $keyStart = "{$surahNumber}:{$ayahStart}";
         $keyEnd = "{$surahNumber}:{$ayahEnd}";
 
-        $pageStart = $mapping[$keyStart] ?? null;
-        $pageEnd = $mapping[$keyEnd] ?? null;
+        $startInfo = $linesMapping[$keyStart] ?? null;
+        $endInfo = $linesMapping[$keyEnd] ?? null;
 
-        if ($pageStart === null || $pageEnd === null) {
+        if ($startInfo === null || $endInfo === null) {
             return 0.0;
         }
 
-        $ayahLengths = self::getVerseLengths();
-        $useCharLength = !empty($ayahLengths);
+        $pageStart = $startInfo['page'];
+        $pageEnd = $endInfo['page'];
 
-        $getVerseWeight = function($k) use ($useCharLength, $ayahLengths) {
-            if ($useCharLength && isset($ayahLengths[$k])) {
-                return (float) max(1, $ayahLengths[$k]);
-            }
-            return 1.0;
-        };
+        $lineStart = $startInfo['start'];
+        $lineEnd = $endInfo['end'];
 
         if ($pageStart == $pageEnd) {
-            $totalPageWeight = 0.0;
-            $setoranWeight = 0.0;
-            foreach ($mapping as $k => $p) {
-                if ($p == $pageStart) {
-                    $w = $getVerseWeight($k);
-                    $totalPageWeight += $w;
-                    list($s, $v) = explode(':', $k);
-                    if ((int)$s == $surahNumber && (int)$v >= $ayahStart && (int)$v <= $ayahEnd) {
-                        $setoranWeight += $w;
-                    }
-                }
-            }
-            $pageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
-            $lines = ($setoranWeight / max(1.0, $totalPageWeight)) * $pageCapacity;
-            return round($lines, 1);
+            // Same page: simply end_line - start_line + 1
+            $lines = $lineEnd - $lineStart + 1;
+            return (float) max(0, $lines);
         } else {
-            // Start Page lines
-            $totalStartPageWeight = 0.0;
-            $setoranStartPageWeight = 0.0;
-            foreach ($mapping as $k => $p) {
-                if ($p == $pageStart) {
-                    $w = $getVerseWeight($k);
-                    $totalStartPageWeight += $w;
-                    list($s, $v) = explode(':', $k);
-                    if ((int)$s == $surahNumber && (int)$v >= $ayahStart) {
-                        $setoranStartPageWeight += $w;
-                    }
-                }
-            }
-            $startPageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
-            $startPageLines = ($setoranStartPageWeight / max(1.0, $totalStartPageWeight)) * $startPageCapacity;
+            // Start Page lines: from lineStart to the end of the start page
+            $startPageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7 : 15;
+            $startPageLines = $startPageCapacity - $lineStart + 1;
 
-            // End Page lines
-            $totalEndPageWeight = 0.0;
-            $setoranEndPageWeight = 0.0;
-            foreach ($mapping as $k => $p) {
-                if ($p == $pageEnd) {
-                    $w = $getVerseWeight($k);
-                    $totalEndPageWeight += $w;
-                    list($s, $v) = explode(':', $k);
-                    if ((int)$s == $surahNumber && (int)$v <= $ayahEnd) {
-                        $setoranEndPageWeight += $w;
-                    }
-                }
-            }
-            $endPageCapacity = ($pageEnd == 1 || $pageEnd == 2) ? 7.0 : 15.0;
-            $endPageLines = ($setoranEndPageWeight / max(1.0, $totalEndPageWeight)) * $endPageCapacity;
+            // End Page lines: from line 1 of the end page to lineEnd
+            $endPageLines = $lineEnd;
 
             // Middle Pages lines
-            $middleLines = 0.0;
+            $middleLines = 0;
             for ($p = $pageStart + 1; $p < $pageEnd; $p++) {
-                $pageCapacity = ($p == 1 || $p == 2) ? 7.0 : 15.0;
+                $pageCapacity = ($p == 1 || $p == 2) ? 7 : 15;
                 $middleLines += $pageCapacity;
             }
 
-            return round($startPageLines + $middleLines + $endPageLines, 1);
+            return (float) max(0, $startPageLines + $middleLines + $endPageLines);
         }
 
         // Fallback to original ratio calculator if mapping not loaded
