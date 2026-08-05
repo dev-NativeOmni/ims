@@ -245,7 +245,7 @@
                         this.students.forEach((student, index) => {
                             let statusStr = '';
                             if (student.has_record) {
-                                statusStr = student.progress || '';
+                                statusStr = (student.progress || '').replace(/\/\/ /g, '').replace(/ Baris/g, ' baris');
                             } else if (student.customStatus) {
                                 statusStr = student.customStatus;
                             } else {
@@ -266,7 +266,7 @@
                             let statusStr = '';
                             if (student.has_record) {
                                 let progress = student.progress || '';
-                                statusStr = progress.replace(/ \(\d+(\.\d+)? Baris\)/g, ' ($&)').replace(/ Baris\)/g, ' baris)').replace(/ \(/g, ' (').replace(/\/\/ /g, '');
+                                statusStr = progress.replace(/\/\/ /g, '').replace(/ Baris/g, ' baris');
                             } else if (student.customStatus) {
                                 statusStr = student.customStatus;
                             } else {
