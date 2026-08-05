@@ -24,6 +24,7 @@ class UmmiRecord extends Model
         'disimak_guru',
         'disimak_ortu',
         'keterangan',
+        'baris',
     ];
 
     protected function casts(): array
@@ -34,7 +35,36 @@ class UmmiRecord extends Model
             'tatap_muka' => 'integer',
             'tanggal' => 'date',
             'hafalan_surah_id' => 'integer',
+            'baris' => 'decimal:2',
         ];
+    }
+
+    public function getLinesCountAttribute(): float
+    {
+        if ($this->baris !== null) {
+            return (float) $this->baris;
+        }
+        if (!$this->surah || !$this->hafalan_ayah) {
+            return 0.0;
+        }
+        $clean = str_replace(' ', '', $this->hafalan_ayah);
+        if (str_contains($clean, '-')) {
+            $parts = explode('-', $clean);
+            $start = (int) $parts[0];
+            $end = (int) $parts[1];
+        } else {
+            $start = (int) $clean;
+            $end = (int) $clean;
+        }
+        if ($start <= 0 || $end <= 0 || $start > $end) {
+            return 0.0;
+        }
+        return \App\Http\Controllers\ReportController::calculateLines(
+            $this->surah->number,
+            $start,
+            $end,
+            $this->surah->total_ayah
+        );
     }
 
     public function student(): BelongsTo

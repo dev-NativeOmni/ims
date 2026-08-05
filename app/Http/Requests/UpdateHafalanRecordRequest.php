@@ -79,6 +79,12 @@ class UpdateHafalanRecordRequest extends FormRequest
                 'string',
                 'max:2000',
             ],
+            'baris' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:500',
+            ],
             'submitted_at' => [
                 'required',
                 'date',

@@ -911,12 +911,7 @@ class ReportController extends Controller
             $capaianBaris = 0;
             foreach ($studentHafalan as $rec) {
                 if ($rec->surah) {
-                    $capaianBaris += self::calculateLines(
-                        $rec->surah->number,
-                        $rec->ayah_start,
-                        $rec->ayah_end,
-                        $rec->surah->total_ayah
-                    );
+                    $capaianBaris += $rec->lines_count;
                 }
             }
 
@@ -1247,12 +1242,7 @@ class ReportController extends Controller
             // Ziyadah / Hafalan
             foreach ($hRecs as $rec) {
                 if ($rec->surah) {
-                    $lines = self::calculateLines(
-                        $rec->surah->number,
-                        $rec->ayah_start,
-                        $rec->ayah_end,
-                        $rec->surah->total_ayah
-                    );
+                    $lines = $rec->lines_count;
                     $totalLines += $lines;
                     $progressParts[] = "{$rec->surah->name_latin} // {$rec->ayah_start}-{$rec->ayah_end} ({$lines} Baris)";
                 }

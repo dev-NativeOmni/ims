@@ -44,6 +44,9 @@ class HafalanRecordController extends Controller
                 ->when($request->filled('surah_id'), function ($query) use ($request) {
                     $query->where('hafalan_surah_id', $request->integer('surah_id'));
                 })
+                ->when($request->filled('date'), function ($query) use ($request) {
+                    $query->whereDate('tanggal', $request->input('date'));
+                })
                 ->when($request->filled('search'), function ($query) use ($request) {
                     $search = $request->string('search')->trim()->toString();
                     $query->where(function ($q) use ($search) {
@@ -84,6 +87,9 @@ class HafalanRecordController extends Controller
                 })
                 ->when($request->filled('status'), function ($query) use ($request) {
                     $query->where('status', $request->string('status')->toString());
+                })
+                ->when($request->filled('date'), function ($query) use ($request) {
+                    $query->whereDate('submitted_at', $request->input('date'));
                 })
                 ->when($request->filled('search'), function ($query) use ($request) {
                     $search = $request->string('search')->trim()->toString();
@@ -133,6 +139,7 @@ class HafalanRecordController extends Controller
         $submissionTypes = $validated['submission_types'] ?? [];
         $scores = $validated['scores'] ?? [];
         $statuses = $validated['statuses'] ?? [];
+        $baris = $validated['baris'] ?? [];
 
         DB::transaction(function () use (
             $studentId,
@@ -144,7 +151,8 @@ class HafalanRecordController extends Controller
             $ayahEnds,
             $submissionTypes,
             $scores,
-            $statuses
+            $statuses,
+            $baris
         ) {
             foreach ($surahIds as $idx => $surahId) {
                 if (empty($surahId)) {
@@ -162,6 +170,7 @@ class HafalanRecordController extends Controller
                     'status' => $statuses[$idx] ?? 'passed',
                     'notes' => $notes,
                     'submitted_at' => $submittedAt,
+                    'baris' => isset($baris[$idx]) && $baris[$idx] !== '' ? (float) $baris[$idx] : null,
                 ]);
             }
         });

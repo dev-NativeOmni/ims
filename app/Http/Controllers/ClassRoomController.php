@@ -119,12 +119,7 @@ class ClassRoomController extends Controller
                 if ($rec->surah) {
                     $surahNames[] = $rec->surah->name_latin;
                     $ayatRanges[] = $rec->ayah_start . '-' . $rec->ayah_end;
-                    $totalLines += \App\Http\Controllers\ReportController::calculateLines(
-                        $rec->surah->number,
-                        $rec->ayah_start,
-                        $rec->ayah_end,
-                        $rec->surah->total_ayah
-                    );
+                    $totalLines += $rec->lines_count;
                 }
                 if ($rec->score !== null) {
                     $scores[] = $rec->score_letter;
@@ -214,12 +209,7 @@ class ClassRoomController extends Controller
                 if ($rec->surah) {
                     $surahNames[] = $rec->surah->name_latin;
                     $ayatRanges[] = $rec->ayah_start . '-' . $rec->ayah_end;
-                    $totalLines += \App\Http\Controllers\ReportController::calculateLines(
-                        $rec->surah->number,
-                        $rec->ayah_start,
-                        $rec->ayah_end,
-                        $rec->surah->total_ayah
-                    );
+                    $totalLines += $rec->lines_count;
                 }
                 if ($rec->score !== null) {
                     $scores[] = $rec->score_letter;

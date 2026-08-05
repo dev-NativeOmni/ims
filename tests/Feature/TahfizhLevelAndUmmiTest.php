@@ -387,4 +387,40 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $this->assertEquals(1, $progress4['completed_juz_count']);
         $this->assertEquals('Juz 30', $progress4['completed_juz_list']);
     }
+
+    public function test_baris_manual_saving_and_lines_count_attributes()
+    {
+        // Store reguler record with manual baris count
+        $record = HafalanRecord::create([
+            'student_id' => $this->studentReguler->id,
+            'teacher_id' => $this->teacher->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'submission_type' => 'new',
+            'score' => 90,
+            'status' => 'passed',
+            'submitted_at' => now(),
+            'baris' => 12.50,
+        ]);
+
+        $this->assertEquals(12.50, $record->lines_count);
+
+        // Store ummi record with manual baris count
+        $ummiRecord = UmmiRecord::create([
+            'student_id' => $this->studentUmmi->id,
+            'teacher_id' => $this->teacher->id,
+            'tatap_muka' => 1,
+            'tanggal' => now(),
+            'hafalan_surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-7',
+            'ummi_jilid' => 'Jilid 1',
+            'nilai' => 'A',
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Tidak',
+            'baris' => 5.25,
+        ]);
+
+        $this->assertEquals(5.25, $ummiRecord->lines_count);
+    }
 }

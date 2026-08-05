@@ -76,7 +76,8 @@
                         ayah_end: '{{ old("ayah_ends")[$index] ?? "" }}',
                         submission_type: '{{ old("submission_types")[$index] ?? "new" }}',
                         score: '{{ old("scores")[$index] ?? "" }}',
-                        status: '{{ old("statuses")[$index] ?? "passed" }}'
+                        status: '{{ old("statuses")[$index] ?? "passed" }}',
+                        baris: '{{ old("baris")[$index] ?? "" }}'
                     },
                 @endforeach
             @else
@@ -86,12 +87,13 @@
                     ayah_end: '{{ request('ayah_end', '') }}',
                     submission_type: 'new',
                     score: '',
-                    status: 'passed'
+                    status: 'passed',
+                    baris: ''
                 }
             @endif
         ],
         ummiHafalans: [
-            { surah_id: '', ayah: '' }
+            { surah_id: '', ayah: '', baris: '' }
         ],
         allStudents: [
             @foreach($students as $student)
@@ -244,7 +246,38 @@
 
         $watch('selectedClass', (val) => {
             fetchAttendances();
+            if (val && !selectedStudent) {
+                let classStudents = allStudents.filter(s => s.classId == val);
+                let maxTatap = 0;
+                classStudents.forEach(s => {
+                    let studentTatap = latestTatapMukaPerStudent[s.id] || 0;
+                    if (studentTatap > maxTatap) {
+                        maxTatap = studentTatap;
+                    }
+                });
+                tatapMuka = maxTatap + 1;
+            }
         });
+
+        $watch('hafalans', (val) => {
+            val.forEach(item => {
+                if (item.surah_id && item.ayah_start && item.ayah_end && parseInt(item.ayah_start) <= parseInt(item.ayah_end)) {
+                    if (item.baris === undefined || item.baris === '') {
+                        item.baris = this.calculateLines(item.surah_id, item.ayah_start, item.ayah_end);
+                    }
+                }
+            });
+        }, { deep: true });
+
+        $watch('ummiHafalans', (val) => {
+            val.forEach(item => {
+                if (item.surah_id && item.ayah) {
+                    if (item.baris === undefined || item.baris === '') {
+                        item.baris = this.calculateUmmiLines(item.surah_id, item.ayah);
+                    }
+                }
+            });
+        }, { deep: true });
 
         $watch('selectedDate', (val) => {
             fetchAttendances();
@@ -532,6 +565,19 @@
 
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                                                Baris (Manual)
+                                            </label>
+                                            <input type="number"
+                                                   step="0.1"
+                                                   min="0"
+                                                   :name="'baris['+index+']'"
+                                                   x-model="item.baris"
+                                                   placeholder="0"
+                                                   class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                                 Jenis Setoran
                                             </label>
                                             <select :name="'submission_types['+index+']'"
@@ -695,7 +741,7 @@
                                         Setoran Hafalan UMMI
                                     </label>
                                     <button type="button"
-                                            @click="ummiHafalans.push({ surah_id: '', ayah: '' })"
+                                            @click="ummiHafalans.push({ surah_id: '', ayah: '', baris: '' })"
                                             class="inline-flex items-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded text-xs font-semibold hover:bg-emerald-100 transition cursor-pointer">
                                         + Tambah Surah
                                     </button>
@@ -742,7 +788,7 @@
                                                  <input type="hidden" :id="'ummi_hafalan_surah_' + index" :name="'hafalan_surah_ids['+index+']'" x-model="item.surah_id">
                                              </div>
                                         </div>
-                                        <div class="col-span-4">
+                                        <div class="col-span-3">
                                             <label :for="'ummi_hafalan_ayah_' + index" class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                                 Ayat
                                             </label>
@@ -753,9 +799,22 @@
                                                    placeholder="e.g. 1-10"
                                                    class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                                         </div>
+                                        <div class="col-span-2">
+                                            <label :for="'ummi_hafalan_baris_' + index" class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                                                Baris (Manual)
+                                            </label>
+                                            <input type="number"
+                                                   step="0.1"
+                                                   min="0"
+                                                   :id="'ummi_hafalan_baris_' + index"
+                                                   :name="'hafalan_baris['+index+']'"
+                                                   x-model="item.baris"
+                                                   placeholder="0"
+                                                   class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                        </div>
                                         <div class="col-span-2 text-right">
                                             <button type="button"
-                                                    @click="if(ummiHafalans.length > 1) { ummiHafalans.splice(index, 1); } else { item.surah_id = ''; item.ayah = ''; }"
+                                                    @click="if(ummiHafalans.length > 1) { ummiHafalans.splice(index, 1); } else { item.surah_id = ''; item.ayah = ''; item.baris = ''; }"
                                                     class="inline-flex items-center px-2 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 rounded text-[11px] font-bold border border-rose-200 dark:border-rose-800 cursor-pointer">
                                                 Hapus
                                             </button>

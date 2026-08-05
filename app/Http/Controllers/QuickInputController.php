@@ -378,6 +378,8 @@ class QuickInputController extends Controller
             'hafalan_surah_ids.*' => ['nullable', 'integer', 'exists:surahs,id'],
             'hafalan_ayahs' => ['nullable', 'array'],
             'hafalan_ayahs.*' => ['nullable', 'string', 'max:100'],
+            'hafalan_baris' => ['nullable', 'array'],
+            'hafalan_baris.*' => ['nullable', 'numeric', 'min:0'],
             'ummi_jilid' => ['nullable', 'string', 'max:150'],
             'ummi_halaman' => ['nullable', 'string', 'max:100'],
             'materi' => ['nullable', 'string', 'max:255'],
@@ -449,11 +451,13 @@ class QuickInputController extends Controller
         if ($request->has('hafalan_surah_ids')) {
             $surahIds = $request->input('hafalan_surah_ids');
             $ayahs = $request->input('hafalan_ayahs');
+            $baris = $request->input('hafalan_baris', []);
             foreach ($surahIds as $idx => $sid) {
                 if (! empty($sid)) {
                     $hafalans[] = [
                         'surah_id' => (int) $sid,
                         'ayah' => $ayahs[$idx] ?? null,
+                        'baris' => isset($baris[$idx]) && $baris[$idx] !== '' ? (float)$baris[$idx] : null,
                     ];
                 }
             }
@@ -461,6 +465,7 @@ class QuickInputController extends Controller
             $hafalans[] = [
                 'surah_id' => (int) $request->input('hafalan_surah_id'),
                 'ayah' => $request->input('hafalan_ayah'),
+                'baris' => $request->filled('hafalan_baris') ? (float)$request->input('hafalan_baris') : null,
             ];
         }
 
@@ -485,6 +490,7 @@ class QuickInputController extends Controller
                         'tanggal' => $validated['tanggal'],
                         'hafalan_surah_id' => null,
                         'hafalan_ayah' => null,
+                        'baris' => null,
                         'ummi_jilid' => $validated['ummi_jilid'] ?? null,
                         'ummi_halaman' => $validated['ummi_halaman'] ?? null,
                         'materi' => $validated['materi'] ?? null,
@@ -502,6 +508,7 @@ class QuickInputController extends Controller
                             'tanggal' => $validated['tanggal'],
                             'hafalan_surah_id' => $hafalan['surah_id'],
                             'hafalan_ayah' => $hafalan['ayah'],
+                            'baris' => $hafalan['baris'],
                             'ummi_jilid' => $validated['ummi_jilid'] ?? null,
                             'ummi_halaman' => $validated['ummi_halaman'] ?? null,
                             'materi' => $validated['materi'] ?? null,

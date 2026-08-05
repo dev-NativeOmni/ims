@@ -70,6 +70,7 @@ class StoreHafalanRecordRequest extends FormRequest
                         }
                     }
 
+                    $barisList = array_fill(0, count($surahIds), $this->input('baris'));
                     $this->merge([
                         'surah_ids' => $surahIds,
                         'ayah_starts' => $ayahStarts,
@@ -77,6 +78,7 @@ class StoreHafalanRecordRequest extends FormRequest
                         'submission_types' => $submissionTypes,
                         'scores' => $scores,
                         'statuses' => $statuses,
+                        'baris' => $barisList,
                     ]);
                 } else {
                     $this->merge([
@@ -86,6 +88,7 @@ class StoreHafalanRecordRequest extends FormRequest
                         'submission_types' => [$this->input('submission_type')],
                         'scores' => [$this->input('score')],
                         'statuses' => [$this->input('status')],
+                        'baris' => [$this->input('baris')],
                     ]);
                 }
             }
@@ -163,6 +166,16 @@ class StoreHafalanRecordRequest extends FormRequest
             'statuses.*' => [
                 'required',
                 Rule::in(['passed', 'repeat', 'needs_improvement']),
+            ],
+            'baris' => [
+                'nullable',
+                'array',
+            ],
+            'baris.*' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:500',
             ],
             'notes' => [
                 'nullable',

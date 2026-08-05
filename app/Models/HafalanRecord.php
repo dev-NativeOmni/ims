@@ -22,6 +22,7 @@ class HafalanRecord extends Model
         'status',
         'notes',
         'submitted_at',
+        'baris',
     ];
 
     protected function casts(): array
@@ -33,8 +34,25 @@ class HafalanRecord extends Model
             'ayah_start' => 'integer',
             'ayah_end' => 'integer',
             'score' => 'decimal:2',
+            'baris' => 'decimal:2',
             'submitted_at' => 'date',
         ];
+    }
+
+    public function getLinesCountAttribute(): float
+    {
+        if ($this->baris !== null) {
+            return (float) $this->baris;
+        }
+        if (!$this->surah) {
+            return 0.0;
+        }
+        return \App\Http\Controllers\ReportController::calculateLines(
+            $this->surah->number,
+            $this->ayah_start,
+            $this->ayah_end,
+            $this->surah->total_ayah
+        );
     }
 
     public function student(): BelongsTo

@@ -134,6 +134,26 @@
                         </div>
 
                         <div>
+                            <label for="baris" class="block text-sm font-medium text-gray-700">
+                                Baris (Manual)
+                            </label>
+
+                            <input
+                                id="baris"
+                                name="baris"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                value="{{ old('baris', $hafalanRecord->baris) }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            >
+
+                            @error('baris')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="submission_type" class="block text-sm font-medium text-gray-700">
                                 Jenis Setoran
                             </label>

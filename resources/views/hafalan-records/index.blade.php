@@ -62,6 +62,13 @@
                         class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
                     >
 
+                    <input
+                        type="date"
+                        name="date"
+                        value="{{ request('date') }}"
+                        class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
+                    >
+
                     <select name="surah_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                         <option value="">Semua Surah</option>
                         @foreach ($surahs as $surah)
@@ -143,7 +150,7 @@
                                 <div class="col-span-2 mt-1">
                                     <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Hafalan UMMI</span>
                                     <span class="font-medium text-zinc-700 dark:text-zinc-300">
-                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }})
+                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }}) ({{ $record->lines_count }} Baris)
                                     </span>
                                 </div>
                                 @endif
@@ -181,7 +188,7 @@
                                 <div>
                                     <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Surah & Ayat</span>
                                     <span class="font-bold text-zinc-800 dark:text-zinc-200">
-                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }})
+                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }}) ({{ $record->lines_count }} Baris)
                                     </span>
                                 </div>
                                 <div>
@@ -275,7 +282,7 @@
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                             @if($record->surah)
-                                                {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }})
+                                                {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }}) ({{ $record->lines_count }} Baris)
                                             @else
                                                 -
                                             @endif
@@ -331,7 +338,7 @@
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
+                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->lines_count }} Baris)
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">

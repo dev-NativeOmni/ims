@@ -364,12 +364,7 @@ class QuarterlyReportController extends Controller
                             });
 
                             if ($record && $record->surah) {
-                                $lines = \App\Http\Controllers\ReportController::calculateLines(
-                                    $record->surah->number,
-                                    $record->ayah_start,
-                                    $record->ayah_end,
-                                    $record->surah->total_ayah
-                                );
+                                $lines = $record->lines_count;
                                 $dailyLogs[$dayName] = [
                                     'surah' => $record->surah->name_latin,
                                     'ayat_start' => $record->ayah_start,
@@ -452,12 +447,7 @@ class QuarterlyReportController extends Controller
                         });
 
                         if ($record && $record->surah) {
-                            $lines = \App\Http\Controllers\ReportController::calculateLines(
-                                $record->surah->number,
-                                $record->ayah_start,
-                                $record->ayah_end,
-                                $record->surah->total_ayah
-                            );
+                            $lines = $record->lines_count;
                             $pekanRecords[$p] = [
                                 'surah' => $record->surah->name_latin,
                                 'ayat' => "{$record->ayah_start}-{$record->ayah_end}",
