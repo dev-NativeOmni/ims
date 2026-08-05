@@ -200,15 +200,33 @@
             });
         }
     }" x-init="
-        fetch('{{ asset('quran_page_mapping.json') }}')
-            .then(res => res.json())
-            .then(data => { window.quranPageMapping = data; })
-            .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
+        const cachedPageMapping = localStorage.getItem('quran_page_mapping');
+        if (cachedPageMapping) {
+            try { window.quranPageMapping = JSON.parse(cachedPageMapping); } catch (e) { localStorage.removeItem('quran_page_mapping'); }
+        }
+        if (!window.quranPageMapping) {
+            fetch('{{ asset('quran_page_mapping.json') }}')
+                .then(res => res.json())
+                .then(data => {
+                    window.quranPageMapping = data;
+                    try { localStorage.setItem('quran_page_mapping', JSON.stringify(data)); } catch (e) {}
+                })
+                .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
+        }
 
-        fetch('{{ asset('quran_verse_lines.json') }}')
-            .then(res => res.json())
-            .then(data => { window.quranVerseLines = data; })
-            .catch(err => console.error('Gagal memuat batas baris ayat Quran:', err));
+        const cachedVerseLines = localStorage.getItem('quran_verse_lines');
+        if (cachedVerseLines) {
+            try { window.quranVerseLines = JSON.parse(cachedVerseLines); } catch (e) { localStorage.removeItem('quran_verse_lines'); }
+        }
+        if (!window.quranVerseLines) {
+            fetch('{{ asset('quran_verse_lines.json') }}')
+                .then(res => res.json())
+                .then(data => {
+                    window.quranVerseLines = data;
+                    try { localStorage.setItem('quran_verse_lines', JSON.stringify(data)); } catch (e) {}
+                })
+                .catch(err => console.error('Gagal memuat batas baris ayat Quran:', err));
+        }
 
         if (selectedStudent) {
             let s = allStudents.find(x => x.id == selectedStudent);
