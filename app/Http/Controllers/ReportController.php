@@ -1060,66 +1060,123 @@ class ReportController extends Controller
 
         $mapping = self::$quranMapping;
 
-        if (!empty($mapping)) {
-            $keyStart = "{$surahNumber}:{$ayahStart}";
-            $keyEnd = "{$surahNumber}:{$ayahEnd}";
+        if (empty($mapping)) {
+            return 0.0;
+        }
 
-            $pageStart = $mapping[$keyStart] ?? null;
-            $pageEnd = $mapping[$keyEnd] ?? null;
+        $keyStart = "{$surahNumber}:{$ayahStart}";
+        $keyEnd = "{$surahNumber}:{$ayahEnd}";
 
-            if ($pageStart !== null && $pageEnd !== null) {
-                if ($pageStart == $pageEnd) {
-                    $totalVersesOnPage = 0;
-                    foreach ($mapping as $k => $p) {
-                        if ($p == $pageStart) {
-                            $totalVersesOnPage++;
-                        }
-                    }
-                    $versesInSetoran = max(1, $ayahEnd - $ayahStart + 1);
-                    $pageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
-                    $lines = ($versesInSetoran / max(1, $totalVersesOnPage)) * $pageCapacity;
-                    return round($lines, 1);
-                } else {
-                    // Start Page lines
-                    $totalVersesOnStartPage = 0;
-                    $versesInSetoranStartPage = 0;
-                    foreach ($mapping as $k => $p) {
-                        if ($p == $pageStart) {
-                            $totalVersesOnStartPage++;
-                            list($s, $v) = explode(':', $k);
-                            if ((int)$s == $surahNumber && (int)$v >= $ayahStart) {
-                                $versesInSetoranStartPage++;
-                            }
-                        }
-                    }
-                    $startPageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
-                    $startPageLines = ($versesInSetoranStartPage / max(1, $totalVersesOnStartPage)) * $startPageCapacity;
+        $pageStart = $mapping[$keyStart] ?? null;
+        $pageEnd = $mapping[$keyEnd] ?? null;
 
-                    // End Page lines
-                    $totalVersesOnEndPage = 0;
-                    $versesInSetoranEndPage = 0;
-                    foreach ($mapping as $k => $p) {
-                        if ($p == $pageEnd) {
-                            $totalVersesOnEndPage++;
-                            list($s, $v) = explode(':', $k);
-                            if ((int)$s == $surahNumber && (int)$v <= $ayahEnd) {
-                                $versesInSetoranEndPage++;
-                            }
-                        }
-                    }
-                    $endPageCapacity = ($pageEnd == 1 || $pageEnd == 2) ? 7.0 : 15.0;
-                    $endPageLines = ($versesInSetoranEndPage / max(1, $totalVersesOnEndPage)) * $endPageCapacity;
+        if ($pageStart === null || $pageEnd === null) {
+            return 0.0;
+        }
 
-                    // Middle Pages lines
-                    $middleLines = 0.0;
-                    for ($p = $pageStart + 1; $p < $pageEnd; $p++) {
-                        $pageCapacity = ($p == 1 || $p == 2) ? 7.0 : 15.0;
-                        $middleLines += $pageCapacity;
-                    }
-
-                    return round($startPageLines + $middleLines + $endPageLines, 1);
+        // Proportional character count estimation
+        $useCharLength = false;
+        $ayahLengths = [];
+        try {
+            $pagesToLoad = range($pageStart, $pageEnd);
+            $pageKeys = [];
+            foreach ($mapping as $k => $p) {
+                if (in_array($p, $pagesToLoad)) {
+                    $pageKeys[] = $k;
                 }
             }
+
+            if (!empty($pageKeys)) {
+                $surahNums = [];
+                foreach ($pageKeys as $pk) {
+                    list($s, $a) = explode(':', $pk);
+                    $surahNums[] = (int)$s;
+                }
+                $surahNums = array_unique($surahNums);
+
+                $dbVerses = \DB::table('ayahs')
+                    ->join('surahs', 'ayahs.surah_id', '=', 'surahs.id')
+                    ->whereIn('surahs.number', $surahNums)
+                    ->select('surahs.number as surah_num', 'ayahs.ayah_number', 'ayahs.text_ar')
+                    ->get();
+
+                if ($dbVerses->isNotEmpty()) {
+                    $diacritics = ['ُ', 'ِ', 'َ', 'ْ', 'ّ', 'ً', 'ٍ', 'ٌ', 'ٰ', 'ٓ', 'ۜ', 'ۘ', 'ۙ', 'ۚ', 'ۗ', 'ۛ', 'ۖ', 'ۤ', 'ۥ', 'ۦ', 'ۧ', 'ۨ', '۩', '۪', '۫', '۬', 'ۭ', ' '];
+                    foreach ($dbVerses as $v) {
+                        $cleanText = str_replace($diacritics, '', $v->text_ar);
+                        $ayahLengths["{$v->surah_num}:{$v->ayah_number}"] = mb_strlen($cleanText);
+                    }
+                    $useCharLength = true;
+                }
+            }
+        } catch (\Exception $e) {
+            $useCharLength = false;
+        }
+
+        $getVerseWeight = function($k) use ($useCharLength, $ayahLengths) {
+            if ($useCharLength && isset($ayahLengths[$k])) {
+                return (float) max(1, $ayahLengths[$k]);
+            }
+            return 1.0;
+        };
+
+        if ($pageStart == $pageEnd) {
+            $totalPageWeight = 0.0;
+            $setoranWeight = 0.0;
+            foreach ($mapping as $k => $p) {
+                if ($p == $pageStart) {
+                    $w = $getVerseWeight($k);
+                    $totalPageWeight += $w;
+                    list($s, $v) = explode(':', $k);
+                    if ((int)$s == $surahNumber && (int)$v >= $ayahStart && (int)$v <= $ayahEnd) {
+                        $setoranWeight += $w;
+                    }
+                }
+            }
+            $pageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
+            $lines = ($setoranWeight / max(1.0, $totalPageWeight)) * $pageCapacity;
+            return round($lines, 1);
+        } else {
+            // Start Page lines
+            $totalStartPageWeight = 0.0;
+            $setoranStartPageWeight = 0.0;
+            foreach ($mapping as $k => $p) {
+                if ($p == $pageStart) {
+                    $w = $getVerseWeight($k);
+                    $totalStartPageWeight += $w;
+                    list($s, $v) = explode(':', $k);
+                    if ((int)$s == $surahNumber && (int)$v >= $ayahStart) {
+                        $setoranStartPageWeight += $w;
+                    }
+                }
+            }
+            $startPageCapacity = ($pageStart == 1 || $pageStart == 2) ? 7.0 : 15.0;
+            $startPageLines = ($setoranStartPageWeight / max(1.0, $totalStartPageWeight)) * $startPageCapacity;
+
+            // End Page lines
+            $totalEndPageWeight = 0.0;
+            $setoranEndPageWeight = 0.0;
+            foreach ($mapping as $k => $p) {
+                if ($p == $pageEnd) {
+                    $w = $getVerseWeight($k);
+                    $totalEndPageWeight += $w;
+                    list($s, $v) = explode(':', $k);
+                    if ((int)$s == $surahNumber && (int)$v <= $ayahEnd) {
+                        $setoranEndPageWeight += $w;
+                    }
+                }
+            }
+            $endPageCapacity = ($pageEnd == 1 || $pageEnd == 2) ? 7.0 : 15.0;
+            $endPageLines = ($setoranEndPageWeight / max(1.0, $totalEndPageWeight)) * $endPageCapacity;
+
+            // Middle Pages lines
+            $middleLines = 0.0;
+            for ($p = $pageStart + 1; $p < $pageEnd; $p++) {
+                $pageCapacity = ($p == 1 || $p == 2) ? 7.0 : 15.0;
+                $middleLines += $pageCapacity;
+            }
+
+            return round($startPageLines + $middleLines + $endPageLines, 1);
         }
 
         // Fallback to original ratio calculator if mapping not loaded

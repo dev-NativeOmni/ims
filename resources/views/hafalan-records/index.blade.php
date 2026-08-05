@@ -241,6 +241,7 @@
                                     <th class="px-4 py-3">Jilid / Hal</th>
                                     <th class="px-4 py-3">Materi</th>
                                     <th class="px-4 py-3">Hafalan UMMI</th>
+                                    <th class="px-4 py-3 text-center">Baris</th>
                                     <th class="px-4 py-3">Nilai</th>
                                     <th class="px-4 py-3">Simak</th>
                                 </tr>
@@ -280,12 +281,16 @@
                                             {{ $record->materi ?: '-' }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             @if($record->surah)
-                                                {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }}) ({{ $record->lines_count }} Baris)
+                                                {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->hafalan_ayah ?: '-' }})
                                             @else
                                                 -
                                             @endif
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
+                                            {{ $record->lines_count }}
                                         </td>
 
                                         <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
@@ -314,6 +319,7 @@
                                     <th class="px-4 py-3">Santri</th>
                                     <th class="px-4 py-3">Surah</th>
                                     <th class="px-4 py-3">Ayat</th>
+                                    <th class="px-4 py-3 text-center">Baris</th>
                                     <th class="px-4 py-3">Jenis</th>
                                     <th class="px-4 py-3">Nilai</th>
                                     <th class="px-4 py-3">Status</th>
@@ -338,11 +344,15 @@
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->lines_count }} Baris)
+                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
+                                            {{ $record->lines_count }}
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
