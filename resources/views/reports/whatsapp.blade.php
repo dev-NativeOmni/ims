@@ -53,13 +53,13 @@
                 <!-- Main Generator Workspace -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6"
                      x-data="whatsappReport({
-                         layout: '{{ $hasUmmiRecords ? 'ummi' : 'tahfidz' }}',
-                         className: '{{ $selectedClass->name }}',
-                         musyrifName: '{{ $musyrifName }}',
-                         selectedDateFormatted: '{{ $indonesianDate }}',
-                         classUmmiJilid: '{{ $classUmmiJilid }}',
-                         classUmmiHalaman: '{{ $classUmmiHalaman }}',
-                         classUmmiHafalanSurah: '{{ $classUmmiHafalanSurah }}',
+                         layout: @json($hasUmmiRecords ? 'ummi' : 'tahfidz'),
+                         className: @json($selectedClass ? $selectedClass->name : ''),
+                         musyrifName: @json($musyrifName),
+                         selectedDateFormatted: @json($indonesianDate),
+                         classUmmiJilid: @json($classUmmiJilid),
+                         classUmmiHalaman: @json($classUmmiHalaman),
+                         classUmmiHafalanSurah: @json($classUmmiHafalanSurah),
                          students: @json($students)
                      })">
                     
