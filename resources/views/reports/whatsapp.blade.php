@@ -163,7 +163,7 @@
 
                             <div class="relative bg-emerald-50/20 dark:bg-[#09090b]/40 rounded-xl p-4 border border-emerald-100/30 dark:border-zinc-800">
                                 <textarea readonly
-                                          x-text="generatedText"
+                                          :value="generatedText"
                                           class="w-full h-80 bg-transparent border-0 focus:ring-0 p-0 text-xs font-mono text-gray-800 dark:text-zinc-300 resize-none whitespace-pre-wrap select-all focus:outline-none"></textarea>
                             </div>
 
@@ -199,11 +199,9 @@
             @endif
 
         </div>
-    </div>
-
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('whatsappReport', (config) => ({
+        <script>
+        function whatsappReport(config) {
+            return {
                 layout: config.layout || 'tahfidz',
                 className: config.className || '',
                 musyrifName: config.musyrifName || '',
@@ -248,7 +246,7 @@
                             } else if (student.customStatus) {
                                 statusStr = student.customStatus;
                             } else {
-                                statusStr = student.attendance;
+                                statusStr = student.attendance || 'Belum Setor';
                             }
                             text += `${index + 1}. ${student.name} : ${statusStr}\n`;
                         });
@@ -269,7 +267,8 @@
                             } else if (student.customStatus) {
                                 statusStr = student.customStatus;
                             } else {
-                                statusStr = student.attendance === 'Izin' ? 'ijin' : student.attendance.toLowerCase();
+                                let att = student.attendance || 'Belum Setor';
+                                statusStr = att === 'Izin' ? 'ijin' : att.toLowerCase();
                             }
                             text += `${index + 1}. ${student.name} 👉 ${statusStr}\n`;
                         });
@@ -280,20 +279,49 @@
                 },
 
                 copyToClipboard() {
-                    const text = this.generatedText;
-                    navigator.clipboard.writeText(text).then(() => {
+                    try {
+                        const text = this.generatedText;
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(text).then(() => {
+                                alert('Laporan berhasil disalin ke clipboard!');
+                            }).catch(err => {
+                                this.fallbackCopy(text);
+                            });
+                        } else {
+                            this.fallbackCopy(text);
+                        }
+                    } catch (e) {
+                        alert('Gagal menyalin secara otomatis. Silakan salin teks di kotak preview secara manual.');
+                    }
+                },
+
+                fallbackCopy(text) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
                         alert('Laporan berhasil disalin ke clipboard!');
-                    }).catch(err => {
-                        console.error('Gagal menyalin:', err);
-                        alert('Gagal menyalin laporan, silakan salin teks di kotak preview secara manual.');
-                    });
+                    } catch (err) {
+                        alert('Gagal menyalin secara otomatis. Silakan salin teks di kotak preview secara manual.');
+                    }
+                    document.body.removeChild(textarea);
                 },
 
                 shareToWhatsApp() {
-                    const text = encodeURIComponent(this.generatedText);
-                    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+                    try {
+                        const text = encodeURIComponent(this.generatedText);
+                        const win = window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+                        if (!win) {
+                            alert('Gagal membuka WhatsApp. Harap izinkan pop-up (pop-up blocker) untuk situs ini dan coba lagi.');
+                        }
+                    } catch (e) {
+                        alert('Gagal membuka WhatsApp secara otomatis.');
+                    }
                 }
-            }));
-        });
+            };
+        }
     </script>
 </x-app-layout>
