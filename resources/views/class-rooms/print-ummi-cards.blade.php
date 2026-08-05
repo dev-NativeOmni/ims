@@ -153,8 +153,13 @@
                                     <th class="font-semibold">Ortu</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($records as $record)
+                             <tbody>
+                                @php
+                                    $chunkSize = 22;
+                                    $currentRecords = $c === 0 ? $records->slice(0, $chunkSize) : $records->slice($chunkSize, $chunkSize);
+                                    $padCount = max(0, $chunkSize - $currentRecords->count());
+                                @endphp
+                                @foreach ($currentRecords as $record)
                                     <tr>
                                         <td class="text-center font-semibold">{{ $record->tatap_muka }}</td>
                                         <td class="text-center">{{ $record->tanggal?->format('d/m/y') }}</td>
@@ -170,10 +175,7 @@
                                     </tr>
                                 @endforeach
 
-                                {{-- Print blank rows if less than 22 to pad the card --}}
-                                @php
-                                    $padCount = max(0, 22 - $records->count());
-                                @endphp
+                                {{-- Print blank rows to pad the card --}}
                                 @for ($i = 0; $i < $padCount; $i++)
                                     <tr>
                                         <td class="text-center text-transparent">&nbsp;</td>
