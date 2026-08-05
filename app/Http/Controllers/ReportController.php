@@ -1040,6 +1040,48 @@ class ReportController extends Controller
     }
 
     private static ?array $quranMapping = null;
+    private static ?array $quranVerseLengths = null;
+
+    public static function getVerseLengths(): array
+    {
+        if (self::$quranVerseLengths !== null) {
+            return self::$quranVerseLengths;
+        }
+
+        $path = public_path('quran_verse_lengths.json');
+        if (!file_exists($path)) {
+            $path = storage_path('app/quran_verse_lengths.json');
+        }
+
+        if (file_exists($path)) {
+            self::$quranVerseLengths = json_decode(file_get_contents($path), true) ?: [];
+            return self::$quranVerseLengths;
+        }
+
+        $lengths = [];
+        try {
+            $dbVerses = \DB::table('ayahs')
+                ->join('surahs', 'ayahs.surah_id', '=', 'surahs.id')
+                ->select('surahs.number as surah_num', 'ayahs.ayah_number', 'ayahs.text_ar')
+                ->get();
+
+            if ($dbVerses->isNotEmpty()) {
+                $diacritics = ['ُ', 'ِ', 'َ', 'ْ', 'ّ', 'ً', 'ٍ', 'ٌ', 'ٰ', 'ٓ', 'ۜ', 'ۘ', 'ۙ', 'ۚ', 'ۗ', 'ۛ', 'ۖ', 'ۤ', 'ۥ', 'ۦ', 'ۧ', 'ۨ', '۩', '۪', '۫', '۬', 'ۭ', ' '];
+                foreach ($dbVerses as $v) {
+                    $cleanText = str_replace($diacritics, '', $v->text_ar);
+                    $lengths["{$v->surah_num}:{$v->ayah_number}"] = mb_strlen($cleanText);
+                }
+                
+                @file_put_contents(public_path('quran_verse_lengths.json'), json_encode($lengths, JSON_PRETTY_PRINT));
+                @file_put_contents(storage_path('app/quran_verse_lengths.json'), json_encode($lengths, JSON_PRETTY_PRINT));
+            }
+        } catch (\Exception $e) {
+            // Silence DB errors if table doesn't exist
+        }
+
+        self::$quranVerseLengths = $lengths;
+        return $lengths;
+    }
 
     /**
      * Estimates the lines count of a setoran based on the mushaf page layout (15 lines per page)
@@ -1074,44 +1116,8 @@ class ReportController extends Controller
             return 0.0;
         }
 
-        // Proportional character count estimation
-        $useCharLength = false;
-        $ayahLengths = [];
-        try {
-            $pagesToLoad = range($pageStart, $pageEnd);
-            $pageKeys = [];
-            foreach ($mapping as $k => $p) {
-                if (in_array($p, $pagesToLoad)) {
-                    $pageKeys[] = $k;
-                }
-            }
-
-            if (!empty($pageKeys)) {
-                $surahNums = [];
-                foreach ($pageKeys as $pk) {
-                    list($s, $a) = explode(':', $pk);
-                    $surahNums[] = (int)$s;
-                }
-                $surahNums = array_unique($surahNums);
-
-                $dbVerses = \DB::table('ayahs')
-                    ->join('surahs', 'ayahs.surah_id', '=', 'surahs.id')
-                    ->whereIn('surahs.number', $surahNums)
-                    ->select('surahs.number as surah_num', 'ayahs.ayah_number', 'ayahs.text_ar')
-                    ->get();
-
-                if ($dbVerses->isNotEmpty()) {
-                    $diacritics = ['ُ', 'ِ', 'َ', 'ْ', 'ّ', 'ً', 'ٍ', 'ٌ', 'ٰ', 'ٓ', 'ۜ', 'ۘ', 'ۙ', 'ۚ', 'ۗ', 'ۛ', 'ۖ', 'ۤ', 'ۥ', 'ۦ', 'ۧ', 'ۨ', '۩', '۪', '۫', '۬', 'ۭ', ' '];
-                    foreach ($dbVerses as $v) {
-                        $cleanText = str_replace($diacritics, '', $v->text_ar);
-                        $ayahLengths["{$v->surah_num}:{$v->ayah_number}"] = mb_strlen($cleanText);
-                    }
-                    $useCharLength = true;
-                }
-            }
-        } catch (\Exception $e) {
-            $useCharLength = false;
-        }
+        $ayahLengths = self::getVerseLengths();
+        $useCharLength = !empty($ayahLengths);
 
         $getVerseWeight = function($k) use ($useCharLength, $ayahLengths) {
             if ($useCharLength && isset($ayahLengths[$k])) {

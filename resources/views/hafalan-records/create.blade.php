@@ -124,47 +124,66 @@
                 const pageEnd = window.quranPageMapping[keyEnd];
 
                 if (pageStart !== undefined && pageEnd !== undefined) {
+                    let useCharLength = false;
+                    if (window.quranVerseLengths) {
+                        useCharLength = true;
+                    }
+
+                    const getVerseWeight = (k) => {
+                        if (useCharLength && window.quranVerseLengths[k] !== undefined) {
+                            return parseFloat(window.quranVerseLengths[k]) || 1.0;
+                        }
+                        return 1.0;
+                    };
+
                     if (pageStart === pageEnd) {
-                        let totalVersesOnPage = 0;
+                        let totalPageWeight = 0.0;
+                        let setoranWeight = 0.0;
                         for (let k in window.quranPageMapping) {
                             if (window.quranPageMapping[k] === pageStart) {
-                                totalVersesOnPage++;
+                                const w = getVerseWeight(k);
+                                totalPageWeight += w;
+                                const parts = k.split(':');
+                                if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) >= start && parseInt(parts[1]) <= end) {
+                                    setoranWeight += w;
+                                }
                             }
                         }
-                        const versesInSetoran = end - start + 1;
                         const pageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
-                        const lines = (versesInSetoran / Math.max(1, totalVersesOnPage)) * pageCapacity;
+                        const lines = (setoranWeight / Math.max(1.0, totalPageWeight)) * pageCapacity;
                         return Math.round(lines * 10) / 10;
                     } else {
                         // Start Page
-                        let totalVersesOnStartPage = 0;
-                        let versesInSetoranStartPage = 0;
+                        let totalStartPageWeight = 0.0;
+                        let setoranStartPageWeight = 0.0;
                         for (let k in window.quranPageMapping) {
                             if (window.quranPageMapping[k] === pageStart) {
-                                totalVersesOnStartPage++;
+                                const w = getVerseWeight(k);
+                                totalStartPageWeight += w;
                                 const parts = k.split(':');
                                 if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) >= start) {
-                                    versesInSetoranStartPage++;
+                                    setoranStartPageWeight += w;
                                 }
                             }
                         }
                         const startPageCapacity = (pageStart === 1 || pageStart === 2) ? 7.0 : 15.0;
-                        const startPageLines = (versesInSetoranStartPage / Math.max(1, totalVersesOnStartPage)) * startPageCapacity;
+                        const startPageLines = (setoranStartPageWeight / Math.max(1.0, totalStartPageWeight)) * startPageCapacity;
 
                         // End Page
-                        let totalVersesOnEndPage = 0;
-                        let versesInSetoranEndPage = 0;
+                        let totalEndPageWeight = 0.0;
+                        let setoranEndPageWeight = 0.0;
                         for (let k in window.quranPageMapping) {
                             if (window.quranPageMapping[k] === pageEnd) {
-                                totalVersesOnEndPage++;
+                                const w = getVerseWeight(k);
+                                totalEndPageWeight += w;
                                 const parts = k.split(':');
                                 if (parseInt(parts[0]) === surahNumber && parseInt(parts[1]) <= end) {
-                                    versesInSetoranEndPage++;
+                                    setoranEndPageWeight += w;
                                 }
                             }
                         }
                         const endPageCapacity = (pageEnd === 1 || pageEnd === 2) ? 7.0 : 15.0;
-                        const endPageLines = (versesInSetoranEndPage / Math.max(1, totalVersesOnEndPage)) * endPageCapacity;
+                        const endPageLines = (setoranEndPageWeight / Math.max(1.0, totalEndPageWeight)) * endPageCapacity;
 
                         // Middle Pages
                         let middleLines = 0.0;
@@ -229,6 +248,11 @@
             .then(res => res.json())
             .then(data => { window.quranPageMapping = data; })
             .catch(err => console.error('Gagal memuat peta halaman Quran:', err));
+
+        fetch('{{ asset('quran_verse_lengths.json') }}')
+            .then(res => res.json())
+            .then(data => { window.quranVerseLengths = data; })
+            .catch(err => console.error('Gagal memuat panjang ayat Quran:', err));
 
         if (selectedStudent) {
             let s = allStudents.find(x => x.id == selectedStudent);
