@@ -50,18 +50,21 @@
                 @php
                     $indonesianDate = \Carbon\Carbon::parse($selectedDate)->translatedFormat('l, j F Y');
                 @endphp
+                <script>
+                    window.whatsappReportConfig = {
+                        layout: @json($hasUmmiRecords ? 'ummi' : 'tahfidz'),
+                        className: @json($selectedClass ? $selectedClass->name : ''),
+                        musyrifName: @json($musyrifName),
+                        selectedDateFormatted: @json($indonesianDate),
+                        classUmmiJilid: @json($classUmmiJilid),
+                        classUmmiHalaman: @json($classUmmiHalaman),
+                        classUmmiHafalanSurah: @json($classUmmiHafalanSurah),
+                        students: @json($students)
+                    };
+                </script>
                 <!-- Main Generator Workspace -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6"
-                     x-data="whatsappReport({
-                         layout: @json($hasUmmiRecords ? 'ummi' : 'tahfidz'),
-                         className: @json($selectedClass ? $selectedClass->name : ''),
-                         musyrifName: @json($musyrifName),
-                         selectedDateFormatted: @json($indonesianDate),
-                         classUmmiJilid: @json($classUmmiJilid),
-                         classUmmiHalaman: @json($classUmmiHalaman),
-                         classUmmiHafalanSurah: @json($classUmmiHafalanSurah),
-                         students: @json($students)
-                     })">
+                     x-data="whatsappReport(window.whatsappReportConfig)">
                     
                     <!-- Left: Controls & Student Status Editor -->
                     <div class="lg:col-span-7 space-y-6">
