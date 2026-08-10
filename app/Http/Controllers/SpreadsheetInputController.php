@@ -56,7 +56,7 @@ class SpreadsheetInputController extends Controller
         $month = (int) date('m', strtotime($selectedMonth . '-01'));
         
         $dates = [];
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $daysInMonth = (int) date('t', strtotime($selectedMonth . '-01'));
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $time = mktime(0, 0, 0, $month, $day, $year);
             $dayOfWeek = date('N', $time);
