@@ -226,6 +226,7 @@
             const ayahEnd = document.querySelector('[data-ayah-end]');
             const totalLabel = document.querySelector('[data-total-ayah-label]');
 
+            let isFirstLoad = true;
             function syncAyahLimit() {
                 const selectedOption = surahSelect.options[surahSelect.selectedIndex];
                 const totalAyah = selectedOption ? selectedOption.dataset.totalAyah : '';
@@ -240,9 +241,17 @@
                 ayahStart.setAttribute('max', totalAyah);
                 ayahEnd.setAttribute('max', totalAyah);
                 totalLabel.textContent = 'Maksimal ' + totalAyah + ' ayat untuk surah ini.';
+
+                if (!isFirstLoad) {
+                    ayahStart.value = 1;
+                    ayahEnd.value = totalAyah;
+                }
             }
 
-            surahSelect.addEventListener('change', syncAyahLimit);
+            surahSelect.addEventListener('change', function() {
+                isFirstLoad = false;
+                syncAyahLimit();
+            });
             syncAyahLimit();
         });
     </script>

@@ -26,6 +26,7 @@ use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SpreadsheetInputController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -224,6 +225,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/ummi-records', [QuickInputController::class, 'storeUmmi'])
             ->name('ummi-records.store');
+
+        Route::get('/spreadsheet-input', [SpreadsheetInputController::class, 'index'])
+            ->name('spreadsheet-input.index');
+        Route::post('/spreadsheet-input/save', [SpreadsheetInputController::class, 'save'])
+            ->name('spreadsheet-input.save');
     });
 
     /*
