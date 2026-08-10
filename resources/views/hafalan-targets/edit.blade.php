@@ -35,16 +35,21 @@
                     ]);
                 @endphp
 
+                <script>
+                    window.allStudents = @json($studentsMapped);
+                    window.surahDetails = {
+                        @foreach ($surahs as $surah)
+                            '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
+                        @endforeach
+                    };
+                </script>
+
                 <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6" x-data="{
                     selectedClass: '',
                     selectedStudent: '{{ old('student_id', $target->student_id) }}',
                     selectedSurah: '{{ old('surah_id', $target->surah_id) }}',
-                    allStudents: @json($studentsMapped),
-                    surahDetails: {
-                        @foreach ($surahs as $surah)
-                            '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
-                        @endforeach
-                    },
+                    allStudents: window.allStudents || [],
+                    surahDetails: window.surahDetails || {},
                     get filteredStudents() {
                         if (!this.selectedClass) return this.allStudents;
                         return this.allStudents.filter(s => s.classId == this.selectedClass);
