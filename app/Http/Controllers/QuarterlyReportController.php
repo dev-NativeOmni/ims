@@ -158,6 +158,23 @@ class QuarterlyReportController extends Controller
             ->whereBetween('date', [$termStartDate, $termEndDate])
             ->get();
 
+        $latestTargets = \App\Models\HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('target_date', '<=', $termEndDate)
+            ->orderBy('target_date', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
+        $latestHafalans = \App\Models\HafalanRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'passed')
+            ->where('submitted_at', '<=', $termEndDate)
+            ->orderBy('submitted_at', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
         // Group students by their Musyrif
         $studentsByHalaqah = $students->groupBy(function($student) {
             return $student->teacher?->user?->name ?? 'Ust. Fuad Faris Ghazi';
@@ -292,9 +309,7 @@ class QuarterlyReportController extends Controller
             if ($isTahfizhProgram) {
                 foreach ($uniqueDates as $date) {
                     if (!$date) continue;
-                    $dailyHafalans = $gHafalanRecords->filter(fn($h) => $h->submitted_at->toDateString() === $date);
-                    $surahNames = $dailyHafalans->pluck('surah.name_latin')->unique()->implode(', ');
-                    $materi = $surahNames ? "Ziyadah & Muroja'ah Surah $surahNames" : "Ziyadah & Muroja'ah Hafalan";
+                    $materi = "Muroja'ah & Ziyadah Hafalan";
                     
                     $jurnalData[] = [
                         'tanggal' => date('d-m-Y', strtotime($date)),
@@ -306,23 +321,14 @@ class QuarterlyReportController extends Controller
                 if (empty($jurnalData)) {
                     $jurnalData[] = [
                         'tanggal' => 'Belum ada kegiatan',
-                        'materi' => 'Murojaah & Ziyadah Hafalan',
+                        'materi' => "Muroja'ah & Ziyadah Hafalan",
                         'jumlah_murid' => 0,
                         'paraf' => '-'
                     ];
                 }
             } else {
                 for ($p = 1; $p <= 5; $p++) {
-                    $pStart = 1 + ($p - 1) * 7;
-                    $pEnd = $p === 5 ? 31 : $p * 7;
-
-                    $weeklyHafalans = $gHafalanRecords->filter(function($h) use ($pStart, $pEnd) {
-                        $dayNum = (int)$h->submitted_at->format('d');
-                        return $dayNum >= $pStart && $dayNum <= $pEnd;
-                    });
-                    
-                    $surahNames = $weeklyHafalans->pluck('surah.name_latin')->unique()->implode(', ');
-                    $materi = $surahNames ? "Setoran Surah $surahNames" : "Murojaah & Ziyadah Hafalan Kelas Reguler";
+                    $materi = "Muroja'ah & Ziyadah Hafalan";
 
                     $jurnalData[] = [
                         'tanggal' => "Pekan $p",
@@ -419,6 +425,15 @@ class QuarterlyReportController extends Controller
                     $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
                     $pCount = $violations->where('student_id', $student->id)->count();
 
+                    $studentTarget = $latestTargets->get($student->id)?->first();
+                    $studentHafalan = $latestHafalans->get($student->id)?->first();
+
+                    $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
+                    $targetAyat = $studentTarget ? "{$studentTarget->ayah_start}-{$studentTarget->ayah_end}" : '-';
+
+                    $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
+                    $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';
+
                     $tahfizhRecords[] = [
                         'student_id' => $student->id,
                         'name' => $student->name,
@@ -428,7 +443,11 @@ class QuarterlyReportController extends Controller
                         'target_lines' => $targetLines,
                         'total_lines' => $totalCapaianLines,
                         'is_tuntas' => $isTuntas,
-                        'pelanggaran' => $pCount
+                        'pelanggaran' => $pCount,
+                        'target_surah' => $targetSurah,
+                        'target_ayat' => $targetAyat,
+                        'capaian_surah' => $capaianSurah,
+                        'capaian_ayat' => $capaianAyat,
                     ];
                 }
             } else {
@@ -479,6 +498,15 @@ class QuarterlyReportController extends Controller
                     $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
                     $pCount = $violations->where('student_id', $student->id)->count();
 
+                    $studentTarget = $latestTargets->get($student->id)?->first();
+                    $studentHafalan = $latestHafalans->get($student->id)?->first();
+
+                    $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
+                    $targetAyat = $studentTarget ? "{$studentTarget->ayah_start}-{$studentTarget->ayah_end}" : '-';
+
+                    $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
+                    $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';
+
                     $regulerRecords[] = [
                         'student_id' => $student->id,
                         'name' => $student->name,
@@ -488,7 +516,11 @@ class QuarterlyReportController extends Controller
                         'target_lines' => $targetLines,
                         'total_lines' => $totalCapaianLines,
                         'is_tuntas' => $isTuntas,
-                        'pelanggaran' => $pCount
+                        'pelanggaran' => $pCount,
+                        'target_surah' => $targetSurah,
+                        'target_ayat' => $targetAyat,
+                        'capaian_surah' => $capaianSurah,
+                        'capaian_ayat' => $capaianAyat,
                     ];
                 }
             }

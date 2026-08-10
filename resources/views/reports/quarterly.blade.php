@@ -547,10 +547,10 @@
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
-                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">Juz 30</td>
-                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">1-30</td>
-                                            <td class="px-3 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">Juz 30</td>
-                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">1-30</td>
+                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">{{ $row['target_surah'] }}</td>
+                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">{{ $row['target_ayat'] }}</td>
+                                            <td class="px-3 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $row['capaian_surah'] }}</td>
+                                            <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $row['capaian_ayat'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $row['total_lines'] }} Baris</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700">
                                                 @if ($row['is_tuntas'])
