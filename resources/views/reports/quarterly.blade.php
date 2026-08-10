@@ -16,15 +16,82 @@
                 <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20">
                     🔒 Eksklusif Admin
                 </span>
+                <button onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold shadow transition cursor-pointer">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span>Cetak Laporan</span>
+                </button>
             </div>
         </div>
     </x-slot>
 
     <div class="py-8">
+        <style>
+            @media print {
+                /* Sembunyikan sidebar navigasi, header atas, form filter, dan tombol cetak */
+                nav, header, .no-print, form {
+                    display: none !important;
+                }
+                /* Reset background dan hilangkan shadow */
+                body, .min-h-screen, main, .bg-white, .dark\:bg-zinc-900 {
+                    background: white !important;
+                    background-color: white !important;
+                    color: black !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+                .py-8, .p-6, .pb-4 {
+                    padding: 0 !important;
+                    margin-bottom: 10px !important;
+                }
+                .shadow-md, .shadow-sm, .rounded-2xl, .rounded-xl {
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                    border: none !important;
+                }
+                /* Lebarkan halaman cetak */
+                .max-w-7xl, .max-w-4xl, .mx-auto {
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                /* Buat page break antar Halaqah */
+                .halaqah-card {
+                    page-break-after: always;
+                    page-break-inside: avoid;
+                    border-bottom: 2px dashed #ccc !important;
+                    padding-bottom: 20px !important;
+                    margin-bottom: 20px !important;
+                }
+                /* Format tabel agar jelas tercetak hitam putih */
+                table {
+                    border-collapse: collapse !important;
+                    width: 100% !important;
+                    margin-top: 10px !important;
+                }
+                th, td {
+                    border: 1px solid #000 !important;
+                    color: #000 !important;
+                    padding: 4px 6px !important;
+                    font-size: 10px !important;
+                    background-color: transparent !important;
+                }
+                th {
+                    background-color: #f3f4f6 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+            }
+        </style>
+
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Filter Panel -->
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-5">
+            <div class="no-print bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-5">
                 <form method="GET" action="{{ route('reports.quarterly') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div>
                         <label for="class_room_id" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
@@ -75,7 +142,7 @@
             </div>
 
             <!-- Export Bar -->
-            <div class="flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
+            <div class="no-print flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
                 <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400">
                     💡 <strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama bulan terpilih.
                 </span>
@@ -86,7 +153,7 @@
 
             <!-- HALAQOH GROUPINGS -->
             @forelse ($halaqahData as $hIdx => $halaqah)
-                <div class="bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 shadow-md rounded-2xl overflow-hidden p-6 space-y-6" x-data="{ activeTab: 'presensi', pekanTab: 1 }">
+                <div class="halaqah-card bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 shadow-md rounded-2xl overflow-hidden p-6 space-y-6" x-data="{ activeTab: 'presensi', pekanTab: 1 }">
                     
                     <!-- Halaqoh Header -->
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b dark:border-zinc-800 pb-4">
@@ -114,7 +181,7 @@
                     </div>
 
                     <!-- Inner Navigation Tabs -->
-                    <div class="flex flex-wrap items-center gap-1 border-b dark:border-zinc-800 pb-1">
+                    <div class="no-print flex flex-wrap items-center gap-1 border-b dark:border-zinc-800 pb-1">
                         <button type="button" @click="activeTab = 'presensi'" :class="activeTab === 'presensi' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
                             📅 Presensi
                         </button>
