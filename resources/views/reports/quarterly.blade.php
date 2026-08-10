@@ -512,6 +512,14 @@
 
                     <!-- 5. TERM / INDEKS (DNS) -->
                     <div x-show="activeTab === 'term'" class="space-y-4" style="display: none;">
+                        <div class="rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-xs text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400 flex items-center gap-2">
+                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>
+                                <strong class="font-semibold">Informasi:</strong> Target Semester otomatis diambil dari Target Hafalan terbaru yang dibuat Guru. Capaian Akhir otomatis diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik santri.
+                            </span>
+                        </div>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
