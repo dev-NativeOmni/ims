@@ -71,7 +71,7 @@
             <button type="button" 
                     @click="open = !open" 
                     class="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white text-left text-xs px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
-                <span x-text="surahStart && surahDetails[surahStart] ? surahDetails[surahStart].number + '. ' + surahDetails[surahStart].name + ' — ' + surahDetails[surahStart].totalAyah + ' ayat' : 'Pilih Surah{{ $record ? \'\' : \' Mulai\' }}'"></span>
+                <span x-text="surahStart && surahDetails[surahStart] ? surahDetails[surahStart].number + '. ' + surahDetails[surahStart].name + ' — ' + surahDetails[surahStart].totalAyah + ' ayat' : 'Pilih Surah{{ $record ? '' : ' Mulai' }}'"></span>
                 <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>

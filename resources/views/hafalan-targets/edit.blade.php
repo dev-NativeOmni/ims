@@ -25,17 +25,21 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6" x-data="{
-                    selectedClass: '',
-                    selectedStudent: '{{ old('student_id', $target->student_id) }}',
-                    selectedSurah: '{{ old('surah_id', $target->surah_id) }}',
-                    allStudents: @json($students->map(fn($student) => [
+                @php
+                    $studentsMapped = $students->map(fn($student) => [
                         'id' => $student->id,
                         'name' => $student->name,
                         'classId' => (string) $student->class_room_id,
                         'className' => $student->classRoom?->name ?? '',
                         'teacherName' => $student->teacher?->user?->name ?? ''
-                    ])),
+                    ]);
+                @endphp
+
+                <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6" x-data="{
+                    selectedClass: '',
+                    selectedStudent: '{{ old('student_id', $target->student_id) }}',
+                    selectedSurah: '{{ old('surah_id', $target->surah_id) }}',
+                    allStudents: @json($studentsMapped),
                     surahDetails: {
                         @foreach ($surahs as $surah)
                             '{{ $surah->id }}': { id: {{ $surah->id }}, number: {{ $surah->number }}, totalAyah: {{ $surah->total_ayah }}, name: '{{ addslashes($surah->name_latin) }}' },
