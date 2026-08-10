@@ -55,14 +55,61 @@ class SpreadsheetInputController extends Controller
         $year = (int) date('Y', strtotime($selectedMonth . '-01'));
         $month = (int) date('m', strtotime($selectedMonth . '-01'));
         
-        $dates = [];
+        $allDates = [];
         $daysInMonth = (int) date('t', strtotime($selectedMonth . '-01'));
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $time = mktime(0, 0, 0, $month, $day, $year);
             $dayOfWeek = date('N', $time);
             if ($dayOfWeek <= 5) {
-                $dates[] = date('Y-m-d', $time);
+                $allDates[] = date('Y-m-d', $time);
             }
+        }
+
+        // Group dates by week of the year
+        $weeks = [];
+        foreach ($allDates as $date) {
+            $weekNum = date('W', strtotime($date));
+            if (!isset($weeks[$weekNum])) {
+                $weeks[$weekNum] = [];
+            }
+            $weeks[$weekNum][] = $date;
+        }
+
+        // Reindex weeks starting from 1 with friendly labels
+        $weeksList = [];
+        $weekCounter = 1;
+        $monthsName = [
+            'Jan' => 'Jan', 'Feb' => 'Feb', 'Mar' => 'Mar', 'Apr' => 'Apr', 'May' => 'Mei', 'Jun' => 'Jun',
+            'Jul' => 'Jul', 'Aug' => 'Agt', 'Sep' => 'Sep', 'Oct' => 'Okt', 'Nov' => 'Nov', 'Dec' => 'Des'
+        ];
+        
+        foreach ($weeks as $weekNum => $weekDates) {
+            $startDate = reset($weekDates);
+            $endDate = end($weekDates);
+            
+            $startDay = date('j', strtotime($startDate));
+            $startMonth = $monthsName[date('M', strtotime($startDate))];
+            
+            $endDay = date('j', strtotime($endDate));
+            $endMonth = $monthsName[date('M', strtotime($endDate))];
+            
+            if ($startMonth === $endMonth) {
+                $label = "Pekan $weekCounter ($startDay - $endDay $startMonth)";
+            } else {
+                $label = "Pekan $weekCounter ($startDay $startMonth - $endDay $endMonth)";
+            }
+            
+            $weeksList[$weekCounter] = [
+                'label' => $label,
+                'dates' => $weekDates,
+            ];
+            $weekCounter++;
+        }
+
+        $selectedWeek = $request->input('week', 'all');
+        $dates = $allDates;
+        if ($selectedWeek !== 'all' && isset($weeksList[$selectedWeek])) {
+            $dates = $weeksList[$selectedWeek]['dates'];
         }
 
         $students = collect();
@@ -144,6 +191,8 @@ class SpreadsheetInputController extends Controller
             'selectedClassId' => $selectedClassId,
             'selectedClass' => $selectedClass,
             'selectedMonth' => $selectedMonth,
+            'weeksList' => $weeksList,
+            'selectedWeek' => $selectedWeek,
             'dates' => $dates,
             'students' => $students,
             'surahs' => $surahs,
@@ -387,6 +436,7 @@ class SpreadsheetInputController extends Controller
             ->route('spreadsheet-input.index', [
                 'class_room_id' => $classRoomId,
                 'month' => $validated['month'],
+                'week' => $request->input('week', 'all'),
             ])
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
     }

@@ -204,4 +204,22 @@ class SpreadsheetInputTest extends TestCase
             'submitted_at' => $date,
         ]);
     }
+
+    #[Test]
+    public function teacher_can_view_specific_week_of_spreadsheet(): void
+    {
+        $response = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
+            'class_room_id' => $this->student->class_room_id,
+            'month' => '2026-08',
+            'week' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('selectedWeek', '1');
+        
+        $dates = $response->viewData('dates');
+        $this->assertCount(5, $dates);
+        $this->assertEquals('2026-08-03', $dates[0]);
+        $this->assertEquals('2026-08-07', $dates[4]);
+    }
 }

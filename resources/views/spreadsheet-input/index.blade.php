@@ -115,12 +115,12 @@
 
             <!-- FILTER PANEL -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
-                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label for="class_room_id" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
                             Kelas Halaqoh
                         </label>
-                        <select id="class_room_id" name="class_room_id" x-model="selectedClass" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                        <select id="class_room_id" name="class_room_id" x-model="selectedClass" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                             @foreach ($classRooms as $class)
                                 <option value="{{ $class->id }}" class="dark:bg-zinc-900">{{ $class->name }} ({{ $class->program?->name }})</option>
                             @endforeach
@@ -130,7 +130,20 @@
                         <label for="month" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
                             Pilih Bulan & Tahun
                         </label>
-                        <input type="month" id="month" name="month" x-model="selectedMonth" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                        <input type="month" id="month" name="month" x-model="selectedMonth" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="week" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
+                            Pilih Pekan
+                        </label>
+                        <select id="week" name="week" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                            <option value="all" {{ $selectedWeek === 'all' ? 'selected' : '' }} class="dark:bg-zinc-900">Semua Pekan (Scroll)</option>
+                            @foreach ($weeksList as $index => $w)
+                                <option value="{{ $index }}" {{ $selectedWeek == $index ? 'selected' : '' }} class="dark:bg-zinc-900">
+                                    {{ $w['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition cursor-pointer">
@@ -171,6 +184,7 @@
                     <input type="hidden" name="class_room_id" :value="selectedClass">
                     <input type="hidden" name="month" :value="selectedMonth">
                     <input type="hidden" name="type" :value="tab">
+                    <input type="hidden" name="week" value="{{ $selectedWeek }}">
 
                     <!-- ========================================== -->
                     <!-- DESKTOP SPREADSHEET VIEW (Laptop/PC)       -->
