@@ -148,6 +148,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('class-rooms/import', [ClassRoomController::class, 'import'])->name('class-rooms.import');
         Route::get('class-rooms/{class_room}/export-capaian', [ClassRoomController::class, 'exportCapaian'])->name('class-rooms.export-capaian');
         Route::resource('class-rooms', ClassRoomController::class);
+        Route::get('class-schedules', [ClassRoomController::class, 'scheduleIndex'])->name('class-schedules.index');
+        Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
 
         // Teachers
         Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

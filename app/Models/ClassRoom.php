@@ -16,7 +16,20 @@ class ClassRoom extends Model
         'pendamping_adab_id',
         'name',
         'level',
+        'tahfizh_days',
     ];
+
+    protected $casts = [
+        'tahfizh_days' => 'array',
+    ];
+
+    public function getTahfizhDaysAttribute($value)
+    {
+        if (is_null($value)) {
+            return [1, 2, 3, 4, 5];
+        }
+        return json_decode($value, true) ?: [1, 2, 3, 4, 5];
+    }
 
     public function program(): BelongsTo
     {

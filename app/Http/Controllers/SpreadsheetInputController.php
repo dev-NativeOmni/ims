@@ -57,10 +57,11 @@ class SpreadsheetInputController extends Controller
         
         $allDates = [];
         $daysInMonth = (int) date('t', strtotime($selectedMonth . '-01'));
+        $tahfizhDays = $selectedClass?->tahfizh_days ?? [1, 2, 3, 4, 5];
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $time = mktime(0, 0, 0, $month, $day, $year);
-            $dayOfWeek = date('N', $time);
-            if ($dayOfWeek <= 5) {
+            $dayOfWeek = (int) date('N', $time);
+            if (in_array($dayOfWeek, $tahfizhDays, true)) {
                 $allDates[] = date('Y-m-d', $time);
             }
         }

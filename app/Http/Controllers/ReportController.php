@@ -928,7 +928,7 @@ class ReportController extends Controller
                 $targetBaris = 0;
             } else {
                 $meetingFrequency = $selectedClass?->program?->meeting_frequency ?? 'setiap hari';
-                $meetings = $this->countMeetings($startDate, $endDate, $meetingFrequency);
+                $meetings = $this->countMeetings($startDate, $endDate, $meetingFrequency, $selectedClass);
                 $targetBaris = $levelBaris * $meetings;
             }
 
@@ -1039,17 +1039,19 @@ class ReportController extends Controller
         ];
     }
 
-    private function countMeetings(Carbon $startDate, Carbon $endDate, string $meetingFrequency): int
+    private function countMeetings(Carbon $startDate, Carbon $endDate, string $meetingFrequency, ClassRoom $classRoom): int
     {
         $meetings = 0;
         $current = $startDate->copy()->startOfDay();
         $end = $endDate->copy()->endOfDay();
+        $tahfizhDays = $classRoom->tahfizh_days;
 
         if ($meetingFrequency === 'seminggu sekali') {
             $weeks = [];
             while ($current->lte($end)) {
                 $dayOfWeek = $current->dayOfWeek;
-                if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
+                $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
+                if (in_array($isoDay, $tahfizhDays, true)) {
                     $weekNum = $current->format('o-W');
                     $weeks[$weekNum] = true;
                 }
@@ -1059,7 +1061,8 @@ class ReportController extends Controller
         } else {
             while ($current->lte($end)) {
                 $dayOfWeek = $current->dayOfWeek;
-                if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
+                $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
+                if (in_array($isoDay, $tahfizhDays, true)) {
                     $meetings++;
                 }
                 $current->addDay();

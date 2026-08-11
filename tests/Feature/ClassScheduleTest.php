@@ -1,0 +1,84 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\ClassRoom;
+use App\Models\Program;
+use App\Models\Role;
+use App\Models\Student;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\UserSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ClassScheduleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $adminUser;
+    private User $teacherUser;
+    private ClassRoom $classRoom;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed([
+            RoleSeeder::class,
+            UserSeeder::class,
+        ]);
+
+        $this->adminUser = User::where('username', 'admin')->first();
+        $this->teacherUser = User::where('username', 'guru')->first();
+
+        $program = Program::create([
+            'name' => 'Program Regular',
+            'meeting_frequency' => 'setiap hari',
+            'status' => 'active',
+        ]);
+
+        $this->classRoom = ClassRoom::create([
+            'name' => 'Kelas X Coba',
+            'program_id' => $program->id,
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_only_admin_and_superadmin_can_access_schedules_index(): void
+    {
+        $this->get(route('class-schedules.index'))->assertRedirect('/login');
+
+        $this->actingAs($this->teacherUser)->get(route('class-schedules.index'))->assertStatus(403);
+
+        $response = $this->actingAs($this->adminUser)->get(route('class-schedules.index'));
+        $response->assertStatus(200);
+        $response->assertViewHas('classRooms');
+        $response->assertViewHas('scheduleBoard');
+    }
+
+    public function test_admin_can_update_classroom_schedules(): void
+    {
+        $this->assertEquals([1, 2, 3, 4, 5], $this->classRoom->tahfizh_days);
+
+        $payload = [
+            'day' => 3,
+            'class_room_ids' => [$this->classRoom->id],
+        ];
+
+        $response = $this->actingAs($this->adminUser)->post(route('class-schedules.update'), $payload);
+        $response->assertRedirect(route('class-schedules.index'));
+
+        $this->classRoom->refresh();
+        $this->assertContains(3, $this->classRoom->tahfizh_days);
+
+        $payload2 = [
+            'day' => 2,
+            'class_room_ids' => [],
+        ];
+        $this->actingAs($this->adminUser)->post(route('class-schedules.update'), $payload2);
+        
+        $this->classRoom->refresh();
+        $this->assertNotContains(2, $this->classRoom->tahfizh_days);
+    }
+}

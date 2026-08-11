@@ -481,4 +481,64 @@ class ClassRoomController extends Controller
 
         return view('class-rooms.print-ummi-cards', compact('classRoom', 'studentsData'));
     }
+
+    public function scheduleIndex(Request $request): View
+    {
+        $classRooms = ClassRoom::query()
+            ->with('program')
+            ->orderBy('name')
+            ->get();
+
+        $daysOfWeek = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        $scheduleBoard = [];
+        foreach ($daysOfWeek as $dayNum => $dayName) {
+            $scheduleBoard[$dayNum] = [
+                'name' => $dayName,
+                'classRooms' => $classRooms->filter(function ($class) use ($dayNum) {
+                    return in_array($dayNum, $class->tahfizh_days, true);
+                })->values()
+            ];
+        }
+
+        return view('class-rooms.schedules', compact('scheduleBoard', 'classRooms', 'daysOfWeek'));
+    }
+
+    public function scheduleUpdate(Request $request): RedirectResponse
+    {
+        $day = $request->integer('day');
+        abort_unless($day >= 1 && $day <= 7, 400);
+
+        $classRoomIds = $request->input('class_room_ids', []);
+
+        $allClassrooms = ClassRoom::all();
+
+        foreach ($allClassrooms as $class) {
+            $days = $class->tahfizh_days;
+            
+            if (in_array((string)$class->id, $classRoomIds) || in_array((int)$class->id, $classRoomIds)) {
+                if (!in_array($day, $days, true)) {
+                    $days[] = $day;
+                }
+            } else {
+                $days = array_values(array_diff($days, [$day]));
+            }
+            
+            sort($days);
+            $class->tahfizh_days = $days;
+            $class->save();
+        }
+
+        return redirect()
+            ->route('class-schedules.index')
+            ->with('success', 'Jadwal pelajaran tahfizh berhasil diperbarui.');
+    }
 }
