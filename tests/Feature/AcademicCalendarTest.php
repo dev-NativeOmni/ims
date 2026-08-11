@@ -71,31 +71,32 @@ class AcademicCalendarTest extends TestCase
     {
         $year = (int) date('Y');
 
-        // Pre-populate with a holiday in another month (e.g. December 25th)
         Setting::set("national_holidays_{$year}", json_encode(["{$year}-12-25"]));
+        Setting::set("class_holidays_{$year}", json_encode(["{$year}-12-25" => [$this->classRoom->id]]));
 
-        // Post a new holiday in August (month 8)
         $payload = [
             'year' => $year,
             'month' => 8,
             'holidays' => [
                 "{$year}-08-17",
-                "{$year}-08-20"
+            ],
+            'class_holidays' => [
+                "{$year}-08-20" => [$this->classRoom->id]
             ]
         ];
 
         $response = $this->actingAs($this->adminUser)->post(route('academic-calendar.update'), $payload);
         $response->assertRedirect(route('academic-calendar.index', ['year' => $year, 'month' => 8]));
 
-        // Retrieve holidays and assert that:
-        // 1. August holidays are added
-        // 2. December holiday is preserved (merging worked)
         $holidays = Setting::getNationalHolidays($year);
         $this->assertContains("{$year}-08-17", $holidays);
-        $this->assertContains("{$year}-08-20", $holidays);
         $this->assertContains("{$year}-12-25", $holidays);
 
-        // 3. Verify that these new August holidays are filtered out from the spreadsheet-input index dates!
+        $classHolidays = json_decode(Setting::get("class_holidays_{$year}"), true);
+        $this->assertArrayHasKey("{$year}-08-20", $classHolidays);
+        $this->assertContains($this->classRoom->id, $classHolidays["{$year}-08-20"]);
+        $this->assertArrayHasKey("{$year}-12-25", $classHolidays);
+
         $responseSpreadsheet = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
             'class_room_id' => $this->classRoom->id,
             'month' => "{$year}-08",

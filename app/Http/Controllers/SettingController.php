@@ -148,8 +148,12 @@ class SettingController extends Controller
         }
 
         $holidays = Setting::getNationalHolidays($year);
+        $classRooms = \App\Models\ClassRoom::query()->orderBy('name')->get();
+        
+        $classHolidaysRaw = Setting::get("class_holidays_{$year}");
+        $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
 
-        return view('settings.calendar', compact('gridDates', 'year', 'month', 'holidays'));
+        return view('settings.calendar', compact('gridDates', 'year', 'month', 'holidays', 'classRooms', 'classHolidays'));
     }
 
     public function calendarUpdate(Request $request)
@@ -157,18 +161,39 @@ class SettingController extends Controller
         $year = $request->integer('year', (int)date('Y'));
         $month = $request->integer('month', (int)date('m'));
         $submittedHolidays = $request->input('holidays', []);
+        $submittedClassHolidays = $request->input('class_holidays', []);
 
+        // 1. Merge global holidays
         $existingHolidays = Setting::getNationalHolidays($year);
-
         $monthPrefix = sprintf('%04d-%02d-', $year, $month);
         $otherMonthsHolidays = array_filter($existingHolidays, function ($date) use ($monthPrefix) {
             return strpos($date, $monthPrefix) !== 0;
         });
-
         $allHolidays = array_merge($otherMonthsHolidays, $submittedHolidays);
         sort($allHolidays);
-
         Setting::set("national_holidays_{$year}", json_encode(array_values(array_unique($allHolidays))));
+
+        // 2. Merge class-specific holidays
+        $existingClassHolidaysRaw = Setting::get("class_holidays_{$year}");
+        $existingClassHolidays = $existingClassHolidaysRaw ? json_decode($existingClassHolidaysRaw, true) : [];
+
+        $otherMonthsClassHolidays = [];
+        foreach ($existingClassHolidays as $dateStr => $classIds) {
+            if (strpos($dateStr, $monthPrefix) !== 0) {
+                $otherMonthsClassHolidays[$dateStr] = $classIds;
+            }
+        }
+
+        $filteredNewClassHolidays = [];
+        foreach ($submittedClassHolidays as $dateStr => $classIds) {
+            if (!empty($classIds)) {
+                $filteredNewClassHolidays[$dateStr] = array_map('intval', $classIds);
+            }
+        }
+
+        $allClassHolidays = array_merge($otherMonthsClassHolidays, $filteredNewClassHolidays);
+        ksort($allClassHolidays);
+        Setting::set("class_holidays_{$year}", json_encode($allClassHolidays));
 
         return redirect()
             ->route('academic-calendar.index', ['year' => $year, 'month' => $month])

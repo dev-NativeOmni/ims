@@ -1045,7 +1045,11 @@ class ReportController extends Controller
         $current = $startDate->copy()->startOfDay();
         $end = $endDate->copy()->endOfDay();
         $tahfizhDays = $classRoom->tahfizh_days;
-        $holidays = \App\Models\Setting::getNationalHolidays($startDate->year);
+        
+        $year = $startDate->year;
+        $holidays = \App\Models\Setting::getNationalHolidays($year);
+        $classHolidaysRaw = \App\Models\Setting::get("class_holidays_{$year}");
+        $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
 
         if ($meetingFrequency === 'seminggu sekali') {
             $weeks = [];
@@ -1053,7 +1057,10 @@ class ReportController extends Controller
                 $dayOfWeek = $current->dayOfWeek;
                 $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
                 $dateString = $current->toDateString();
-                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true)) {
+                
+                $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
+
+                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true) && !$isClassHoliday) {
                     $weekNum = $current->format('o-W');
                     $weeks[$weekNum] = true;
                 }
@@ -1065,7 +1072,10 @@ class ReportController extends Controller
                 $dayOfWeek = $current->dayOfWeek;
                 $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
                 $dateString = $current->toDateString();
-                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true)) {
+
+                $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
+
+                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true) && !$isClassHoliday) {
                     $meetings++;
                 }
                 $current->addDay();
