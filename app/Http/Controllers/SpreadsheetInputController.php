@@ -107,9 +107,44 @@ class SpreadsheetInputController extends Controller
         }
 
         $selectedWeek = $request->input('week', 'all');
+        
+        $meetingFrequency = $selectedClass?->program?->meeting_frequency ?? 'setiap hari';
+        $isWeekly = ($meetingFrequency === 'seminggu sekali');
+
+        $weekNumToRepDate = [];
+        foreach ($weeksList as $weekCounter => $wInfo) {
+            $weekNum = date('W', strtotime($wInfo['dates'][0]));
+            $weekNumToRepDate[$weekNum] = $wInfo['dates'][0];
+        }
+
         $dates = $allDates;
-        if ($selectedWeek !== 'all' && isset($weeksList[$selectedWeek])) {
+        if ($isWeekly) {
+            $dates = [];
+            foreach ($weeksList as $weekCounter => $wInfo) {
+                $dates[] = $wInfo['dates'][0]; // Representative date (first day of the week)
+            }
+        } elseif ($selectedWeek !== 'all' && isset($weeksList[$selectedWeek])) {
             $dates = $weeksList[$selectedWeek]['dates'];
+        }
+
+        $columns = [];
+        if ($isWeekly) {
+            foreach ($weeksList as $weekCounter => $wInfo) {
+                $repDate = $wInfo['dates'][0];
+                $columns[] = [
+                    'date' => $repDate,
+                    'label' => "Pekan $weekCounter",
+                    'sub_label' => date('d/m', strtotime(reset($wInfo['dates']))) . ' - ' . date('d/m', strtotime(end($wInfo['dates']))),
+                ];
+            }
+        } else {
+            foreach ($dates as $d) {
+                $columns[] = [
+                    'date' => $d,
+                    'label' => \Carbon\Carbon::parse($d)->translatedFormat('D'),
+                    'sub_label' => \Carbon\Carbon::parse($d)->translatedFormat('d M'),
+                ];
+            }
         }
 
         $students = collect();
@@ -138,6 +173,12 @@ class SpreadsheetInputController extends Controller
 
             foreach ($attendances as $att) {
                 $dateStr = $att->tanggal instanceof \Carbon\Carbon ? $att->tanggal->toDateString() : $att->tanggal;
+                if ($isWeekly) {
+                    $weekNum = date('W', strtotime($dateStr));
+                    if (isset($weekNumToRepDate[$weekNum])) {
+                        $dateStr = $weekNumToRepDate[$weekNum];
+                    }
+                }
                 $attendancesMap[$att->student_id][$dateStr] = $att->status;
             }
 
@@ -149,6 +190,12 @@ class SpreadsheetInputController extends Controller
 
             foreach ($hafalanRecords as $record) {
                 $dateStr = $record->submitted_at instanceof \Carbon\Carbon ? $record->submitted_at->toDateString() : $record->submitted_at;
+                if ($isWeekly) {
+                    $weekNum = date('W', strtotime($dateStr));
+                    if (isset($weekNumToRepDate[$weekNum])) {
+                        $dateStr = $weekNumToRepDate[$weekNum];
+                    }
+                }
                 $hafalanRecordsMap[$record->student_id][$dateStr][] = [
                     'id' => $record->id,
                     'surah_id' => $record->surah_id,
@@ -168,6 +215,12 @@ class SpreadsheetInputController extends Controller
 
             foreach ($ummiRecords as $record) {
                 $dateStr = $record->tanggal instanceof \Carbon\Carbon ? $record->tanggal->toDateString() : $record->tanggal;
+                if ($isWeekly) {
+                    $weekNum = date('W', strtotime($dateStr));
+                    if (isset($weekNumToRepDate[$weekNum])) {
+                        $dateStr = $weekNumToRepDate[$weekNum];
+                    }
+                }
                 $ummiRecordsMap[$record->student_id][$dateStr]['tatap_muka'] = $record->tatap_muka;
                 $ummiRecordsMap[$record->student_id][$dateStr]['ummi_jilid'] = $record->ummi_jilid;
                 $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman'] = $record->ummi_halaman;
@@ -194,6 +247,8 @@ class SpreadsheetInputController extends Controller
             'weeksList' => $weeksList,
             'selectedWeek' => $selectedWeek,
             'dates' => $dates,
+            'columns' => $columns,
+            'isWeekly' => $isWeekly,
             'students' => $students,
             'surahs' => $surahs,
             'attendancesMap' => $attendancesMap,

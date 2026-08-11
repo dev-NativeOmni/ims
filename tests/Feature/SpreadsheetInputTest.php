@@ -222,4 +222,41 @@ class SpreadsheetInputTest extends TestCase
         $this->assertEquals('2026-08-03', $dates[0]);
         $this->assertEquals('2026-08-07', $dates[4]);
     }
+
+    #[Test]
+    public function teacher_can_view_weekly_program_spreadsheet_columns_grouped_by_week(): void
+    {
+        // 1. Create weekly program
+        $weeklyProgram = \App\Models\Program::create([
+            'name' => 'Program Reguler Mingguan',
+            'meeting_frequency' => 'seminggu sekali',
+            'status' => 'active',
+        ]);
+
+        // 2. Assign classroom to weekly program
+        $classRoom = $this->student->classRoom;
+        $classRoom->update(['program_id' => $weeklyProgram->id]);
+
+        // 3. Request spreadsheet input page
+        $response = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-08',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('isWeekly', true);
+        
+        $dates = $response->viewData('dates');
+        // August 2026 has 5 weeks with working days
+        $this->assertCount(5, $dates);
+        // Mondays of August 2026: 03, 10, 17, 24, 31
+        $this->assertEquals('2026-08-03', $dates[0]);
+        $this->assertEquals('2026-08-10', $dates[1]);
+        $this->assertEquals('2026-08-31', $dates[4]);
+
+        $columns = $response->viewData('columns');
+        $this->assertCount(5, $columns);
+        $this->assertEquals('Pekan 1', $columns[0]['label']);
+        $this->assertEquals('03/08 - 07/08', $columns[0]['sub_label']);
+    }
 }

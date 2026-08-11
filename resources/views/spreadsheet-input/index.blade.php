@@ -21,6 +21,8 @@
                 students: @json($students),
                 surahs: @json($surahs),
                 dates: @json($dates),
+                columns: @json($columns),
+                isWeekly: {{ json_encode($isWeekly) }},
                 attendancesMap: @json($attendancesMap),
                 hafalanRecordsMap: @json($hafalanRecordsMap),
                 ummiRecordsMap: @json($ummiRecordsMap),
@@ -132,6 +134,7 @@
                         </label>
                         <input type="month" id="month" name="month" x-model="selectedMonth" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                     </div>
+                    @if (!$isWeekly)
                     <div>
                         <label for="week" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
                             Pilih Pekan
@@ -145,6 +148,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
                     <div>
                         <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition cursor-pointer">
                             🔍 Tampilkan Kelas
@@ -196,9 +200,10 @@
                                     <th class="sticky left-0 z-20 bg-gray-50 dark:bg-zinc-850 px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-48 border-r dark:border-zinc-800">
                                         Nama Santri
                                     </th>
-                                    <template x-for="date in dates" :key="date">
+                                    <template x-for="col in columns" :key="col.date">
                                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-64 border-r dark:border-zinc-800">
-                                            <span x-text="new Date(date).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })"></span>
+                                            <span x-text="col.label" class="block"></span>
+                                            <span x-text="col.sub_label" class="block text-[10px] text-gray-400 font-medium normal-case mt-0.5"></span>
                                         </th>
                                     </template>
                                 </tr>
@@ -401,12 +406,11 @@
                     <div class="md:hidden space-y-4">
                         <!-- Date Selector for Mobile -->
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-xl shadow-sm space-y-2">
-                            <label for="mobile_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                📅 Pilih Tanggal Input:
+                            <label for="mobile_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider" x-text="isWeekly ? '📅 Pilih Pekan Input:' : '📅 Pilih Tanggal Input:'">
                             </label>
                             <select id="mobile_date" x-model="selectedMobileDate" class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:indigo-500 dark:text-white">
-                                <template x-for="date in dates" :key="date">
-                                    <option :value="date" x-text="new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })" class="dark:bg-zinc-900"></option>
+                                <template x-for="col in columns" :key="col.date">
+                                    <option :value="col.date" x-text="isWeekly ? col.label + ' (' + col.sub_label + ')' : col.label + ', ' + col.sub_label" class="dark:bg-zinc-900"></option>
                                 </template>
                             </select>
                         </div>
