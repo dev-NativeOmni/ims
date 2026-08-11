@@ -928,7 +928,7 @@ class ReportController extends Controller
                 $targetBaris = 0;
             } else {
                 $meetingFrequency = $selectedClass?->program?->meeting_frequency ?? 'setiap hari';
-                $meetings = ($meetingFrequency === 'seminggu sekali') ? 4 : 20;
+                $meetings = $this->countMeetings($startDate, $endDate, $meetingFrequency);
                 $targetBaris = $levelBaris * $meetings;
             }
 
@@ -1037,6 +1037,36 @@ class ReportController extends Controller
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
             ],
         ];
+    }
+
+    private function countMeetings(Carbon $startDate, Carbon $endDate, string $meetingFrequency): int
+    {
+        $meetings = 0;
+        $current = $startDate->copy()->startOfDay();
+        $end = $endDate->copy()->endOfDay();
+
+        if ($meetingFrequency === 'seminggu sekali') {
+            $weeks = [];
+            while ($current->lte($end)) {
+                $dayOfWeek = $current->dayOfWeek;
+                if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
+                    $weekNum = $current->format('o-W');
+                    $weeks[$weekNum] = true;
+                }
+                $current->addDay();
+            }
+            $meetings = count($weeks);
+        } else {
+            while ($current->lte($end)) {
+                $dayOfWeek = $current->dayOfWeek;
+                if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
+                    $meetings++;
+                }
+                $current->addDay();
+            }
+        }
+
+        return $meetings;
     }
 
     private static ?array $quranVerseLines = null;

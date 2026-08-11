@@ -78,4 +78,58 @@ class PeriodicReportTest extends TestCase
         $this->actingAs($student)->get('/reports/periodic/print')->assertStatus(403);
         $this->actingAs($parent)->get('/reports/periodic/print')->assertStatus(403);
     }
+
+    public function test_periodic_report_calculates_dynamic_targets(): void
+    {
+        $admin = User::where('username', 'admin')->first();
+
+        // 1. Create a daily program and class
+        $dailyProgram = \App\Models\Program::create([
+            'name' => 'Program Harian',
+            'meeting_frequency' => 'setiap hari',
+            'status' => 'active',
+        ]);
+        $classRoom = \App\Models\ClassRoom::create([
+            'name' => 'Kelas X Harian',
+            'program_id' => $dailyProgram->id,
+            'status' => 'active',
+        ]);
+
+        // 2. Create student with reguler level (5 lines/meeting)
+        $student = \App\Models\Student::create([
+            'name' => 'Santri Reguler',
+            'class_room_id' => $classRoom->id,
+            'tahfizh_level' => 'reguler',
+            'status' => 'active',
+        ]);
+
+        // 3. Test daily target for August 2026 (21 weekdays)
+        // Expected target: 5 lines * 21 weekdays = 105 lines
+        $response = $this->actingAs($admin)->get(route('reports.periodic', [
+            'class_room_id' => $classRoom->id,
+            'month' => 8,
+            'year' => 2026,
+            'period_type' => 'monthly',
+        ]));
+
+        $response->assertStatus(200);
+        $studentReports = $response->viewData('studentReports');
+        $this->assertCount(1, $studentReports);
+        $this->assertEquals(105, $studentReports[0]['target_baris']);
+
+        // 4. Update program to weekly ("seminggu sekali")
+        // Expected target for August 2026 (5 weeks/Mondays): 5 lines * 5 weeks = 25 lines
+        $dailyProgram->update(['meeting_frequency' => 'seminggu sekali']);
+
+        $response2 = $this->actingAs($admin)->get(route('reports.periodic', [
+            'class_room_id' => $classRoom->id,
+            'month' => 8,
+            'year' => 2026,
+            'period_type' => 'monthly',
+        ]));
+
+        $response2->assertStatus(200);
+        $studentReports2 = $response2->viewData('studentReports');
+        $this->assertEquals(25, $studentReports2[0]['target_baris']);
+    }
 }
