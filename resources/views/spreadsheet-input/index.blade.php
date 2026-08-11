@@ -235,7 +235,7 @@
                                                             <template x-for="(h, hIndex) in cell.hafalans" :key="hIndex">
                                                                 <div class="p-2 bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-255 dark:border-zinc-800 rounded-lg relative space-y-1.5">
                                                                     <!-- Surah select -->
-                                                                    <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                    <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                         <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                         @foreach ($surahs as $surah)
                                                                             <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -243,27 +243,27 @@
                                                                     </select>
                                                                     <!-- Ayat range -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
-                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                     </div>
                                                                     <!-- Score & Status -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                             <option value="" class="dark:bg-zinc-900">Nilai</option>
                                                                             <option value="95" class="dark:bg-zinc-900">A</option>
                                                                             <option value="85" class="dark:bg-zinc-900">B</option>
                                                                             <option value="75" class="dark:bg-zinc-900">C</option>
                                                                             <option value="65" class="dark:bg-zinc-900">D</option>
                                                                         </select>
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                             <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                             <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                             <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
                                                                         </select>
                                                                     </div>
                                                                     <!-- Hidden tracking fields -->
-                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id">
-                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type">
+                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
+                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'hafalan'">
                                                                     <!-- Remove button -->
                                                                     <template x-if="cell.hafalans.length > 1">
                                                                         <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
@@ -271,7 +271,7 @@
                                                                 </div>
                                                             </template>
                                                             <!-- Add Surah Button -->
-                                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                 + Tambah Surat
                                                             </button>
                                                         </div>
@@ -283,7 +283,7 @@
                                                                 <div class="space-y-2">
                                                                     <!-- Jilid & Halaman -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
+                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
                                                                             <option value="" class="dark:bg-zinc-900">Buku/Jilid</option>
                                                                             <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
                                                                             <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
@@ -295,12 +295,12 @@
                                                                             <option value="Ghoroib" class="dark:bg-zinc-900">Ghoroib</option>
                                                                             <option value="Tajwid" class="dark:bg-zinc-900">Tajwid</option>
                                                                         </select>
-                                                                        <input type="text" :name="'records[' + student.id + '][dates][' + date + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Halaman" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                        <input type="text" :name="'records[' + student.id + '][dates][' + date + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Halaman" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                     </div>
                                                                     <!-- Materi & Nilai -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <input type="text" :name="'records[' + student.id + '][dates][' + date + '][materi]'" x-model="cell.materi" placeholder="Materi" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][nilai]'" x-model="cell.nilai" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
+                                                                        <input type="text" :name="'records[' + student.id + '][dates][' + date + '][materi]'" x-model="cell.materi" placeholder="Materi" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][nilai]'" x-model="cell.nilai" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
                                                                             <option value="" class="dark:bg-zinc-900">Nilai</option>
                                                                             <option value="A+" class="dark:bg-zinc-900">A+</option>
                                                                             <option value="A" class="dark:bg-zinc-900">A</option>
@@ -317,21 +317,21 @@
                                                                         <span class="text-[9px] font-bold text-gray-400 dark:text-zinc-500 block">SETORAN HAFALAN UMMI:</span>
                                                                         <template x-for="(h, hIndex) in cell.ummiHafalans" :key="hIndex">
                                                                             <div class="p-1.5 bg-gray-50/50 dark:bg-zinc-850 border border-gray-200 dark:border-zinc-800 rounded relative space-y-1">
-                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-1 py-0.5 dark:text-white">
+                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-1 py-0.5 dark:text-white">
                                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                                     @foreach ($surahs as $surah)
                                                                                         <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
                                                                                     @endforeach
                                                                                 </select>
-                                                                                <input type="text" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Cth: 1-5" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
-                                                                                <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id">
+                                                                                <input type="text" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Cth: 1-5" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
+                                                                                <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                                 <!-- Remove button -->
                                                                                 <template x-if="cell.ummiHafalans.length > 1">
                                                                                     <button type="button" @click="cell.ummiHafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-150 text-red-650 rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] font-bold border border-red-200 dark:border-zinc-800 cursor-pointer">×</button>
                                                                                 </template>
                                                                             </div>
                                                                         </template>
-                                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="cell.attendance !== 'hadir'" class="w-full py-0.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-emerald-650 dark:text-emerald-450 border border-emerald-200 dark:border-zinc-800 rounded text-[9px] font-extrabold cursor-pointer transition">
+                                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-0.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-emerald-650 dark:text-emerald-450 border border-emerald-200 dark:border-zinc-800 rounded text-[9px] font-extrabold cursor-pointer transition">
                                                                             + Hafalan
                                                                         </button>
                                                                     </div>
@@ -344,7 +344,7 @@
                                                                     <template x-for="(h, hIndex) in cell.hafalans" :key="hIndex">
                                                                         <div class="p-2 bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-255 dark:border-zinc-800 rounded-lg relative space-y-1.5">
                                                                             <!-- Surah select -->
-                                                                            <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                            <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                                 <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                                 @foreach ($surahs as $surah)
                                                                                     <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -352,33 +352,33 @@
                                                                             </select>
                                                                             <!-- Ayat range -->
                                                                             <div class="grid grid-cols-2 gap-1">
-                                                                                <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
-                                                                                <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                                <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                                <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                             </div>
                                                                             <!-- Score & Status -->
                                                                             <div class="grid grid-cols-2 gap-1">
-                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                                     <option value="" class="dark:bg-zinc-900">Nilai</option>
                                                                                     <option value="95" class="dark:bg-zinc-900">A</option>
                                                                                     <option value="85" class="dark:bg-zinc-900">B</option>
                                                                                     <option value="75" class="dark:bg-zinc-900">C</option>
                                                                                     <option value="65" class="dark:bg-zinc-900">D</option>
                                                                                 </select>
-                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                                <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                                     <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                                     <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                                     <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
                                                                                 </select>
                                                                             </div>
-                                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id">
-                                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type">
+                                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
+                                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'ummi'">
                                                                             <!-- Remove button -->
                                                                             <template x-if="cell.hafalans.length > 1">
                                                                                 <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
                                                                             </template>
                                                                         </div>
                                                                     </template>
-                                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                         + Tambah Surat
                                                                     </button>
                                                                 </div>
@@ -444,7 +444,7 @@
                                                 <div class="bg-gray-50/50 dark:bg-zinc-800/40 p-3 rounded-lg border border-gray-255 dark:border-zinc-800 relative space-y-3">
                                                     <div>
                                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Surah</label>
-                                                        <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                        <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                             <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                             @foreach ($surahs as $surah)
                                                                 <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -454,17 +454,17 @@
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Mulai</label>
-                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Akhir</label>
-                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                         </div>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
                                                                 <option value="95" class="dark:bg-zinc-900">A</option>
                                                                 <option value="85" class="dark:bg-zinc-900">B</option>
@@ -474,7 +474,7 @@
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                 <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                 <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
@@ -482,14 +482,14 @@
                                                         </div>
                                                     </div>
                                                     <!-- Hidden variables -->
-                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id">
+                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
                                                     <!-- Delete button -->
                                                     <template x-if="cell.hafalans.length > 1">
                                                         <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                     </template>
                                                 </div>
                                             </template>
-                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                 + Tambah Surat Setoran
                                             </button>
                                         </div>
@@ -502,7 +502,7 @@
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Buku/Jilid</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                 <option value="" class="dark:bg-zinc-900">Buku/Jilid</option>
                                                                 <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
                                                                 <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
@@ -517,17 +517,17 @@
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Halaman</label>
-                                                            <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Hal" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Hal" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                         </div>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Materi</label>
-                                                            <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][materi]'" x-model="cell.materi" placeholder="Materi" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][materi]'" x-model="cell.materi" placeholder="Materi" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][nilai]'" x-model="cell.nilai" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][nilai]'" x-model="cell.nilai" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                 <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
                                                                 <option value="A+" class="dark:bg-zinc-900">A+</option>
                                                                 <option value="A" class="dark:bg-zinc-900">A</option>
@@ -546,21 +546,21 @@
                                                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Setoran Hafalan UMMI</span>
                                                         <template x-for="(h, hIndex) in cell.ummiHafalans" :key="hIndex">
                                                             <div class="bg-gray-50/50 dark:bg-zinc-855 p-3 rounded-lg border border-gray-200 dark:border-zinc-800 relative space-y-2">
-                                                                <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                     @foreach ($surahs as $surah)
                                                                         <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
                                                                     @endforeach
                                                                 </select>
-                                                                <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Ayat (cth: 1-5)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
-                                                                <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id">
+                                                                <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Ayat (cth: 1-5)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                 <!-- Remove button -->
                                                                 <template x-if="cell.ummiHafalans.length > 1">
                                                                     <button type="button" @click="cell.ummiHafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-655 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-250 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                                 </template>
                                                             </div>
                                                         </template>
-                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="cell.attendance !== 'hadir'" class="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 text-emerald-650 dark:text-emerald-455 border border-emerald-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 text-emerald-650 dark:text-emerald-455 border border-emerald-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                             + Tambah Hafalan
                                                         </button>
                                                     </div>
@@ -574,7 +574,7 @@
                                                         <div class="bg-gray-50/50 dark:bg-zinc-800/40 p-3 rounded-lg border border-gray-255 dark:border-zinc-800 relative space-y-3">
                                                             <div>
                                                                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Surah</label>
-                                                                <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                                <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                     @foreach ($surahs as $surah)
                                                                         <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -584,17 +584,17 @@
                                                             <div class="grid grid-cols-2 gap-2">
                                                                 <div>
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Mulai</label>
-                                                                    <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                    <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 </div>
                                                                 <div>
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Akhir</label>
-                                                                    <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                    <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 </div>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-2">
                                                                 <div>
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
-                                                                    <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                    <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                         <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
                                                                         <option value="95" class="dark:bg-zinc-900">A</option>
                                                                         <option value="85" class="dark:bg-zinc-900">B</option>
@@ -604,21 +604,21 @@
                                                                 </div>
                                                                 <div>
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</label>
-                                                                    <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                    <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                         <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                         <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                         <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
-                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id">
+                                                            <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                             <!-- Delete button -->
                                                             <template x-if="cell.hafalans.length > 1">
                                                                 <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                             </template>
                                                         </div>
                                                     </template>
-                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                         + Tambah Surat Setoran
                                                     </button>
                                                 </div>

@@ -260,172 +260,17 @@ class SpreadsheetInputController extends Controller
 
                     // 2. Save Setoran (Hafalan / UMMI)
                     if ($type === 'hafalan') {
-                        $existingRecordIds = HafalanRecord::where('student_id', $studentId)
-                            ->where('submitted_at', $date)
-                            ->pluck('id')
-                            ->toArray();
-
-                        $processedRecordIds = [];
-
-                        foreach ($cellData['hafalans'] ?? [] as $hafalanData) {
-                            if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah_start']) || empty($hafalanData['ayah_end'])) {
-                                continue;
-                            }
-
-                            // Calculate lines count
-                            $surah = Surah::find($hafalanData['surah_id']);
-                            $baris = 0.0;
-                            if ($surah) {
-                                $baris = \App\Http\Controllers\ReportController::calculateLines(
-                                    $surah->number,
-                                    (int)$hafalanData['ayah_start'],
-                                    (int)$hafalanData['ayah_end'],
-                                    $surah->total_ayah
-                                );
-                            }
-
-                            $dataToSave = [
-                                'student_id' => $studentId,
-                                'teacher_id' => $teacherId,
-                                'surah_id' => $hafalanData['surah_id'],
-                                'ayah_start' => $hafalanData['ayah_start'],
-                                'ayah_end' => $hafalanData['ayah_end'],
-                                'score' => $hafalanData['score'] ?? null,
-                                'status' => $hafalanData['status'] ?? 'passed',
-                                'submission_type' => $hafalanData['submission_type'] ?? 'new',
-                                'submitted_at' => $date,
-                                'baris' => $baris,
-                            ];
-
-                            $recordId = $hafalanData['id'] ?? null;
-                            if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
-                                HafalanRecord::where('id', $recordId)->update($dataToSave);
-                                $processedRecordIds[] = (int)$recordId;
-                            } else {
-                                $newRec = HafalanRecord::create($dataToSave);
-                                $processedRecordIds[] = $newRec->id;
-                            }
-                        }
-
-                        $toDeleteIds = array_diff($existingRecordIds, $processedRecordIds);
-                        if (!empty($toDeleteIds)) {
-                            HafalanRecord::whereIn('id', $toDeleteIds)->delete();
-                        }
-
+                        $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData);
                     } elseif ($type === 'ummi') {
-                        $existingRecordIds = UmmiRecord::where('student_id', $studentId)
-                            ->where('tanggal', $date)
-                            ->pluck('id')
-                            ->toArray();
+                        $hasUmmiData = filled($cellData['ummi_jilid'] ?? null)
+                            || filled($cellData['ummi_halaman'] ?? null)
+                            || filled($cellData['materi'] ?? null)
+                            || filled($cellData['nilai'] ?? null);
 
-                        $processedRecordIds = [];
-
-                        $ummiJilid = $cellData['ummi_jilid'] ?? null;
-                        $ummiHalaman = $cellData['ummi_halaman'] ?? null;
-                        $materi = $cellData['materi'] ?? null;
-                        $nilai = $cellData['nilai'] ?? null;
-                        $tatapMuka = $cellData['tatap_muka'] ?? 1;
-
-                        $hasUmmiFields = filled($ummiJilid) || filled($ummiHalaman) || filled($materi) || filled($nilai);
-                        $hafalansList = $cellData['hafalans'] ?? [];
-
-                        if (!$hasUmmiFields && empty($hafalansList)) {
-                            UmmiRecord::where('student_id', $studentId)
-                                ->where('tanggal', $date)
-                                ->delete();
-                            continue;
-                        }
-
-                        if (empty($hafalansList)) {
-                            $dataToSave = [
-                                'student_id' => $studentId,
-                                'teacher_id' => $teacherId,
-                                'tatap_muka' => $tatapMuka,
-                                'tanggal' => $date,
-                                'hafalan_surah_id' => null,
-                                'hafalan_ayah' => null,
-                                'baris' => null,
-                                'ummi_jilid' => $ummiJilid,
-                                'ummi_halaman' => $ummiHalaman,
-                                'materi' => $materi,
-                                'nilai' => $nilai,
-                                'disimak_guru' => 'Ya',
-                                'disimak_ortu' => 'Ya',
-                            ];
-
-                            if (!empty($existingRecordIds)) {
-                                $firstId = $existingRecordIds[0];
-                                UmmiRecord::where('id', $firstId)->update($dataToSave);
-                                $processedRecordIds[] = $firstId;
-                            } else {
-                                $newRec = UmmiRecord::create($dataToSave);
-                                $processedRecordIds[] = $newRec->id;
-                            }
+                        if ($student->tahfizh_level === 'ummi' || $hasUmmiData) {
+                            $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData);
                         } else {
-                            foreach ($hafalansList as $hafalanData) {
-                                if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah'])) {
-                                    continue;
-                                }
-
-                                $surah = Surah::find($hafalanData['surah_id']);
-                                $baris = 0.0;
-                                if ($surah) {
-                                    $clean = str_replace(' ', '', $hafalanData['ayah']);
-                                    if (str_contains($clean, '-')) {
-                                        $parts = explode('-', $clean);
-                                        $start = (int) $parts[0];
-                                        $end = (int) $parts[1];
-                                    } else {
-                                        $start = (int) $clean;
-                                        $end = (int) $clean;
-                                    }
-                                    if ($start > 0 && $end >= $start) {
-                                        $baris = \App\Http\Controllers\ReportController::calculateLines(
-                                            $surah->number,
-                                            $start,
-                                            $end,
-                                            $surah->total_ayah
-                                        );
-                                    }
-                                }
-
-                                $dataToSave = [
-                                    'student_id' => $studentId,
-                                    'teacher_id' => $teacherId,
-                                    'tatap_muka' => $tatapMuka,
-                                    'tanggal' => $date,
-                                    'hafalan_surah_id' => $hafalanData['surah_id'],
-                                    'hafalan_ayah' => $hafalanData['ayah'],
-                                    'baris' => $baris,
-                                    'ummi_jilid' => $ummiJilid,
-                                    'ummi_halaman' => $ummiHalaman,
-                                    'materi' => $materi,
-                                    'nilai' => $nilai,
-                                    'disimak_guru' => 'Ya',
-                                    'disimak_ortu' => 'Ya',
-                                ];
-
-                                $recordId = $hafalanData['id'] ?? null;
-                                if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
-                                    UmmiRecord::where('id', $recordId)->update($dataToSave);
-                                    $processedRecordIds[] = (int)$recordId;
-                                } else {
-                                    $unprocessedIds = array_diff($existingRecordIds, $processedRecordIds);
-                                    if (!empty($unprocessedIds)) {
-                                        $reuseId = array_shift($unprocessedIds);
-                                        UmmiRecord::where('id', $reuseId)->update($dataToSave);
-                                        $processedRecordIds[] = $reuseId;
-                                    } else {
-                                        $newRec = UmmiRecord::create($dataToSave);
-                                        $processedRecordIds[] = $newRec->id;
-                                    }
-                                }
-                            }
-                        }
-
-                        $toDeleteIds = array_diff($existingRecordIds, $processedRecordIds);
-                        if (!empty($toDeleteIds)) {
-                            UmmiRecord::whereIn('id', $toDeleteIds)->delete();
+                            $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData);
                         }
                     }
                 }
@@ -439,6 +284,179 @@ class SpreadsheetInputController extends Controller
                 'week' => $request->input('week', 'all'),
             ])
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
+    }
+
+    private function saveHafalanRecords(int $studentId, int $teacherId, string $date, array $cellData): void
+    {
+        $existingRecordIds = HafalanRecord::where('student_id', $studentId)
+            ->where('submitted_at', $date)
+            ->pluck('id')
+            ->toArray();
+
+        $processedRecordIds = [];
+
+        foreach ($cellData['hafalans'] ?? [] as $hafalanData) {
+            if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah_start']) || empty($hafalanData['ayah_end'])) {
+                continue;
+            }
+
+            // Calculate lines count
+            $surah = Surah::find($hafalanData['surah_id']);
+            $baris = 0.0;
+            if ($surah) {
+                $baris = \App\Http\Controllers\ReportController::calculateLines(
+                    $surah->number,
+                    (int)$hafalanData['ayah_start'],
+                    (int)$hafalanData['ayah_end'],
+                    $surah->total_ayah
+                );
+            }
+
+            $dataToSave = [
+                'student_id' => $studentId,
+                'teacher_id' => $teacherId,
+                'surah_id' => $hafalanData['surah_id'],
+                'ayah_start' => $hafalanData['ayah_start'],
+                'ayah_end' => $hafalanData['ayah_end'],
+                'score' => $hafalanData['score'] ?? null,
+                'status' => $hafalanData['status'] ?? 'passed',
+                'submission_type' => $hafalanData['submission_type'] ?? 'new',
+                'submitted_at' => $date,
+                'baris' => $baris,
+            ];
+
+            $recordId = $hafalanData['id'] ?? null;
+            if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
+                HafalanRecord::where('id', $recordId)->update($dataToSave);
+                $processedRecordIds[] = (int)$recordId;
+            } else {
+                $newRec = HafalanRecord::create($dataToSave);
+                $processedRecordIds[] = $newRec->id;
+            }
+        }
+
+        $toDeleteIds = array_diff($existingRecordIds, $processedRecordIds);
+        if (!empty($toDeleteIds)) {
+            HafalanRecord::whereIn('id', $toDeleteIds)->delete();
+        }
+    }
+
+    private function saveUmmiRecords(int $studentId, int $teacherId, string $date, array $cellData): void
+    {
+        $existingRecordIds = UmmiRecord::where('student_id', $studentId)
+            ->where('tanggal', $date)
+            ->pluck('id')
+            ->toArray();
+
+        $processedRecordIds = [];
+
+        $ummiJilid = $cellData['ummi_jilid'] ?? null;
+        $ummiHalaman = $cellData['ummi_halaman'] ?? null;
+        $materi = $cellData['materi'] ?? null;
+        $nilai = $cellData['nilai'] ?? null;
+        $tatapMuka = $cellData['tatap_muka'] ?? 1;
+
+        $hasUmmiFields = filled($ummiJilid) || filled($ummiHalaman) || filled($materi) || filled($nilai);
+        $hafalansList = $cellData['hafalans'] ?? [];
+
+        if (!$hasUmmiFields && empty($hafalansList)) {
+            UmmiRecord::where('student_id', $studentId)
+                ->where('tanggal', $date)
+                ->delete();
+            return;
+        }
+
+        if (empty($hafalansList)) {
+            $dataToSave = [
+                'student_id' => $studentId,
+                'teacher_id' => $teacherId,
+                'tatap_muka' => $tatapMuka,
+                'tanggal' => $date,
+                'hafalan_surah_id' => null,
+                'hafalan_ayah' => null,
+                'baris' => null,
+                'ummi_jilid' => $ummiJilid,
+                'ummi_halaman' => $ummiHalaman,
+                'materi' => $materi,
+                'nilai' => $nilai,
+                'disimak_guru' => 'Ya',
+                'disimak_ortu' => 'Ya',
+            ];
+
+            if (!empty($existingRecordIds)) {
+                $firstId = $existingRecordIds[0];
+                UmmiRecord::where('id', $firstId)->update($dataToSave);
+                $processedRecordIds[] = $firstId;
+            } else {
+                $newRec = UmmiRecord::create($dataToSave);
+                $processedRecordIds[] = $newRec->id;
+            }
+        } else {
+            foreach ($hafalansList as $hafalanData) {
+                if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah'])) {
+                    continue;
+                }
+
+                $surah = Surah::find($hafalanData['surah_id']);
+                $baris = 0.0;
+                if ($surah) {
+                    $clean = str_replace(' ', '', $hafalanData['ayah']);
+                    if (str_contains($clean, '-')) {
+                        $parts = explode('-', $clean);
+                        $start = (int) $parts[0];
+                        $end = (int) $parts[1];
+                    } else {
+                        $start = (int) $clean;
+                        $end = (int) $clean;
+                    }
+                    if ($start > 0 && $end >= $start) {
+                        $baris = \App\Http\Controllers\ReportController::calculateLines(
+                            $surah->number,
+                            $start,
+                            $end,
+                            $surah->total_ayah
+                        );
+                    }
+                }
+
+                $dataToSave = [
+                    'student_id' => $studentId,
+                    'teacher_id' => $teacherId,
+                    'tatap_muka' => $tatapMuka,
+                    'tanggal' => $date,
+                    'hafalan_surah_id' => $hafalanData['surah_id'],
+                    'hafalan_ayah' => $hafalanData['ayah'],
+                    'baris' => $baris,
+                    'ummi_jilid' => $ummiJilid,
+                    'ummi_halaman' => $ummiHalaman,
+                    'materi' => $materi,
+                    'nilai' => $nilai,
+                    'disimak_guru' => 'Ya',
+                    'disimak_ortu' => 'Ya',
+                ];
+
+                $recordId = $hafalanData['id'] ?? null;
+                if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
+                    UmmiRecord::where('id', $recordId)->update($dataToSave);
+                    $processedRecordIds[] = (int)$recordId;
+                } else {
+                    $unprocessedIds = array_diff($existingRecordIds, $processedRecordIds);
+                    if (!empty($unprocessedIds)) {
+                        $reuseId = array_shift($unprocessedIds);
+                        UmmiRecord::where('id', $reuseId)->update($dataToSave);
+                        $processedRecordIds[] = $reuseId;
+                    } else {
+                        $newRec = UmmiRecord::create($dataToSave);
+                        $processedRecordIds[] = $newRec->id;
+                    }
+                }
+            }
+        }
+
+        $toDeleteIds = array_diff($existingRecordIds, $processedRecordIds);
+        if (!empty($toDeleteIds)) {
+            UmmiRecord::whereIn('id', $toDeleteIds)->delete();
+        }
     }
 
     private function resolveTeacherId(Request $request, Student $student): ?int
