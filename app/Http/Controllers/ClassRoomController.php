@@ -514,24 +514,18 @@ class ClassRoomController extends Controller
 
     public function scheduleUpdate(Request $request): RedirectResponse
     {
-        $day = $request->integer('day');
-        abort_unless($day >= 1 && $day <= 7, 400);
-
-        $classRoomIds = $request->input('class_room_ids', []);
+        $schedules = $request->input('schedules', []);
 
         $allClassrooms = ClassRoom::all();
 
         foreach ($allClassrooms as $class) {
-            $days = $class->tahfizh_days;
-            
-            if (in_array((string)$class->id, $classRoomIds) || in_array((int)$class->id, $classRoomIds)) {
-                if (!in_array($day, $days, true)) {
+            $days = [];
+            for ($day = 1; $day <= 7; $day++) {
+                $isActive = isset($schedules[$day][$class->id]) && (int)$schedules[$day][$class->id] === 1;
+                if ($isActive) {
                     $days[] = $day;
                 }
-            } else {
-                $days = array_values(array_diff($days, [$day]));
             }
-            
             sort($days);
             $class->tahfizh_days = $days;
             $class->save();

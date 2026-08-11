@@ -62,23 +62,17 @@ class ClassScheduleTest extends TestCase
         $this->assertEquals([1, 2, 3, 4, 5], $this->classRoom->tahfizh_days);
 
         $payload = [
-            'day' => 3,
-            'class_room_ids' => [$this->classRoom->id],
+            'schedules' => [
+                3 => [
+                    $this->classRoom->id => 1
+                ]
+            ]
         ];
 
         $response = $this->actingAs($this->adminUser)->post(route('class-schedules.update'), $payload);
         $response->assertRedirect(route('class-schedules.index'));
 
         $this->classRoom->refresh();
-        $this->assertContains(3, $this->classRoom->tahfizh_days);
-
-        $payload2 = [
-            'day' => 2,
-            'class_room_ids' => [],
-        ];
-        $this->actingAs($this->adminUser)->post(route('class-schedules.update'), $payload2);
-        
-        $this->classRoom->refresh();
-        $this->assertNotContains(2, $this->classRoom->tahfizh_days);
+        $this->assertEquals([3], $this->classRoom->tahfizh_days);
     }
 }
