@@ -28,7 +28,15 @@
                 ummiRecordsMap: @json($ummiRecordsMap),
                 gridData: {},
                 surahDetails: {},
+                isDirty: false,
                 init() {
+                    window.addEventListener('beforeunload', (e) => {
+                        if (this.isDirty) {
+                            e.preventDefault();
+                            e.returnValue = '';
+                        }
+                    });
+
                     // Index surah details for fast lookup
                     this.surahs.forEach(s => {
                         this.surahDetails[s.id] = { id: s.id, number: s.number, totalAyah: s.total_ayah, name: s.name_latin };
@@ -88,6 +96,7 @@
                     }
                 },
                 handleAttendanceChange(studentId, date, value) {
+                    this.isDirty = true;
                     let cell = this.gridData[studentId].dates[date];
                     cell.attendance = value;
                     if (value !== 'hadir') {
@@ -171,7 +180,7 @@
 
                 <!-- Submit Button -->
                 <div class="w-full sm:w-auto">
-                    <button type="button" @click="document.getElementById('spreadsheet-form').submit()" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer">
+                    <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer">
                         💾 Simpan Perubahan Kelas
                     </button>
                 </div>
@@ -183,7 +192,7 @@
                 </div>
             @else
                 <!-- FORM UTAMA -->
-                <form id="spreadsheet-form" method="POST" action="{{ route('spreadsheet-input.save') }}">
+                <form id="spreadsheet-form" method="POST" action="{{ route('spreadsheet-input.save') }}" @input="isDirty = true" @change="isDirty = true">
                     @csrf
                     <input type="hidden" name="class_room_id" :value="selectedClass">
                     <input type="hidden" name="month" :value="selectedMonth">
@@ -271,12 +280,12 @@
                                                                     <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'hafalan'">
                                                                     <!-- Remove button -->
                                                                     <template x-if="cell.hafalans.length > 1">
-                                                                        <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
+                                                                        <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
                                                                     </template>
                                                                 </div>
                                                             </template>
                                                             <!-- Add Surah Button -->
-                                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                            <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                 + Tambah Surat
                                                             </button>
                                                         </div>
@@ -332,11 +341,11 @@
                                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                                 <!-- Remove button -->
                                                                                 <template x-if="cell.ummiHafalans.length > 1">
-                                                                                    <button type="button" @click="cell.ummiHafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-150 text-red-650 rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] font-bold border border-red-200 dark:border-zinc-800 cursor-pointer">×</button>
+                                                                                    <button type="button" @click="isDirty = true; cell.ummiHafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-150 text-red-650 rounded-full w-3.5 h-3.5 flex items-center justify-center text-[9px] font-bold border border-red-200 dark:border-zinc-800 cursor-pointer">×</button>
                                                                                 </template>
                                                                             </div>
                                                                         </template>
-                                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-0.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-emerald-650 dark:text-emerald-450 border border-emerald-200 dark:border-zinc-800 rounded text-[9px] font-extrabold cursor-pointer transition">
+                                                                        <button type="button" @click="isDirty = true; cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-0.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-emerald-650 dark:text-emerald-450 border border-emerald-200 dark:border-zinc-800 rounded text-[9px] font-extrabold cursor-pointer transition">
                                                                             + Hafalan
                                                                         </button>
                                                                     </div>
@@ -379,11 +388,11 @@
                                                                             <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'ummi'">
                                                                             <!-- Remove button -->
                                                                             <template x-if="cell.hafalans.length > 1">
-                                                                                <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
+                                                                                <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
                                                                             </template>
                                                                         </div>
                                                                     </template>
-                                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                                    <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                         + Tambah Surat
                                                                     </button>
                                                                 </div>
@@ -489,11 +498,11 @@
                                                     <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
                                                     <!-- Delete button -->
                                                     <template x-if="cell.hafalans.length > 1">
-                                                        <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
+                                                        <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                     </template>
                                                 </div>
                                             </template>
-                                            <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                            <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                 + Tambah Surat Setoran
                                             </button>
                                         </div>
@@ -560,11 +569,11 @@
                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                 <!-- Remove button -->
                                                                 <template x-if="cell.ummiHafalans.length > 1">
-                                                                    <button type="button" @click="cell.ummiHafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-655 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-250 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
+                                                                    <button type="button" @click="isDirty = true; cell.ummiHafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-655 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-250 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                                 </template>
                                                             </div>
                                                         </template>
-                                                        <button type="button" @click="cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 text-emerald-650 dark:text-emerald-455 border border-emerald-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                                        <button type="button" @click="isDirty = true; cell.ummiHafalans.push({ id: null, surah_id: '', ayah: '' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-zinc-800 text-emerald-650 dark:text-emerald-455 border border-emerald-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                             + Tambah Hafalan
                                                         </button>
                                                     </div>
@@ -618,11 +627,11 @@
                                                             <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                             <!-- Delete button -->
                                                             <template x-if="cell.hafalans.length > 1">
-                                                                <button type="button" @click="cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
+                                                                <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
                                                             </template>
                                                         </div>
                                                     </template>
-                                                    <button type="button" @click="cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                                    <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                         + Tambah Surat Setoran
                                                     </button>
                                                 </div>

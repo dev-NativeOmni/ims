@@ -113,29 +113,79 @@
                     </div>
                 </div>
 
-                <!-- Chart container -->
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-                    <div class="mb-4 border-b border-gray-150 dark:border-zinc-800 pb-3 flex justify-between items-center flex-wrap gap-2">
+                @php
+                    $names = [];
+                    $capaians = [];
+                    $targets = [];
+                    foreach ($studentReports as $rep) {
+                        $parts = explode(' ', $rep['student']->name);
+                        $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
+                        $names[] = $shortName;
+                        $capaians[] = (int) $rep['capaian_baris'];
+                        $targets[] = (int) $rep['target_baris'];
+                    }
+                    $monthName = $monthsList[$selectedMonth] ?? '';
+                    $className = $selectedClass?->name ?? '';
+                    $titleCapaian = "GRAFIK CAPAIAN BULAN " . strtoupper($monthName) . " KELAS " . strtoupper($className);
+                    $titleKetuntasan = "KETUNTASAN BULAN KELAS " . strtoupper($className);
+                @endphp
+
+                <!-- New Charts Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left: Capaian & Target Chart (w-2/3) -->
+                    <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                                Tren Aktivitas Perkembangan Kelas: {{ $selectedClass->name }}
-                            </h3>
-                            <p class="text-xs text-gray-500 mt-1">
-                                Grafik garis membandingkan volume setoran hafalan baru dengan murajaah selama periode terpilih.
-                            </p>
-                        </div>
-                        <div class="flex gap-4 text-xs font-semibold">
-                            <span class="flex items-center gap-1.5 text-zinc-500">
-                                <span class="w-3.5 h-3.5 bg-teal-550 rounded"></span> Hafalan Baru
-                            </span>
-                            <span class="flex items-center gap-1.5 text-zinc-500">
-                                <span class="w-3.5 h-3.5 bg-amber-500 rounded"></span> Murajaah
-                            </span>
+                            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                        {{ $titleCapaian }}
+                                    </h3>
+                                    <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
+                                        Membandingkan jumlah capaian baris setoran (batang) dengan target baris (garis).
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
+                                        📥 Unduh PNG
+                                    </button>
+                                    <button type="button" onclick="printChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
+                                        🖨️ Cetak F4
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative w-full overflow-x-auto" style="height: 380px;">
+                                <canvas id="capaianChart" style="min-width: 600px; height: 350px;"></canvas>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="relative w-full overflow-hidden" style="height: 320px;">
-                        <canvas id="periodicTrendChart"></canvas>
+                    <!-- Right: Ketuntasan Pie Chart (w-1/3) -->
+                    <div class="lg:col-span-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                        {{ $titleKetuntasan }}
+                                    </h3>
+                                    <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
+                                        Persentase ketuntasan target bulanan kelas.
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="downloadChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
+                                        📥 Unduh PNG
+                                    </button>
+                                    <button type="button" onclick="printChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
+                                        🖨️ Cetak F4
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative w-full flex justify-center items-center" style="height: 380px;">
+                                <div style="width: 280px; height: 280px;">
+                                    <canvas id="ketuntasanChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -254,42 +304,156 @@
     </div>
 
     @if ($selectedClass)
-        <!-- ChartJS script -->
+        <!-- ChartJS & DataLabels script -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('periodicTrendChart').getContext('2d');
-                const isDark = document.documentElement.classList.contains('dark');
+            // Global functions for download and print
+            function downloadChart(chartId, title) {
+                const canvas = document.getElementById(chartId);
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
                 
+                // White background
+                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw original
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                const url = tempCanvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = title + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            function printChart(chartId, title) {
+                const canvas = document.getElementById(chartId);
+                
+                // Draw on a temp white canvas with 2x resolution
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width * 2;
+                tempCanvas.height = canvas.height * 2;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.scale(2, 2);
+                
+                // Fill white
+                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                const url = tempCanvas.toDataURL('image/png');
+                
+                const win = window.open('', '_blank');
+                win.document.write(`
+                    <html>
+                        <head>
+                            <title>${title}</title>
+                            <style>
+                                @page {
+                                    size: 330mm 215mm; /* F4 Landscape */
+                                    margin: 1.5cm;
+                                }
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    text-align: center;
+                                    margin: 0;
+                                    padding: 0;
+                                    background: white;
+                                }
+                                .header-title {
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    text-transform: uppercase;
+                                    margin-top: 15px;
+                                    margin-bottom: 25px;
+                                    color: #111;
+                                }
+                                .chart-frame {
+                                    width: 100%;
+                                    height: 165mm;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                }
+                                img {
+                                    max-width: 100%;
+                                    max-height: 100%;
+                                    object-fit: contain;
+                                }
+                            </style>
+                        </head>
+                        <body onload="setTimeout(() => { window.print(); window.close(); }, 500)">
+                            <div class="header-title">${title}</div>
+                            <div class="chart-frame">
+                                <img src="${url}">
+                            </div>
+                        </body>
+                    </html>
+                `);
+                win.document.close();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Register datalabels plugin
+                Chart.register(ChartDataLabels);
+
+                const isDark = document.documentElement.classList.contains('dark');
                 const gridColor = isDark ? 'rgba(63, 63, 70, 0.3)' : 'rgba(228, 228, 231, 0.8)';
                 const labelColor = isDark ? '#a1a1aa' : '#71717a';
 
-                new Chart(ctx, {
-                    type: 'line',
+                // --- CAPAIAN vs TARGET CHART ---
+                const capaianCtx = document.getElementById('capaianChart').getContext('2d');
+                new Chart(capaianCtx, {
+                    type: 'bar',
                     data: {
-                        labels: @json($chartLabels),
+                        labels: @json($names),
                         datasets: [
                             {
-                                label: 'Hafalan Baru',
-                                data: @json($hafalanTrend),
-                                borderColor: '#0d9488',
-                                backgroundColor: 'rgba(13, 148, 136, 0.08)',
-                                borderWidth: 3.5,
-                                tension: 0.3,
-                                fill: true,
-                                pointBackgroundColor: '#0d9488',
-                                pointHoverRadius: 6,
+                                label: 'CAPAIAN',
+                                type: 'bar',
+                                data: @json($capaians),
+                                backgroundColor: '#1d70b8', // Blue bar matching screenshot
+                                borderColor: '#1d70b8',
+                                borderWidth: 1,
+                                order: 2,
+                                datalabels: {
+                                    anchor: 'start',
+                                    align: 'end',
+                                    offset: 4,
+                                    color: '#ffffff', // White numbers inside the bar at the bottom
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
                             },
                             {
-                                label: 'Murajaah',
-                                data: @json($murajaahTrend),
-                                borderColor: '#d97706',
-                                backgroundColor: 'rgba(217, 119, 6, 0.08)',
-                                borderWidth: 3.5,
-                                tension: 0.3,
-                                fill: true,
-                                pointBackgroundColor: '#d97706',
+                                label: 'TARGET',
+                                type: 'line',
+                                data: @json($targets),
+                                borderColor: '#c1392b', // Red line matching screenshot
+                                backgroundColor: '#c1392b',
+                                borderWidth: 2.5,
+                                pointBackgroundColor: '#c1392b',
+                                pointRadius: 4,
                                 pointHoverRadius: 6,
+                                fill: false,
+                                order: 1,
+                                datalabels: {
+                                    anchor: 'end',
+                                    align: 'top',
+                                    color: '#c1392b', // Red numbers above the points
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
                             }
                         ]
                     },
@@ -298,7 +462,17 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: labelColor,
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: true
                             }
                         },
                         scales: {
@@ -308,8 +482,7 @@
                                 },
                                 ticks: {
                                     color: labelColor,
-                                    stepSize: 1,
-                                    precision: 0
+                                    stepSize: 10
                                 },
                                 beginAtZero: true
                             },
@@ -318,8 +491,57 @@
                                     display: false
                                 },
                                 ticks: {
-                                    color: labelColor
+                                    color: labelColor,
+                                    font: {
+                                        size: 9
+                                    },
+                                    minRotation: 90,
+                                    maxRotation: 90
                                 }
+                            }
+                        }
+                    }
+                });
+
+                // --- KETUNTASAN PIE CHART ---
+                const ketuntasanCtx = document.getElementById('ketuntasanChart').getContext('2d');
+                new Chart(ketuntasanCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['TUNTAS', 'TIDAK TUNTAS'],
+                        datasets: [{
+                            data: [{{ $tuntasCount }}, {{ $tidakTuntasCount }}],
+                            backgroundColor: [
+                                '#1d70b8', // Blue for Tuntas
+                                '#c1392b'  // Red/brown for Tidak Tuntas
+                            ],
+                            borderWidth: 1,
+                            borderColor: isDark ? '#18181b' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false // Hidden because labels are drawn directly on slices
+                            },
+                            datalabels: {
+                                formatter: (value, ctx) => {
+                                    let sum = 0;
+                                    let dataArr = ctx.chart.data.datasets[0].data;
+                                    dataArr.map(data => {
+                                        sum += data;
+                                    });
+                                    let percentage = (value * 100 / sum).toFixed(1) + "%";
+                                    return ctx.chart.data.labels[ctx.dataIndex] + "\n" + percentage;
+                                },
+                                color: '#ffffff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 11
+                                },
+                                textAlign: 'center'
                             }
                         }
                     }
