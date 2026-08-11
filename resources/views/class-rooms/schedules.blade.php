@@ -10,7 +10,7 @@
                 </p>
             </div>
             <div>
-                <button type="submit" form="schedules-form" class="inline-flex items-center gap-2 rounded-xl bg-teal-650 hover:bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow shadow-teal-500/20 transition cursor-pointer">
+                <button type="submit" form="schedules-form" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow shadow-teal-550/20 transition cursor-pointer">
                     💾 Simpan Perubahan Jadwal
                 </button>
             </div>
@@ -57,7 +57,7 @@
                                     @php
                                         $isActive = in_array($dayNum, $class->tahfizh_days, true);
                                     @endphp
-                                    <div class="bg-white dark:bg-zinc-850 border border-gray-150 dark:border-zinc-800 rounded-xl p-3 shadow-xs transition duration-150 hover:shadow-sm">
+                                    <div x-data="{ status: '{{ $isActive ? '1' : '0' }}' }" class="bg-white dark:bg-zinc-850 border border-gray-150 dark:border-zinc-800 rounded-xl p-3 shadow-xs transition duration-150 hover:shadow-sm">
                                         <div class="flex flex-col gap-2">
                                             <div>
                                                 <div class="font-bold text-xs text-gray-900 dark:text-white leading-tight">
@@ -72,15 +72,15 @@
                                             <div class="flex items-center bg-gray-100 dark:bg-zinc-800/80 rounded-lg p-0.5 border border-gray-200/50 dark:border-zinc-700 w-full justify-between">
                                                 <!-- Aktif Option -->
                                                 <label class="flex-1 cursor-pointer select-none">
-                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="1" {{ $isActive ? 'checked' : '' }} class="sr-only peer">
-                                                    <span class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150 peer-checked:bg-emerald-600 peer-checked:text-white text-gray-500 dark:text-zinc-400">
+                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="1" x-model="status" class="sr-only">
+                                                    <span :class="status === '1' ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'" class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150">
                                                         Aktif
                                                     </span>
                                                 </label>
                                                 <!-- Off Option -->
                                                 <label class="flex-1 cursor-pointer select-none">
-                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="0" {{ !$isActive ? 'checked' : '' }} class="sr-only peer">
-                                                    <span class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150 peer-checked:bg-zinc-400 dark:peer-checked:bg-zinc-700 peer-checked:text-white text-gray-450 dark:text-zinc-500">
+                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="0" x-model="status" class="sr-only">
+                                                    <span :class="status === '0' ? 'bg-rose-600 text-white shadow-xs' : 'text-gray-450 dark:text-zinc-500 hover:text-gray-700'" class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150">
                                                         Off
                                                     </span>
                                                 </label>

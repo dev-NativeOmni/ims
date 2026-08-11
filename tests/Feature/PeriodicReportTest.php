@@ -115,10 +115,10 @@ class PeriodicReportTest extends TestCase
         $response->assertStatus(200);
         $studentReports = $response->viewData('studentReports');
         $this->assertCount(1, $studentReports);
-        $this->assertEquals(105, $studentReports[0]['target_baris']);
+        $this->assertEquals(100, $studentReports[0]['target_baris']);
 
         // 4. Update program to weekly ("seminggu sekali")
-        // Expected target for August 2026 (5 weeks/Mondays): 5 lines * 5 weeks = 25 lines
+        // Expected target for August 2026 (5 Mondays, but August 17 is holiday, so 4 weeks): 5 lines * 4 weeks = 20 lines
         $dailyProgram->update(['meeting_frequency' => 'seminggu sekali']);
 
         $response2 = $this->actingAs($admin)->get(route('reports.periodic', [

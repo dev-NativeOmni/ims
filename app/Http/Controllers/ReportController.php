@@ -1045,13 +1045,15 @@ class ReportController extends Controller
         $current = $startDate->copy()->startOfDay();
         $end = $endDate->copy()->endOfDay();
         $tahfizhDays = $classRoom->tahfizh_days;
+        $holidays = \App\Models\Setting::getNationalHolidays($startDate->year);
 
         if ($meetingFrequency === 'seminggu sekali') {
             $weeks = [];
             while ($current->lte($end)) {
                 $dayOfWeek = $current->dayOfWeek;
                 $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
-                if (in_array($isoDay, $tahfizhDays, true)) {
+                $dateString = $current->toDateString();
+                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true)) {
                     $weekNum = $current->format('o-W');
                     $weeks[$weekNum] = true;
                 }
@@ -1062,7 +1064,8 @@ class ReportController extends Controller
             while ($current->lte($end)) {
                 $dayOfWeek = $current->dayOfWeek;
                 $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
-                if (in_array($isoDay, $tahfizhDays, true)) {
+                $dateString = $current->toDateString();
+                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true)) {
                     $meetings++;
                 }
                 $current->addDay();

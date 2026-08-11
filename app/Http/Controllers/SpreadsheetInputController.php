@@ -58,11 +58,13 @@ class SpreadsheetInputController extends Controller
         $allDates = [];
         $daysInMonth = (int) date('t', strtotime($selectedMonth . '-01'));
         $tahfizhDays = $selectedClass?->tahfizh_days ?? [1, 2, 3, 4, 5];
+        $holidays = \App\Models\Setting::getNationalHolidays($year);
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $time = mktime(0, 0, 0, $month, $day, $year);
             $dayOfWeek = (int) date('N', $time);
-            if (in_array($dayOfWeek, $tahfizhDays, true)) {
-                $allDates[] = date('Y-m-d', $time);
+            $dateString = date('Y-m-d', $time);
+            if (in_array($dayOfWeek, $tahfizhDays, true) && !in_array($dateString, $holidays, true)) {
+                $allDates[] = $dateString;
             }
         }
 

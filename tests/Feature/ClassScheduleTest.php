@@ -75,4 +75,36 @@ class ClassScheduleTest extends TestCase
         $this->classRoom->refresh();
         $this->assertEquals([3], $this->classRoom->tahfizh_days);
     }
+
+    public function test_holidays_are_excluded_from_spreadsheet_and_reports(): void
+    {
+        $year = (int) date('Y');
+        \App\Models\Setting::set("national_holidays_{$year}", json_encode([
+            "{$year}-08-17",
+            "{$year}-08-20",
+        ]));
+
+        $holidays = \App\Models\Setting::getNationalHolidays($year);
+        $this->assertContains("{$year}-08-17", $holidays);
+        $this->assertContains("{$year}-08-20", $holidays);
+
+        // Create a student in the classroom to bypass empty student abort check
+        $student = Student::create([
+            'class_room_id' => $this->classRoom->id,
+            'name' => 'Santri Coba',
+            'nis' => '12345',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
+            'class_room_id' => $this->classRoom->id,
+            'month' => "{$year}-08",
+        ]));
+        $response->assertStatus(200);
+        $response->assertViewHas('dates');
+        
+        $dates = $response->viewData('dates');
+        $this->assertNotContains("{$year}-08-17", $dates);
+        $this->assertNotContains("{$year}-08-20", $dates);
+    }
 }
