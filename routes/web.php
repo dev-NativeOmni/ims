@@ -150,6 +150,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('class-rooms', ClassRoomController::class);
         Route::get('class-schedules', [ClassRoomController::class, 'scheduleIndex'])->name('class-schedules.index');
         Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
+        Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
+        Route::post('academic-calendar/update', [SettingController::class, 'calendarUpdate'])->name('academic-calendar.update');
 
         // Teachers
         Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

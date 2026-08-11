@@ -142,31 +142,6 @@
                                 class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 file:cursor-pointer hover:file:bg-indigo-100 dark:file:bg-zinc-800 dark:file:text-zinc-200"
                             />
                         </div>
-                    <hr class="border-gray-200 dark:border-zinc-800" />
-
-                    <!-- Hari Libur & Tanggal Merah -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-2">
-                            <label for="holidays" class="block text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                                Hari Libur / Acara Sekolah
-                            </label>
-                            <p class="text-xs text-gray-500 dark:text-zinc-500">
-                                Tentukan tanggal-tanggal tidak efektif (tanggal merah, libur khusus, atau acara sekolah) untuk menyembunyikannya dari spreadsheet dan menyesuaikan target hafalan.
-                            </p>
-                            <p class="text-xs text-gray-400 dark:text-zinc-500 font-semibold">
-                                Format: YYYY-MM-DD (Satu tanggal per baris).
-                            </p>
-                        </div>
-                        <div class="md:col-span-2 space-y-2">
-                            <textarea
-                                name="holidays"
-                                id="holidays"
-                                rows="6"
-                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm font-mono"
-                                placeholder="Contoh:&#10;2026-08-17&#10;2026-08-20"
-                            >{{ old('holidays', $holidaysText) }}</textarea>
-                        </div>
-                    </div>
 
                     <!-- Actions -->
                     <div class="pt-4 border-t border-gray-200 dark:border-zinc-800 flex justify-end gap-3">

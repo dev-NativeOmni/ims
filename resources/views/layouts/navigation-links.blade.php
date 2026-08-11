@@ -95,6 +95,15 @@
             </a>
         @endif
 
+        @if ($hasRoute('academic-calendar.index'))
+            <a href="{{ route('academic-calendar.index') }}" class="{{ $getLinkClasses($routeIs('academic-calendar.*')) }}">
+                <svg class="{{ $getIconClasses($routeIs('academic-calendar.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Kalender Akademik</span>
+            </a>
+        @endif
+
         @if ($hasRoute('teachers.index'))
             <a href="{{ route('teachers.index') }}" class="{{ $getLinkClasses($routeIs('teachers.*')) }}">
                 <svg class="{{ $getIconClasses($routeIs('teachers.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">

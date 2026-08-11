@@ -14,7 +14,6 @@ class SettingController extends Controller
             'logo' => Setting::get('logo'),
             'nama_instansi' => Setting::get('nama_instansi'),
             'login_bg' => Setting::get('login_bg'),
-            'holidaysText' => implode("\n", Setting::getNationalHolidays((int)date('Y'))),
         ]);
     }
 
@@ -24,7 +23,6 @@ class SettingController extends Controller
             'logo' => 'nullable|image|max:2048',
             'nama_instansi' => 'nullable|string|max:255',
             'login_bg' => 'nullable|image|max:5120',
-            'holidays' => 'nullable|string',
         ]);
 
         if ($request->boolean('reset_logo')) {
@@ -59,35 +57,6 @@ class SettingController extends Controller
             }
             $path = $request->file('login_bg')->store('settings', 'public');
             Setting::set('login_bg', $path);
-        }
-
-        if ($request->has('holidays')) {
-            $lines = explode("\n", str_replace("\r", "", $request->input('holidays', '')));
-            $dates = [];
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if ($line === '') {
-                    continue;
-                }
-                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $line)) {
-                    $dates[] = $line;
-                }
-            }
-            
-            $groupedByYear = [];
-            foreach ($dates as $date) {
-                $year = (int) date('Y', strtotime($date));
-                $groupedByYear[$year][] = $date;
-            }
-            
-            $currentYear = (int) date('Y');
-            if (!isset($groupedByYear[$currentYear])) {
-                $groupedByYear[$currentYear] = [];
-            }
-            
-            foreach ($groupedByYear as $year => $yearDates) {
-                Setting::set("national_holidays_{$year}", json_encode(array_values(array_unique($yearDates))));
-            }
         }
 
         return redirect()->route('settings.index')->with('success', 'Pengaturan berhasil diperbarui.');
@@ -136,5 +105,73 @@ class SettingController extends Controller
 
         return redirect()->route('settings.adab')
             ->with('success', 'Daftar pertanyaan kuisioner adab berhasil diperbarui.');
+    }
+
+    public function calendarIndex(Request $request)
+    {
+        $year = $request->integer('year', (int)date('Y'));
+        $month = $request->integer('month', (int)date('m'));
+
+        $startDate = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $startDayOfWeek = $startDate->dayOfWeekIso;
+        $endDayOfWeek = $endDate->dayOfWeekIso;
+
+        $gridDates = [];
+
+        // Previous month padding
+        for ($i = $startDayOfWeek - 1; $i > 0; $i--) {
+            $gridDates[] = [
+                'date' => $startDate->copy()->subDays($i),
+                'isCurrentMonth' => false,
+            ];
+        }
+
+        // Current month days
+        $current = $startDate->copy();
+        while ($current->lte($endDate)) {
+            $gridDates[] = [
+                'date' => $current->copy(),
+                'isCurrentMonth' => true,
+            ];
+            $current->addDay();
+        }
+
+        // Next month padding
+        $paddingCount = 7 - $endDayOfWeek;
+        for ($i = 0; $i < $paddingCount; $i++) {
+            $gridDates[] = [
+                'date' => $endDate->copy()->addDays($i + 1),
+                'isCurrentMonth' => false,
+            ];
+        }
+
+        $holidays = Setting::getNationalHolidays($year);
+
+        return view('settings.calendar', compact('gridDates', 'year', 'month', 'holidays'));
+    }
+
+    public function calendarUpdate(Request $request)
+    {
+        $year = $request->integer('year', (int)date('Y'));
+        $month = $request->integer('month', (int)date('m'));
+        $submittedHolidays = $request->input('holidays', []);
+
+        $existingHolidays = Setting::getNationalHolidays($year);
+
+        $monthPrefix = sprintf('%04d-%02d-', $year, $month);
+        $otherMonthsHolidays = array_filter($existingHolidays, function ($date) use ($monthPrefix) {
+            return strpos($date, $monthPrefix) !== 0;
+        });
+
+        $allHolidays = array_merge($otherMonthsHolidays, $submittedHolidays);
+        sort($allHolidays);
+
+        Setting::set("national_holidays_{$year}", json_encode(array_values(array_unique($allHolidays))));
+
+        return redirect()
+            ->route('academic-calendar.index', ['year' => $year, 'month' => $month])
+            ->with('success', 'Kalender akademik berhasil diperbarui.');
     }
 }
