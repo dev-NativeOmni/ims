@@ -251,6 +251,197 @@
                 'motivation' => $motivation ?? [],
             ])
 
+            <!-- Tren Hafalan Card (Opsi 3) -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            📈 Tren Perkembangan Hafalan
+                        </h3>
+                        <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
+                            Grafik performa hafalan bulanan dan pertumbuhan akumulasi baris hafalan santri dalam 12 bulan terakhir.
+                        </p>
+                    </div>
+                    @if ($mostActiveMonthLabel)
+                        <div class="bg-indigo-50 dark:bg-indigo-955/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl px-4 py-2 text-xs text-indigo-700 dark:text-indigo-400 font-semibold self-start md:self-auto">
+                            🔥 Bulan Teraktif: <span class="font-black">{{ $mostActiveMonthLabel }}</span> ({{ number_format($maxLines, 1) }} baris)
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Chart Container -->
+                <div class="relative h-[320px] w-full">
+                    <canvas id="studentTrendChart"></canvas>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const ctx = document.getElementById('studentTrendChart').getContext('2d');
+                    
+                    const activeTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                    
+                    const monthlyBgGradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    monthlyBgGradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+                    monthlyBgGradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+                    
+                    const cumulativeBgGradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    cumulativeBgGradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)');
+                    cumulativeBgGradient.addColorStop(1, 'rgba(79, 70, 229, 0.02)');
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: {!! json_encode($chartLabels) !!},
+                            datasets: [
+                                {
+                                    label: 'Setoran Bulanan (Baris)',
+                                    data: {!! json_encode($monthlyValues) !!},
+                                    backgroundColor: monthlyBgGradient,
+                                    borderColor: 'rgb(16, 185, 129)',
+                                    borderWidth: 2.5,
+                                    borderRadius: 8,
+                                    yAxisID: 'yMonthly',
+                                    type: 'bar',
+                                    order: 2
+                                },
+                                {
+                                    label: 'Total Akumulasi (Baris)',
+                                    data: {!! json_encode($cumulativeValues) !!},
+                                    backgroundColor: cumulativeBgGradient,
+                                    borderColor: 'rgb(79, 70, 229)',
+                                    borderWidth: 3.5,
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointBackgroundColor: 'rgb(79, 70, 229)',
+                                    pointBorderColor: '#ffffff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    yAxisID: 'yCumulative',
+                                    type: 'line',
+                                    order: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        boxWidth: 12,
+                                        boxHeight: 12,
+                                        usePointStyle: true,
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 11,
+                                            weight: '600'
+                                        },
+                                        color: activeTheme === 'dark' ? '#d4d4d8' : '#3f3f46'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: activeTheme === 'dark' ? '#18181b' : '#ffffff',
+                                    titleColor: activeTheme === 'dark' ? '#ffffff' : '#18181b',
+                                    bodyColor: activeTheme === 'dark' ? '#d4d4d8' : '#3f3f46',
+                                    borderColor: activeTheme === 'dark' ? '#27272a' : '#e4e4e7',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    cornerRadius: 12,
+                                    titleFont: {
+                                        weight: 'bold',
+                                        family: 'Inter, sans-serif'
+                                    },
+                                    bodyFont: {
+                                        family: 'Inter, sans-serif'
+                                    },
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y + ' baris';
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 10,
+                                            weight: '500'
+                                        }
+                                    }
+                                },
+                                yMonthly: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Setoran Bulanan (Baris)',
+                                        color: 'rgb(16, 185, 129)',
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 11,
+                                            weight: 'bold'
+                                        }
+                                    },
+                                    grid: {
+                                        color: activeTheme === 'dark' ? 'rgba(39, 39, 42, 0.5)' : 'rgba(228, 228, 231, 0.5)'
+                                    },
+                                    ticks: {
+                                        color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 10
+                                        }
+                                    },
+                                    min: 0
+                                },
+                                yCumulative: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Total Akumulasi (Baris)',
+                                        color: 'rgb(79, 70, 229)',
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 11,
+                                            weight: 'bold'
+                                        }
+                                    },
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 10
+                                        }
+                                    },
+                                    min: 0
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-2">
                     <div class="flex flex-col gap-2 border-b border-gray-100 pb-4 sm:flex-row sm:items-start sm:justify-between">

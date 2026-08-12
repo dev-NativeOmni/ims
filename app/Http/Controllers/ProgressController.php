@@ -171,6 +171,79 @@ class ProgressController extends Controller
             ->paginate(20, ['*'], 'target_page')
             ->withQueryString();
 
+        // Trend Hafalan 12 Bulan Terakhir
+        $months = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $months[] = Carbon::now()->subMonths($i)->format('Y-m');
+        }
+
+        $allPassedRecords = HafalanRecord::query()
+            ->with('surah')
+            ->where('student_id', $student->id)
+            ->where('status', 'passed')
+            ->get();
+
+        $monthlyData = [];
+        foreach ($months as $m) {
+            $monthlyData[$m] = 0.0;
+        }
+
+        foreach ($allPassedRecords as $rec) {
+            $recMonth = $rec->submitted_at
+                ? $rec->submitted_at->format('Y-m')
+                : $rec->created_at->format('Y-m');
+
+            $lines = (float) $rec->lines_count;
+
+            if (isset($monthlyData[$recMonth])) {
+                $monthlyData[$recMonth] += $lines;
+            }
+        }
+
+        $tempCumulative = 0.0;
+        $firstMonth = $months[0];
+        foreach ($allPassedRecords as $rec) {
+            $recMonth = $rec->submitted_at
+                ? $rec->submitted_at->format('Y-m')
+                : $rec->created_at->format('Y-m');
+            
+            if ($recMonth < $firstMonth) {
+                $tempCumulative += (float) $rec->lines_count;
+            }
+        }
+
+        $chartLabels = [];
+        $monthlyValues = [];
+        $cumulativeValues = [];
+
+        $indonesianMonths = [
+            '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', '04' => 'Apr',
+            '05' => 'Mei', '06' => 'Jun', '07' => 'Jul', '08' => 'Agt',
+            '09' => 'Sep', '10' => 'Okt', '11' => 'Nov', '12' => 'Des'
+        ];
+
+        $mostActiveMonth = '';
+        $maxLines = 0.0;
+        foreach ($monthlyData as $m => $lines) {
+            if ($lines > $maxLines) {
+                $maxLines = $lines;
+                $mostActiveMonth = $m;
+            }
+        }
+        $mostActiveMonthLabel = '';
+        if ($maxLines > 0) {
+            [$y, $mon] = explode('-', $mostActiveMonth);
+            $mostActiveMonthLabel = $indonesianMonths[$mon] . ' ' . $y;
+        }
+
+        foreach ($months as $m) {
+            [$y, $mon] = explode('-', $m);
+            $chartLabels[] = $indonesianMonths[$mon] . ' ' . $y;
+            $tempCumulative += $monthlyData[$m];
+            $monthlyValues[] = round($monthlyData[$m], 1);
+            $cumulativeValues[] = round($tempCumulative, 1);
+        }
+
         return view('progress.show', compact(
             'student',
             'progress',
@@ -179,7 +252,12 @@ class ProgressController extends Controller
             'timelineRows',
             'hafalanRecords',
             'murajaahRecords',
-            'targets'
+            'targets',
+            'chartLabels',
+            'monthlyValues',
+            'cumulativeValues',
+            'mostActiveMonthLabel',
+            'maxLines'
         ));
     }
 

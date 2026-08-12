@@ -6,7 +6,7 @@
                     Jadwal Pelajaran Tahfizh Kelas
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-zinc-400">
-                    Tentukan hari aktif pelajaran tahfizh untuk masing-masing kelas dengan mengubah pilihan Aktif/Off pada kolom hari di bawah.
+                    Tentukan hari aktif pelajaran tahfizh untuk masing-masing kelas dengan mengubah pilihan Aktif/Non Aktif pada kolom hari di bawah.
                 </p>
             </div>
             <div>
@@ -32,64 +32,91 @@
             <form id="schedules-form" method="POST" action="{{ route('class-schedules.update') }}">
                 @csrf
 
-                <!-- Kanban Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-7 gap-4 overflow-x-auto pb-4">
+                <!-- Vertical Stack of Days -->
+                <div class="space-y-6">
                     @foreach ($daysOfWeek as $dayNum => $dayName)
                         @php
                             $dayData = $scheduleBoard[$dayNum];
                             $activeClassesCount = count($dayData['classRooms']);
-                        @endphp
-                        <div class="bg-gray-50 dark:bg-zinc-900/60 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 flex flex-col min-w-[280px] md:min-w-[170px] shadow-sm">
                             
-                            <!-- Column Header -->
-                            <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-2 mb-3">
-                                <h3 class="font-extrabold text-sm text-gray-800 dark:text-zinc-200 uppercase tracking-wider">
-                                    {{ $dayName }}
+                            $kelas10 = $classRooms->filter(fn($c) => preg_match('/^X\b/i', $c->name));
+                            $kelas11 = $classRooms->filter(fn($c) => preg_match('/^XI\b/i', $c->name));
+                            $kelas12 = $classRooms->filter(fn($c) => preg_match('/^XII\b/i', $c->name));
+                        @endphp
+                        
+                        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-xs space-y-5">
+                            
+                            <!-- Day Header -->
+                            <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-3">
+                                <h3 class="font-extrabold text-base text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                                    📅 {{ $dayName }}
                                 </h3>
-                                <span class="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 text-xs px-2 py-0.5 rounded-full font-bold">
-                                    {{ $activeClassesCount }} Aktif
+                                <span class="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-750 dark:text-indigo-450 text-xs px-3 py-1 rounded-full font-extrabold">
+                                    {{ $activeClassesCount }} Kelas Aktif
                                 </span>
                             </div>
 
-                            <!-- Cards Container (All Classes List) -->
-                            <div class="space-y-3">
-                                @foreach ($classRooms as $class)
-                                    @php
-                                        $isActive = in_array($dayNum, $class->tahfizh_days, true);
-                                    @endphp
-                                    <div x-data="{ status: '{{ $isActive ? '1' : '0' }}' }" class="bg-white dark:bg-zinc-850 border border-gray-150 dark:border-zinc-800 rounded-xl p-3 shadow-xs transition duration-150 hover:shadow-sm">
-                                        <div class="flex flex-col gap-2">
-                                            <div>
-                                                <div class="font-bold text-xs text-gray-900 dark:text-white leading-tight">
-                                                    {{ $class->name }}
-                                                </div>
-                                                <div class="text-[9px] text-gray-450 dark:text-zinc-500 uppercase tracking-wide font-medium mt-0.5">
-                                                    {{ $class->program?->name }}
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Choice: Aktif vs Off (Radio Button Group) -->
-                                            <div class="flex items-center bg-gray-100 dark:bg-zinc-800/80 rounded-lg p-0.5 border border-gray-200/50 dark:border-zinc-700 w-full justify-between">
-                                                <!-- Aktif Option -->
-                                                <label class="flex-1 cursor-pointer select-none">
-                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="1" x-model="status" class="sr-only">
-                                                    <span :class="status === '1' ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700'" class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150">
-                                                        Aktif
-                                                    </span>
-                                                </label>
-                                                <!-- Off Option -->
-                                                <label class="flex-1 cursor-pointer select-none">
-                                                    <input type="radio" name="schedules[{{ $dayNum }}][{{ $class->id }}]" value="0" x-model="status" class="sr-only">
-                                                    <span :class="status === '0' ? 'bg-rose-600 text-white shadow-xs' : 'text-gray-450 dark:text-zinc-500 hover:text-gray-700'" class="text-center py-1 rounded-md text-[9px] font-extrabold block transition duration-150">
-                                                        Off
-                                                    </span>
-                                                </label>
-                                            </div>
+                            <!-- Group Rows by Grade -->
+                            <div class="space-y-5 divide-y divide-gray-100 dark:divide-zinc-800/60">
+                                
+                                <!-- Kelas 10 Row -->
+                                @if ($kelas10->isNotEmpty())
+                                    <div class="flex flex-col md:flex-row md:items-center gap-4 pt-4 first:pt-0">
+                                        <div class="md:w-28 shrink-0">
+                                            <span class="bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 text-xs px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider block text-center md:text-left">
+                                                Kelas 10
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-3">
+                                            @foreach ($kelas10 as $class)
+                                                @php
+                                                    $isActive = in_array($dayNum, $class->tahfizh_days, true);
+                                                @endphp
+                                                @include('class-rooms.partials.schedule-card', ['class' => $class, 'dayNum' => $dayNum, 'isActive' => $isActive])
+                                            @endforeach
                                         </div>
                                     </div>
-                                @endforeach
-                            </div>
+                                @endif
 
+                                <!-- Kelas 11 Row -->
+                                @if ($kelas11->isNotEmpty())
+                                    <div class="flex flex-col md:flex-row md:items-center gap-4 pt-4">
+                                        <div class="md:w-28 shrink-0">
+                                            <span class="bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 text-xs px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider block text-center md:text-left">
+                                                Kelas 11
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-3">
+                                            @foreach ($kelas11 as $class)
+                                                @php
+                                                    $isActive = in_array($dayNum, $class->tahfizh_days, true);
+                                                @endphp
+                                                @include('class-rooms.partials.schedule-card', ['class' => $class, 'dayNum' => $dayNum, 'isActive' => $isActive])
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Kelas 12 Row -->
+                                @if ($kelas12->isNotEmpty())
+                                    <div class="flex flex-col md:flex-row md:items-center gap-4 pt-4">
+                                        <div class="md:w-28 shrink-0">
+                                            <span class="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 text-xs px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider block text-center md:text-left">
+                                                Kelas 12
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-3">
+                                            @foreach ($kelas12 as $class)
+                                                @php
+                                                    $isActive = in_array($dayNum, $class->tahfizh_days, true);
+                                                @endphp
+                                                @include('class-rooms.partials.schedule-card', ['class' => $class, 'dayNum' => $dayNum, 'isActive' => $isActive])
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                            </div>
                         </div>
                     @endforeach
                 </div>

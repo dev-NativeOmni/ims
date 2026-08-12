@@ -259,4 +259,75 @@ class SpreadsheetInputTest extends TestCase
         $this->assertEquals('Pekan 1', $columns[0]['label']);
         $this->assertEquals('03/08 - 07/08', $columns[0]['sub_label']);
     }
+
+    #[Test]
+    public function teacher_saving_multiple_times_does_not_duplicate_records(): void
+    {
+        $classRoom = $this->student->classRoom;
+        $date = '2026-08-03';
+
+        // 1. First Save (new record)
+        $payload1 = [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-08',
+            'type' => 'hafalan',
+            'records' => [
+                $this->student->id => [
+                    'dates' => [
+                        $date => [
+                            'attendance' => 'hadir',
+                            'hafalans' => [
+                                [
+                                    'id' => null,
+                                    'surah_id' => $this->surah->id,
+                                    'ayah_start' => 1,
+                                    'ayah_end' => 5,
+                                    'score' => '95',
+                                    'status' => 'passed',
+                                    'submission_type' => 'new',
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), $payload1);
+
+        $this->assertEquals(1, HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date . ' 00:00:00')->count());
+        $record = HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date . ' 00:00:00')->first();
+
+        // 2. Second Save (submit with the created record ID)
+        $payload2 = [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-08',
+            'type' => 'hafalan',
+            'records' => [
+                $this->student->id => [
+                    'dates' => [
+                        $date => [
+                            'attendance' => 'hadir',
+                            'hafalans' => [
+                                [
+                                    'id' => $record->id,
+                                    'surah_id' => $this->surah->id,
+                                    'ayah_start' => 1,
+                                    'ayah_end' => 5,
+                                    'score' => '95',
+                                    'status' => 'passed',
+                                    'submission_type' => 'new',
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), $payload2);
+
+        // Assert record count is still 1 (no duplicates!)
+        $this->assertEquals(1, HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date . ' 00:00:00')->count());
+    }
 }
