@@ -162,9 +162,39 @@ class AdabController extends Controller
 
         $classRooms = $classRoomsQuery->get();
 
+        $allStudentsInScope = $classRooms->flatMap(fn ($c) => $c->students);
+        $totalScopeStudents = $allStudentsInScope->count();
+        $studentIds = $allStudentsInScope->pluck('id')->toArray();
+
+        // Fetch national holidays for this year once
+        $holidays = Setting::getNationalHolidays($year);
+
+        // Fetch effective days count for the selected month
         $effectiveDaysTotal = Setting::getEffectiveDaysCount($year, $month);
 
-        $classReport = $classRooms->map(function ($classRoom) use ($year, $month, $effectiveDaysTotal) {
+        // Fetch all AdabRecord for the selected month in one query
+        $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->toDateString();
+        $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+        $adabRecordsThisMonth = \App\Models\AdabRecord::whereIn('student_id', $studentIds)
+            ->whereBetween('assessment_date', [$startDate, $endDate])
+            ->get()
+            ->groupBy('student_id');
+
+        // Fetch all mentor assessments for the selected month in one query
+        $mentorAssessmentsThisMonth = \App\Models\AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->get()
+            ->keyBy('student_id');
+
+        // Fetch latest mentor assessments for fallback
+        $fallbackAssessments = \App\Models\AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->orderByDesc('year')
+            ->orderByDesc('month')
+            ->get()
+            ->groupBy('student_id');
+
+        $classReport = $classRooms->map(function ($classRoom) use ($year, $month, $effectiveDaysTotal, $holidays, $adabRecordsThisMonth, $mentorAssessmentsThisMonth, $fallbackAssessments) {
             $students = $classRoom->students;
             $totalStudents = $students->count();
 
@@ -183,19 +213,46 @@ class AdabController extends Controller
             $totalFilledDaysSum = 0;
 
             foreach ($students as $student) {
-                $det = Setting::getStudentAdabAttendanceDetails($student->id, $year, $month);
-                $adabScore = Setting::calculateAdabScore($student->id, $year, $month);
+                // Calculate effective days filled in memory
+                $studentRecs = $adabRecordsThisMonth->get($student->id, collect());
+                $filledDates = $studentRecs->pluck('assessment_date')->unique();
+                $effectiveDaysFilled = 0;
+                foreach ($filledDates as $dateStr) {
+                    $cDate = \Carbon\Carbon::parse($dateStr);
+                    // Inline Check: isEffectiveAdabDay
+                    $dayIso = $cDate->dayOfWeekIso;
+                    if ($dayIso >= 2 && $dayIso <= 5 && ! in_array($dateStr, $holidays, true)) {
+                        $effectiveDaysFilled++;
+                    }
+                }
+                $attendanceRate = round(($effectiveDaysFilled / $effectiveDaysTotal) * 100, 1);
+                $attendanceRate = min(100.0, $attendanceRate);
+
+                // Mentor Score in memory
+                $mentorAssessment = $mentorAssessmentsThisMonth->get($student->id);
+                if (! $mentorAssessment) {
+                    $studentFallbacks = $fallbackAssessments->get($student->id);
+                    $mentorAssessment = $studentFallbacks ? $studentFallbacks->first() : null;
+                }
+                $mentorScore = $mentorAssessment ? (float) $mentorAssessment->mentor_score : null;
+
+                if ($mentorScore !== null) {
+                    $finalScore = round(($attendanceRate * 0.40) + ($mentorScore * 0.60), 1);
+                } else {
+                    $finalScore = $attendanceRate;
+                }
+                $grade = Setting::getAdabGrade($finalScore);
 
                 $studentsDetail[] = [
                     'student' => $student,
-                    'filled_days' => $det['effective_days_filled'],
-                    'attendance_rate' => $det['attendance_rate'],
-                    'final_score' => $adabScore['final_score'],
-                    'grade' => $adabScore['grade'],
+                    'filled_days' => $effectiveDaysFilled,
+                    'attendance_rate' => $attendanceRate,
+                    'final_score' => $finalScore,
+                    'grade' => $grade,
                 ];
 
-                $totalAttendanceRateSum += $det['attendance_rate'];
-                $totalFilledDaysSum += $det['effective_days_filled'];
+                $totalAttendanceRateSum += $attendanceRate;
+                $totalFilledDaysSum += $effectiveDaysFilled;
             }
 
             $avgAttendanceRate = round($totalAttendanceRateSum / $totalStudents, 1);
@@ -222,9 +279,23 @@ class AdabController extends Controller
             10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
 
-        // 12-Month Historical Trend for progress comparison
-        $allStudentsInScope = $classRooms->flatMap(fn ($c) => $c->students);
-        $totalScopeStudents = $allStudentsInScope->count();
+        // ─── OPTIMIZED 12-Month Historical Trend ───
+        // Precalculate effective days for all 12 months
+        $effectiveDaysByMonth = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $effectiveDaysByMonth[$m] = Setting::getEffectiveDaysCount($year, $m);
+        }
+
+        // Fetch all AdabRecords for this entire year for all students in scope in ONE query
+        $startOfYear = \Carbon\Carbon::createFromDate($year, 1, 1)->toDateString();
+        $endOfYear = \Carbon\Carbon::createFromDate($year, 12, 31)->toDateString();
+        $allYearRecords = \App\Models\AdabRecord::whereIn('student_id', $studentIds)
+            ->whereBetween('assessment_date', [$startOfYear, $endOfYear])
+            ->get()
+            ->groupBy(function ($rec) {
+                $m = (int) \Carbon\Carbon::parse($rec->assessment_date)->format('n');
+                return $rec->student_id . '-' . $m;
+            });
 
         $monthlyTrends = [];
         for ($m = 1; $m <= 12; $m++) {
@@ -238,9 +309,22 @@ class AdabController extends Controller
             }
 
             $rateSum = 0;
+            $effDaysMonth = $effectiveDaysByMonth[$m];
+
             foreach ($allStudentsInScope as $st) {
-                $det = Setting::getStudentAdabAttendanceDetails($st->id, $year, $m);
-                $rateSum += $det['attendance_rate'];
+                // Get pre-grouped records from memory
+                $studentMonthRecords = $allYearRecords->get($st->id . '-' . $m, collect());
+                $filledDates = $studentMonthRecords->pluck('assessment_date')->unique();
+                $effectiveDaysFilled = 0;
+                foreach ($filledDates as $dateStr) {
+                    $cDate = \Carbon\Carbon::parse($dateStr);
+                    $dayIso = $cDate->dayOfWeekIso;
+                    if ($dayIso >= 2 && $dayIso <= 5 && ! in_array($dateStr, $holidays, true)) {
+                        $effectiveDaysFilled++;
+                    }
+                }
+                $attendanceRate = round(($effectiveDaysFilled / $effDaysMonth) * 100, 1);
+                $rateSum += min(100.0, $attendanceRate);
             }
             $avgMonthRate = round($rateSum / $totalScopeStudents, 1);
 
