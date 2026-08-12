@@ -889,6 +889,40 @@ class ReportController extends Controller
         $tuntasCount = 0;
         $tidakTuntasCount = 0;
 
+        // Bulk fetch latest targets for all students in scope
+        $allLatestTargets = HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('target_date', '<=', $endDate)
+            ->orderBy('target_date', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
+        // Bulk fetch latest passed hafalan records for all students in scope
+        $allPassedHafalan = HafalanRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'passed')
+            ->where('submitted_at', '<=', $endDate)
+            ->orderBy('submitted_at', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
+        // Bulk fetch violations for all students in scope
+        $allViolations = StudentPoint::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('type', 'violation')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get()
+            ->groupBy('student_id');
+
+        // Bulk fetch attendances for all students in scope
+        $allAttendances = \App\Models\Attendance::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get()
+            ->groupBy('student_id');
+
         foreach ($students as $student) {
             $studentHafalan = $hafalanRecords->where('student_id', $student->id);
             $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
@@ -942,47 +976,26 @@ class ReportController extends Controller
             }
 
             // Target Surah and Ayat (latest target_date <= $endDate)
-            $latestTarget = HafalanTarget::query()
-                ->with('surah')
-                ->where('student_id', $student->id)
-                ->where('target_date', '<=', $endDate)
-                ->orderBy('target_date', 'desc')
-                ->first();
+            $latestTarget = $allLatestTargets->get($student->id, collect())->first();
 
             $targetSurah = $latestTarget?->surah?->name_latin ?? '-';
             $targetAyat = $latestTarget?->ayah_end ?? '-';
 
             // Capaian Surah and Ayat (latest passed setoran submitted_at <= $endDate)
-            $latestHafalanPassed = HafalanRecord::query()
-                ->with('surah')
-                ->where('student_id', $student->id)
-                ->where('status', 'passed')
-                ->where('submitted_at', '<=', $endDate)
-                ->orderBy('submitted_at', 'desc')
-                ->first();
+            $latestHafalanPassed = $allPassedHafalan->get($student->id, collect())->first();
 
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
             // Violations count during the period
-            $violationsCount = StudentPoint::query()
-                ->where('student_id', $student->id)
-                ->where('type', 'violation')
-                ->whereBetween('date', [$startDate, $endDate])
-                ->count();
+            $violationsCount = $allViolations->get($student->id, collect())->count();
 
             // Attendance counts during the period
-            $attendanceCounts = Attendance::query()
-                ->where('student_id', $student->id)
-                ->whereBetween('tanggal', [$startDate, $endDate])
-                ->selectRaw("status, count(*) as count")
-                ->groupBy('status')
-                ->pluck('count', 'status');
-
-            $sakit = $attendanceCounts->get('sakit', 0);
-            $izin = $attendanceCounts->get('izin', 0);
-            $alpa = $attendanceCounts->get('alpa', 0);
-            $hadir = $attendanceCounts->get('hadir', 0);
+            $stAttendances = $allAttendances->get($student->id, collect());
+            $sakit = $stAttendances->where('status', 'sakit')->count();
+            $izin = $stAttendances->where('status', 'izin')->count();
+            $alpa = $stAttendances->where('status', 'alpa')->count();
+            $hadir = $stAttendances->where('status', 'hadir')->count();
 
             $studentReports[] = [
                 'student' => $student,

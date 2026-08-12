@@ -247,16 +247,25 @@ class StudentPointController extends Controller
 
         $classRooms = $classRoomsQuery->get();
 
-        $violationsQuery = StudentPoint::violations()
+        $allStudentsInScope = $classRooms->flatMap(fn ($c) => $c->students);
+        $studentIds = $allStudentsInScope->pluck('id')->toArray();
+
+        // ─── Violations for selected month ───
+        $monthViolations = StudentPoint::violations()
+            ->whereIn('student_id', $studentIds)
             ->whereYear('date', $year)
-            ->whereMonth('date', $month);
+            ->whereMonth('date', $month)
+            ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
+            ->get();
 
-        if ($classRoomId) {
-            $violationsQuery->whereHas('student', fn ($q) => $q->where('class_room_id', $classRoomId));
-        }
+        $monthViolationsCount = $monthViolations->count();
+        $monthViolationsPoints = $monthViolations->sum('points');
 
-        $monthViolationsCount = (clone $violationsQuery)->count();
-        $monthViolationsPoints = (clone $violationsQuery)->sum('points');
+        $typeBreakdown = [
+            'lateness' => $monthViolations->where('type', 'lateness')->count(),
+            'attribute' => $monthViolations->where('type', 'attribute')->count(),
+            'violation' => $monthViolations->where('type', 'violation')->count(),
+        ];
 
         $monthsList = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
@@ -265,47 +274,35 @@ class StudentPointController extends Controller
             10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
 
+        // ─── Violations for entire year (1 Query) ───
+        $allYearViolations = StudentPoint::violations()
+            ->whereIn('student_id', $studentIds)
+            ->whereYear('date', $year)
+            ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
+            ->get();
+
+        $violationsByMonth = $allYearViolations->groupBy(fn ($item) => (int) \Carbon\Carbon::parse($item->date)->format('n'));
+
         $monthlyTrends = [];
         for ($m = 1; $m <= 12; $m++) {
-            $mCount = StudentPoint::violations()
-                ->whereYear('date', $year)
-                ->whereMonth('date', $m)
-                ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
-                ->count();
-
-            $mPoints = StudentPoint::violations()
-                ->whereYear('date', $year)
-                ->whereMonth('date', $m)
-                ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)))
-                ->sum('points');
-
+            $mViolations = $violationsByMonth->get($m, collect());
             $monthlyTrends[$m] = [
                 'month_name' => substr($monthsList[$m], 0, 3),
                 'full_month_name' => $monthsList[$m],
-                'count' => $mCount,
-                'points' => $mPoints,
+                'count' => $mViolations->count(),
+                'points' => $mViolations->sum('points'),
             ];
         }
 
-        $classReport = $classRooms->map(function ($classRoom) use ($year, $month) {
+        // Group month violations by student_id for fast lookup
+        $monthViolationsByStudent = $monthViolations->groupBy('student_id');
+
+        $classReport = $classRooms->map(function ($classRoom) use ($monthViolationsByStudent) {
             $students = $classRoom->students;
             $totalStudents = $students->count();
 
-            $classViolations = StudentPoint::violations()
-                ->whereHas('student', fn ($q) => $q->where('class_room_id', $classRoom->id))
-                ->whereYear('date', $year)
-                ->whereMonth('date', $month)
-                ->get();
-
-            $totalViolationCount = $classViolations->count();
-            $totalViolationPoints = $classViolations->sum('points');
-
-            $studentsDetail = $students->map(function ($student) use ($year, $month) {
-                $stViolations = StudentPoint::violations()
-                    ->where('student_id', $student->id)
-                    ->whereYear('date', $year)
-                    ->whereMonth('date', $month)
-                    ->get();
+            $studentsDetail = $students->map(function ($student) use ($monthViolationsByStudent) {
+                $stViolations = $monthViolationsByStudent->get($student->id, collect());
 
                 $vCount = $stViolations->count();
                 $vPoints = $stViolations->sum('points');
@@ -325,6 +322,9 @@ class StudentPointController extends Controller
                 ];
             })->sortByDesc('violation_points')->values()->all();
 
+            $totalViolationCount = collect($studentsDetail)->sum('violation_count');
+            $totalViolationPoints = collect($studentsDetail)->sum('violation_points');
+
             return [
                 'class_room' => $classRoom,
                 'total_students' => $totalStudents,
@@ -333,12 +333,6 @@ class StudentPointController extends Controller
                 'students_detail' => $studentsDetail,
             ];
         })->sortByDesc('violation_count')->values();
-
-        $typeBreakdown = [
-            'lateness' => (clone $violationsQuery)->where('type', 'lateness')->count(),
-            'attribute' => (clone $violationsQuery)->where('type', 'attribute')->count(),
-            'violation' => (clone $violationsQuery)->where('type', 'violation')->count(),
-        ];
 
         return view('student-points.chart', compact(
             'classReport', 'year', 'month', 'classRoomId',
