@@ -345,7 +345,7 @@ Route::middleware(['auth'])->group(function () {
     | Adab
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab'])->group(function () {
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster'])->group(function () {
         Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
         Route::get('/adab/chart', [AdabController::class, 'monthlyChart'])->name('adab.chart');
         Route::get('/adab/student/{student}', [AdabController::class, 'show'])->name('adab.show');
