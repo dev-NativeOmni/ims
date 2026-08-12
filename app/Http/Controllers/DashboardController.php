@@ -47,7 +47,7 @@ class DashboardController extends Controller
             'parent' => redirect()->route('parent.dashboard'),
             'student' => redirect()->route('student.dashboard'),
             'supervisor' => redirect()->route('supervisor.dashboard'),
-            'headmaster' => redirect()->route('reports.teachers'),
+            'headmaster' => redirect()->route('headmaster.dashboard'),
             'tanse' => redirect()->route('tanse.dashboard'),
             'coordinator_tahfizh' => redirect()->route('coordinator-tahfizh.dashboard'),
             'pendamping_adab' => redirect()->route('pendamping-adab.dashboard'),
@@ -246,5 +246,122 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboards.tanse', compact('stats', 'recentPoints'));
+    }
+
+    public function headmaster(Request $request): View
+    {
+        $year = (int) date('Y');
+        $month = (int) date('n');
+        $today = now()->toDateString();
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        // ─── Tahfizh Summary ───────────────────────────────────────────
+        try {
+            $hafalanThisMonth = HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])->count();
+            $hafalanToday     = HafalanRecord::whereDate('submitted_at', $today)->count();
+            $activeTargets    = HafalanTarget::where('status', 'in_progress')->count();
+            $completedTargets = HafalanTarget::where('status', 'completed')->count();
+            $totalTargets     = $activeTargets + $completedTargets;
+            $targetRate       = $totalTargets > 0 ? round(($completedTargets / $totalTargets) * 100, 1) : 0;
+
+            // Monthly hafalan per class-level (X, XI, XII)
+            $tahfizhByLevel = [
+                'X'   => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'X %')->where('name', 'not like', 'XI%'))->count(),
+                'XI'  => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'XI %')->where('name', 'not like', 'XII%'))->count(),
+                'XII' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'XII %'))->count(),
+            ];
+        } catch (\Throwable) {
+            $hafalanThisMonth = 0;
+            $hafalanToday     = 0;
+            $activeTargets    = 0;
+            $completedTargets = 0;
+            $targetRate       = 0;
+            $tahfizhByLevel   = ['X' => 0, 'XI' => 0, 'XII' => 0];
+        }
+
+        // ─── Adab (Keagamaan) Summary ──────────────────────────────────
+        try {
+            $totalStudents    = Student::where('status', 'active')->count();
+            $adabFilledToday  = AdabRecord::where('assessment_date', $today)->count();
+            $fillPercentage   = $totalStudents > 0 ? round(($adabFilledToday / $totalStudents) * 100, 1) : 0;
+
+            $students         = Student::where('status', 'active')->get();
+            $monthlyScores    = $students->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
+            $avgAdabScore     = $monthlyScores->isNotEmpty() ? round($monthlyScores->avg(), 1) : 0;
+            $adabGrade        = Setting::getAdabGrade($avgAdabScore);
+
+            // Adab per class-level
+            $classRooms = ClassRoom::with(['students' => fn ($q) => $q->where('status', 'active')])->get();
+            $adabByLevel = [
+                'X'   => 0, 'XI'  => 0, 'XII' => 0,
+                'X_total' => 0, 'XI_total' => 0, 'XII_total' => 0,
+            ];
+            foreach ($classRooms as $cr) {
+                if (preg_match('/^XII\b/i', $cr->name)) {
+                    $key = 'XII';
+                } elseif (preg_match('/^XI\b/i', $cr->name)) {
+                    $key = 'XI';
+                } elseif (preg_match('/^X\b/i', $cr->name)) {
+                    $key = 'X';
+                } else {
+                    continue;
+                }
+                foreach ($cr->students as $st) {
+                    $adabByLevel[$key] += Setting::calculateAdabScore($st->id, $year, $month)['final_score'];
+                    $adabByLevel[$key . '_total']++;
+                }
+            }
+            foreach (['X', 'XI', 'XII'] as $lv) {
+                $cnt = $adabByLevel[$lv . '_total'];
+                $adabByLevel[$lv] = $cnt > 0 ? round($adabByLevel[$lv] / $cnt, 1) : 0;
+            }
+        } catch (\Throwable) {
+            $totalStudents   = 0;
+            $adabFilledToday = 0;
+            $fillPercentage  = 0;
+            $avgAdabScore    = 0;
+            $adabGrade       = '-';
+            $adabByLevel     = ['X' => 0, 'XI' => 0, 'XII' => 0];
+        }
+
+        // ─── Tanse (Ketahanan Sekolah) Summary ─────────────────────────
+        try {
+            $violations = StudentPoint::where('type', '!=', 'reward')
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])->get();
+            $rewards    = StudentPoint::where('type', 'reward')
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])->count();
+
+            $tanseStats = [
+                'violations'       => $violations->count(),
+                'violation_points' => $violations->sum('points'),
+                'lateness'         => $violations->where('type', 'lateness')->count(),
+                'attribute'        => $violations->where('type', 'attribute')->count(),
+                'rewards'          => $rewards,
+            ];
+
+            // Tanse 6-month trend
+            $tanseTrend = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $m = now()->subMonths($i);
+                $tanseTrend[] = [
+                    'label'  => $m->format('M'),
+                    'points' => StudentPoint::where('type', '!=', 'reward')
+                        ->whereYear('date', $m->year)->whereMonth('date', $m->month)->sum('points'),
+                ];
+            }
+        } catch (\Throwable) {
+            $tanseStats = ['violations' => 0, 'violation_points' => 0, 'lateness' => 0, 'attribute' => 0, 'rewards' => 0];
+            $tanseTrend = [];
+        }
+
+        return view('dashboards.headmaster', compact(
+            'hafalanThisMonth', 'hafalanToday', 'activeTargets', 'completedTargets', 'targetRate', 'tahfizhByLevel',
+            'totalStudents', 'adabFilledToday', 'fillPercentage', 'avgAdabScore', 'adabGrade', 'adabByLevel',
+            'tanseStats', 'tanseTrend', 'year', 'month'
+        ));
     }
 }

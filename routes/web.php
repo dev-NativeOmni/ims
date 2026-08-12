@@ -90,6 +90,10 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:tanse,super_admin,admin')
         ->name('tanse.dashboard');
 
+    Route::get('/headmaster/dashboard', [DashboardController::class, 'headmaster'])
+        ->middleware('role:headmaster,super_admin,admin')
+        ->name('headmaster.dashboard');
+
     /*
     |--------------------------------------------------------------------------
     | System Notifications

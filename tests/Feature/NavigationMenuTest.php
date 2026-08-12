@@ -214,7 +214,7 @@ class NavigationMenuTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->actingAs($headmasterUser)->get(route('reports.teachers'));
+        $response = $this->actingAs($headmasterUser)->get(route('reports.periodic'));
 
         $response->assertStatus(200);
         // Should NOT see
@@ -226,18 +226,22 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('hafalan-records.index'));
         $response->assertDontSee(route('murajaah-records.index'));
         $response->assertDontSee(route('hafalan-targets.index'));
-        $response->assertDontSee(route('adab.index'));
+        $response->assertDontSee('href="' . route('adab.index') . '"');
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));
 
+        // Restricted for Headmaster
+        $response->assertDontSee('Mushaf Al-Qur\'an');
+        $response->assertDontSee('<span>Progress</span>');
+        $response->assertDontSee('Rapor Digital');
+        $response->assertDontSee('Kinerja Guru');
+        $response->assertDontSee('href="' . route('student-points.index') . '"');
+
         // Should see
-        $response->assertSee(route('quran.mushaf'));
-        $response->assertSee(route('progress.index'));
-        $response->assertSee(route('reports.index'));
-        $response->assertSee(route('digital-reports.index'));
-        $response->assertSee(route('reports.teachers'));
-        $response->assertSee(route('student-points.index'));
+        $response->assertSee(route('reports.periodic'));
+        $response->assertSee(route('adab.chart'));
+        $response->assertSee(route('student-points.chart'));
         $response->assertSee(route('system-notifications.index'));
     }
 
