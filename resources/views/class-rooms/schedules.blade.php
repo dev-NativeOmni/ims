@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ activeDay: '{{ array_key_first($daysOfWeek) }}' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Success Alert Notification -->
@@ -28,12 +28,24 @@
                 </div>
             @endif
 
+            <!-- Day Selector Tabs (Toggles) -->
+            <div class="flex flex-wrap gap-2 p-1.5 bg-gray-100 dark:bg-zinc-800 rounded-2xl border border-gray-255 dark:border-zinc-700 max-w-4xl shadow-xs">
+                @foreach ($daysOfWeek as $dayNum => $dayName)
+                    <button type="button" 
+                            @click="activeDay = '{{ $dayNum }}'" 
+                            :class="activeDay === '{{ $dayNum }}' ? 'bg-teal-600 text-white shadow-xs' : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 hover:bg-gray-200/50 dark:hover:bg-zinc-700/50'"
+                            class="flex-1 py-2 px-4 rounded-xl text-xs font-extrabold uppercase tracking-wider transition duration-150 cursor-pointer text-center select-none">
+                        {{ $dayName }}
+                    </button>
+                @endforeach
+            </div>
+
             <!-- Main Schedules Form -->
             <form id="schedules-form" method="POST" action="{{ route('class-schedules.update') }}">
                 @csrf
 
-                <!-- Vertical Stack of Days -->
-                <div class="space-y-6">
+                <!-- Day Cards Stack -->
+                <div>
                     @foreach ($daysOfWeek as $dayNum => $dayName)
                         @php
                             $dayData = $scheduleBoard[$dayNum];
@@ -44,14 +56,18 @@
                             $kelas12 = $classRooms->filter(fn($c) => preg_match('/^XII\b/i', $c->name));
                         @endphp
                         
-                        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-xs space-y-5">
+                        <div x-show="activeDay === '{{ $dayNum }}'" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform translate-y-1"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-xs space-y-5">
                             
                             <!-- Day Header -->
                             <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-3">
                                 <h3 class="font-extrabold text-base text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
                                     📅 {{ $dayName }}
                                 </h3>
-                                <span class="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-750 dark:text-indigo-450 text-xs px-3 py-1 rounded-full font-extrabold">
+                                <span class="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-750 dark:text-indigo-405 text-xs px-3 py-1 rounded-full font-extrabold">
                                     {{ $activeClassesCount }} Kelas Aktif
                                 </span>
                             </div>
@@ -67,7 +83,7 @@
                                                 Kelas 10
                                             </span>
                                         </div>
-                                        <div class="flex flex-wrap gap-3">
+                                        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-zinc-800 w-full">
                                             @foreach ($kelas10 as $class)
                                                 @php
                                                     $isActive = in_array($dayNum, $class->tahfizh_days, true);
@@ -86,7 +102,7 @@
                                                 Kelas 11
                                             </span>
                                         </div>
-                                        <div class="flex flex-wrap gap-3">
+                                        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-zinc-800 w-full">
                                             @foreach ($kelas11 as $class)
                                                 @php
                                                     $isActive = in_array($dayNum, $class->tahfizh_days, true);
@@ -105,7 +121,7 @@
                                                 Kelas 12
                                             </span>
                                         </div>
-                                        <div class="flex flex-wrap gap-3">
+                                        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-zinc-800 w-full">
                                             @foreach ($kelas12 as $class)
                                                 @php
                                                     $isActive = in_array($dayNum, $class->tahfizh_days, true);

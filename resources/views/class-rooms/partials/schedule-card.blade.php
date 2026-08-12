@@ -1,4 +1,4 @@
-<div x-data="{ status: '{{ $isActive ? '1' : '0' }}' }" class="bg-gray-50/50 dark:bg-zinc-850/30 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3 shadow-xs transition duration-150 hover:shadow-sm w-full md:w-[220px]">
+<div x-data="{ status: '{{ $isActive ? '1' : '0' }}' }" class="bg-gray-50/50 dark:bg-zinc-850/30 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3 shadow-xs transition duration-150 hover:shadow-sm w-[220px] shrink-0">
     <div class="flex flex-col gap-2">
         <div class="flex justify-between items-start">
             <div>
