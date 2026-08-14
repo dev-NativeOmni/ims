@@ -43,6 +43,120 @@
                     Profil murid belum terhubung dengan akun ini. Silakan hubungi Administrator untuk menghubungkan data murid Anda.
                 </div>
             @else
+                @php
+                    $isUmmi = data_get($progress, 'is_ummi_program', false);
+                    $statusColor = data_get($progress, 'status_color', 'emerald');
+                    $statusLabel = data_get($progress, 'status_label', 'On-Track / Tuntas');
+                    $statusIcon = data_get($progress, 'status_icon', '🟢');
+                @endphp
+
+                {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200 dark:border-zinc-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">{{ $isUmmi ? '📗' : '📘' }}</span>
+                            <div>
+                                <h3 class="text-lg font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+                                    <span>Target &amp; Capaian Program {{ $isUmmi ? 'Ummi (Kelas X)' : 'Reguler (Kelas XI / XII)' }}</span>
+                                </h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                    {{ $isUmmi ? 'Monitoring progres Tahsin Ummi, Halaman, dan Surah Hafalan' : 'Monitoring Target Baris Setoran & Ketercapaian Hafalan Periodik' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                            @if ($statusColor === 'emerald')
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                </span>
+                            @elseif ($statusColor === 'amber')
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if ($isUmmi)
+                        {{-- ─── PROGRAM UMMI UI (KELAS 10) ─── --}}
+                        <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-teal-100 dark:border-teal-900/40 bg-teal-50/40 dark:bg-teal-950/20 p-4">
+                                <p class="text-xs font-semibold text-teal-700 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
+                                <p class="text-2xl font-extrabold text-teal-900 dark:text-teal-100">{{ data_get($progress, 'ummi_jilid_str', 'Jilid 1') }}</p>
+                                <p class="text-xs text-teal-600 dark:text-teal-400 mt-0.5">Halaman {{ data_get($progress, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($progress, 'ummi_tatap_muka', '-') }}</p>
+                            </div>
+
+                            <div class="rounded-xl border border-cyan-100 dark:border-cyan-900/40 bg-cyan-50/40 dark:bg-cyan-950/20 p-4">
+                                <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Surah Ummi</p>
+                                <p class="text-lg font-bold text-cyan-900 dark:text-cyan-100">
+                                    {{ data_get($progress, 'ummi_target.surah.name_latin', 'Belum Ada Target') }}
+                                </p>
+                                <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
+                                    @if(data_get($progress, 'ummi_target'))
+                                        Ayat {{ data_get($progress, 'ummi_target.ayah_start') }} - {{ data_get($progress, 'ummi_target.ayah_end') }}
+                                    @else
+                                        Mengikuti alur Jilid Ummi
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
+                                <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
+                                <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">
+                                    {{ data_get($progress, 'ummi_munaqasyah_score') !== null ? number_format((float) data_get($progress, 'ummi_munaqasyah_score'), 1) : '-' }}
+                                </p>
+                                <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Evaluasi kelancaran &amp; tajwid</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3">
+                            <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                <span>Progress Ketercapaian Jilid Ummi</span>
+                                <span>{{ data_get($progress, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($progress, 'ummi_jilid_num', 1) }} / 6)</span>
+                            </div>
+                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                <div class="h-3 rounded-full bg-teal-600 transition-all duration-300" style="width: {{ data_get($progress, 'ummi_jilid_percent', 0) }}%"></div>
+                            </div>
+                        </div>
+                    @else
+                        {{-- ─── PROGRAM REGULER UI (KELAS 11 & 12) ─── --}}
+                        <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/40 dark:bg-indigo-950/20 p-4">
+                                <p class="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
+                                <p class="text-2xl font-extrabold text-indigo-900 dark:text-indigo-100">{{ data_get($progress, 'level_baris', 5) }} Baris / Hari</p>
+                                <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Level: {{ ucfirst(data_get($progress, 'tahfizh_level', 'reguler')) }}</p>
+                            </div>
+
+                            <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
+                                <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
+                                <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">{{ data_get($progress, 'capaian_baris_month', 0) }} / {{ data_get($progress, 'target_baris_month', 100) }} Baris</p>
+                                <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Ketercapaian: {{ data_get($progress, 'reguler_baris_percent', 0) }}%</p>
+                            </div>
+
+                            <div class="rounded-xl border border-purple-100 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/20 p-4">
+                                <p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Juz Lengkap</p>
+                                <p class="text-2xl font-extrabold text-purple-900 dark:text-purple-100">{{ data_get($progress, 'completed_juz_count', 0) }} Juz</p>
+                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">{{ data_get($progress, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3">
+                            <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                <span>Progress Ketercapaian Baris Setoran Bulan Ini</span>
+                                <span>{{ data_get($progress, 'reguler_baris_percent', 0) }}% ({{ data_get($progress, 'capaian_baris_month', 0) }} Baris)</span>
+                            </div>
+                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                <div class="h-3 rounded-full bg-emerald-600 transition-all duration-300" style="width: {{ data_get($progress, 'reguler_baris_percent', 0) }}%"></div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-base font-semibold text-zinc-900 dark:text-white">

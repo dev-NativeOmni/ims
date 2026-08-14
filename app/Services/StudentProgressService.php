@@ -108,6 +108,79 @@ class StudentProgressService
         $activeTargetStatuses = ['active', 'planned', 'in_progress'];
         $juzStats = $this->getJuzStats($student);
 
+        // ─── Program & Level Detection (Ummi for Grade 10, Reguler for Grade 11 & 12) ───
+        $classRoomName = $student->classRoom?->name ?? '';
+        $tahfizhLevel = $student->tahfizh_level ?? 'reguler';
+        $isGrade10 = (bool) preg_match('/^X\b/i', $classRoomName);
+        $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
+        $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';
+
+        // ─── Ummi Program Details ───
+        $latestUmmiRecord = \App\Models\UmmiRecord::query()
+            ->with('surah')
+            ->where('student_id', $student->id)
+            ->latest('reviewed_at')
+            ->latest()
+            ->first();
+
+        $latestUmmiTarget = HafalanTarget::query()
+            ->with('surah')
+            ->where('student_id', $student->id)
+            ->where('status', 'active')
+            ->whereNotNull('ummi_jilid')
+            ->latest('target_date')
+            ->first();
+
+        $currentJilidStr = $latestUmmiRecord?->ummi_jilid ?? 'Jilid 1';
+        preg_match('/(\d+)/', $currentJilidStr, $mJilid);
+        $currentJilidNum = isset($mJilid[1]) ? (int) $mJilid[1] : 1;
+        $ummiJilidPercent = min(100.0, round(($currentJilidNum / 6) * 100, 1));
+
+        // ─── Reguler Program Details ───
+        $levelBaris = match ($tahfizhLevel) {
+            'tahsin' => 3,
+            'reguler' => 5,
+            'akselerasi' => 7,
+            default => 5,
+        };
+
+        $startOfMonth = now()->startOfMonth()->toDateString();
+        $endOfMonth = now()->endOfMonth()->toDateString();
+
+        $passedRecordsThisMonth = HafalanRecord::where('student_id', $student->id)
+            ->where('status', 'passed')
+            ->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        $capaianBarisMonth = $passedRecordsThisMonth->sum('lines_count');
+        $targetBarisMonth = $levelBaris * 20; // Default ~20 meeting days per month
+        $regulerBarisPercent = $targetBarisMonth > 0 ? min(100.0, round(($capaianBarisMonth / $targetBarisMonth) * 100, 1)) : 0;
+
+        // ─── Status Badge Calculation (🟢 On-Track / 🟡 Mendekati / 🔴 Perlu Ditingkatkan) ───
+        $overdueCount = (clone $targetQuery)
+            ->whereIn('status', $activeTargetStatuses)
+            ->whereDate('target_date', '<', today())
+            ->count();
+
+        $achievementPercent = $isUmmiProgram ? $ummiJilidPercent : $regulerBarisPercent;
+
+        if ($overdueCount === 0 && $achievementPercent >= 90) {
+            $statusBadge = 'tuntas';
+            $statusLabel = 'Tuntas / Sesuai Target';
+            $statusColor = 'emerald';
+            $statusIcon = '🟢';
+        } elseif ($overdueCount === 0 && $achievementPercent >= 70) {
+            $statusBadge = 'mendekati';
+            $statusLabel = 'Mendekati Target';
+            $statusColor = 'amber';
+            $statusIcon = '🟡';
+        } else {
+            $statusBadge = 'perlu_perhatian';
+            $statusLabel = 'Perlu Ditingkatkan';
+            $statusColor = 'rose';
+            $statusIcon = '🔴';
+        }
+
         return [
             'student' => $student,
             'student_id' => $student->id,
@@ -115,6 +188,30 @@ class StudentProgressService
             'student_number' => $student->student_number ?? null,
             'class_room_name' => $student->classRoom?->name,
             'program_name' => $student->classRoom?->program?->name,
+            'program_category' => $programCategory,
+            'is_ummi_program' => $isUmmiProgram,
+            'tahfizh_level' => $tahfizhLevel,
+
+            'status_badge' => $statusBadge,
+            'status_label' => $statusLabel,
+            'status_color' => $statusColor,
+            'status_icon' => $statusIcon,
+
+            // Ummi Metrics
+            'ummi_record' => $latestUmmiRecord,
+            'ummi_target' => $latestUmmiTarget,
+            'ummi_jilid_str' => $currentJilidStr,
+            'ummi_jilid_num' => $currentJilidNum,
+            'ummi_halaman' => $latestUmmiRecord?->ummi_halaman ?? '-',
+            'ummi_jilid_percent' => $ummiJilidPercent,
+            'ummi_tatap_muka' => $latestUmmiRecord?->tatap_muka ?? '-',
+            'ummi_munaqasyah_score' => $latestUmmiRecord?->nilai_munaqasyah ?? null,
+
+            // Reguler Metrics
+            'level_baris' => $levelBaris,
+            'capaian_baris_month' => $capaianBarisMonth,
+            'target_baris_month' => $targetBarisMonth,
+            'reguler_baris_percent' => $regulerBarisPercent,
 
             'total_quran_ayahs' => $totalQuranAyahs,
             'memorized_ayahs' => $memorizedAyahs,

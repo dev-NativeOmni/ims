@@ -58,99 +58,161 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                    <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
-                        <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
-                            Progress Anak
-                        </h3>
-                        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                            Ringkasan progress hafalan tiap anak.
-                        </p>
-                    </div>
+                {{-- ═══════════════ TAB SELECTOR & TARGET VS CAPAIAN PER ANAK ═══════════════ --}}
+                <div x-data="{ activeChild: 0 }" class="space-y-6">
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
-                            <thead class="bg-zinc-50 dark:bg-zinc-900/60">
-                                <tr>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Murid</th>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Kelas</th>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Progress</th>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Hafalan</th>
-                                    <th class="px-5 py-3 text-left font-semibold text-zinc-650 dark:text-zinc-300">Murajaah</th>
-                                    <th class="px-5 py-3 text-right font-semibold text-zinc-650 dark:text-zinc-300">Aksi</th>
-                                </tr>
-                            </thead>
+                    @if ($childrenProgress->count() > 1)
+                        {{-- Tab Selector for multiple children --}}
+                        <div class="flex items-center gap-2 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 pb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 mr-2 flex items-center gap-1">
+                                <span>👨‍👩‍👧</span> Pilih Anak:
+                            </span>
+                            @foreach ($childrenProgress as $idx => $row)
+                                <button @click="activeChild = {{ $idx }}"
+                                        :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'"
+                                        class="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition">
+                                    <span>👦</span>
+                                    <span>{{ data_get($row, 'student_name', 'Anak '.($idx+1)) }}</span>
+                                    <span class="text-xs font-normal opacity-80">({{ data_get($row, 'class_room_name', '-') }})</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
 
-                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60 bg-white dark:bg-zinc-900">
-                                @forelse ($childrenProgress as $row)
-                                    @php
-                                        $student = data_get($row, 'student');
-                                        $progressPercent = (float) data_get($row, 'progress_percent', data_get($row, 'progress_percentage', 0));
-                                        $progressWidth = min(100, max(0, $progressPercent));
-                                    @endphp
+                    {{-- Cards for each child --}}
+                    @forelse ($childrenProgress as $idx => $row)
+                        @php
+                            $student = data_get($row, 'student');
+                            $isUmmi = data_get($row, 'is_ummi_program', false);
+                            $statusColor = data_get($row, 'status_color', 'emerald');
+                            $statusLabel = data_get($row, 'status_label', 'On-Track / Tuntas');
+                            $statusIcon = data_get($row, 'status_icon', '🟢');
+                            $progressPercent = (float) data_get($row, 'progress_percent', 0);
+                            $progressWidth = min(100, max(0, $progressPercent));
+                        @endphp
 
-                                    <tr>
-                                        <td class="px-5 py-4 align-top">
-                                            <div class="font-semibold text-zinc-900 dark:text-white">
+                        <div x-show="activeChild === {{ $idx }}" x-transition class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">{{ $isUmmi ? '📗' : '📘' }}</span>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="text-lg font-extrabold text-zinc-900 dark:text-white">
                                                 {{ data_get($row, 'student_name', $student?->name ?? '-') }}
-                                            </div>
-                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ data_get($row, 'student_number', $student?->student_number ?? '-') }}
-                                            </div>
-                                        </td>
+                                            </h3>
+                                            <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                Kelas {{ data_get($row, 'class_room_name', '-') }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                            Program: {{ $isUmmi ? 'Ummi & Tahsin (Kelas X)' : 'Reguler Tahfizh (Kelas XI / XII)' }} · Nis: {{ data_get($row, 'student_number', '-') }}
+                                        </p>
+                                    </div>
+                                </div>
 
-                                        <td class="px-5 py-4 align-top">
-                                            <div class="text-zinc-900 dark:text-zinc-100">
-                                                {{ data_get($row, 'class_room_name', $student?->classRoom?->name ?? '-') }}
-                                            </div>
-                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ data_get($row, 'program_name', $student?->classRoom?->program?->name ?? '-') }}
-                                            </div>
-                                        </td>
+                                <div class="flex items-center gap-3">
+                                    @if ($statusColor === 'emerald')
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                        </span>
+                                    @elseif ($statusColor === 'amber')
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                            <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                            <span>{{ $statusIcon }}</span> {{ $statusLabel }}
+                                        </span>
+                                    @endif
 
-                                        <td class="px-5 py-4 align-top">
-                                            <div class="mb-1 flex items-center justify-between gap-3">
-                                                <span class="font-semibold text-zinc-900 dark:text-white">
-                                                    {{ number_format($progressPercent, 2) }}%
-                                                </span>
-                                            </div>
+                                    @if ($student && Route::has('progress.show'))
+                                        <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center justify-center gap-1 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-3.5 py-1.5 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 transition">
+                                            Detail Rapor →
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
 
-                                            <div class="h-2.5 w-48 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                                                <div class="h-2.5 rounded-full bg-emerald-650"
-                                                     style="width: {{ $progressWidth }}%">
-                                                </div>
-                                            </div>
-                                        </td>
+                            @if ($isUmmi)
+                                {{-- PROGRAM UMMI DETAILS --}}
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="rounded-xl border border-teal-100 dark:border-teal-900/40 bg-teal-50/40 dark:bg-teal-950/20 p-4">
+                                        <p class="text-xs font-semibold text-teal-700 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
+                                        <p class="text-2xl font-extrabold text-teal-900 dark:text-teal-100">{{ data_get($row, 'ummi_jilid_str', 'Jilid 1') }}</p>
+                                        <p class="text-xs text-teal-600 dark:text-teal-400 mt-0.5">Halaman {{ data_get($row, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($row, 'ummi_tatap_muka', '-') }}</p>
+                                    </div>
 
-                                        <td class="px-5 py-4 align-top text-zinc-700 dark:text-zinc-300">
-                                            {{ number_format(data_get($row, 'total_hafalan_records', 0)) }}
-                                        </td>
-
-                                        <td class="px-5 py-4 align-top text-zinc-700 dark:text-zinc-300">
-                                            {{ number_format(data_get($row, 'total_murajaah_records', 0)) }}
-                                        </td>
-
-                                        <td class="px-5 py-4 text-right align-top">
-                                            @if ($student && Route::has('progress.show'))
-                                                <a href="{{ route('progress.show', $student) }}"
-                                                   class="btn-action-detail">
-                                                    Detail
-                                                </a>
+                                    <div class="rounded-xl border border-cyan-100 dark:border-cyan-900/40 bg-cyan-50/40 dark:bg-cyan-950/20 p-4">
+                                        <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Surah Ummi</p>
+                                        <p class="text-lg font-bold text-cyan-900 dark:text-cyan-100">
+                                            {{ data_get($row, 'ummi_target.surah.name_latin', 'Mengikuti Jilid') }}
+                                        </p>
+                                        <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
+                                            @if(data_get($row, 'ummi_target'))
+                                                Ayat {{ data_get($row, 'ummi_target.ayah_start') }} - {{ data_get($row, 'ummi_target.ayah_end') }}
                                             @else
-                                                -
+                                                Tahsin &amp; Hafalan Ummi
                                             @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="px-5 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                                            Belum ada data anak.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
+                                        <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
+                                        <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">
+                                            {{ data_get($row, 'ummi_munaqasyah_score') !== null ? number_format((float) data_get($row, 'ummi_munaqasyah_score'), 1) : '-' }}
+                                        </p>
+                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Evaluasi kelancaran &amp; tajwid</p>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2">
+                                    <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                        <span>Progress Ketercapaian Jilid Ummi</span>
+                                        <span>{{ data_get($row, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($row, 'ummi_jilid_num', 1) }} / 6)</span>
+                                    </div>
+                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                        <div class="h-3 rounded-full bg-teal-600 transition-all duration-300" style="width: {{ data_get($row, 'ummi_jilid_percent', 0) }}%"></div>
+                                    </div>
+                                </div>
+                            @else
+                                {{-- PROGRAM REGULER DETAILS --}}
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/40 dark:bg-indigo-950/20 p-4">
+                                        <p class="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
+                                        <p class="text-2xl font-extrabold text-indigo-900 dark:text-indigo-100">{{ data_get($row, 'level_baris', 5) }} Baris / Hari</p>
+                                        <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Level: {{ ucfirst(data_get($row, 'tahfizh_level', 'reguler')) }}</p>
+                                    </div>
+
+                                    <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
+                                        <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
+                                        <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">{{ data_get($row, 'capaian_baris_month', 0) }} / {{ data_get($row, 'target_baris_month', 100) }} Baris</p>
+                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Ketercapaian: {{ data_get($row, 'reguler_baris_percent', 0) }}%</p>
+                                    </div>
+
+                                    <div class="rounded-xl border border-purple-100 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/20 p-4">
+                                        <p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Hafalan Lengkap</p>
+                                        <p class="text-2xl font-extrabold text-purple-900 dark:text-purple-100">{{ data_get($row, 'completed_juz_count', 0) }} Juz</p>
+                                        <p class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">{{ data_get($row, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2">
+                                    <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                        <span>Progress Ketercapaian Baris Setoran Bulan Ini</span>
+                                        <span>{{ data_get($row, 'reguler_baris_percent', 0) }}% ({{ data_get($row, 'capaian_baris_month', 0) }} Baris)</span>
+                                    </div>
+                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                        <div class="h-3 rounded-full bg-emerald-600 transition-all duration-300" style="width: {{ data_get($row, 'reguler_baris_percent', 0) }}%"></div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="rounded-2xl bg-white dark:bg-zinc-900 p-8 text-center text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+                            Belum ada data anak.
+                        </div>
+                    @endforelse
+
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
