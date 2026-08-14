@@ -111,20 +111,22 @@
                         <tbody class="divide-y">
                             @forelse ($studentsProgress as $item)
                                 @php
-                                    $student = $item['student'];
-                                    $percentage = $item['progress_percentage'] ?? 0;
+                                    $student = data_get($item, 'student');
+                                    $percentage = (float) data_get($item, 'progress_percentage', data_get($item, 'progress_percent', 0));
+                                    $activeTargetCount = (int) data_get($item, 'active_targets', data_get($item, 'active_target_count', 0));
+                                    $overdueTargetCount = (int) data_get($item, 'overdue_targets', data_get($item, 'overdue_target_count', 0));
                                 @endphp
                                 <tr>
-                                    <td class="px-5 py-3 font-medium text-gray-900">{{ $student->name }}</td>
-                                    <td class="px-5 py-3 text-gray-600">{{ $student->classRoom?->name ?? '-' }}</td>
+                                    <td class="px-5 py-3 font-medium text-gray-900">{{ $student?->name ?? data_get($item, 'student_name', '-') }}</td>
+                                    <td class="px-5 py-3 text-gray-600">{{ $student?->classRoom?->name ?? data_get($item, 'class_room_name', '-') }}</td>
                                     <td class="px-5 py-3">
                                         <div class="w-48 bg-gray-100 rounded-full h-2">
                                             <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ min($percentage, 100) }}%"></div>
                                         </div>
                                         <span class="text-xs text-gray-500">{{ $percentage }}%</span>
                                     </td>
-                                    <td class="px-5 py-3">{{ $item['active_target_count'] ?? 0 }}</td>
-                                    <td class="px-5 py-3 text-red-600">{{ $item['overdue_target_count'] ?? 0 }}</td>
+                                    <td class="px-5 py-3">{{ $activeTargetCount }}</td>
+                                    <td class="px-5 py-3 text-red-600">{{ $overdueTargetCount }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -148,7 +150,11 @@
                                 <div class="flex justify-between gap-4">
                                     <div>
                                         <p class="font-medium text-gray-900">{{ $target->student?->name ?? '-' }}</p>
-                                        <p class="text-sm text-gray-600">{{ $target->surah?->name_latin ?? '-' }} ayat {{ $target->ayah_range }}</p>
+                                        @if ($target->ummi_jilid)
+                                            <p class="text-sm font-semibold text-teal-700">📗 {{ $target->ummi_jilid }} (Peraga: {{ $target->halaman_peraga ?? '-' }}, Buku: {{ $target->halaman_buku ?? '-' }})</p>
+                                        @else
+                                            <p class="text-sm text-gray-600">{{ $target->surah?->name_latin ?? '-' }} ayat {{ $target->ayah_range }}</p>
+                                        @endif
                                     </div>
                                     <div class="text-right">
                                         <p class="text-sm font-medium">{{ $target->target_date?->format('d M Y') }}</p>

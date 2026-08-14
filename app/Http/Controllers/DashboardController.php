@@ -104,8 +104,14 @@ class DashboardController extends Controller
 
     public function teacher(Request $request): View
     {
+        try {
+            $stats = $this->dashboardService->teacherStats($request->user());
+        } catch (\Throwable $e) {
+            $stats = [];
+        }
+
         return view('dashboards.teacher', [
-            'stats' => $this->dashboardService->teacherStats($request->user()),
+            'stats' => $stats,
         ]);
     }
 
