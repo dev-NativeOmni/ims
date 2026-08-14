@@ -321,4 +321,61 @@ class HafalanTargetTest extends TestCase
 
         $this->assertFalse($target->is_overdue);
     }
+
+    // =========================================================================
+    // BULK REGULER & BULK UMMI TARGETS
+    // =========================================================================
+
+    #[Test]
+    public function teacher_can_store_bulk_reguler_targets(): void
+    {
+        $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store-bulk-reguler'), [
+            'class_room_id' => $this->student->class_room_id,
+            'targets' => [
+                [
+                    'student_id' => $this->student->id,
+                    'surah_id' => $this->surah->id,
+                    'ayah_start' => 1,
+                    'ayah_end' => 10,
+                    'target_date' => now()->addDays(5)->toDateString(),
+                    'notes' => 'Catatan Reguler Test',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('hafalan_targets', [
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 10,
+        ]);
+    }
+
+    #[Test]
+    public function teacher_can_store_bulk_ummi_targets_per_halaqah(): void
+    {
+        $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store-bulk-ummi'), [
+            'teacher_id' => $this->teacherProfile->id,
+            'ummi_jilid' => 'Jilid 4',
+            'halaman_peraga' => 'Hal 10',
+            'halaman_buku' => 'Hal 15',
+            'surah_id' => $this->surah->id,
+            'target_date' => now()->addMonth()->toDateString(),
+            'notes' => 'Catatan Ummi Test',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('hafalan_targets', [
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'ummi_jilid' => 'Jilid 4',
+            'halaman_peraga' => 'Hal 10',
+            'halaman_buku' => 'Hal 15',
+        ]);
+    }
 }

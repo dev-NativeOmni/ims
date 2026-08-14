@@ -223,6 +223,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('murajaah-records', MurajaahRecordController::class);
         Route::resource('tahfizh-exams', TahfizhExamController::class);
 
+        Route::post('/hafalan-targets/store-bulk-reguler', [HafalanTargetController::class, 'storeBulkReguler'])
+            ->name('hafalan-targets.store-bulk-reguler');
+        Route::post('/hafalan-targets/store-bulk-ummi', [HafalanTargetController::class, 'storeBulkUmmi'])
+            ->name('hafalan-targets.store-bulk-ummi');
+
         Route::patch('/hafalan-targets/{hafalanTarget}/complete', [HafalanTargetController::class, 'complete'])
             ->name('hafalan-targets.complete');
 

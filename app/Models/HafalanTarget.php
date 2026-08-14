@@ -14,6 +14,9 @@ class HafalanTarget extends Model
     protected $fillable = [
         'student_id',
         'teacher_id',
+        'ummi_jilid',
+        'halaman_peraga',
+        'halaman_buku',
         'surah_id',
         'ayah_start',
         'ayah_end',

@@ -23,6 +23,7 @@ class HafalanTargetController extends Controller
     public function index(Request $request): View
     {
         $visibleStudentIds = $this->visibleStudentIds($request->user());
+        $activeProgram = $request->input('program', 'reguler');
 
         $query = HafalanTarget::query()
             ->with([
@@ -31,10 +32,26 @@ class HafalanTargetController extends Controller
                 'teacher.user',
             ])
             ->whereIn('student_id', $visibleStudentIds)
+            ->when($activeProgram === 'ummi', function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('ummi_jilid')
+                        ->orWhereHas('student.classRoom', function ($c) {
+                            $c->where('name', 'like', 'X %')
+                              ->orWhere('name', 'like', 'X-%')
+                              ->orWhere('name', 'X');
+                        });
+                });
+            })
+            ->when($activeProgram === 'reguler', function ($q) {
+                $q->whereNull('ummi_jilid');
+            })
             ->when($request->filled('class_room_id'), function ($query) use ($request) {
                 $query->whereHas('student', function ($q) use ($request) {
                     $q->where('class_room_id', $request->integer('class_room_id'));
                 });
+            })
+            ->when($request->filled('teacher_id'), function ($query) use ($request) {
+                $query->where('teacher_id', $request->integer('teacher_id'));
             })
             ->when($request->filled('student_id'), function ($query) use ($request, $visibleStudentIds) {
                 $studentId = (int) $request->input('student_id');
@@ -69,7 +86,6 @@ class HafalanTargetController extends Controller
         $summary = [
             'total' => (clone $query)->count(),
 
-            // Key ini sengaja wajib ada karena view membaca $summary['active'].
             'active' => (clone $query)
                 ->whereIn('status', $activeStatuses)
                 ->count(),
@@ -111,12 +127,21 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
+        $teachers = \App\Models\TeacherProfile::query()
+            ->with('user')
+            ->whereHas('user')
+            ->orderBy('id')
+            ->get();
+
         $students = Student::query()
-            ->with(['classRoom.program'])
+            ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
             ->where('status', 'active')
             ->when($request->filled('class_room_id'), function ($q) use ($request) {
                 $q->where('class_room_id', $request->integer('class_room_id'));
+            })
+            ->when($request->filled('teacher_id'), function ($q) use ($request) {
+                $q->where('teacher_id', $request->integer('teacher_id'));
             })
             ->orderBy('name')
             ->get();
@@ -127,14 +152,113 @@ class HafalanTargetController extends Controller
 
         $statusOptions = $this->targetStatuses();
 
+        // Default teacher_id if logged in user is a teacher
+        $currentTeacherId = $request->user()?->teacherProfile?->id ?? $teachers->first()?->id;
+
         return view('hafalan-targets.index', compact(
             'targets',
             'students',
             'classRooms',
+            'teachers',
             'surahs',
             'summary',
-            'statusOptions'
+            'statusOptions',
+            'activeProgram',
+            'currentTeacherId'
         ));
+    }
+
+    public function storeBulkReguler(Request $request): RedirectResponse
+    {
+        $this->authorize('create', HafalanTarget::class);
+        $visibleStudentIds = $this->visibleStudentIds($request->user());
+
+        $request->validate([
+            'targets' => ['required', 'array'],
+            'targets.*.student_id' => ['required', 'integer', 'exists:students,id'],
+            'targets.*.surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'targets.*.ayah_start' => ['nullable', 'integer', 'min:1'],
+            'targets.*.ayah_end' => ['nullable', 'integer', 'min:1'],
+            'targets.*.target_date' => ['nullable', 'date'],
+            'targets.*.notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $count = 0;
+        foreach ($request->input('targets', []) as $row) {
+            $studentId = (int) ($row['student_id'] ?? 0);
+            if (! $visibleStudentIds->contains($studentId)) {
+                continue;
+            }
+
+            if (! empty($row['surah_id']) && ! empty($row['target_date'])) {
+                $student = Student::find($studentId);
+                if (! $student) {
+                    continue;
+                }
+
+                $teacherId = $this->resolveTeacherId($request, $student);
+
+                HafalanTarget::create([
+                    'student_id' => $student->id,
+                    'teacher_id' => $teacherId,
+                    'surah_id' => (int) $row['surah_id'],
+                    'ayah_start' => (int) ($row['ayah_start'] ?? 1),
+                    'ayah_end' => (int) ($row['ayah_end'] ?? 1),
+                    'target_date' => $row['target_date'],
+                    'notes' => $row['notes'] ?? null,
+                    'status' => $this->defaultOpenTargetStatus(),
+                ]);
+                $count++;
+            }
+        }
+
+        return redirect()
+            ->route('hafalan-targets.index', ['program' => 'reguler', 'class_room_id' => $request->input('class_room_id')])
+            ->with('success', "Berhasil menyimpan {$count} target hafalan reguler.");
+    }
+
+    public function storeBulkUmmi(Request $request): RedirectResponse
+    {
+        $this->authorize('create', HafalanTarget::class);
+
+        $validated = $request->validate([
+            'teacher_id' => ['required', 'integer', 'exists:teacher_profiles,id'],
+            'ummi_jilid' => ['required', 'string', 'max:100'],
+            'halaman_peraga' => ['nullable', 'string', 'max:100'],
+            'halaman_buku' => ['nullable', 'string', 'max:100'],
+            'surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'target_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $teacherProfile = \App\Models\TeacherProfile::findOrFail($validated['teacher_id']);
+
+        $students = Student::query()
+            ->where('teacher_id', $teacherProfile->id)
+            ->where('status', 'active')
+            ->get();
+
+        $count = 0;
+        foreach ($students as $student) {
+            HafalanTarget::create([
+                'student_id' => $student->id,
+                'teacher_id' => $teacherProfile->id,
+                'ummi_jilid' => $validated['ummi_jilid'],
+                'halaman_peraga' => $validated['halaman_peraga'] ?? null,
+                'halaman_buku' => $validated['halaman_buku'] ?? null,
+                'surah_id' => $validated['surah_id'] ?? null,
+                'ayah_start' => null,
+                'ayah_end' => null,
+                'target_date' => $validated['target_date'],
+                'notes' => $validated['notes'] ?? null,
+                'status' => $this->defaultOpenTargetStatus(),
+            ]);
+            $count++;
+        }
+
+        return redirect()
+            ->route('hafalan-targets.index', ['program' => 'ummi', 'teacher_id' => $validated['teacher_id']])
+            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} santri di Halaqah Musyrif.");
     }
 
     public function create(Request $request): View
