@@ -197,6 +197,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:super_admin'])->group(function () {
         Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::post('users/{user}/link-parents', [UserController::class, 'linkParents'])->name('users.link-parents');
+        Route::post('users/{user}/link-students', [UserController::class, 'linkStudents'])->name('users.link-students');
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });

@@ -209,7 +209,7 @@
 
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                             @forelse ($users as $u)
-                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150" x-data="{ showPass: false }">
+                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150" x-data="{ showPass: false, openLinkModal: false, modalSearch: '' }">
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-zinc-900 dark:text-white text-sm">
                                             {{ $u->name }}
@@ -240,7 +240,88 @@
                                                         <span>⚠️</span> Belum Terhubung Orang Tua
                                                     </div>
                                                 @endif
+
+                                                <div>
+                                                    <button type="button" @click="openLinkModal = true" class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition">
+                                                        <span>🔗 Edit Relasi Ortu</span>
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            <!-- MODAL HUBUNGKAN ORANG TUA FOR SANTRI -->
+                                            <template x-teleport="body">
+                                                <div x-show="openLinkModal"
+                                                     x-transition:enter="transition ease-out duration-200"
+                                                     x-transition:enter-start="opacity-0"
+                                                     x-transition:enter-end="opacity-100"
+                                                     x-transition:leave="transition ease-in duration-150"
+                                                     x-transition:leave-start="opacity-100"
+                                                     x-transition:leave-end="opacity-0"
+                                                     class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm"
+                                                     style="display: none;">
+                                                    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl max-w-lg w-full p-6 border border-zinc-200 dark:border-zinc-800 text-left space-y-4"
+                                                         @click.away="openLinkModal = false">
+                                                        <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800">
+                                                            <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                                                <span>👨‍👩‍👧 Hubungkan Orang Tua</span>
+                                                            </h3>
+                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">✕</button>
+                                                        </div>
+
+                                                        <p class="text-xs text-zinc-600 dark:text-zinc-400">
+                                                            Pilih akun Orang Tua yang terhubung dengan santri <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
+                                                        </p>
+
+                                                        <form method="POST" action="{{ route('users.link-parents', $u->id) }}" class="space-y-4">
+                                                            @csrf
+                                                            @php
+                                                                $currentParentProfileIds = $u->studentProfile->parents->pluck('id')->toArray();
+                                                            @endphp
+
+                                                            <div>
+                                                                <input type="text"
+                                                                       x-model="modalSearch"
+                                                                       placeholder="Cari nama atau username orang tua..."
+                                                                       class="w-full text-xs rounded-xl border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 dark:text-white px-3 py-2">
+                                                            </div>
+
+                                                            <div class="max-h-60 overflow-y-auto space-y-1.5 pr-1 border rounded-xl p-3 border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                                                                @forelse($allParentProfiles as $pProf)
+                                                                    @php
+                                                                        $pName = $pProf->user?->name ?? 'Orang Tua (Tanpa User)';
+                                                                        $pUsername = $pProf->user?->username ?? '-';
+                                                                    @endphp
+                                                                    <label x-show="modalSearch === '' || '{{ strtolower($pName) }}'.includes(modalSearch.toLowerCase()) || '{{ strtolower($pUsername) }}'.includes(modalSearch.toLowerCase())"
+                                                                           class="flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 cursor-pointer transition text-xs">
+                                                                        <div class="flex items-center gap-2.5">
+                                                                            <input type="checkbox"
+                                                                                   name="parent_ids[]"
+                                                                                   value="{{ $pProf->id }}"
+                                                                                   @checked(in_array($pProf->id, $currentParentProfileIds))
+                                                                                   class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500">
+                                                                            <div>
+                                                                                <span class="font-bold text-zinc-900 dark:text-white block">{{ $pName }}</span>
+                                                                                <span class="font-mono text-[10px] text-zinc-500">({{ '@' . $pUsername }})</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </label>
+                                                                @empty
+                                                                    <p class="text-xs text-zinc-400 text-center py-4">Belum ada data akun Orang Tua.</p>
+                                                                @endforelse
+                                                            </div>
+
+                                                            <div class="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800">
+                                                                <button type="button" @click="openLinkModal = false" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                                                                    Batal
+                                                                </button>
+                                                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 shadow-sm transition">
+                                                                    Simpan Relasi
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </template>
                                         @endif
 
                                         {{-- Relasi Orang Tua -> Murid --}}
@@ -265,7 +346,94 @@
                                                         <span>⚠️</span> Belum Terhubung Murid
                                                     </div>
                                                 @endif
+
+                                                <div>
+                                                    <button type="button" @click="openLinkModal = true" class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition">
+                                                        <span>🔗 Edit Relasi Murid</span>
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            <!-- MODAL HUBUNGKAN ANAK/MURID FOR PARENT -->
+                                            <template x-teleport="body">
+                                                <div x-show="openLinkModal"
+                                                     x-transition:enter="transition ease-out duration-200"
+                                                     x-transition:enter-start="opacity-0"
+                                                     x-transition:enter-end="opacity-100"
+                                                     x-transition:leave="transition ease-in duration-150"
+                                                     x-transition:leave-start="opacity-100"
+                                                     x-transition:leave-end="opacity-0"
+                                                     class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm"
+                                                     style="display: none;">
+                                                    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl max-w-lg w-full p-6 border border-zinc-200 dark:border-zinc-800 text-left space-y-4"
+                                                         @click.away="openLinkModal = false">
+                                                        <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800">
+                                                            <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                                                <span>👦 Hubungkan Anak/Murid</span>
+                                                            </h3>
+                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">✕</button>
+                                                        </div>
+
+                                                        <p class="text-xs text-zinc-600 dark:text-zinc-400">
+                                                            Pilih santri/anak yang terhubung dengan orang tua <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
+                                                        </p>
+
+                                                        <form method="POST" action="{{ route('users.link-students', $u->id) }}" class="space-y-4">
+                                                            @csrf
+                                                            @php
+                                                                $currentStudentIds = $u->parentProfile->students->pluck('id')->toArray();
+                                                            @endphp
+
+                                                            <div>
+                                                                <input type="text"
+                                                                       x-model="modalSearch"
+                                                                       placeholder="Cari nama santri, kelas, atau username..."
+                                                                       class="w-full text-xs rounded-xl border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 dark:text-white px-3 py-2">
+                                                            </div>
+
+                                                            <div class="max-h-60 overflow-y-auto space-y-1.5 pr-1 border rounded-xl p-3 border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                                                                @forelse($allStudentProfiles as $sProf)
+                                                                    @php
+                                                                        $sName = $sProf->name;
+                                                                        $sClassName = $sProf->classRoom?->name ?? 'Tanpa Kelas';
+                                                                        $sUsername = $sProf->user?->username ?? '-';
+                                                                    @endphp
+                                                                    <label x-show="modalSearch === '' || '{{ strtolower($sName) }}'.includes(modalSearch.toLowerCase()) || '{{ strtolower($sClassName) }}'.includes(modalSearch.toLowerCase()) || '{{ strtolower($sUsername) }}'.includes(modalSearch.toLowerCase())"
+                                                                           class="flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 cursor-pointer transition text-xs">
+                                                                        <div class="flex items-center gap-2.5">
+                                                                            <input type="checkbox"
+                                                                                   name="student_ids[]"
+                                                                                   value="{{ $sProf->id }}"
+                                                                                   @checked(in_array($sProf->id, $currentStudentIds))
+                                                                                   class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500">
+                                                                            <div>
+                                                                                <div class="flex items-center gap-1.5">
+                                                                                    <span class="font-bold text-zinc-900 dark:text-white">{{ $sName }}</span>
+                                                                                    <span class="px-1.5 py-0.2 rounded text-[10px] bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-100 dark:border-indigo-900">
+                                                                                        {{ $sClassName }}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <span class="font-mono text-[10px] text-zinc-500">({{ '@' . $sUsername }})</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </label>
+                                                                @empty
+                                                                    <p class="text-xs text-zinc-400 text-center py-4">Belum ada data Santri.</p>
+                                                                @endforelse
+                                                            </div>
+
+                                                            <div class="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800">
+                                                                <button type="button" @click="openLinkModal = false" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                                                                    Batal
+                                                                </button>
+                                                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 shadow-sm transition">
+                                                                    Simpan Relasi
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </template>
                                         @endif
                                     </td>
 

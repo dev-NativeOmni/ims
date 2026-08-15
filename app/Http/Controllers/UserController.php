@@ -64,6 +64,9 @@ class UserController extends Controller
         $inactiveUsers = User::where('status', 'inactive')->count();
         $activeUsers = User::where('status', 'active')->count();
 
+        $allParentProfiles = ParentProfile::with('user')->get()->sortBy(fn($p) => strtolower($p->user?->name ?? ''))->values();
+        $allStudentProfiles = Student::with(['user', 'classRoom'])->get()->sortBy('name')->values();
+
         return view('users.index', compact(
             'users',
             'roles',
@@ -71,8 +74,55 @@ class UserController extends Controller
             'roleCounts',
             'totalUsers',
             'inactiveUsers',
-            'activeUsers'
+            'activeUsers',
+            'allParentProfiles',
+            'allStudentProfiles'
         ));
+    }
+
+    public function linkParents(Request $request, User $user): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $validated = $request->validate([
+            'parent_ids' => 'nullable|array',
+            'parent_ids.*' => 'exists:parent_profiles,id',
+        ]);
+
+        $studentProfile = $user->studentProfile;
+        if (! $studentProfile) {
+            $studentProfile = Student::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+            ]);
+        }
+
+        $parentIds = collect($validated['parent_ids'] ?? [])->filter()->unique()->values()->all();
+        $studentProfile->parents()->sync($parentIds);
+
+        return redirect()->back()->with('success', 'Relasi orang tua untuk santri "'.$user->name.'" berhasil diperbarui.');
+    }
+
+    public function linkStudents(Request $request, User $user): RedirectResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $validated = $request->validate([
+            'student_ids' => 'nullable|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+
+        $parentProfile = $user->parentProfile;
+        if (! $parentProfile) {
+            $parentProfile = ParentProfile::create([
+                'user_id' => $user->id,
+            ]);
+        }
+
+        $studentIds = collect($validated['student_ids'] ?? [])->filter()->unique()->values()->all();
+        $parentProfile->students()->sync($studentIds);
+
+        return redirect()->back()->with('success', 'Relasi santri/anak untuk orang tua "'.$user->name.'" berhasil diperbarui.');
     }
 
     public function edit(User $user): View
