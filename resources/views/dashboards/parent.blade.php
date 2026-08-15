@@ -125,7 +125,7 @@
                                         </span>
                                     @endif
 
-                                    @if ($student && Route::has('progress.show'))
+                                    @if ($student && Route::has('progress.show') && auth()->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse']))
                                         <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center justify-center gap-1 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-3.5 py-1.5 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 transition">
                                             Detail Rapor →
                                         </a>

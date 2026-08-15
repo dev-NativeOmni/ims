@@ -6,7 +6,7 @@
             </h2>
 
             <div class="flex flex-wrap items-center gap-2">
-                @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse']))
                     <a
                         href="{{ route('students.export') }}"
                         class="inline-flex items-center justify-center px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-sm transition duration-150 min-h-[38px] flex-1 sm:flex-none"

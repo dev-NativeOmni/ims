@@ -37,9 +37,10 @@
 
     $canManageRecords = $isSuperAdmin || $isAdminUser || $isTeacher || $isSupervisor || $isCoordinatorTahfizh;
     $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isCoordinatorTahfizh;
-    $canViewReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh;
-    $canViewDigitalReports = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh || $isPendampingAdab) && ! $isStudent;
-    $canViewReportSettings = $isSuperAdmin || $isAdminUser || $isTeacher || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh || $isPendampingAdab;
+    $isAllowedRapor = $isSuperAdmin || $isAdminUser || $isTeacher || $isCoordinatorTahfizh || $isTanse;
+    $canViewReports = $isAllowedRapor;
+    $canViewDigitalReports = $isAllowedRapor;
+    $canViewReportSettings = $isAllowedRapor;
     $canViewTeacherPerformance = $isSuperAdmin || $isAdminUser || $isHeadmaster;
     $canViewAdab = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isPendampingAdab) && ! $isPureTahfizhCoordinator && ! $isPureTanseCoordinator;
     $canViewStudentPoints = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isTanse;

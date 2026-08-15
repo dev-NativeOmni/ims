@@ -228,6 +228,10 @@ class ReportController extends Controller
 
     public function exportCsv(Request $request): StreamedResponse
     {
+        if (! $request->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk ekspor data laporan.');
+        }
+
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         $hafalanQuery = $this->filteredHafalanQuery($request, $visibleStudentIds)

@@ -124,6 +124,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('hafalan-targets.index'));
         $response->assertDontSee(route('reports.index'));
         $response->assertDontSee(route('reports.teachers'));
+        $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));
@@ -131,7 +132,6 @@ class NavigationMenuTest extends TestCase
         // Should see
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
-        $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('adab.index'));
         $response->assertSee(route('student-points.index'));
         $response->assertSee(route('system-notifications.index'));
@@ -187,6 +187,8 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('parents.index'));
         $response->assertDontSee(route('students.index'));
         $response->assertDontSee(route('reports.teachers'));
+        $response->assertDontSee(route('reports.index'));
+        $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));
@@ -197,8 +199,6 @@ class NavigationMenuTest extends TestCase
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
-        $response->assertSee(route('reports.index'));
-        $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('adab.index'));
         $response->assertSee(route('student-points.index'));
         $response->assertSee(route('system-notifications.index'));
@@ -311,9 +311,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('reports.teachers'));
         $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('quran.mushaf'));
-
         $response->assertDontSee(route('adab.index'));
-
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));

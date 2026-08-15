@@ -223,6 +223,10 @@ class StudentController extends Controller
 
     public function export(): StreamedResponse
     {
+        if (! auth()->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk ekspor data.');
+        }
+
         $students = Student::query()
             ->with([
                 'user',
@@ -282,6 +286,10 @@ class StudentController extends Controller
 
     public function import(Request $request): RedirectResponse
     {
+        if (! auth()->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk impor data.');
+        }
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,csv,txt|max:4096',
         ]);
