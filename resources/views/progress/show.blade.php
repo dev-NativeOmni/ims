@@ -243,9 +243,11 @@
 
                     <p class="mt-1 text-xs text-gray-500">
                         Dari setoran yang memiliki nilai.
-                    </p>
                 </div>
             </div>
+
+            {{-- ═══════════════ PETA PERJALANAN HAFALAN SANTRI (4 TERM X 3 KELAS) ═══════════════ --}}
+            <x-student-hafalan-journey :milestones="data_get($progress, 'term_milestones', [])" />
 
             @includeIf('progress.partials.motivation', [
                 'motivation' => $motivation ?? [],

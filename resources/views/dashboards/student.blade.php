@@ -157,6 +157,9 @@
                     @endif
                 </div>
 
+                {{-- ═══════════════ PETA PERJALANAN HAFALAN (4 TERM X 3 KELAS) ═══════════════ --}}
+                <x-student-hafalan-journey :milestones="data_get($progress, 'term_milestones', [])" />
+
                 <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-base font-semibold text-zinc-900 dark:text-white">

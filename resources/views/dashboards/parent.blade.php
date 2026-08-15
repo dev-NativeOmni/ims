@@ -206,6 +206,11 @@
                                     </div>
                                 </div>
                             @endif
+
+                            {{-- ═══════════════ PETA PERJALANAN HAFALAN ANAK (4 TERM X 3 KELAS) ═══════════════ --}}
+                            <div class="mt-4">
+                                <x-student-hafalan-journey :milestones="data_get($row, 'term_milestones', [])" />
+                            </div>
                         </div>
                     @empty
                         <div class="rounded-2xl bg-white dark:bg-zinc-900 p-8 text-center text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
