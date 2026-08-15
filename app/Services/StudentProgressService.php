@@ -128,14 +128,18 @@ class StudentProgressService
         $activeTargetStatuses = ['active', 'planned', 'in_progress'];
         $juzStats = $this->getJuzStats($student);
 
-        // ─── Program & Level Detection (Ummi for Grade 10, Reguler for Grade 11 & 12) ───
         $classRoomName = $student->classRoom?->name ?? '';
+        $classRoomLevel = $student->classRoom?->level ?? '';
         $tahfizhLevel = $student->tahfizh_level ?? 'reguler';
 
         $isGrade10 = (bool) (
             (preg_match('/\bX\b/i', $classRoomName) && !preg_match('/\b(XI|XII)\b/i', $classRoomName))
             || preg_match('/\b10\b/i', $classRoomName)
-        );
+            || preg_match('/^X[-_\s]?E/i', $classRoomName)
+            || preg_match('/kelas\s*(X|10)/i', $classRoomName)
+            || (preg_match('/\bX\b/i', $classRoomLevel) && !preg_match('/\b(XI|XII)\b/i', $classRoomLevel))
+            || preg_match('/\b10\b/i', $classRoomLevel)
+        ) && !preg_match('/\b(XI|XII|11|12)\b/i', $classRoomName);
 
         $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
         $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';

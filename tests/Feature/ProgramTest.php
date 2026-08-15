@@ -113,7 +113,7 @@ class ProgramTest extends TestCase
         ]);
 
         // 2. Create Classrooms
-        $dailyClass = ClassRoom::create(['name' => 'Class Daily', 'program_id' => $dailyProgram->id, 'level' => '10']);
+        $dailyClass = ClassRoom::create(['name' => 'Class Daily XI', 'program_id' => $dailyProgram->id, 'level' => '11']);
         $weeklyClass = ClassRoom::create(['name' => 'Class Weekly', 'program_id' => $weeklyProgram->id, 'level' => '11']);
 
         // 3. Create Students
