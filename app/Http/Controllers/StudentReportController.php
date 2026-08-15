@@ -204,19 +204,32 @@ class StudentReportController extends Controller
         if ($report && $report->tahfizh_target_term) {
             $termTargetText = $report->tahfizh_target_term;
         } else {
-            $levelBaris = match ($student->tahfizh_level) {
-                'tahsin' => 3,
-                'reguler' => 5,
-                'akselerasi' => 7,
-                'ummi' => null,
-                default => 5,
-            };
+            $classRoomName = $student->classRoom?->name ?? '';
+            $isGrade10 = (bool) preg_match('/^X\b/i', $classRoomName);
+            $isUmmiProgram = $isGrade10 || $student->tahfizh_level === 'ummi';
 
-            if ($levelBaris === null) {
-                $termTargetText = 'Metode Bacaan Ummi';
+            if ($isUmmiProgram) {
+                $termTargetText = 'Metode Bacaan Ummi (Target diisi Musyrif)';
             } else {
+                $levelBaris = match ($student->tahfizh_level) {
+                    'tahsin' => 3,
+                    'reguler' => 5,
+                    'akselerasi' => 7,
+                    default => 5,
+                };
+
+                $programName = strtolower($student->classRoom?->program?->name ?? '');
                 $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
-                $meetings = ($meetingFrequency === 'seminggu sekali') ? 4 : 20;
+
+                $isWeeklyProgram = ($meetingFrequency === 'seminggu sekali')
+                    || str_contains($programName, 'reguler')
+                    || (bool) preg_match('/F[2-9]\b/i', $classRoomName);
+
+                if (str_contains($programName, 'tahfizh') || (bool) preg_match('/F1\b/i', $classRoomName)) {
+                    $isWeeklyProgram = false;
+                }
+
+                $meetings = $isWeeklyProgram ? 4 : 20;
                 $totalTargetBaris = $levelBaris * $meetings;
 
                 $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";

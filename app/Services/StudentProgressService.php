@@ -156,7 +156,7 @@ class StudentProgressService
         $currentJilidNum = isset($mJilid[1]) ? (int) $mJilid[1] : 1;
         $ummiJilidPercent = min(100.0, round(($currentJilidNum / 6) * 100, 1));
 
-        // ─── Reguler Program Details ───
+        // ─── Reguler Program Details (For Grade 11 & 12) ───
         $levelBaris = match ($tahfizhLevel) {
             'tahsin' => 3,
             'reguler' => 5,
@@ -164,16 +164,32 @@ class StudentProgressService
             default => 5,
         };
 
+        $programName = strtolower($student->classRoom?->program?->name ?? '');
+        $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
+
+        // Program Reguler (Kelas 11 & 12 F2-F4) -> 1x/sepekan (~4 pertemuan/bulan)
+        // Program Tahfizh (Kelas 11 & 12 F1) -> 5x/sepekan (~20 pertemuan/bulan)
+        $isWeeklyProgram = ($meetingFrequency === 'seminggu sekali')
+            || str_contains($programName, 'reguler')
+            || (bool) preg_match('/F[2-9]\b/i', $classRoomName);
+
+        if (str_contains($programName, 'tahfizh') || (bool) preg_match('/F1\b/i', $classRoomName)) {
+            $isWeeklyProgram = false;
+        }
+
+        $meetingsPerMonth = $isWeeklyProgram ? 4 : 20;
+        $targetBarisMonth = $levelBaris * $meetingsPerMonth;
+
         $startOfMonth = now()->startOfMonth()->toDateString();
         $endOfMonth = now()->endOfMonth()->toDateString();
 
-        $passedRecordsThisMonth = HafalanRecord::where('student_id', $student->id)
+        $passedRecordsThisMonth = HafalanRecord::with('surah')
+            ->where('student_id', $student->id)
             ->where('status', 'passed')
             ->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
             ->get();
 
-        $capaianBarisMonth = $passedRecordsThisMonth->sum('lines_count');
-        $targetBarisMonth = $levelBaris * 20; // Default ~20 meeting days per month
+        $capaianBarisMonth = $passedRecordsThisMonth->sum(fn ($r) => $r->lines_count);
         $regulerBarisPercent = $targetBarisMonth > 0 ? min(100.0, round(($capaianBarisMonth / $targetBarisMonth) * 100, 1)) : 0;
 
         // ─── Status Badge Calculation (🟢 On-Track / 🟡 Mendekati / 🔴 Perlu Ditingkatkan) ───
