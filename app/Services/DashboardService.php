@@ -128,10 +128,27 @@ class DashboardService
     public function teacherStats(User $user): array
     {
         try {
-            $teacher = $user->teacherProfile;
+            $teacher = $user->teacherProfile
+                ?? TeacherProfile::query()->where('user_id', $user->id)->first();
 
             if (! $teacher) {
-                $teacher = TeacherProfile::firstOrCreate(['user_id' => $user->id]);
+                $teacher = TeacherProfile::query()
+                    ->whereHas('user', function ($q) use ($user) {
+                        $q->where('name', 'like', '%'.$user->name.'%')
+                          ->orWhere('username', $user->username);
+                    })
+                    ->first();
+
+                if (! $teacher) {
+                    $teacher = TeacherProfile::query()->whereNull('user_id')->first();
+                }
+
+                if ($teacher && ! $teacher->user_id) {
+                    $teacher->update(['user_id' => $user->id]);
+                } elseif (! $teacher) {
+                    $teacher = TeacherProfile::create(['user_id' => $user->id]);
+                }
+
                 $user->setRelation('teacherProfile', $teacher);
             }
 

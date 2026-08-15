@@ -33,14 +33,33 @@ class StudentProgressService
         }
 
         if ($this->userHasAnyRole($user, ['teacher'])) {
-            $teacherId = $user->teacherProfile?->id
-                ?? TeacherProfile::query()->where('user_id', $user->id)->value('id');
+            $teacherProfile = $user->teacherProfile
+                ?? TeacherProfile::query()->where('user_id', $user->id)->first();
+
+            if (! $teacherProfile) {
+                // Smart fallback: Find teacher profile with matching name or unlinked user_id
+                $teacherProfile = TeacherProfile::query()
+                    ->whereHas('user', function ($q) use ($user) {
+                        $q->where('name', 'like', '%'.$user->name.'%')
+                          ->orWhere('username', $user->username);
+                    })
+                    ->first();
+
+                if (! $teacherProfile) {
+                    $teacherProfile = TeacherProfile::query()->whereNull('user_id')->first();
+                }
+
+                if ($teacherProfile && ! $teacherProfile->user_id) {
+                    $teacherProfile->update(['user_id' => $user->id]);
+                }
+            }
+
+            $teacherId = $teacherProfile?->id;
 
             if (! $teacherId) {
                 return $query->whereRaw('1 = 0');
             }
 
-            // students.teacher_id selalu ada (confirmed dari migration)
             return $query->where('teacher_id', $teacherId);
         }
 
