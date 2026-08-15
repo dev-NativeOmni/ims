@@ -459,7 +459,8 @@ class StudentProgressService
 
     public function getTermMilestones(Student $student): array
     {
-        $firstHafalan = HafalanRecord::query()
+        try {
+            $firstHafalan = HafalanRecord::query()
             ->with('surah')
             ->where('student_id', $student->id)
             ->where('status', 'passed')
@@ -633,5 +634,11 @@ class StudentProgressService
             'first_record' => $firstRecord,
             'journey' => $journey,
         ];
+        } catch (\Throwable $e) {
+            return [
+                'first_record' => null,
+                'journey' => [],
+            ];
+        }
     }
 }

@@ -25,99 +25,123 @@ class ProgressController extends Controller
 
     public function index(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        if ($user->hasRole('student')) {
-            $student = Student::query()->where('user_id', $user->id)->first();
-            if ($student) {
-                return redirect()->route('progress.show', $student);
+            if ($user->hasRole('student')) {
+                $student = Student::query()->where('user_id', $user->id)->first();
+                if ($student) {
+                    return redirect()->route('progress.show', $student);
+                }
+                abort(403, 'Akun santri belum memiliki profil santri.');
             }
-            abort(403, 'Akun santri belum memiliki profil santri.');
-        }
 
-        if ($user->hasRole('parent')) {
-            $visibleStudents = $this->studentProgressService->visibleStudentQuery($user)->get();
-            if ($visibleStudents->count() === 1) {
-                return redirect()->route('progress.show', $visibleStudents->first());
+            if ($user->hasRole('parent')) {
+                $visibleStudents = $this->studentProgressService->visibleStudentQuery($user)->get();
+                if ($visibleStudents->count() === 1) {
+                    return redirect()->route('progress.show', $visibleStudents->first());
+                }
             }
-        }
 
-        $visibleStudentQuery = $this->studentProgressService
-            ->visibleStudentQuery($user);
+            $visibleStudentQuery = $this->studentProgressService
+                ->visibleStudentQuery($user);
 
-        $filterStudents = (clone $visibleStudentQuery)
-            ->with(['classRoom.program'])
-            ->orderBy('name')
-            ->get();
+            $filterStudents = (clone $visibleStudentQuery)
+                ->with(['classRoom.program'])
+                ->orderBy('name')
+                ->get();
 
-        $classRoomIds = $filterStudents
-            ->pluck('class_room_id')
-            ->filter()
-            ->unique()
-            ->values();
-
-        $classRooms = ClassRoom::query()
-            ->with('program')
-            ->when($classRoomIds->isNotEmpty(), function (Builder $query) use ($classRoomIds) {
-                $query->whereIn('id', $classRoomIds);
-            })
-            ->orderBy('name')
-            ->get();
-
-        $studentsQuery = $this->studentProgressService
-            ->visibleStudentQuery($user)
-            ->with(['classRoom.program'])
-            ->when($request->filled('student_id'), function (Builder $query) use ($request) {
-                $query->where('id', (int) $request->input('student_id'));
-            })
-            ->when($request->filled('class_room_id'), function (Builder $query) use ($request) {
-                $query->where('class_room_id', (int) $request->input('class_room_id'));
-            })
-            ->when($request->filled('q'), function (Builder $query) use ($request) {
-                $keyword = trim((string) $request->input('q'));
-
-                $query->where(function (Builder $searchQuery) use ($keyword) {
-                    $searchQuery
-                        ->where('name', 'like', '%'.$keyword.'%')
-                        ->orWhere('student_number', 'like', '%'.$keyword.'%');
-                });
-            })
-            ->orderBy('name');
-
-        $students = $studentsQuery->get();
-
-        $progressRows = $this->studentProgressService
-            ->buildRows($students)
-            ->sortByDesc('progress_percent')
-            ->values();
-
-        if ($request->input('sort') === 'name') {
-            $progressRows = $progressRows
-                ->sortBy('student_name')
+            $classRoomIds = $filterStudents
+                ->pluck('class_room_id')
+                ->filter()
+                ->unique()
                 ->values();
-        }
 
-        if ($request->input('sort') === 'overdue') {
-            $progressRows = $progressRows
-                ->sortByDesc('overdue_targets')
+            $classRooms = ClassRoom::query()
+                ->with('program')
+                ->when($classRoomIds->isNotEmpty(), function (Builder $query) use ($classRoomIds) {
+                    $query->whereIn('id', $classRoomIds);
+                })
+                ->orderBy('name')
+                ->get();
+
+            $studentsQuery = $this->studentProgressService
+                ->visibleStudentQuery($user)
+                ->with(['classRoom.program'])
+                ->when($request->filled('student_id'), function (Builder $query) use ($request) {
+                    $query->where('id', (int) $request->input('student_id'));
+                })
+                ->when($request->filled('class_room_id'), function (Builder $query) use ($request) {
+                    $query->where('class_room_id', (int) $request->input('class_room_id'));
+                })
+                ->when($request->filled('q'), function (Builder $query) use ($request) {
+                    $keyword = trim((string) $request->input('q'));
+
+                    $query->where(function (Builder $searchQuery) use ($keyword) {
+                        $searchQuery
+                            ->where('name', 'like', '%'.$keyword.'%')
+                            ->orWhere('student_number', 'like', '%'.$keyword.'%');
+                    });
+                })
+                ->orderBy('name');
+
+            $students = $studentsQuery->get();
+
+            $progressRows = $this->studentProgressService
+                ->buildRows($students)
+                ->sortByDesc('progress_percent')
                 ->values();
+
+            if ($request->input('sort') === 'name') {
+                $progressRows = $progressRows
+                    ->sortBy('student_name')
+                    ->values();
+            }
+
+            if ($request->input('sort') === 'overdue') {
+                $progressRows = $progressRows
+                    ->sortByDesc('overdue_targets')
+                    ->values();
+            }
+
+            if ($request->input('sort') === 'low_progress') {
+                $progressRows = $progressRows
+                    ->sortBy('progress_percent')
+                    ->values();
+            }
+
+            $summary = $this->studentProgressService
+                ->summaryFromRows($progressRows);
+
+            return view('progress.index', compact(
+                'summary',
+                'progressRows',
+                'filterStudents',
+                'classRooms'
+            ));
+        } catch (\Throwable $e) {
+            $summary = [
+                'total_students' => 0,
+                'total_memorized_ayahs' => 0,
+                'total_hafalan_records' => 0,
+                'total_murajaah_records' => 0,
+                'total_active_targets' => 0,
+                'total_overdue_targets' => 0,
+                'average_progress_percent' => 0,
+                'average_hafalan_score' => 0,
+                'average_murajaah_score' => 0,
+            ];
+            $progressRows = collect();
+            $filterStudents = collect();
+            $classRooms = collect();
+
+            return view('progress.index', compact(
+                'summary',
+                'progressRows',
+                'filterStudents',
+                'classRooms'
+            ));
         }
-
-        if ($request->input('sort') === 'low_progress') {
-            $progressRows = $progressRows
-                ->sortBy('progress_percent')
-                ->values();
-        }
-
-        $summary = $this->studentProgressService
-            ->summaryFromRows($progressRows);
-
-        return view('progress.index', compact(
-            'summary',
-            'progressRows',
-            'filterStudents',
-            'classRooms'
-        ));
     }
 
     public function show(Request $request, Student $student): View
