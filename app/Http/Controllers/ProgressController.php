@@ -120,20 +120,39 @@ class ProgressController extends Controller
                 'classRooms'
             ));
         } catch (\Throwable $e) {
-            $summary = [
-                'total_students' => 0,
-                'total_memorized_ayahs' => 0,
-                'total_hafalan_records' => 0,
-                'total_murajaah_records' => 0,
-                'total_active_targets' => 0,
-                'total_overdue_targets' => 0,
-                'average_progress_percent' => 0,
-                'average_hafalan_score' => 0,
-                'average_murajaah_score' => 0,
-            ];
-            $progressRows = collect();
-            $filterStudents = collect();
-            $classRooms = collect();
+            \Illuminate\Support\Facades\Log::error('ProgressController index error: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            $visibleStudentQuery = $this->studentProgressService->visibleStudentQuery($request->user());
+            $students = (clone $visibleStudentQuery)->with(['classRoom.program'])->orderBy('name')->get();
+            $filterStudents = $students;
+            $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
+            $classRooms = ClassRoom::query()->with('program')->whereIn('id', $classRoomIds)->orderBy('name')->get();
+
+            $progressRows = $students->map(function ($s) {
+                return [
+                    'student' => $s,
+                    'student_id' => $s->id,
+                    'student_name' => $s->name,
+                    'student_number' => $s->student_number ?? null,
+                    'class_room_name' => $s->classRoom?->name,
+                    'program_name' => $s->classRoom?->program?->name,
+                    'progress_percent' => 0,
+                    'memorized_ayahs' => 0,
+                    'total_quran_ayahs' => 6236,
+                    'completed_juz_count' => 0,
+                    'completed_juz_list' => 'Belum ada Juz lengkap',
+                    'total_hafalan_records' => 0,
+                    'total_murajaah_records' => 0,
+                    'average_hafalan_score' => 0,
+                    'active_targets' => 0,
+                    'completed_targets' => 0,
+                    'overdue_targets' => 0,
+                ];
+            });
+
+            $summary = $this->studentProgressService->summaryFromRows($progressRows);
 
             return view('progress.index', compact(
                 'summary',

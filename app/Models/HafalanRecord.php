@@ -44,15 +44,19 @@ class HafalanRecord extends Model
         if ($this->baris !== null) {
             return (float) $this->baris;
         }
-        if (!$this->surah) {
+        if (! $this->surah_id || ! $this->surah) {
             return 0.0;
         }
-        return \App\Http\Controllers\ReportController::calculateLines(
-            $this->surah->number,
-            $this->ayah_start,
-            $this->ayah_end,
-            $this->surah->total_ayah
-        );
+        try {
+            return \App\Http\Controllers\ReportController::calculateLines(
+                $this->surah->number,
+                $this->ayah_start ?? 1,
+                $this->ayah_end ?? 1,
+                $this->surah->total_ayah
+            );
+        } catch (\Throwable) {
+            return 0.0;
+        }
     }
 
     public function student(): BelongsTo
