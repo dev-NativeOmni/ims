@@ -61,8 +61,8 @@
                 $hasActiveFilters = request('role_id') || request('status') || request('search') || request('class_room_id');
             @endphp
 
-            <!-- CARD TOGGLE FILTERS -->
-            <div class="space-y-3">
+            <!-- CARD TOGGLE FILTERS (COMPACT) -->
+            <div class="space-y-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                         <span>🔘 Card Toggle Filter Peran &amp; Status Akun</span>
@@ -74,32 +74,27 @@
                     </h3>
                     @if($hasActiveFilters)
                         <a href="{{ route('users.index') }}" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
-                            <span>✕</span> Reset Semua Filter
+                            <span>✕</span> Reset Filter
                         </a>
                     @endif
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                <div class="flex flex-wrap gap-2">
                     <!-- Card 1: Semua User -->
                     @php
                         $isAllActive = !request('role_id') && !request('status');
                         $allUrl = route('users.index', array_filter(request()->only(['search', 'class_room_id'])));
                     @endphp
                     <a href="{{ $allUrl }}"
-                       class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isAllActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:scale-[1.01]' }}">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xl">👥</span>
-                            @if($isAllActive)
-                                <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
-                            @endif
-                        </div>
-                        <div class="mt-3">
-                            <p class="text-[11px] font-bold uppercase tracking-wider opacity-80">Semua User</p>
-                            <p class="text-xl font-extrabold mt-0.5">{{ $totalUsers }}</p>
-                        </div>
+                       class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isAllActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm ring-2 ring-indigo-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
+                        <span>👥</span>
+                        <span>Semua User</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isAllActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                            {{ $totalUsers }}
+                        </span>
                     </a>
 
-                    <!-- Loop Roles as Card Toggles -->
+                    <!-- Loop Roles as Compact Card Toggles -->
                     @foreach($roles as $role)
                         @php
                             $isRoleActive = (string) request('role_id') === (string) $role->id;
@@ -110,17 +105,12 @@
                                 : route('users.index', array_merge(array_filter(request()->only(['search', 'class_room_id'])), ['role_id' => $role->id]));
                         @endphp
                         <a href="{{ $roleUrl }}"
-                           class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isRoleActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:scale-[1.01]' }}">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xl">{{ $icon }}</span>
-                                @if($isRoleActive)
-                                    <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
-                                @endif
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-[11px] font-bold uppercase tracking-wider opacity-80 truncate" title="{{ $role->display_name }}">{{ $role->display_name }}</p>
-                                <p class="text-xl font-extrabold mt-0.5">{{ $count }}</p>
-                            </div>
+                           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isRoleActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm ring-2 ring-indigo-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
+                            <span>{{ $icon }}</span>
+                            <span>{{ $role->display_name }}</span>
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isRoleActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                                {{ $count }}
+                            </span>
                         </a>
                     @endforeach
 
@@ -132,17 +122,12 @@
                             : route('users.index', array_merge(array_filter(request()->only(['search', 'class_room_id'])), ['status' => 'inactive']));
                     @endphp
                     <a href="{{ $inactiveUrl }}"
-                       class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isInactiveActive ? 'bg-rose-600 text-white border-rose-600 shadow-md ring-2 ring-rose-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-rose-300 dark:hover:border-rose-700 hover:scale-[1.01]' }}">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xl">🔴</span>
-                            @if($isInactiveActive)
-                                <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
-                            @endif
-                        </div>
-                        <div class="mt-3">
-                            <p class="text-[11px] font-bold uppercase tracking-wider opacity-80">Non-Aktif</p>
-                            <p class="text-xl font-extrabold mt-0.5">{{ $inactiveUsers }}</p>
-                        </div>
+                       class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isInactiveActive ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
+                        <span>🔴</span>
+                        <span>Non-Aktif</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isInactiveActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
+                            {{ $inactiveUsers }}
+                        </span>
                     </a>
                 </div>
             </div>
