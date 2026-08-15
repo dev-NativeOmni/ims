@@ -205,7 +205,10 @@ class StudentReportController extends Controller
             $termTargetText = $report->tahfizh_target_term;
         } else {
             $classRoomName = $student->classRoom?->name ?? '';
-            $isGrade10 = (bool) preg_match('/^X\b/i', $classRoomName);
+            $isGrade10 = (bool) (
+                (preg_match('/\bX\b/i', $classRoomName) && !preg_match('/\b(XI|XII)\b/i', $classRoomName))
+                || preg_match('/\b10\b/i', $classRoomName)
+            );
             $isUmmiProgram = $isGrade10 || $student->tahfizh_level === 'ummi';
 
             if ($isUmmiProgram) {

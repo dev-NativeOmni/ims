@@ -131,7 +131,12 @@ class StudentProgressService
         // ─── Program & Level Detection (Ummi for Grade 10, Reguler for Grade 11 & 12) ───
         $classRoomName = $student->classRoom?->name ?? '';
         $tahfizhLevel = $student->tahfizh_level ?? 'reguler';
-        $isGrade10 = (bool) preg_match('/^X\b/i', $classRoomName);
+
+        $isGrade10 = (bool) (
+            (preg_match('/\bX\b/i', $classRoomName) && !preg_match('/\b(XI|XII)\b/i', $classRoomName))
+            || preg_match('/\b10\b/i', $classRoomName)
+        );
+
         $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
         $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';
 
@@ -589,10 +594,13 @@ class StudentProgressService
         $currentSchoolYearStart = $currentMonth >= 7 ? $currentYear : $currentYear - 1;
 
         $className = $student->classRoom?->name ?? '';
+        $isGrade12 = (bool) (preg_match('/\bXII\b/i', $className) || preg_match('/\b12\b/i', $className));
+        $isGrade11 = (bool) ((preg_match('/\bXI\b/i', $className) && !preg_match('/\bXII\b/i', $className)) || preg_match('/\b11\b/i', $className));
+
         $currentGradeNum = 10;
-        if (preg_match('/^XII\b/i', $className)) {
+        if ($isGrade12) {
             $currentGradeNum = 12;
-        } elseif (preg_match('/^XI\b/i', $className)) {
+        } elseif ($isGrade11) {
             $currentGradeNum = 11;
         }
 
