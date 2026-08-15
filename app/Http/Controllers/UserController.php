@@ -48,7 +48,25 @@ class UserController extends Controller
         $roles = Role::orderBy('display_name')->get();
         $classRooms = \App\Models\ClassRoom::orderBy('name')->get();
 
-        return view('users.index', compact('users', 'roles', 'classRooms'));
+        $roleCounts = DB::table('users')
+            ->select('role_id', DB::raw('count(*) as total'))
+            ->groupBy('role_id')
+            ->pluck('total', 'role_id')
+            ->toArray();
+
+        $totalUsers = User::count();
+        $inactiveUsers = User::where('status', 'inactive')->count();
+        $activeUsers = User::where('status', 'active')->count();
+
+        return view('users.index', compact(
+            'users',
+            'roles',
+            'classRooms',
+            'roleCounts',
+            'totalUsers',
+            'inactiveUsers',
+            'activeUsers'
+        ));
     }
 
     public function edit(User $user): View

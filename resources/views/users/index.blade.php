@@ -42,7 +42,112 @@
                 </div>
             </div>
 
-            <!-- Filter & Pencarian -->
+            @php
+                $getRoleIcon = function($roleName) {
+                    return match($roleName) {
+                        'student' => '🎓',
+                        'teacher' => '👨‍🏫',
+                        'parent' => '👨‍👩‍👧',
+                        'coordinator_tahfizh' => '🕌',
+                        'tanse' => '🛡️',
+                        'super_admin', 'admin' => '👑',
+                        'headmaster' => '🏫',
+                        'supervisor' => '👁️',
+                        'pendamping_adab' => '🌟',
+                        default => '👤'
+                    };
+                };
+
+                $hasActiveFilters = request('role_id') || request('status') || request('search') || request('class_room_id');
+            @endphp
+
+            <!-- CARD TOGGLE FILTERS -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                        <span>🔘 Card Toggle Filter Peran &amp; Status Akun</span>
+                        @if($hasActiveFilters)
+                            <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                                Filter Aktif
+                            </span>
+                        @endif
+                    </h3>
+                    @if($hasActiveFilters)
+                        <a href="{{ route('users.index') }}" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
+                            <span>✕</span> Reset Semua Filter
+                        </a>
+                    @endif
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                    <!-- Card 1: Semua User -->
+                    @php
+                        $isAllActive = !request('role_id') && !request('status');
+                        $allUrl = route('users.index', array_filter(request()->only(['search', 'class_room_id'])));
+                    @endphp
+                    <a href="{{ $allUrl }}"
+                       class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isAllActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:scale-[1.01]' }}">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl">👥</span>
+                            @if($isAllActive)
+                                <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
+                            @endif
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-[11px] font-bold uppercase tracking-wider opacity-80">Semua User</p>
+                            <p class="text-xl font-extrabold mt-0.5">{{ $totalUsers }}</p>
+                        </div>
+                    </a>
+
+                    <!-- Loop Roles as Card Toggles -->
+                    @foreach($roles as $role)
+                        @php
+                            $isRoleActive = (string) request('role_id') === (string) $role->id;
+                            $count = $roleCounts[$role->id] ?? 0;
+                            $icon = $getRoleIcon($role->name);
+                            $roleUrl = $isRoleActive
+                                ? route('users.index', array_filter(request()->only(['search', 'class_room_id'])))
+                                : route('users.index', array_merge(array_filter(request()->only(['search', 'class_room_id'])), ['role_id' => $role->id]));
+                        @endphp
+                        <a href="{{ $roleUrl }}"
+                           class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isRoleActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:scale-[1.01]' }}">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xl">{{ $icon }}</span>
+                                @if($isRoleActive)
+                                    <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
+                                @endif
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-[11px] font-bold uppercase tracking-wider opacity-80 truncate" title="{{ $role->display_name }}">{{ $role->display_name }}</p>
+                                <p class="text-xl font-extrabold mt-0.5">{{ $count }}</p>
+                            </div>
+                        </a>
+                    @endforeach
+
+                    <!-- Card Non-Aktif -->
+                    @php
+                        $isInactiveActive = request('status') === 'inactive';
+                        $inactiveUrl = $isInactiveActive
+                            ? route('users.index', array_filter(request()->only(['search', 'class_room_id'])))
+                            : route('users.index', array_merge(array_filter(request()->only(['search', 'class_room_id'])), ['status' => 'inactive']));
+                    @endphp
+                    <a href="{{ $inactiveUrl }}"
+                       class="p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group {{ $isInactiveActive ? 'bg-rose-600 text-white border-rose-600 shadow-md ring-2 ring-rose-500/50 scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-rose-300 dark:hover:border-rose-700 hover:scale-[1.01]' }}">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl">🔴</span>
+                            @if($isInactiveActive)
+                                <span class="text-[10px] font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-full">✓ Aktif</span>
+                            @endif
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-[11px] font-bold uppercase tracking-wider opacity-80">Non-Aktif</p>
+                            <p class="text-xl font-extrabold mt-0.5">{{ $inactiveUsers }}</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter & Pencarian Form -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
                 <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
