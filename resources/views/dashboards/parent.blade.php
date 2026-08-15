@@ -83,7 +83,18 @@
                     @forelse ($childrenProgress as $idx => $row)
                         @php
                             $student = data_get($row, 'student');
-                            $isUmmi = data_get($row, 'is_ummi_program', false);
+                            $className = data_get($row, 'class_room_name', $student?->classRoom?->name ?? '');
+                            $classLevel = $student?->classRoom?->level ?? '';
+                            $isGrade10Class = (bool) (
+                                (preg_match('/\bX\b/i', $className) && !preg_match('/\b(XI|XII)\b/i', $className))
+                                || preg_match('/\b10\b/i', $className)
+                                || preg_match('/^X[-_\s]?E/i', $className)
+                                || preg_match('/kelas\s*(X|10)/i', $className)
+                                || (preg_match('/\bX\b/i', $classLevel) && !preg_match('/\b(XI|XII)\b/i', $classLevel))
+                                || preg_match('/\b10\b/i', $classLevel)
+                            ) && !preg_match('/\b(XI|XII|11|12)\b/i', $className);
+
+                            $isUmmi = data_get($row, 'is_ummi_program', false) || $isGrade10Class;
                             $statusColor = data_get($row, 'status_color', 'emerald');
                             $statusLabel = data_get($row, 'status_label', 'On-Track / Tuntas');
                             $statusIcon = data_get($row, 'status_icon', '🟢');
