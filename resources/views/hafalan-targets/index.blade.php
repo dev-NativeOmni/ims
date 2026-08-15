@@ -160,15 +160,27 @@
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100">
-                                <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🕌 Pilih Halaqah Musyrif / Guru Pembimbing</label>
-                                <select name="teacher_id" required class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
-                                    @foreach ($teachers as $t)
-                                        <option value="{{ $t->id }}" @selected((string) request('teacher_id', $currentTeacherId) === (string) $t->id)>
-                                            Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100 flex items-center justify-between">
+                                @if (! empty($isTeacherOnly) && $isTeacherOnly)
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">🕌 Halaqah Musyrif Anda</label>
+                                        <p class="text-base font-extrabold text-teal-900">
+                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Santri Bimbingan)
+                                        </p>
+                                    </div>
+                                    <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
+                                @else
+                                    <div class="w-full">
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🕌 Pilih Halaqah Musyrif / Guru Pembimbing</label>
+                                        <select name="teacher_id" required onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id='+this.value" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
+                                            @foreach ($teachers as $t)
+                                                <option value="{{ $t->id }}" @selected((string) request('teacher_id', $currentTeacherId) === (string) $t->id)>
+                                                    Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
                             </div>
 
                             <div>

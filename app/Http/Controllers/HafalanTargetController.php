@@ -127,11 +127,23 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
-        $teachers = \App\Models\TeacherProfile::query()
-            ->with('user')
-            ->whereHas('user')
-            ->orderBy('id')
-            ->get();
+        $user = $request->user();
+        $isTeacherOnly = $user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']);
+
+        if ($isTeacherOnly && $user->teacherProfile) {
+            $teachers = \App\Models\TeacherProfile::query()
+                ->with('user')
+                ->where('id', $user->teacherProfile->id)
+                ->get();
+            $currentTeacherId = $user->teacherProfile->id;
+        } else {
+            $teachers = \App\Models\TeacherProfile::query()
+                ->with('user')
+                ->whereHas('user')
+                ->orderBy('id')
+                ->get();
+            $currentTeacherId = (int) ($request->input('teacher_id') ?: ($user->teacherProfile?->id ?? $teachers->first()?->id));
+        }
 
         $students = Student::query()
             ->with(['classRoom.program', 'teacher.user'])
@@ -140,8 +152,8 @@ class HafalanTargetController extends Controller
             ->when($request->filled('class_room_id'), function ($q) use ($request) {
                 $q->where('class_room_id', $request->integer('class_room_id'));
             })
-            ->when($request->filled('teacher_id'), function ($q) use ($request) {
-                $q->where('teacher_id', $request->integer('teacher_id'));
+            ->when($request->filled('teacher_id') || $isTeacherOnly, function ($q) use ($request, $currentTeacherId) {
+                $q->where('teacher_id', $currentTeacherId);
             })
             ->orderBy('name')
             ->get();
@@ -152,9 +164,6 @@ class HafalanTargetController extends Controller
 
         $statusOptions = $this->targetStatuses();
 
-        // Default teacher_id if logged in user is a teacher
-        $currentTeacherId = $request->user()?->teacherProfile?->id ?? $teachers->first()?->id;
-
         return view('hafalan-targets.index', compact(
             'targets',
             'students',
@@ -164,7 +173,8 @@ class HafalanTargetController extends Controller
             'summary',
             'statusOptions',
             'activeProgram',
-            'currentTeacherId'
+            'currentTeacherId',
+            'isTeacherOnly'
         ));
     }
 
@@ -231,7 +241,12 @@ class HafalanTargetController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $teacherProfile = \App\Models\TeacherProfile::findOrFail($validated['teacher_id']);
+        $user = $request->user();
+        if ($user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']) && $user->teacherProfile) {
+            $teacherProfile = $user->teacherProfile;
+        } else {
+            $teacherProfile = \App\Models\TeacherProfile::findOrFail($validated['teacher_id']);
+        }
 
         $students = Student::query()
             ->where('teacher_id', $teacherProfile->id)
