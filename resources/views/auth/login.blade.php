@@ -10,7 +10,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'IMS') }} - {{ __('Log in') }}</title>
+    <title>{{ config('app.name', 'IMS SMAIA 7') }} - {{ __('Log in') }}</title>
+
+    <!-- PWA & Apple iOS Metadata -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="IMS SMAIA 7">
+    <link rel="apple-touch-icon" href="/images/logo_alazhar7.png">
+    <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
+
+    <!-- iOS Safari BFCache & Session Expiry Safeguard -->
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {});
+            });
+        }
+    </script>
 
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
