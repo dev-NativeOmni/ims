@@ -19,7 +19,13 @@ class UserController extends Controller
     {
         $this->authorizeSuperAdmin();
 
-        $query = User::query()->with(['role', 'studentProfile.classRoom']);
+        $query = User::query()->with([
+            'role',
+            'studentProfile.classRoom',
+            'studentProfile.parents.user',
+            'parentProfile.students.classRoom',
+            'parentProfile.students.user',
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();

@@ -211,14 +211,60 @@
                             @forelse ($users as $u)
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150" x-data="{ showPass: false }">
                                     <td class="px-6 py-4">
-                                        <div class="font-semibold text-zinc-900 dark:text-white">
+                                        <div class="font-bold text-zinc-900 dark:text-white text-sm">
                                             {{ $u->name }}
                                         </div>
-                                        @if ($u->studentProfile?->classRoom)
-                                            <div class="mt-1">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30 whitespace-nowrap">
-                                                    Kelas {{ $u->studentProfile->classRoom->name }}
-                                                </span>
+
+                                        {{-- Relasi Murid -> Orang Tua --}}
+                                        @if ($u->studentProfile)
+                                            <div class="mt-1.5 space-y-1">
+                                                @if ($u->studentProfile->classRoom)
+                                                    <div>
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/50">
+                                                            🏫 Kelas {{ $u->studentProfile->classRoom->name }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($u->studentProfile->parents->isNotEmpty())
+                                                    @foreach ($u->studentProfile->parents as $pProfile)
+                                                        <div class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
+                                                            <span class="text-xs">👨‍👩‍👧</span>
+                                                            <span class="text-zinc-500 dark:text-zinc-400">Ortu:</span>
+                                                            <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ $pProfile->user?->name ?? 'Orang Tua' }}</span>
+                                                            <span class="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">({{ '@' . ($pProfile->user?->username ?? '-') }})</span>
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    <div class="text-[11px] font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                                        <span>⚠️</span> Belum Terhubung Orang Tua
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- Relasi Orang Tua -> Murid --}}
+                                        @if ($u->parentProfile)
+                                            <div class="mt-1.5 space-y-1">
+                                                @if ($u->parentProfile->students->isNotEmpty())
+                                                    @foreach ($u->parentProfile->students as $cStudent)
+                                                        <div class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
+                                                            <span class="text-xs">👦</span>
+                                                            <span class="text-zinc-500 dark:text-zinc-400">Anak:</span>
+                                                            <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ $cStudent->name }}</span>
+                                                            @if($cStudent->classRoom)
+                                                                <span class="px-1.5 py-0.2 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
+                                                                    {{ $cStudent->classRoom->name }}
+                                                                </span>
+                                                            @endif
+                                                            <span class="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">({{ '@' . ($cStudent->user?->username ?? '-') }})</span>
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    <div class="text-[11px] font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                                        <span>⚠️</span> Belum Terhubung Murid
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endif
                                     </td>
