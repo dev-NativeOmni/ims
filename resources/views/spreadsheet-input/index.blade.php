@@ -646,6 +646,25 @@
                 </form>
             @endif
 
+            <!-- Floating Unsaved Changes Save Bar -->
+            <div x-show="isDirty"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-12 opacity-0"
+                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200 transform"
+                 x-transition:leave-start="translate-y-0 opacity-100"
+                 x-transition:leave-end="translate-y-12 opacity-0"
+                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl border border-zinc-700 dark:border-zinc-200 flex items-center gap-4 text-xs font-bold"
+                 style="display: none;">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                    <span>Ada perubahan yang belum disimpan!</span>
+                </div>
+                <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-xl font-bold transition shadow-md cursor-pointer">
+                    💾 Simpan Sekarang
+                </button>
+            </div>
+
         </div>
     </div>
 </x-app-layout>

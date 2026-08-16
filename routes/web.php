@@ -26,6 +26,7 @@ use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\SpreadsheetInputController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
             'csrf' => csrf_token(),
         ]);
     })->name('keep-alive');
+
+    Route::post('/impersonate/stop', [ImpersonateController::class, 'stop'])->name('impersonate.stop');
     /*
     |--------------------------------------------------------------------------
     | Dashboard
@@ -199,6 +202,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::post('users/{user}/link-parents', [UserController::class, 'linkParents'])->name('users.link-parents');
         Route::post('users/{user}/link-students', [UserController::class, 'linkStudents'])->name('users.link-students');
+        Route::post('impersonate/{user}', [ImpersonateController::class, 'start'])->name('impersonate.start');
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });

@@ -486,7 +486,15 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
+                                        <div class="flex items-center justify-end gap-2 flex-wrap">
+                                            @if (auth()->id() !== $u->id)
+                                                <form action="{{ route('impersonate.start', $u) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" title="Masuk & Uji Sistem sebagai User ini" class="inline-flex items-center px-2.5 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/60 dark:hover:bg-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-md transition duration-150 cursor-pointer">
+                                                        👤 Impersonate
+                                                    </button>
+                                                </form>
+                                            @endif
                                             <a href="{{ route('users.edit', $u) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-150">
                                                 Edit
                                             </a>

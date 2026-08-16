@@ -6,6 +6,7 @@ use App\Http\Requests\StoreParentRequest;
 use App\Http\Requests\UpdateParentRequest;
 use App\Models\ParentProfile;
 use App\Models\Role;
+use App\Models\Student;
 use App\Models\User;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
@@ -235,6 +236,7 @@ class ParentController extends Controller
             'telepon' => $col('telepon') ?? $col('phone'),
             'alamat' => $col('alamat') ?? $col('address'),
             'status' => $col('status'),
+            'username_santri' => $col('username santri') ?? $col('student_usernames') ?? $col('email santri') ?? $col('student_emails') ?? $col('nis_santri') ?? $col('nis santri'),
         ];
 
         if ($map['nama'] === null || $map['username'] === null) {
@@ -266,6 +268,7 @@ class ParentController extends Controller
                 $alamat = $map['alamat'] !== null ? trim((string) ($row[$map['alamat']] ?? '')) : null;
 
                 $existingUser = User::where('username', $username)->first();
+                $profile = null;
 
                 if ($existingUser) {
                     $existingUser->update([
@@ -287,7 +290,7 @@ class ParentController extends Controller
                         }
                     } else {
                         if ($parentRole && $existingUser->role_id === $parentRole->id) {
-                            ParentProfile::create([
+                            $profile = ParentProfile::create([
                                 'user_id' => $existingUser->id,
                                 'phone' => $telepon ?: null,
                                 'address' => $alamat ?: null,
@@ -307,12 +310,47 @@ class ParentController extends Controller
                         'plain_password' => 'password123',
                         'status' => $status,
                     ]);
-                    ParentProfile::create([
+                    $profile = ParentProfile::create([
                         'user_id' => $newUser->id,
                         'phone' => $telepon ?: null,
                         'address' => $alamat ?: null,
                     ]);
                     $imported++;
+                }
+
+                // Auto-link connected students if username_santri column is populated
+                if ($profile && $map['username_santri'] !== null) {
+                    $studentUsernamesStr = trim((string) ($row[$map['username_santri']] ?? ''));
+                    if (! empty($studentUsernamesStr)) {
+                        $studentTokens = preg_split('/[;,]/', $studentUsernamesStr);
+                        $studentIdsToSync = [];
+
+                        foreach ($studentTokens as $token) {
+                            $token = trim((string) $token);
+                            if (str_contains($token, '@')) {
+                                $token = explode('@', $token)[0];
+                            }
+                            if (empty($token)) {
+                                continue;
+                            }
+
+                            // Match by student user username or student_number (NIS)
+                            $foundStudent = Student::query()
+                                ->where('student_number', $token)
+                                ->orWhereHas('user', function ($q) use ($token) {
+                                    $q->where('username', $token);
+                                })
+                                ->first();
+
+                            if ($foundStudent) {
+                                $studentIdsToSync[] = $foundStudent->id;
+                            }
+                        }
+
+                        if (! empty($studentIdsToSync)) {
+                            $profile->students()->syncWithoutDetaching($studentIdsToSync);
+                        }
+                    }
                 }
             }
             DB::commit();
