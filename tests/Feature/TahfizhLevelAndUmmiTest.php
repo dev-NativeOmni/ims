@@ -134,7 +134,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'tanggal' => now()->toDateString(),
             'hafalan_surah_id' => $this->surah->id,
             'hafalan_ayah' => '1-5',
-            'ummi_jilid' => 'Jilid 4',
+            'ummi_jilid' => 'Jilid 2',
             'ummi_halaman' => 'Halaman 12',
             'materi' => 'Mad Jaiz Munfashil',
             'nilai' => 'B+',
@@ -150,7 +150,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $this->assertDatabaseHas('ummi_records', [
             'student_id' => $this->studentUmmi->id,
             'tatap_muka' => 5,
-            'ummi_jilid' => 'Jilid 4',
+            'ummi_jilid' => 'Jilid 2',
             'nilai' => 'B+',
         ]);
     }
@@ -228,7 +228,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'teacher_id' => $this->teacher->id,
             'tatap_muka' => 10,
             'tanggal' => now(),
-            'ummi_jilid' => 'Jilid 5',
+            'ummi_jilid' => 'Jilid 3',
             'ummi_halaman' => '15',
             'materi' => 'Materi UMMI',
             'nilai' => 'A',
@@ -242,7 +242,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
         // Verify variables are passed in view
         $response->assertViewHas('tahfizhLevelLabel', 'Metode Ummi');
-        $response->assertViewHas('latestCapaianText', 'Jilid 5 Hal. 15 [Nilai: A]');
+        $response->assertViewHas('latestCapaianText', 'Jilid 3 Hal. 15 [Nilai: A]');
         $response->assertViewHas('latestCapaianNotes', 'Sangat lancar');
     }
 

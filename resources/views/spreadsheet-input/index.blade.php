@@ -302,9 +302,6 @@
                                                                             <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
                                                                             <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
                                                                             <option value="Jilid 3" class="dark:bg-zinc-900">Jilid 3</option>
-                                                                            <option value="Jilid 4" class="dark:bg-zinc-900">Jilid 4</option>
-                                                                            <option value="Jilid 5" class="dark:bg-zinc-900">Jilid 5</option>
-                                                                            <option value="Jilid 6" class="dark:bg-zinc-900">Jilid 6</option>
                                                                             <option value="Al-Qur'an" class="dark:bg-zinc-900">Al-Qur'an</option>
                                                                             <option value="Ghoroib" class="dark:bg-zinc-900">Ghoroib</option>
                                                                             <option value="Tajwid" class="dark:bg-zinc-900">Tajwid</option>
@@ -520,9 +517,6 @@
                                                                 <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
                                                                 <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
                                                                 <option value="Jilid 3" class="dark:bg-zinc-900">Jilid 3</option>
-                                                                <option value="Jilid 4" class="dark:bg-zinc-900">Jilid 4</option>
-                                                                <option value="Jilid 5" class="dark:bg-zinc-900">Jilid 5</option>
-                                                                <option value="Jilid 6" class="dark:bg-zinc-900">Jilid 6</option>
                                                                 <option value="Al-Qur'an" class="dark:bg-zinc-900">Al-Qur'an</option>
                                                                 <option value="Ghoroib" class="dark:bg-zinc-900">Ghoroib</option>
                                                                 <option value="Tajwid" class="dark:bg-zinc-900">Tajwid</option>

@@ -186,12 +186,9 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📖 Jilid Ummi</label>
                                 <select name="ummi_jilid" required class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                                    <option value="Jilid 1">Jilid 1</option>
-                                    <option value="Jilid 2">Jilid 2</option>
-                                    <option value="Jilid 3">Jilid 3</option>
-                                    <option value="Jilid 4" selected>Jilid 4</option>
-                                    <option value="Jilid 5">Jilid 5</option>
-                                    <option value="Jilid 6">Jilid 6</option>
+                                    <option value="Jilid 1">Jilid 1 (Dewasa)</option>
+                                    <option value="Jilid 2">Jilid 2 (Dewasa)</option>
+                                    <option value="Jilid 3">Jilid 3 (Dewasa)</option>
                                     <option value="Gharib">Gharib</option>
                                     <option value="Tajwid">Tajwid</option>
                                     <option value="Al-Qur'an">Al-Qur'an</option>

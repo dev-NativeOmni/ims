@@ -162,8 +162,12 @@ class StudentProgressService
 
         $currentJilidStr = $latestUmmiRecord?->ummi_jilid ?? 'Jilid 1';
         preg_match('/(\d+)/', $currentJilidStr, $mJilid);
-        $currentJilidNum = isset($mJilid[1]) ? (int) $mJilid[1] : 1;
-        $ummiJilidPercent = min(100.0, round(($currentJilidNum / 6) * 100, 1));
+        $currentJilidNum = isset($mJilid[1]) ? min(3, max(1, (int) $mJilid[1])) : 1;
+        preg_match('/(\d+)/', (string) ($latestUmmiRecord?->ummi_halaman ?? ''), $mHal);
+        $currentHalaman = isset($mHal[1]) ? min(40, max(1, (int) $mHal[1])) : 1;
+        // Jilid Ummi Dewasa: 3 Jilid @ 40 Halaman (120 Halaman Total)
+        $totalPagesCompleted = max(1, ($currentJilidNum - 1) * 40 + $currentHalaman);
+        $ummiJilidPercent = min(100.0, round(($totalPagesCompleted / 120) * 100, 1));
 
         // ─── Reguler Program Details (For Grade 11 & 12) ───
         $levelBaris = match ($tahfizhLevel) {

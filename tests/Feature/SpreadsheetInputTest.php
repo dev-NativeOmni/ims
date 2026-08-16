@@ -113,7 +113,7 @@ class SpreadsheetInputTest extends TestCase
                         $date => [
                             'attendance' => 'hadir',
                             'tatap_muka' => 3,
-                            'ummi_jilid' => 'Jilid 4',
+                            'ummi_jilid' => 'Jilid 2',
                             'ummi_halaman' => '25',
                             'materi' => 'Ghoroib',
                             'nilai' => 'A',
@@ -146,7 +146,7 @@ class SpreadsheetInputTest extends TestCase
             'student_id' => $this->student->id,
             'tatap_muka' => 3,
             'tanggal' => $date . ' 00:00:00',
-            'ummi_jilid' => 'Jilid 4',
+            'ummi_jilid' => 'Jilid 2',
             'ummi_halaman' => '25',
             'materi' => 'Ghoroib',
             'nilai' => 'A',

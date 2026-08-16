@@ -359,7 +359,7 @@ class HafalanTargetTest extends TestCase
     {
         $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store-bulk-ummi'), [
             'teacher_id' => $this->teacherProfile->id,
-            'ummi_jilid' => 'Jilid 4',
+            'ummi_jilid' => 'Jilid 2',
             'halaman_peraga' => 'Hal 10',
             'halaman_buku' => 'Hal 15',
             'surah_id' => $this->surah->id,
@@ -373,7 +373,7 @@ class HafalanTargetTest extends TestCase
         $this->assertDatabaseHas('hafalan_targets', [
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
-            'ummi_jilid' => 'Jilid 4',
+            'ummi_jilid' => 'Jilid 2',
             'halaman_peraga' => 'Hal 10',
             'halaman_buku' => 'Hal 15',
         ]);

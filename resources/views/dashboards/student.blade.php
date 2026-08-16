@@ -128,7 +128,7 @@
                         <div class="mt-4 pt-3">
                             <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
                                 <span>Progress Ketercapaian Jilid Ummi</span>
-                                <span>{{ data_get($progress, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($progress, 'ummi_jilid_num', 1) }} / 6)</span>
+                                <span>{{ data_get($progress, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($progress, 'ummi_jilid_num', 1) }} / 3 Dewasa)</span>
                             </div>
                             <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                                 <div class="h-3 rounded-full bg-teal-600 transition-all duration-300" style="width: {{ data_get($progress, 'ummi_jilid_percent', 0) }}%"></div>
