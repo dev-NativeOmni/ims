@@ -61,7 +61,7 @@
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                     <h3 class="text-base font-semibold text-gray-900">
-                        Profil Santri
+                        Profil Murid
                     </h3>
 
                     <dl class="mt-4 space-y-3 text-sm">
@@ -73,7 +73,7 @@
                         </div>
 
                         <div>
-                            <dt class="text-gray-500">Nomor Santri</dt>
+                            <dt class="text-gray-500">Nomor Murid</dt>
                             <dd class="font-semibold text-gray-900">
                                 {{ $student->student_number ?? '-' }}
                             </dd>
@@ -246,7 +246,7 @@
                 </div>
             </div>
 
-            {{-- ═══════════════ PETA PERJALANAN HAFALAN SANTRI (4 TERM X 3 KELAS) ═══════════════ --}}
+            {{-- ═══════════════ PETA PERJALANAN HAFALAN MURID (4 TERM X 3 KELAS) ═══════════════ --}}
             <x-student-hafalan-journey :milestones="data_get($progress, 'term_milestones', [])" />
 
             @includeIf('progress.partials.motivation', [
@@ -261,7 +261,7 @@
                             📈 Tren Perkembangan Hafalan
                         </h3>
                         <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
-                            Grafik performa hafalan bulanan dan pertumbuhan akumulasi baris hafalan santri dalam 12 bulan terakhir.
+                            Grafik performa hafalan bulanan dan pertumbuhan akumulasi baris hafalan murid dalam 12 bulan terakhir.
                         </p>
                     </div>
                     @if ($mostActiveMonthLabel)
@@ -515,7 +515,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="4" class="px-4 py-8 text-center text-gray-500">
-                                            Belum ada hafalan lulus untuk santri ini.
+                                            Belum ada hafalan lulus untuk murid ini.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -612,7 +612,7 @@
                     </h3>
 
                     <p class="mt-1 text-sm text-gray-500">
-                        Data setoran hafalan santri.
+                        Data setoran hafalan murid.
                     </p>
                 </div>
 
@@ -708,7 +708,7 @@
                     </h3>
 
                     <p class="mt-1 text-sm text-gray-500">
-                        Data pengulangan hafalan santri.
+                        Data pengulangan hafalan murid.
                     </p>
                 </div>
 

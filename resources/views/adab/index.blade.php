@@ -23,7 +23,7 @@
                 <div class="relative z-10 max-w-2xl">
                     <h3 class="text-xl font-bold mb-2">Evaluasi Akhlak & Adab Harian</h3>
                     <p class="text-teal-100 text-sm leading-relaxed">
-                        Evaluasi kedisiplinan dan pembiasaan adab islami harian santri. Penilaian mencakup 3 modul mandiri santri (adab kepada Allah, adab kepada Rasulullah, adab belajar) dengan bobot 50% dan penilaian pendamping adab dengan bobot 50%.
+                        Evaluasi kedisiplinan dan pembiasaan adab islami harian murid. Penilaian mencakup 3 modul mandiri murid (adab kepada Allah, adab kepada Rasulullah, adab belajar) dengan bobot 50% dan penilaian pendamping adab dengan bobot 50%.
                     </p>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                     :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
                     class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
                 >
-                    Daftar Evaluasi Santri
+                    Daftar Evaluasi Murid
                 </button>
                 <button 
                     @click="tab = 'dashboard'"
@@ -52,7 +52,7 @@
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
                     <form method="GET" action="{{ route('adab.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari Santri</label>
+                            <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari Murid</label>
                             <input
                                 type="text"
                                 name="search"
@@ -93,7 +93,7 @@
                         <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
                             <thead class="bg-zinc-50 dark:bg-zinc-900/50">
                                 <tr class="text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                                    <th class="px-6 py-4">Nama Santri</th>
+                                    <th class="px-6 py-4">Nama Murid</th>
                                     <th class="px-6 py-4">Kelas</th>
                                     <th class="px-6 py-4 text-center">Status Hari Ini ({{ \Carbon\Carbon::parse($today)->format('d M') }})</th>
                                     <th class="px-6 py-4 text-center">Rata-rata Nilai</th>
@@ -174,7 +174,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="5" class="px-6 py-8 text-center text-zinc-400 dark:text-zinc-500">
-                                            Tidak ada data santri ditemukan.
+                                            Tidak ada data murid ditemukan.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -251,15 +251,15 @@
                     <!-- Instructions and Advice -->
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm lg:col-span-2 flex flex-col justify-between">
                         <div>
-                            <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2">💡 Tips Pembinaan Karakter Santri</h4>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2">💡 Tips Pembinaan Karakter Murid</h4>
                             <ul class="space-y-2 text-xs text-gray-600 dark:text-zinc-400 leading-relaxed list-disc list-inside">
-                                <li><strong>Target Kepatuhan Tinggi:</strong> Santri dengan kepatuhan adab di atas 85% dikategorikan sebagai <span class="text-green-600 dark:text-emerald-400 font-semibold">Mumtaz</span>. Berikan pujian untuk mempertahankan konsistensi.</li>
+                                <li><strong>Target Kepatuhan Tinggi:</strong> Murid dengan kepatuhan adab di atas 85% dikategorikan sebagai <span class="text-green-600 dark:text-emerald-400 font-semibold">Mumtaz</span>. Berikan pujian untuk mempertahankan konsistensi.</li>
                                 <li><strong>Intervensi Dini:</strong> Jika adab Al-Qur'an memiliki nilai kepatuhan yang rendah, kaji ulang jadwal murojaah harian bersama asatidzah/guru tahfizh.</li>
-                                <li><strong>Kolaborasi dengan Orang Tua:</strong> Manfaatkan menu adab untuk mendiskusikan kepatuhan harian santri saat berada di lingkungan rumah bersama orang tua wali.</li>
+                                <li><strong>Kolaborasi dengan Orang Tua:</strong> Manfaatkan menu adab untuk mendiskusikan kepatuhan harian murid saat berada di lingkungan rumah bersama orang tua wali.</li>
                             </ul>
                         </div>
                         <div class="mt-6 p-4 bg-teal-50/50 dark:bg-teal-950/10 rounded-xl border border-teal-100 dark:border-teal-900/30 text-xs text-teal-800 dark:text-teal-400">
-                            <strong>Statistik Real-time:</strong> Data di atas diperoleh secara langsung dari rangkuman kuisioner adab harian santri aktif yang telah divalidasi.
+                            <strong>Statistik Real-time:</strong> Data di atas diperoleh secara langsung dari rangkuman kuisioner adab harian murid aktif yang telah divalidasi.
                         </div>
                     </div>
                 </div>

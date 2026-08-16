@@ -126,7 +126,7 @@ class ParentController extends Controller
     public function destroy(ParentProfile $parent): RedirectResponse
     {
         if ($parent->students()->exists()) {
-            return back()->with('error', 'Orangtua/wali tidak bisa dihapus karena masih terhubung dengan santri.');
+            return back()->with('error', 'Orangtua/wali tidak bisa dihapus karena masih terhubung dengan murid.');
         }
 
         DB::transaction(function () use ($parent) {
@@ -153,7 +153,7 @@ class ParentController extends Controller
             ->orderBy('id')
             ->get();
 
-        $headers = ['Nama', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Santri'];
+        $headers = ['Nama', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Murid'];
         $data = [];
 
         foreach ($parents as $parent) {

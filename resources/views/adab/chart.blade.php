@@ -6,7 +6,7 @@
                     Grafik Perkembangan Pengisian Kuisioner Adab
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-zinc-400">
-                    Persentase keterisian kuisioner harian santri per kelas pada Hari Kerja Efektif (Senin–Jumat).
+                    Persentase keterisian kuisioner harian murid per kelas pada Hari Kerja Efektif (Senin–Jumat).
                 </p>
             </div>
             {{-- Filter Periode Bulan & Tahun --}}
@@ -68,7 +68,7 @@
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">Total Kelas Terdaftar</span>
                         <div class="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">{{ $classReport->count() }} Kelas</div>
-                        <span class="text-[11px] text-gray-400">{{ $classReport->sum('total_students') }} Santri Aktif</span>
+                        <span class="text-[11px] text-gray-400">{{ $classReport->sum('total_students') }} Murid Aktif</span>
                     </div>
                 </div>
             </div>
@@ -78,7 +78,7 @@
                 <div class="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">Grafik Tren Perkembangan Pengisian Adab (Januari – Desember {{ $year }})</h3>
-                        <p class="text-xs text-gray-500">Persentase rata-rata keterisian kuisioner adab santri di seluruh sekolah dari bulan ke bulan.</p>
+                        <p class="text-xs text-gray-500">Persentase rata-rata keterisian kuisioner adab murid di seluruh sekolah dari bulan ke bulan.</p>
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@
                             <div class="flex justify-between items-center text-sm font-semibold">
                                 <span class="text-gray-800 dark:text-zinc-200 flex items-center gap-2">
                                     <span class="font-bold">{{ $item['class_room']->name }}</span>
-                                    <span class="text-xs font-normal text-gray-400">({{ $item['total_students'] }} Santri | Rerata {{ $item['avg_filled_days'] }} Hari Terisi)</span>
+                                    <span class="text-xs font-normal text-gray-400">({{ $item['total_students'] }} Murid | Rerata {{ $item['avg_filled_days'] }} Hari Terisi)</span>
                                 </span>
                                 <span class="font-black text-base {{ $textClass }}">{{ $rate }}%</span>
                             </div>
@@ -135,7 +135,7 @@
             {{-- Detail Tabel Rekap per Kelas --}}
             <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden" x-data="{ openClass: null }">
                 <div class="p-6 border-b border-gray-200 dark:border-zinc-800">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Rekapitulasi Detail per Santri dalam Kelas</h3>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Rekapitulasi Detail per Murid dalam Kelas</h3>
                 </div>
 
                 <div class="divide-y divide-gray-200 dark:divide-zinc-800">
@@ -162,14 +162,14 @@
                                 </div>
                             </div>
 
-                            {{-- Accordion Body: Santri Details --}}
+                            {{-- Accordion Body: Murid Details --}}
                             <div x-show="openClass === {{ $cIdx }}" x-collapse class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-xs">
                                         <thead class="bg-gray-50 dark:bg-zinc-800/50 text-gray-500 uppercase font-bold">
                                             <tr>
                                                 <th class="p-3">No</th>
-                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Nama Murid</th>
                                                 <th class="p-3 text-center">Hari Terisi (dari {{ $effectiveDaysTotal }} Efektif)</th>
                                                 <th class="p-3 text-center">Kerajinan Kuisioner (40%)</th>
                                                 <th class="p-3 text-center">Skor Akhir Adab</th>
@@ -202,7 +202,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6" class="p-4 text-center text-gray-400 italic">Belum ada santri aktif di kelas ini.</td>
+                                                    <td colspan="6" class="p-4 text-center text-gray-400 italic">Belum ada murid aktif di kelas ini.</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

@@ -111,7 +111,7 @@ class UserController extends Controller
         $parentIds = collect($validated['parent_ids'] ?? [])->filter()->unique()->values()->all();
         $studentProfile->parents()->sync($parentIds);
 
-        return redirect()->back()->with('success', 'Relasi orang tua untuk santri "'.$user->name.'" berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Relasi orang tua untuk murid "'.$user->name.'" berhasil diperbarui.');
     }
 
     public function linkStudents(Request $request, User $user): RedirectResponse
@@ -133,7 +133,7 @@ class UserController extends Controller
         $studentIds = collect($validated['student_ids'] ?? [])->filter()->unique()->values()->all();
         $parentProfile->students()->sync($studentIds);
 
-        return redirect()->back()->with('success', 'Relasi santri/anak untuk orang tua "'.$user->name.'" berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Relasi murid/anak untuk orang tua "'.$user->name.'" berhasil diperbarui.');
     }
 
     public function edit(User $user): View

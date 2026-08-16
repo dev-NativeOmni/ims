@@ -30,7 +30,7 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Santri</p>
+                        <p class="text-sm text-gray-500">Murid</p>
                         <p class="font-semibold text-gray-900">
                             {{ $hafalanRecord->student?->name }}
                         </p>

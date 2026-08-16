@@ -141,7 +141,7 @@ class StudentReportController extends Controller
         $students = Student::whereIn('id', $visibleStudentIds)->orderBy('name')->get();
 
         if ($students->isEmpty()) {
-            abort(404, 'Tidak ada santri di kelas ini yang dapat Anda akses.');
+            abort(404, 'Tidak ada murid di kelas ini yang dapat Anda akses.');
         }
 
         $academicYear = $request->input('academic_year', '2025/2026');

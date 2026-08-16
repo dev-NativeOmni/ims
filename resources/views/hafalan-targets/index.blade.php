@@ -3,10 +3,10 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-bold text-2xl text-gray-900 leading-tight flex items-center gap-2">
-                    <span>🎯 Kelola Target Hafalan Santri</span>
+                    <span>🎯 Kelola Target Hafalan Murid</span>
                 </h2>
                 <p class="text-sm text-gray-600">
-                    Pengisian target hafalan reguler per-santri dan target metode Ummi serentak per-Halaqah Musyrif.
+                    Pengisian target hafalan reguler per-murid dan target metode Ummi serentak per-Halaqah Musyrif.
                 </p>
             </div>
 
@@ -59,7 +59,7 @@
                             <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
                                 <span>📘 Input Target Reguler Spreadsheet Per-Kelas</span>
                             </h3>
-                            <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh santri di kelas tersebut sekaligus.</p>
+                            <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus.</p>
                         </div>
 
                         <form method="GET" action="{{ route('hafalan-targets.index') }}" class="flex items-center gap-2">
@@ -86,7 +86,7 @@
                                     <thead class="bg-indigo-50/60">
                                         <tr>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 w-12">#</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Nama Santri</th>
+                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Nama Murid</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Surah Target</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat Awal</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat Akhir</th>
@@ -138,10 +138,10 @@
                             </div>
                         </form>
                     @elseif (request()->filled('class_room_id'))
-                        <div class="p-6 text-center text-sm text-gray-500">Tidak ada data santri di kelas ini.</div>
+                        <div class="p-6 text-center text-sm text-gray-500">Tidak ada data murid di kelas ini.</div>
                     @else
                         <div class="p-8 text-center text-sm text-gray-500 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                            Silakan pilih kelas di atas untuk mulai mengisi target hafalan reguler santri.
+                            Silakan pilih kelas di atas untuk mulai mengisi target hafalan reguler murid.
                         </div>
                     @endif
                 </div>
@@ -153,7 +153,7 @@
                         <h3 class="text-lg font-extrabold text-teal-900 flex items-center gap-2">
                             <span>📗 Target Metode Ummi Bulk Per-Halaqah Musyrif (Kelas 10)</span>
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak untuk seluruh santri anggota Halaqah Musyrif.</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak untuk seluruh murid anggota Halaqah Musyrif.</p>
                     </div>
 
                     <form method="POST" action="{{ route('hafalan-targets.store-bulk-ummi') }}" class="space-y-6">
@@ -165,7 +165,7 @@
                                     <div>
                                         <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">🕌 Halaqah Musyrif Anda</label>
                                         <p class="text-base font-extrabold text-teal-900">
-                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Santri Bimbingan)
+                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Murid Bimbingan)
                                         </p>
                                     </div>
                                     <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
@@ -233,7 +233,7 @@
 
                         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                             <p class="text-xs text-gray-500">
-                                💡 Target Ummi ini akan otomatis diterapkan ke seluruh santri di bawah Halaqah Musyrif yang dipilih.
+                                💡 Target Ummi ini akan otomatis diterapkan ke seluruh murid di bawah Halaqah Musyrif yang dipilih.
                             </p>
                             <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition">
                                 <span>🚀 Terapkan Target Ummi Ke Halaqah Ini</span>
@@ -280,7 +280,7 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left font-bold text-gray-600">Santri</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-600">Murid</th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Musyrif / Guru</th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Target Detail</th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Deadline</th>

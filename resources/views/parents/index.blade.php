@@ -76,7 +76,7 @@
                                 <th class="px-4 py-3">Orangtua/Wali</th>
                                 <th class="px-4 py-3">Telepon</th>
                                 <th class="px-4 py-3">Alamat</th>
-                                <th class="px-4 py-3">Santri Terhubung</th>
+                                <th class="px-4 py-3">Murid Terhubung</th>
                                 <th class="px-4 py-3">Status</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>

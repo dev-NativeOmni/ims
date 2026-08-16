@@ -30,12 +30,12 @@
 
                     <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <dt class="font-medium text-gray-500">Santri</dt>
+                            <dt class="font-medium text-gray-500">Murid</dt>
                             <dd class="mt-1 text-gray-900">{{ $murajaahRecord->student?->name }}</dd>
                         </div>
 
                         <div>
-                            <dt class="font-medium text-gray-500">Nomor Santri</dt>
+                            <dt class="font-medium text-gray-500">Nomor Murid</dt>
                             <dd class="mt-1 text-gray-900">{{ $murajaahRecord->student?->student_number ?? '-' }}</dd>
                         </div>
 

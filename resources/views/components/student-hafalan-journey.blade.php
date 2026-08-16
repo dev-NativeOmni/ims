@@ -10,7 +10,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
             <h3 class="text-lg font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
-                <span>🗺️ Peta Perjalanan Hafalan Santri (Milestone 4 Term x 3 Kelas)</span>
+                <span>🗺️ Peta Perjalanan Hafalan Murid (Milestone 4 Term x 3 Kelas)</span>
             </h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Rekam jejak hafalan dari setoran awal pertama hingga progres per-Term di Kelas 10, 11, dan 12.

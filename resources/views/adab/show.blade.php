@@ -140,7 +140,7 @@
                     <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-purple-50/50 dark:bg-purple-950/10">
                         <h4 class="text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wide">🔑 Penilaian Pendamping Adab (Bulanan)</h4>
                         <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                            Isi nilai pendamping sekali per bulan. Nilai ini dikombinasikan 50/50 dengan nilai mandiri santri.
+                            Isi nilai pendamping sekali per bulan. Nilai ini dikombinasikan 50/50 dengan nilai mandiri murid.
                             @if ($mentorAlreadyScoredThisMonth)
                                 <strong class="text-amber-600 dark:text-amber-400">Bulan ini sudah diisi — Anda bisa memperbarui nilainya.</strong>
                             @endif
@@ -276,7 +276,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">
-                                        {{ $record->evaluator?->name ?: 'Santri Sendiri' }}
+                                        {{ $record->evaluator?->name ?: 'Murid Sendiri' }}
                                     </td>
                                     <td class="px-6 py-3 text-zinc-500 dark:text-zinc-500 text-xs italic max-w-xs truncate">
                                         {{ $record->notes ?: '-' }}

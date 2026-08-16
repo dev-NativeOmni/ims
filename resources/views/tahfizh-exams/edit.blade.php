@@ -12,7 +12,7 @@
                         Edit Ujian Tahfizh
                     </h2>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                        Gunakan panel Al-Qur'an interaktif di sebelah kiri sebagai panduan saat menguji kelancaran hafalan santri di panel kanan.
+                        Gunakan panel Al-Qur'an interaktif di sebelah kiri sebagai panduan saat menguji kelancaran hafalan murid di panel kanan.
                     </p>
                 </div>
                 <a href="{{ route('tahfizh-exams.index') }}" class="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-sm transition">
@@ -109,9 +109,9 @@
 
                         <!-- Student Selector -->
                         <div>
-                            <label for="student_id" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Santri yang Diuji *</label>
+                            <label for="student_id" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Murid yang Diuji *</label>
                             <select id="student_id" name="student_id" required class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
-                                <option value="">-- Pilih Santri --</option>
+                                <option value="">-- Pilih Murid --</option>
                                 @foreach ($students as $student)
                                     <option value="{{ $student->id }}" @selected(old('student_id', $exam->student_id) == $student->id)>
                                         {{ $student->name }} (Kelas: {{ $student->classRoom?->name ?: '-' }})
@@ -229,7 +229,7 @@
                         <!-- Notes / Deskripsi Ujian -->
                         <div>
                             <label for="notes" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Catatan Ujian / Deskripsi</label>
-                            <textarea id="notes" name="notes" rows="2" placeholder="Tuliskan evaluasi kelancaran bacaan santri..." class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition placeholder-zinc-400 dark:placeholder-zinc-600">{{ old('notes', $exam->notes) }}</textarea>
+                            <textarea id="notes" name="notes" rows="2" placeholder="Tuliskan evaluasi kelancaran bacaan murid..." class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition placeholder-zinc-400 dark:placeholder-zinc-600">{{ old('notes', $exam->notes) }}</textarea>
                             <p class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Catatan ini akan ditampilkan pada kolom deskripsi laporan rapor digital.</p>
                         </div>
 

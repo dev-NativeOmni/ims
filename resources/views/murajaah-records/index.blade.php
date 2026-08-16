@@ -59,7 +59,7 @@
                         <input type="text"
                                name="search"
                                value="{{ request('search') }}"
-                               placeholder="Nama santri / surah..."
+                               placeholder="Nama murid / surah..."
                                class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm">
                     </div>
 
@@ -169,7 +169,7 @@
                         <thead>
                             <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                 <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">Santri</th>
+                                <th class="px-4 py-3">Murid</th>
                                 <th class="px-4 py-3">Surah</th>
                                 <th class="px-4 py-3">Ayat</th>
                                 <th class="px-4 py-3">Nilai</th>

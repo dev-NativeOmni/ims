@@ -52,7 +52,7 @@
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
                             <th class="px-4 py-3">Nama Kelas</th>
                             <th class="px-4 py-3">Level</th>
-                            <th class="px-4 py-3">Jumlah Santri</th>
+                            <th class="px-4 py-3">Jumlah Murid</th>
                             <th class="px-4 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>

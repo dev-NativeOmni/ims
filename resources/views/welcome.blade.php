@@ -158,15 +158,15 @@
                                 <span class="text-[10px] text-teal-400 font-extrabold tracking-widest uppercase">Database</span>
                             </div>
 
-                            <!-- Orbit Nodes (Ustadz, Santri, Orang Tua, Rapor) -->
-                            <!-- Node 1: Santri -->
+                            <!-- Orbit Nodes (Ustadz, Murid, Orang Tua, Rapor) -->
+                            <!-- Node 1: Murid -->
                             <div class="absolute top-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-20">
                                 <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-black/50">
                                     <svg class="w-6 h-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                                     </svg>
                                 </div>
-                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Santri</span>
+                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Murid</span>
                             </div>
 
                             <!-- Node 2: Ustadz -->
@@ -286,10 +286,10 @@
                         <!-- Right Card: Stats & Global Achievements -->
                         <div class="lg:col-span-5 flex flex-col gap-6">
                             <h3 class="text-2xl font-bold text-zinc-900 leading-snug">
-                                Pantau Progres Capaian Santri dengan Data Akurat
+                                Pantau Progres Capaian Murid dengan Data Akurat
                             </h3>
                             <p class="text-zinc-500 text-sm leading-relaxed">
-                                Dilengkapi indikator pencapaian target harian, mingguan, hingga bulanan. Membantu ustadz dan wali santri mengetahui tingkat kelancaran tanpa hambatan koordinasi.
+                                Dilengkapi indikator pencapaian target harian, mingguan, hingga bulanan. Membantu ustadz dan wali murid mengetahui tingkat kelancaran tanpa hambatan koordinasi.
                             </p>
 
                             <!-- Metric Stack -->
@@ -386,7 +386,7 @@
                             </div>
                             <h3 class="text-lg font-bold text-white">Poin Kedisiplinan & Prestasi</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
-                                Catat poin pelanggaran disiplin (Tanse) serta apresiasi poin prestasi secara real-time demi membentuk karakter santri yang tangguh.
+                                Catat poin pelanggaran disiplin (Tanse) serta apresiasi poin prestasi secara real-time demi membentuk karakter murid yang tangguh.
                             </p>
                         </div>
 
@@ -513,7 +513,7 @@
                         <div x-show="activeDashboardTab === 'siswa'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6">
                             <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
                                 <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Santri — Syamil Rabbani</h4>
+                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Murid — Syamil Rabbani</h4>
                                     <p class="text-[10px] text-zinc-400 font-bold mt-1">Kelas: VIII-A | Rumah Tahfidz Al-Ikhlas</p>
                                 </div>
                                 <span class="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-xs font-bold text-teal-700">Target Tercapai 90%</span>
@@ -597,8 +597,8 @@
                         <div x-show="activeDashboardTab === 'wali'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6" style="display: none;">
                             <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
                                 <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Portal Wali Santri — Bpk. Abdurrahman</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Mengawasi Santri: Syamil Rabbani</p>
+                                    <h4 class="text-base font-extrabold text-zinc-900">Portal Wali Murid — Bpk. Abdurrahman</h4>
+                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Mengawasi Murid: Syamil Rabbani</p>
                                 </div>
                                 <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" title="Terhubung"></span>
                             </div>
@@ -655,7 +655,7 @@
                         <!-- Item 2 -->
                         <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
                             <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Apakah data kemajuan santri aman dari kehilangan?</span>
+                                <span>Apakah data kemajuan murid aman dari kehilangan?</span>
                                 <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>

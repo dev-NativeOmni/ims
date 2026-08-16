@@ -236,7 +236,7 @@ class StudentController extends Controller
             ])
             ->get();
 
-        $fileName = 'daftar-santri-'.now()->format('Ymd-His').'.xlsx';
+        $fileName = 'daftar-murid-'.now()->format('Ymd-His').'.xlsx';
 
         $tempFile = @tempnam(sys_get_temp_dir(), 'export_xlsx');
         if (! $tempFile) {
@@ -244,14 +244,14 @@ class StudentController extends Controller
         }
 
         $headers = [
-            'Nama Santri',
+            'Nama Murid',
             'Nomor Induk',
             'Jenis Kelamin',
             'Tanggal Lahir',
             'Status',
             'Kelas',
             'Username Guru',
-            'Username Santri',
+            'Username Murid',
             'Username Orangtua',
             'Hubungan Orangtua',
             'Level Tahfizh',
@@ -367,7 +367,7 @@ class StudentController extends Controller
         // Map header column names to indexes (null = column not present in file)
         /** @var array<string, int|null> $map */
         $map = [
-            'nama_santri' => $col('nama santri') ?? $col('name'),
+            'nama_santri' => $col('nama murid') ?? $col('nama santri') ?? $col('name'),
             'nomor_induk' => $col('nomor induk') ?? $col('student_number'),
             'jenis_kelamin' => $col('jenis kelamin') ?? $col('gender'),
             'tanggal_lahir' => $col('tanggal lahir') ?? $col('birth_date'),
@@ -375,13 +375,13 @@ class StudentController extends Controller
             'kelas' => $col('kelas') ?? $col('class_room'),
             'tahfizh_level' => $col('level tahfizh') ?? $col('tahfizh level') ?? $col('level'),
             'username_guru' => $col('username guru') ?? $col('teacher_username') ?? $col('email guru') ?? $col('teacher_email'),
-            'username_santri' => $col('username santri') ?? $col('student_username') ?? $col('email santri') ?? $col('student_email'),
+            'username_santri' => $col('username murid') ?? $col('username santri') ?? $col('student_username') ?? $col('email santri') ?? $col('student_email'),
             'username_orangtua' => $col('username orangtua') ?? $col('parent_usernames') ?? $col('email orangtua') ?? $col('parent_emails'),
             'hubungan_orangtua' => $col('hubungan orangtua') ?? $col('parent_relations'),
         ];
 
         if ($map['nama_santri'] === null) {
-            return redirect()->back()->with('error', 'Format berkas tidak valid. Harus memiliki kolom "Nama Santri".');
+            return redirect()->back()->with('error', 'Format berkas tidak valid. Harus memiliki kolom "Nama Murid".');
         }
 
         $importedCount = 0;

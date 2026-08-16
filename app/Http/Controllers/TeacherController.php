@@ -124,7 +124,7 @@ class TeacherController extends Controller
     public function destroy(TeacherProfile $teacher): RedirectResponse
     {
         if ($teacher->students()->exists()) {
-            return back()->with('error', 'Guru tidak bisa dihapus karena masih memiliki santri bimbingan.');
+            return back()->with('error', 'Guru tidak bisa dihapus karena masih memiliki murid bimbingan.');
         }
 
         DB::transaction(function () use ($teacher) {
@@ -151,7 +151,7 @@ class TeacherController extends Controller
             ->orderBy('id')
             ->get();
 
-        $headers = ['Nama', 'Username', 'Nomor Pegawai', 'Telepon', 'Status', 'Jumlah Santri'];
+        $headers = ['Nama', 'Username', 'Nomor Pegawai', 'Telepon', 'Status', 'Jumlah Murid'];
         $data = [];
 
         foreach ($teachers as $teacher) {

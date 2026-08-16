@@ -188,7 +188,7 @@
 
             @if ($students->isEmpty())
                 <div class="p-8 text-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Tidak ada santri aktif di kelas halaqoh terpilih.</p>
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Tidak ada murid aktif di kelas halaqoh terpilih.</p>
                 </div>
             @else
                 <!-- FORM UTAMA -->
@@ -207,7 +207,7 @@
                             <thead class="bg-gray-50 dark:bg-zinc-850">
                                 <tr>
                                     <th class="sticky left-0 z-20 bg-gray-50 dark:bg-zinc-850 px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-48 border-r dark:border-zinc-800">
-                                        Nama Santri
+                                        Nama Murid
                                     </th>
                                     <template x-for="col in columns" :key="col.date">
                                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-64 border-r dark:border-zinc-800">

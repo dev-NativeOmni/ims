@@ -281,7 +281,7 @@ class ClassRoomController extends Controller
     public function destroy(ClassRoom $classRoom): RedirectResponse
     {
         if ($classRoom->students()->exists()) {
-            return back()->with('error', 'Kelas tidak bisa dihapus karena masih memiliki santri.');
+            return back()->with('error', 'Kelas tidak bisa dihapus karena masih memiliki murid.');
         }
 
         $classRoom->delete();
@@ -302,7 +302,7 @@ class ClassRoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        $headers = ['Nama Kelas', 'Level', 'Program', 'Jumlah Santri'];
+        $headers = ['Nama Kelas', 'Level', 'Program', 'Jumlah Murid'];
         $data = [];
 
         foreach ($classRooms as $classRoom) {
@@ -460,7 +460,7 @@ class ClassRoomController extends Controller
             ->filter(fn($std) => $visibleStudentIds->contains($std->id))
             ->values();
 
-        abort_if($students->isEmpty(), 403, 'Akses tidak diperbolehkan atau tidak ada santri aktif di kelas ini.');
+        abort_if($students->isEmpty(), 403, 'Akses tidak diperbolehkan atau tidak ada murid aktif di kelas ini.');
 
         $studentsData = [];
         foreach ($students as $student) {

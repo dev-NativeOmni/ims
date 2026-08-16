@@ -28,7 +28,7 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'student',
-                'display_name' => 'Santri',
+                'display_name' => 'Murid',
             ],
         ];
 

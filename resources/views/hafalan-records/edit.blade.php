@@ -48,7 +48,7 @@
 
                         <div>
                             <label for="student_id" class="block text-sm font-medium text-gray-700">
-                                Santri
+                                Murid
                             </label>
 
                             <select
@@ -58,7 +58,7 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                                 required
                             >
-                                <option value="">Pilih Santri</option>
+                                <option value="">Pilih Murid</option>
                                 <template x-for="student in filteredStudents" :key="student.id">
                                     <option :value="student.id" x-text="student.name + (student.nis ? ' - ' + student.nis : '') + (student.className ? ' - ' + student.className : '')" :selected="student.id == selectedStudent"></option>
                                 </template>

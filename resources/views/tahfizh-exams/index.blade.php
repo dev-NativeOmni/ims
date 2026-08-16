@@ -6,7 +6,7 @@
                     Riwayat Ujian Tahfizh
                 </h2>
                 <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Kelola dan pantau riwayat ujian tahfizh seluruh santri.
+                    Kelola dan pantau riwayat ujian tahfizh seluruh murid.
                 </p>
             </div>
 
@@ -57,11 +57,11 @@
                     </select>
                 </div>
 
-                <!-- Santri -->
+                <!-- Murid -->
                 <div class="flex-1 min-w-[140px]">
-                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Santri</label>
+                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Murid</label>
                     <select name="student_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">Semua Santri</option>
+                        <option value="">Semua Murid</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
                                 {{ $student->name }}
@@ -121,7 +121,7 @@
                     <thead class="bg-zinc-50 dark:bg-zinc-900/50">
                         <tr class="text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                             <th class="px-5 py-3.5">Tanggal</th>
-                            <th class="px-5 py-3.5">Santri</th>
+                            <th class="px-5 py-3.5">Murid</th>
                             <th class="px-5 py-3.5">Materi Ujian</th>
                             <th class="px-5 py-3.5 text-center">Soal 1-5</th>
                             <th class="px-5 py-3.5 text-center">Nilai Akhir</th>

@@ -19,7 +19,7 @@
         <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
                 <h3 class="text-base font-semibold text-gray-900">
-                    Badge & Motivasi Santri
+                    Badge & Motivasi Murid
                 </h3>
                 <p class="mt-1 text-sm text-gray-500">
                     Badge ini dihitung otomatis dari progress, setoran, murajaah, dan target. Tidak memakai tabel baru.
@@ -146,7 +146,7 @@
                     Catatan
                 </p>
                 <p class="mt-1 text-xs leading-5 text-amber-800">
-                    Ini bukan ranking kompetitif antar santri. Badge hanya alat bantu membaca pola progres, bukan alat untuk mempermalukan santri yang progresnya lambat.
+                    Ini bukan ranking kompetitif antar murid. Badge hanya alat bantu membaca pola progres, bukan alat untuk mempermalukan murid yang progresnya lambat.
                 </p>
             </div>
         </div>

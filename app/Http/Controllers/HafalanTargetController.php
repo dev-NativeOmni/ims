@@ -273,7 +273,7 @@ class HafalanTargetController extends Controller
 
         return redirect()
             ->route('hafalan-targets.index', ['program' => 'ummi', 'teacher_id' => $validated['teacher_id']])
-            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} santri di Halaqah Musyrif.");
+            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} murid di Halaqah Musyrif.");
     }
 
     public function create(Request $request): View
@@ -477,7 +477,7 @@ class HafalanTargetController extends Controller
             if (! $visibleStudentIds->contains($studentId)) {
                 $validator->errors()->add(
                     'student_id',
-                    'Santri tidak boleh diakses oleh akun ini.'
+                    'Murid tidak boleh diakses oleh akun ini.'
                 );
             }
 

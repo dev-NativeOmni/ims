@@ -127,7 +127,7 @@ class QuickInputController extends Controller
 
         $validator->after(function ($validator) use ($request, $visibleStudentIds) {
             if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
-                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+                $validator->errors()->add('student_id', 'Murid tidak boleh diakses oleh akun ini.');
             }
 
             $surahStart = Surah::query()->find($request->input('surah_id'));
@@ -160,7 +160,7 @@ class QuickInputController extends Controller
         if (! $teacherId) {
             return back()
                 ->withInput()
-                ->with('error', 'Santri ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data santri.');
+                ->with('error', 'Murid ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data murid.');
         }
 
         $surahStartId = (int) $validated['surah_id'];
@@ -244,7 +244,7 @@ class QuickInputController extends Controller
 
         $validator->after(function ($validator) use ($request, $visibleStudentIds) {
             if (! $visibleStudentIds->contains((int) $request->input('student_id'))) {
-                $validator->errors()->add('student_id', 'Santri tidak boleh diakses oleh akun ini.');
+                $validator->errors()->add('student_id', 'Murid tidak boleh diakses oleh akun ini.');
             }
 
             $surahStart = Surah::query()->find($request->input('surah_id'));
@@ -290,7 +290,7 @@ class QuickInputController extends Controller
         if (! $teacherId) {
             return back()
                 ->withInput()
-                ->with('error', 'Santri ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data santri.');
+                ->with('error', 'Murid ini belum memiliki guru pembimbing. Isi dulu guru pembimbing pada data murid.');
         }
 
         $surahStartId = (int) $validated['surah_id'];
@@ -402,7 +402,7 @@ class QuickInputController extends Controller
                 ->exists();
 
             if (! $hasAccess) {
-                $validator->errors()->add('class_room_id', 'Kelas halaqoh tidak memiliki santri aktif atau Anda tidak memiliki akses ke kelas ini.');
+                $validator->errors()->add('class_room_id', 'Kelas halaqoh tidak memiliki murid aktif atau Anda tidak memiliki akses ke kelas ini.');
             }
         });
 
@@ -431,7 +431,7 @@ class QuickInputController extends Controller
             if (empty($selectedStudentIds)) {
                 return back()
                     ->withInput()
-                    ->with('error', 'Silakan pilih minimal satu santri untuk diinput.');
+                    ->with('error', 'Silakan pilih minimal satu murid untuk diinput.');
             }
             $students = Student::query()
                 ->whereIn('id', array_map('intval', $selectedStudentIds))
@@ -444,7 +444,7 @@ class QuickInputController extends Controller
         if ($students->isEmpty()) {
             return back()
                 ->withInput()
-                ->with('error', 'Tidak ada santri aktif di kelas halaqoh yang dipilih.');
+                ->with('error', 'Tidak ada murid aktif di kelas halaqoh yang dipilih.');
         }
 
         $hafalans = [];

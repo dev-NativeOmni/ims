@@ -197,7 +197,7 @@
                 </div>
             @else
                 <div class="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/30 rounded-2xl p-6 text-center text-yellow-800 dark:text-yellow-400">
-                    Belum ada kelas yang dapat Anda akses atau tidak ada data santri terdaftar.
+                    Belum ada kelas yang dapat Anda akses atau tidak ada data murid terdaftar.
                 </div>
             @endif
 

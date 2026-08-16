@@ -8,10 +8,10 @@
     <div class="py-3 sm:py-6">
         <div class="max-w-4xl mx-auto space-y-3 sm:space-y-6">
 
-            {{-- Profil Singkat Santri --}}
+            {{-- Profil Singkat Murid --}}
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-0.5">Pengisian Mandiri Santri</span>
+                    <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-0.5">Pengisian Mandiri Murid</span>
                     <h3 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">{{ $student->name }}</h3>
                     <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                         Kelas: {{ $student->classRoom?->name ?: '-' }} | NIS: {{ $student->student_number ?: '-' }}

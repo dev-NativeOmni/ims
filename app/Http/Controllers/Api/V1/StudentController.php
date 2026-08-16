@@ -55,7 +55,7 @@ class StudentController extends Controller
             data: [
                 'students' => StudentResource::collection($students->getCollection())->resolve($request),
             ],
-            message: 'Data santri berhasil diambil.',
+            message: 'Data murid berhasil diambil.',
             meta: [
                 'pagination' => $this->paginationMeta($students),
                 'filters' => [
@@ -81,7 +81,7 @@ class StudentController extends Controller
 
         if (! $studentModel) {
             return ApiResponse::error(
-                message: 'Data santri tidak ditemukan.',
+                message: 'Data murid tidak ditemukan.',
                 status: 404
             );
         }
@@ -90,7 +90,7 @@ class StudentController extends Controller
             data: [
                 'student' => (new StudentResource($studentModel))->resolve($request),
             ],
-            message: 'Detail santri berhasil diambil.'
+            message: 'Detail murid berhasil diambil.'
         );
     }
 
@@ -107,7 +107,7 @@ class StudentController extends Controller
 
         if (! $studentModel) {
             return ApiResponse::error(
-                message: 'Data santri tidak ditemukan.',
+                message: 'Data murid tidak ditemukan.',
                 status: 404
             );
         }
@@ -118,7 +118,7 @@ class StudentController extends Controller
             data: [
                 'progress' => (new StudentProgressResource($progress))->resolve($request),
             ],
-            message: 'Progress santri berhasil diambil.'
+            message: 'Progress murid berhasil diambil.'
         );
     }
 

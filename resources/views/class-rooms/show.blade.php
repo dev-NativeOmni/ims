@@ -31,7 +31,7 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Jumlah Santri</p>
+                        <p class="text-sm text-gray-500">Jumlah Murid</p>
                         <p class="font-semibold text-gray-900">{{ $classRoom->students_count }}</p>
                     </div>
                 </div>
@@ -46,16 +46,16 @@
                 $isReguler1112 = ($classRoom->level == 11 || $classRoom->level == 12);
             @endphp
 
-            <div x-data="{ activeTab: '{{ request('tab', $isReguler1112 ? 'capaian' : 'santri') }}' }" class="space-y-4">
+            <div x-data="{ activeTab: '{{ request('tab', $isReguler1112 ? 'capaian' : 'murid') }}' }" class="space-y-4">
                 
                 <!-- Tabs Switcher -->
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button @click="activeTab = 'santri'" 
+                        <button @click="activeTab = 'murid'" 
                                 type="button"
-                                :class="activeTab === 'santri' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                :class="activeTab === 'murid' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
-                            👥 Daftar Santri
+                            👥 Daftar Murid
                         </button>
                         <button @click="activeTab = 'capaian'" 
                                 type="button"
@@ -66,17 +66,17 @@
                     </nav>
                 </div>
 
-                <!-- Tab 1: Daftar Santri -->
-                <div x-show="activeTab === 'santri'" x-cloak class="bg-white shadow-sm sm:rounded-lg p-6 overflow-x-auto">
+                <!-- Tab 1: Daftar Murid -->
+                <div x-show="activeTab === 'murid'" x-cloak class="bg-white shadow-sm sm:rounded-lg p-6 overflow-x-auto">
                     <h3 class="font-semibold text-gray-900 mb-4">
-                        Santri di Kelas Ini
+                        Murid di Kelas Ini
                     </h3>
 
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
                                 <th class="px-4 py-3">Nama</th>
-                                <th class="px-4 py-3">Nomor Santri</th>
+                                <th class="px-4 py-3">Nomor Murid</th>
                                 <th class="px-4 py-3">Gender</th>
                                 <th class="px-4 py-3">Status</th>
                             </tr>
@@ -104,7 +104,7 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-4 py-6 text-center text-gray-500">
-                                        Belum ada santri di kelas ini.
+                                        Belum ada murid di kelas ini.
                                     </td>
                                 </tr>
                             @endforelse
@@ -183,7 +183,7 @@
                             </div>
                             <div class="mt-4 flex items-baseline gap-2">
                                 <span class="text-3xl font-extrabold text-gray-900 dark:text-white" x-text="'{{ $attendanceRatePercent }}%'"></span>
-                                <span class="text-xs text-gray-500 dark:text-zinc-400" x-text="'({{ $presentStudentsCount }}/{{ $totalStudentsCount }} Santri)'"></span>
+                                <span class="text-xs text-gray-500 dark:text-zinc-400" x-text="'({{ $presentStudentsCount }}/{{ $totalStudentsCount }} Murid)'"></span>
                             </div>
                             <!-- Mini Progress Bar -->
                             <div class="w-full bg-gray-200 dark:bg-zinc-750 h-1.5 rounded-full mt-4 overflow-hidden">
@@ -212,9 +212,9 @@
                             </div>
                             <div class="mt-4 flex items-baseline gap-2">
                                 <span class="text-3xl font-extrabold text-gray-900 dark:text-white" x-text="'{{ $averageClassLines }}'"></span>
-                                <span class="text-sm font-semibold text-amber-650 dark:text-amber-400">Baris/Santri</span>
+                                <span class="text-sm font-semibold text-amber-650 dark:text-amber-400">Baris/Murid</span>
                             </div>
-                            <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-4 leading-relaxed font-medium">Kontribusi rata-rata tiap santri yang hadir menyetor.</p>
+                            <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-4 leading-relaxed font-medium">Kontribusi rata-rata tiap murid yang hadir menyetor.</p>
                         </div>
                     </div>
 

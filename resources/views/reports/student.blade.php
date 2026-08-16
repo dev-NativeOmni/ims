@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-900">
-                    Laporan Santri: {{ $student->name }}
+                    Laporan Murid: {{ $student->name }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
                     {{ $student->classRoom?->name ?? 'Tanpa kelas' }}
@@ -57,7 +57,7 @@
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-900">Profil Santri</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Profil Murid</h3>
 
                 <dl class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <div>

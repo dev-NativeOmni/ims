@@ -5,7 +5,7 @@
                 Tambah Target Hafalan
             </h2>
             <p class="text-sm text-gray-500">
-                Buat target hafalan untuk santri aktif.
+                Buat target hafalan untuk murid aktif.
             </p>
         </div>
     </x-slot>
@@ -75,12 +75,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Santri</label>
+                        <label class="block text-sm font-medium text-gray-700">Murid</label>
                         <div x-data="{ open: false, search: '' }" @click.outside="open = false" class="relative mt-1">
                             <button type="button" 
                                     @click="open = !open" 
                                     class="flex items-center justify-between w-full rounded-lg border border-gray-300 bg-white text-left text-sm px-3 py-2 text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
-                                <span x-text="selectedStudent && allStudents.find(s => s.id == selectedStudent) ? allStudents.find(s => s.id == selectedStudent).name + (allStudents.find(s => s.id == selectedStudent).className ? ' — ' + allStudents.find(s => s.id == selectedStudent).className : '') + (allStudents.find(s => s.id == selectedStudent).teacherName ? ' — Guru: ' + allStudents.find(s => s.id == selectedStudent).teacherName : '') : 'Pilih santri'"></span>
+                                <span x-text="selectedStudent && allStudents.find(s => s.id == selectedStudent) ? allStudents.find(s => s.id == selectedStudent).name + (allStudents.find(s => s.id == selectedStudent).className ? ' — ' + allStudents.find(s => s.id == selectedStudent).className : '') + (allStudents.find(s => s.id == selectedStudent).teacherName ? ' — Guru: ' + allStudents.find(s => s.id == selectedStudent).teacherName : '') : 'Pilih murid'"></span>
                                 <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
@@ -92,7 +92,7 @@
                                 <div class="p-2 border-b border-gray-200 bg-gray-50">
                                     <input type="text" 
                                            x-model="search" 
-                                           placeholder="Cari nama santri..." 
+                                           placeholder="Cari nama murid..." 
                                            class="w-full rounded border border-gray-300 bg-transparent text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
                                 <ul class="max-h-[180px] overflow-y-auto py-1 text-xs">
@@ -104,7 +104,7 @@
                                     </template>
                                     <li x-show="filteredStudents.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).length === 0" 
                                         class="px-3 py-2 text-gray-500 text-center">
-                                        Santri tidak ditemukan
+                                        Murid tidak ditemukan
                                     </li>
                                 </ul>
                             </div>

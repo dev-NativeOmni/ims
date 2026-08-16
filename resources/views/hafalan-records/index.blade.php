@@ -16,7 +16,7 @@
                     href="{{ route('hafalan-records.create') }}"
                     class="inline-flex items-center justify-center px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]"
                 >
-                    + Input Per Santri
+                    + Input Per Murid
                 </a>
             </div>
         </div>
@@ -66,7 +66,7 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari santri / surah..."
+                        placeholder="Cari murid / surah..."
                         class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
                     >
 
@@ -244,7 +244,7 @@
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                     <th class="px-4 py-3">Tanggal</th>
-                                    <th class="px-4 py-3">Santri</th>
+                                    <th class="px-4 py-3">Murid</th>
                                     <th class="px-4 py-3">Tatap Muka</th>
                                     <th class="px-4 py-3">Jilid / Hal</th>
                                     <th class="px-4 py-3">Materi</th>
@@ -324,7 +324,7 @@
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                     <th class="px-4 py-3">Tanggal</th>
-                                    <th class="px-4 py-3">Santri</th>
+                                    <th class="px-4 py-3">Murid</th>
                                     <th class="px-4 py-3">Surah</th>
                                     <th class="px-4 py-3">Ayat</th>
                                     <th class="px-4 py-3 text-center">Baris</th>

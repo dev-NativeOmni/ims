@@ -42,7 +42,7 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Jumlah Santri Terhubung</p>
+                        <p class="text-sm text-gray-500">Jumlah Murid Terhubung</p>
                         <p class="font-semibold text-gray-900">{{ $parent->students_count }}</p>
                     </div>
                 </div>
@@ -55,13 +55,13 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6 overflow-x-auto">
                 <h3 class="font-semibold text-gray-900 mb-4">
-                    Santri Terhubung
+                    Murid Terhubung
                 </h3>
 
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase">
-                            <th class="px-4 py-3">Santri</th>
+                            <th class="px-4 py-3">Murid</th>
                             <th class="px-4 py-3">Relasi</th>
                             <th class="px-4 py-3">Kelas</th>
                             <th class="px-4 py-3">Guru</th>
@@ -100,14 +100,14 @@
 
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('students.show', $student) }}" class="text-sm text-blue-600 hover:underline">
-                                        Detail Santri
+                                        Detail Murid
                                     </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="6" class="px-4 py-6 text-center text-gray-500">
-                                    Belum ada santri terhubung.
+                                    Belum ada murid terhubung.
                                 </td>
                             </tr>
                         @endforelse

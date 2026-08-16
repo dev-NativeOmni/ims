@@ -87,7 +87,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-150">Monitoring Adab</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Kuisioner penilaian adab santri.</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Kuisioner penilaian adab murid.</p>
                     </div>
                 </a>
 
@@ -119,7 +119,7 @@
             <div class="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl overflow-hidden">
                 <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-gray-900">Progress Santri Aktif</h3>
+                        <h3 class="font-semibold text-gray-900">Progress Murid Aktif</h3>
                         <p class="text-sm text-gray-500">Diurutkan dari progress tertinggi.</p>
                     </div>
                     <a href="{{ url('/students') }}" class="text-sm text-emerald-700 hover:underline">Lihat semua</a>
@@ -129,7 +129,7 @@
                     <table class="min-w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
-                                <th class="px-5 py-3 text-left">Santri</th>
+                                <th class="px-5 py-3 text-left">Murid</th>
                                 <th class="px-5 py-3 text-left">Kelas</th>
                                 <th class="px-5 py-3 text-left">Progress</th>
                                 <th class="px-5 py-3 text-left">Target Aktif</th>

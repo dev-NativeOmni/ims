@@ -160,7 +160,7 @@
                     </div>
 
                     <div>
-                        <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas (Santri)</label>
+                        <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas (Murid)</label>
                         <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
                             <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
                             @foreach ($classRooms as $cRoom)
@@ -248,7 +248,7 @@
                                                 </div>
                                             </div>
 
-                                            <!-- MODAL HUBUNGKAN ORANG TUA FOR SANTRI -->
+                                            <!-- MODAL HUBUNGKAN ORANG TUA FOR MURID -->
                                             <template x-teleport="body">
                                                 <div x-show="openLinkModal"
                                                      x-transition:enter="transition ease-out duration-200"
@@ -269,7 +269,7 @@
                                                         </div>
 
                                                         <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                                                            Pilih akun Orang Tua yang terhubung dengan santri <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
+                                                            Pilih akun Orang Tua yang terhubung dengan murid <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
                                                         </p>
 
                                                         <form method="POST" action="{{ route('users.link-parents', $u->id) }}" class="space-y-4">
@@ -375,7 +375,7 @@
                                                         </div>
 
                                                         <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                                                            Pilih santri/anak yang terhubung dengan orang tua <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
+                                                            Pilih murid/anak yang terhubung dengan orang tua <strong class="text-zinc-900 dark:text-white">{{ $u->name }}</strong>:
                                                         </p>
 
                                                         <form method="POST" action="{{ route('users.link-students', $u->id) }}" class="space-y-4">
@@ -387,7 +387,7 @@
                                                             <div>
                                                                 <input type="text"
                                                                        x-model="modalSearch"
-                                                                       placeholder="Cari nama santri, kelas, atau username..."
+                                                                       placeholder="Cari nama murid, kelas, atau username..."
                                                                        class="w-full text-xs rounded-xl border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 dark:text-white px-3 py-2">
                                                             </div>
 
@@ -418,7 +418,7 @@
                                                                         </div>
                                                                     </label>
                                                                 @empty
-                                                                    <p class="text-xs text-zinc-400 text-center py-4">Belum ada data Santri.</p>
+                                                                    <p class="text-xs text-zinc-400 text-center py-4">Belum ada data Murid.</p>
                                                                 @endforelse
                                                             </div>
 

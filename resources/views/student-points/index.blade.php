@@ -183,7 +183,7 @@
                                                 {{ $item->date?->format('d/m/Y') }}
                                             </td>
                                             
-                                            <!-- Santri -->
+                                            <!-- Murid -->
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
                                                 <div>{{ $item->student?->name }}</div>
                                                 <div class="text-[10px] text-gray-400 font-medium">Kelas: {{ $item->student?->classRoom?->name ?? '-' }}</div>
@@ -370,7 +370,7 @@
                         @endif
                     </div>
 
-                    <!-- Top 5 Santri Pelanggaran Terbanyak -->
+                    <!-- Top 5 Murid Pelanggaran Terbanyak -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm md:col-span-1">
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
                             <span class="text-red-500">🚨</span> Pelanggar Terbanyak
@@ -389,7 +389,7 @@
                         @endif
                     </div>
 
-                    <!-- Top 5 Santri Berprestasi Terbanyak -->
+                    <!-- Top 5 Murid Berprestasi Terbanyak -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm md:col-span-1">
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
                             <span class="text-green-500">🎖️</span> Prestasi Tertinggi

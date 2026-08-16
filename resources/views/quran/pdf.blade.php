@@ -60,7 +60,7 @@
                                 <span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider rounded-full">Panduan Konfigurasi</span>
                                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mt-3 mb-2">Cara Menghubungkan Mushaf PDF dari Google Drive</h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                                    Agar seluruh pengguna (guru, santri, orangtua) dapat membaca Mushaf Al-Qur'an sekolah secara langsung tanpa terdownload otomatis oleh browser, Anda dapat menyimpannya di Google Drive dan membagikannya ke sistem ini.
+                                    Agar seluruh pengguna (guru, murid, orangtua) dapat membaca Mushaf Al-Qur'an sekolah secara langsung tanpa terdownload otomatis oleh browser, Anda dapat menyimpannya di Google Drive dan membagikannya ke sistem ini.
                                 </p>
                             </div>
 

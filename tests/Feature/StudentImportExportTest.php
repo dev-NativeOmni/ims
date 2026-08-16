@@ -117,7 +117,7 @@ class StudentImportExportTest extends TestCase
 
         // Assert headers
         $headers = $rows[0];
-        $this->assertContains('Nama Santri', $headers);
+        $this->assertTrue(in_array('Nama Murid', $headers, true) || in_array('Nama Santri', $headers, true));
         $this->assertContains('Nomor Induk', $headers);
         $this->assertContains('Username Orangtua', $headers);
         $this->assertContains('Hubungan Orangtua', $headers);

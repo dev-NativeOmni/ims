@@ -24,7 +24,7 @@ class SystemNotificationController extends Controller
         'admin' => 'Admin',
         'teacher' => 'Guru',
         'parent' => 'Orangtua',
-        'student' => 'Santri',
+        'student' => 'Murid',
     ];
 
     public function index(Request $request): View

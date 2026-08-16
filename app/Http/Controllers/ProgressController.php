@@ -33,7 +33,7 @@ class ProgressController extends Controller
                 if ($student) {
                     return redirect()->route('progress.show', $student);
                 }
-                abort(403, 'Akun santri belum memiliki profil santri.');
+                abort(403, 'Akun murid belum memiliki profil murid.');
             }
 
             if ($user->hasRole('parent')) {

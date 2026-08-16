@@ -6,7 +6,7 @@
                     Laporan IMS
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
-                    Ringkasan hafalan, murajaah, target, dan progres santri.
+                    Ringkasan hafalan, murajaah, target, dan progres murid.
                 </p>
             </div>
 
@@ -32,10 +32,10 @@
                 <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <label for="student_id" class="mb-1 block text-sm font-semibold text-gray-700">
-                            Santri
+                            Murid
                         </label>
                         <select id="student_id" name="student_id" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Semua Santri</option>
+                            <option value="">Semua Murid</option>
                             @foreach ($students as $student)
                                 <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
                                     {{ $student->name }}
@@ -185,7 +185,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Tanggal</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Santri</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Murid</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Kelas</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Surah</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Ayat</th>
@@ -250,7 +250,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Tanggal</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Santri</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Murid</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Kelas</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Surah</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Ayat</th>
@@ -315,7 +315,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Target</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Santri</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Murid</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Surah</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Ayat</th>
                                 <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600">Status</th>

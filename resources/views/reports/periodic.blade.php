@@ -89,9 +89,9 @@
                 <!-- Metrics Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Total Santri</div>
+                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Total Murid</div>
                         <div class="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">{{ $summary['total_students'] }}</div>
-                        <div class="mt-1 text-xs text-gray-500">Santri terdaftar aktif di kelas</div>
+                        <div class="mt-1 text-xs text-gray-500">Murid terdaftar aktif di kelas</div>
                     </div>
                     
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
@@ -197,7 +197,7 @@
                             <div class="bg-teal-600 dark:bg-teal-700 text-white px-6 py-3.5 rounded-2xl shadow-sm flex justify-between items-center">
                                 <h3 class="text-sm font-extrabold tracking-wider uppercase">Pembimbing: {{ $teacherName }}</h3>
                                 <span class="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">
-                                    {{ collect($halaqahs)->flatten(1)->count() }} Santri
+                                    {{ collect($halaqahs)->flatten(1)->count() }} Murid
                                 </span>
                             </div>
 
@@ -290,13 +290,13 @@
                         </div>
                     @empty
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-sm text-gray-500 dark:text-zinc-500 shadow-sm">
-                            Tidak ada data perkembangan santri pada rentang waktu ini.
+                            Tidak ada data perkembangan murid pada rentang waktu ini.
                         </div>
                     @endforelse
                 </div>
             @else
                 <div class="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/30 rounded-2xl p-6 text-center text-yellow-800 dark:text-yellow-400">
-                     Belum ada kelas yang dapat Anda akses atau tidak ada data santri terdaftar.
+                     Belum ada kelas yang dapat Anda akses atau tidak ada data murid terdaftar.
                 </div>
             @endif
 

@@ -34,7 +34,7 @@ class ReportController extends Controller
             if ($student) {
                 return redirect()->route('reports.student', $student);
             }
-            abort(403, 'Akun santri belum memiliki profil santri.');
+            abort(403, 'Akun murid belum memiliki profil murid.');
         }
 
         if ($user->hasRole('parent')) {
@@ -254,7 +254,7 @@ class ReportController extends Controller
 
             fputcsv($handle, [
                 'Jenis',
-                'Santri',
+                'Murid',
                 'Kelas',
                 'Program',
                 'Surah',

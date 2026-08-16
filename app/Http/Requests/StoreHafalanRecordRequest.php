@@ -242,14 +242,14 @@ class StoreHafalanRecordRequest extends FormRequest
             if ($student && $student->status !== 'active') {
                 $validator->errors()->add(
                     'student_id',
-                    'Santri nonaktif tidak bisa menerima input setoran hafalan.'
+                    'Murid nonaktif tidak bisa menerima input setoran hafalan.'
                 );
             }
 
             if ($student && ! $student->teacher_id) {
                 $validator->errors()->add(
                     'student_id',
-                    'Santri ini belum memiliki guru pembimbing.'
+                    'Murid ini belum memiliki guru pembimbing.'
                 );
             }
 
@@ -259,7 +259,7 @@ class StoreHafalanRecordRequest extends FormRequest
                 if (! $teacherId || (int) $student->teacher_id !== (int) $teacherId) {
                     $validator->errors()->add(
                         'student_id',
-                        'Guru hanya boleh input setoran untuk santri bimbingannya.'
+                        'Guru hanya boleh input setoran untuk murid bimbingannya.'
                     );
                 }
             }
@@ -308,7 +308,7 @@ class StoreHafalanRecordRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'student_id' => 'santri',
+            'student_id' => 'murid',
             'surah_ids' => 'surah',
             'surah_ids.*' => 'surah',
             'ayah_starts.*' => 'ayat mulai',

@@ -387,7 +387,7 @@ class StudentPointController extends Controller
                             'created_by' => Auth::id(),
                             'unique_hash' => $userSpecificHash,
                             'title' => 'Ambang Batas Pelanggaran Terlampaui',
-                            'message' => "Poin pelanggaran santri {$student->name} telah mencapai {$totalViolations} (Ambang batas: {$threshold} poin). Sanksi dan pembinaan diperlukan.",
+                            'message' => "Poin pelanggaran murid {$student->name} telah mencapai {$totalViolations} (Ambang batas: {$threshold} poin). Sanksi dan pembinaan diperlukan.",
                             'type' => 'warning',
                             'action_url' => '/student-points',
                             'published_at' => now(),

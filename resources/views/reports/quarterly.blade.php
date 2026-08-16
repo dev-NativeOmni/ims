@@ -162,7 +162,7 @@
                                 🕌 Halaqoh: <span class="text-indigo-650 dark:text-indigo-400">{{ $halaqah['musyrif'] }}</span>
                             </h3>
                             <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                                Kelompok bimbingan di kelas <span class="font-bold">{{ $selectedClass?->name }}</span> · Total: {{ $halaqah['total_students'] }} Santri aktif.
+                                Kelompok bimbingan di kelas <span class="font-bold">{{ $selectedClass?->name }}</span> · Total: {{ $halaqah['total_students'] }} Murid aktif.
                             </p>
                         </div>
 
@@ -329,7 +329,7 @@
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $jIdx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-700 dark:text-zinc-300">{{ $jurnal['tanggal'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-900 dark:text-white">{{ $jurnal['materi'] }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-center font-semibold text-gray-600 dark:text-zinc-300">{{ $jurnal['jumlah_murid'] }} Santri</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-center font-semibold text-gray-600 dark:text-zinc-300">{{ $jurnal['jumlah_murid'] }} Murid</td>
                                             <td class="px-4 py-3 text-center text-teal-650 font-extrabold text-lg">{{ $jurnal['paraf'] }}</td>
                                         </tr>
                                     @endforeach
@@ -584,7 +584,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>
-                                <strong class="font-semibold">Informasi:</strong> Target Semester otomatis diambil dari Target Hafalan terbaru yang dibuat Guru. Capaian Akhir otomatis diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik santri.
+                                <strong class="font-semibold">Informasi:</strong> Target Semester otomatis diambil dari Target Hafalan terbaru yang dibuat Guru. Capaian Akhir otomatis diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik murid.
                             </span>
                         </div>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
@@ -648,7 +648,7 @@
                 </div>
             @empty
                 <div class="bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 shadow-sm rounded-xl p-10 text-center text-gray-500 dark:text-zinc-500">
-                    Tidak ada santri aktif atau kelompok halaqoh di kelas yang dipilih.
+                    Tidak ada murid aktif atau kelompok halaqoh di kelas yang dipilih.
                 </div>
             @endforelse
 

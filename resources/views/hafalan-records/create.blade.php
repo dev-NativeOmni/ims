@@ -325,7 +325,7 @@
                 <div class="border-b dark:border-zinc-800 pb-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                         <h3 class="font-bold text-gray-900 dark:text-white text-base">Tabel Presensi Kelas</h3>
-                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Isi kehadiran santri terlebih dahulu untuk hari ini. Hanya murid yang ditandai <strong>Hadir</strong> yang dapat dipilih untuk setoran hafalan.</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Isi kehadiran murid terlebih dahulu untuk hari ini. Hanya murid yang ditandai <strong>Hadir</strong> yang dapat dipilih untuk setoran hafalan.</p>
                     </div>
                     <div class="flex items-center gap-2 text-xs text-gray-500">
                         <span>Tanggal Presensi:</span>
@@ -348,7 +348,7 @@
                         <thead class="bg-gray-50 dark:bg-zinc-850">
                             <tr>
                                 <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-12">No</th>
-                                <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Nama Santri</th>
+                                <th scope="col" class="px-4 py-2.5 text-left text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Nama Murid</th>
                                 <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Hadir</th>
                                 <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Sakit</th>
                                 <th scope="col" class="px-4 py-2.5 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider w-20">Izin</th>
@@ -415,7 +415,7 @@
                     @csrf
                     <input type="hidden" name="method" value="reguler">
 
-                    <!-- Saring & Santri & Tanggal -->
+                    <!-- Saring & Murid & Tanggal -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label for="class_room_filter_reguler" class="block text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -433,21 +433,21 @@
 
                         <div>
                             <label for="student_id_reguler" class="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-                                Santri
+                                Murid
                             </label>
                             <select id="student_id_reguler"
                                     name="student_id"
                                     x-model="selectedStudent"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white"
                                     required>
-                                <option value="" class="dark:bg-zinc-900">Pilih Santri</option>
+                                <option value="" class="dark:bg-zinc-900">Pilih Murid</option>
                                 <template x-for="student in filteredStudents" :key="student.id">
                                     <option :value="student.id" x-text="student.name + (student.nis ? ' - ' + student.nis : '') + (student.className ? ' - ' + student.className : '')" :selected="student.id == selectedStudent" class="dark:bg-zinc-900"></option>
                                 </template>
                             </select>
                             <template x-if="selectedClass && filteredStudents.length === 0">
                                 <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
-                                    ⚠️ Belum ada santri yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                    ⚠️ Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
                                 </p>
                             </template>
                             @error('student_id')
@@ -656,7 +656,7 @@
                 <div class="border-b dark:border-zinc-800 pb-4 mb-6 flex items-center justify-between">
                     <div>
                         <h3 class="font-bold text-gray-900 dark:text-white text-lg">Input Catatan Hafalan Metode UMMI</h3>
-                        <p class="text-xs text-gray-500 dark:text-zinc-400">Pencatatan tatap muka, jilid UMMI, materi, serta nilai evaluasi santri.</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400">Pencatatan tatap muka, jilid UMMI, materi, serta nilai evaluasi murid.</p>
                     </div>
                     <span class="px-2.5 py-1 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-emerald-100 dark:border-emerald-900">
                         Metode UMMI
@@ -688,20 +688,20 @@
 
                             <div>
                                 <label for="student_id_ummi" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
-                                    Santri
+                                    Murid
                                 </label>
                                 <select id="student_id_ummi"
                                         name="student_id"
                                         x-model="selectedStudent"
                                         class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                    <option value="" class="dark:bg-zinc-900">Semua Santri (Input Kelas/Bulk)</option>
+                                    <option value="" class="dark:bg-zinc-900">Semua Murid (Input Kelas/Bulk)</option>
                                     <template x-for="student in filteredStudents" :key="student.id">
                                         <option :value="student.id" x-text="student.name + (student.className ? ' — ' + student.className : '')" :selected="student.id == selectedStudent" class="dark:bg-zinc-900"></option>
                                     </template>
                                 </select>
                                 <template x-if="selectedClass && filteredStudents.length === 0">
                                     <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
-                                        ⚠️ Belum ada santri yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                        ⚠️ Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
                                     </p>
                                 </template>
                             </div>
@@ -929,7 +929,7 @@
                         <div class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4">
                             <div class="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
                                 <p class="text-xs text-rose-600 dark:text-rose-400 font-semibold">
-                                    ⚠️ Tidak ada santri yang ditandai Hadir di kelas ini untuk hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                    ⚠️ Tidak ada murid yang ditandai Hadir di kelas ini untuk hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
                                 </p>
                             </div>
                         </div>
@@ -938,8 +938,8 @@
                     <div x-show="selectedClass && !selectedStudent && filteredStudents.length > 0" class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4 space-y-4 student-checklist-container" style="display: none;">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b dark:border-zinc-800">
                             <div>
-                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Daftar Santri & Penyesuaian Nilai Individu</h4>
-                                <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Daftar santri aktif di kelas halaqoh terpilih. Anda dapat mengecualikan santri yang absen dan menyesuaikan nilai/catatan mereka secara individual jika dibutuhkan.</p>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm">Daftar Murid & Penyesuaian Nilai Individu</h4>
+                                <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Daftar murid aktif di kelas halaqoh terpilih. Anda dapat mengecualikan murid yang absen dan menyesuaikan nilai/catatan mereka secara individual jika dibutuhkan.</p>
                             </div>
                             <div class="flex items-center gap-3 text-xs shrink-0 mt-1 sm:mt-0">
                                 <button type="button" @click="$el.closest('.student-checklist-container').querySelectorAll('input[type=checkbox]').forEach(el => { el.checked = true; el.dispatchEvent(new Event('change')) })" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold transition">Centang Semua</button>

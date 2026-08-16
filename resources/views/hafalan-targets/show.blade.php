@@ -6,7 +6,7 @@
                     Detail Target Hafalan
                 </h2>
                 <p class="text-sm text-gray-500">
-                    Detail target, santri, guru pembimbing, dan status penyelesaian.
+                    Detail target, murid, guru pembimbing, dan status penyelesaian.
                 </p>
             </div>
 
@@ -48,7 +48,7 @@
             <div class="rounded-xl bg-white p-6 shadow-sm border border-gray-100">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <div class="text-sm text-gray-500">Santri</div>
+                        <div class="text-sm text-gray-500">Murid</div>
                         <div class="mt-1 text-2xl font-bold text-gray-900">
                             {{ $target->student?->name ?? '-' }}
                         </div>

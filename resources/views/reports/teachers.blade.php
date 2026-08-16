@@ -6,7 +6,7 @@
                     Laporan Kinerja Guru
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-zinc-400">
-                    Evaluasi partisipasi input, target santri, dan rerata nilai hafalan/murajaah guru pendamping.
+                    Evaluasi partisipasi input, target murid, dan rerata nilai hafalan/murajaah guru pendamping.
                 </p>
             </div>
             
@@ -84,7 +84,7 @@
                     Rumusan Penilaian Kinerja Guru Bulanan (Skala 100)
                 </h3>
                 <p class="mt-1.5 text-xs text-indigo-800 dark:text-indigo-400 leading-relaxed">
-                    Penilaian kinerja dirumuskan menggunakan pembobotan gabungan dari keaktifan, pencapaian target hafalan, dan kualitas setoran santri:
+                    Penilaian kinerja dirumuskan menggunakan pembobotan gabungan dari keaktifan, pencapaian target hafalan, dan kualitas setoran murid:
                 </p>
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                     <div class="bg-white/80 dark:bg-zinc-900/60 backdrop-blur-sm rounded-xl p-3 border border-indigo-100/50 dark:border-zinc-800">
@@ -93,11 +93,11 @@
                     </div>
                     <div class="bg-white/80 dark:bg-zinc-900/60 backdrop-blur-sm rounded-xl p-3 border border-indigo-100/50 dark:border-zinc-800">
                         <span class="font-bold text-indigo-950 dark:text-zinc-200 block mb-1">2. Ketercapaian Target (Bobot 40%)</span>
-                        Persentase target hafalan santri bimbingan yang selesai (`completed`) dibagi total target pada bulan tersebut (maksimal 40 poin).
+                        Persentase target hafalan murid bimbingan yang selesai (`completed`) dibagi total target pada bulan tersebut (maksimal 40 poin).
                     </div>
                     <div class="bg-white/80 dark:bg-zinc-900/60 backdrop-blur-sm rounded-xl p-3 border border-indigo-100/50 dark:border-zinc-800">
-                        <span class="font-bold text-indigo-950 dark:text-zinc-200 block mb-1">3. Kualitas Hafalan Santri (Bobot 20%)</span>
-                        Rerata nilai kelulusan setoran dan murajaah santri dalam skala 100 (maksimal 20 poin).
+                        <span class="font-bold text-indigo-950 dark:text-zinc-200 block mb-1">3. Kualitas Hafalan Murid (Bobot 20%)</span>
+                        Rerata nilai kelulusan setoran dan murajaah murid dalam skala 100 (maksimal 20 poin).
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                                         Ketercapaian Target (40%)
                                     </th>
                                     <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-505 dark:text-zinc-400 uppercase tracking-wider">
-                                        Rerata Nilai Santri (20%)
+                                        Rerata Nilai Murid (20%)
                                     </th>
                                     <th scope="col" class="px-6 py-3.5 text-center text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                                         Nilai Akhir
@@ -190,7 +190,7 @@
                                             </div>
                                         </td>
 
-                                        <!-- Rerata Nilai Santri (20%) -->
+                                        <!-- Rerata Nilai Murid (20%) -->
                                         <td class="px-6 py-4">
                                             <div class="text-sm text-gray-900 dark:text-zinc-300">
                                                 Rerata: <span class="font-bold">{{ $data['avg_student_score'] }}</span>

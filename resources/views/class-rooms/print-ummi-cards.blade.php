@@ -59,7 +59,7 @@
     <div class="no-print max-w-7xl mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-zinc-200">
         <div>
             <h1 class="font-bold text-lg text-gray-900">Cetak Masal Kartu UMMI Kelas — {{ $classRoom->name }}</h1>
-            <p class="text-xs text-zinc-500">Mencetak kartu UMMI untuk seluruh {{ count($studentsData) }} santri aktif sekaligus.</p>
+            <p class="text-xs text-zinc-500">Mencetak kartu UMMI untuk seluruh {{ count($studentsData) }} murid aktif sekaligus.</p>
         </div>
         <div class="flex items-center gap-3">
             <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">

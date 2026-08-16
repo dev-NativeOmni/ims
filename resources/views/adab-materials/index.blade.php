@@ -6,7 +6,7 @@
                     Materi Halaqoh Adab
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-zinc-400">
-                    Kumpulan berkas materi dan panduan untuk kegiatan halaqoh adab santri.
+                    Kumpulan berkas materi dan panduan untuk kegiatan halaqoh adab murid.
                 </p>
             </div>
 

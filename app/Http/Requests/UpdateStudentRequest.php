@@ -91,11 +91,11 @@ class UpdateStudentRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'user_id' => 'akun santri',
+            'user_id' => 'akun murid',
             'class_room_id' => 'kelas',
             'teacher_id' => 'guru pembimbing',
-            'name' => 'nama santri',
-            'student_number' => 'nomor santri',
+            'name' => 'nama murid',
+            'student_number' => 'nomor murid',
             'gender' => 'gender',
             'birth_date' => 'tanggal lahir',
             'status' => 'status',

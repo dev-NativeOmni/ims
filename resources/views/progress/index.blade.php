@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-900">
-                    Progress Santri
+                    Progress Murid
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
                     Rekap progres hafalan berdasarkan ayat lulus, murajaah, target aktif, dan target terlambat.
@@ -38,18 +38,18 @@
                                type="text"
                                name="q"
                                value="{{ request('q') }}"
-                               placeholder="Nama / nomor santri"
+                               placeholder="Nama / nomor murid"
                                class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
 
                     <div>
                         <label for="student_id" class="mb-1 block text-sm font-semibold text-gray-700">
-                            Santri
+                            Murid
                         </label>
                         <select id="student_id"
                                 name="student_id"
                                 class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Semua Santri</option>
+                            <option value="">Semua Murid</option>
                             @foreach ($filterStudents as $student)
                                 <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
                                     {{ $student->name }}
@@ -90,7 +90,7 @@
                             <option value="">Progress Tertinggi</option>
                             <option value="low_progress" @selected(request('sort') === 'low_progress')>Progress Terendah</option>
                             <option value="overdue" @selected(request('sort') === 'overdue')>Target Terlambat</option>
-                            <option value="name" @selected(request('sort') === 'name')>Nama Santri</option>
+                            <option value="name" @selected(request('sort') === 'name')>Nama Murid</option>
                         </select>
                     </div>
 
@@ -110,7 +110,7 @@
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Total Santri</p>
+                    <p class="text-sm font-medium text-gray-500">Total Murid</p>
                     <p class="mt-2 text-3xl font-bold text-gray-900">
                         {{ number_format($summary['total_students'] ?? 0) }}
                     </p>
@@ -151,7 +151,7 @@
                     <div class="mb-4 border-b border-gray-150 pb-3 flex justify-between items-center flex-wrap gap-2">
                         <div>
                             <h3 class="text-base font-semibold text-gray-900">
-                                Diagram Progres Hafalan Santri
+                                Diagram Progres Hafalan Murid
                                 @if (request('class_room_id'))
                                     - {{ $classRooms->firstWhere('id', request('class_room_id'))?->name }}
                                 @endif
@@ -179,7 +179,7 @@
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div class="border-b border-gray-200 px-5 py-4">
                     <h3 class="text-base font-semibold text-gray-900">
-                        Daftar Progress Santri
+                        Daftar Progress Murid
                     </h3>
                     <p class="mt-1 text-sm text-gray-500">
                         Klik detail untuk melihat timeline dan progres per surah.
@@ -190,7 +190,7 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-5 py-3 text-left font-semibold text-gray-600">Santri</th>
+                                <th class="px-5 py-3 text-left font-semibold text-gray-600">Murid</th>
                                 <th class="px-5 py-3 text-left font-semibold text-gray-600">Kelas</th>
                                 <th class="px-5 py-3 text-left font-semibold text-gray-600">Progress</th>
                                 <th class="px-5 py-3 text-left font-semibold text-gray-600">Hafalan</th>

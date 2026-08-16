@@ -188,7 +188,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-6 py-8 text-center text-zinc-400 dark:text-zinc-500">
-                                        Tidak ada data santri ditemukan.
+                                        Tidak ada data murid ditemukan.
                                     </td>
                                 </tr>
                             @endforelse

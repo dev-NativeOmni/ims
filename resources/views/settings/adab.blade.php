@@ -125,7 +125,7 @@
                         <span class="text-xs font-bold bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2.5 py-1 rounded-full">Kerajinan 40% + Pendamping 60%</span>
                     </div>
                     <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                        Penilaian adab santri dihitung dari <strong>Kerajinan Pengisian Kuisioner (40%)</strong> pada Hari Kerja Efektif (Senin-Jumat, menyesuaikan tanggal merah) dan <strong>Nilai Pendamping Adab (60%)</strong>.
+                        Penilaian adab murid dihitung dari <strong>Kerajinan Pengisian Kuisioner (40%)</strong> pada Hari Kerja Efektif (Senin-Jumat, menyesuaikan tanggal merah) dan <strong>Nilai Pendamping Adab (60%)</strong>.
                     </p>
                     <div class="grid grid-cols-5 gap-3 text-center text-xs pt-2">
                         @foreach (['A'=>['90–100%','bg-emerald-100 text-emerald-700'], 'B'=>['80–89%','bg-teal-100 text-teal-700'], 'C'=>['70–79%','bg-amber-100 text-amber-700'], 'D'=>['60–69%','bg-orange-100 text-orange-700'], 'E'=>['0–59%','bg-rose-100 text-rose-700']] as $g => [$range, $cls])

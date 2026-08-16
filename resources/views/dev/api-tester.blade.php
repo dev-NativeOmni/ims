@@ -143,7 +143,7 @@
                 <option value="admin">admin</option>
                 <option value="guru">guru</option>
                 <option value="orangtua">orangtua</option>
-                <option value="santri">santri</option>
+                <option value="murid">murid</option>
             </select>
 
             <label for="password">Password</label>
