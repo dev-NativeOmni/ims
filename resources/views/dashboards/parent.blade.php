@@ -28,6 +28,42 @@
                     Profil orangtua belum terhubung dengan akun ini.
                 </div>
             @else
+                {{-- 🌟 SYSTEM APRESIASI & HIGHLIGHTS DECK UNTUK ORANG TUA 🌟 --}}
+                <div class="rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 p-6 text-white shadow-lg space-y-4 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none">✨</div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <span class="px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
+                                🌟 Highlights Capaian Anak
+                            </span>
+                            <h3 class="text-xl font-black text-white">
+                                Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
+                            </h3>
+                            <p class="text-xs text-emerald-100 max-w-2xl leading-relaxed">
+                                Alhamdulillah, Ananda terus melangkah dalam menjaga hafalan Al-Qur'an. Mari senantiasa berikan motivasi &amp; apresiasi terbaik untuk setiap capaian ananda.
+                            </p>
+                        </div>
+
+                        @if ($childrenProgress->isNotEmpty())
+                            @php
+                                $firstChild = $childrenProgress->first();
+                                $lastSetoran = $latestHafalanRecords->first();
+                            @endphp
+                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 min-w-[240px] text-left md:text-right shrink-0">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-200">Setoran Hafalan Terbaru Pekan Ini</p>
+                                <p class="text-sm font-extrabold text-white mt-0.5">
+                                    {{ $lastSetoran?->surah?->name_latin ?? 'Belum ada setoran' }} 
+                                    {{ $lastSetoran ? '(Ayat '.$lastSetoran->ayah_start.'-'.$lastSetoran->ayah_end.')' : '' }}
+                                </p>
+                                <p class="text-[11px] text-emerald-200 mt-0.5 font-medium">
+                                    Murid: {{ $lastSetoran?->student?->name ?? data_get($firstChild, 'student_name', '-') }}
+                                    {{ $lastSetoran?->submitted_at ? '· '.$lastSetoran->submitted_at->format('d M Y') : '' }}
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total Anak</p>

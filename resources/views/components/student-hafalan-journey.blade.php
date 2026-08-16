@@ -5,7 +5,7 @@
     $journey = data_get($milestones, 'journey', []);
 @endphp
 
-<div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-5">
+<div x-data="{ showModal: false, activeTerm: null, activeGrade: '' }" class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-5">
     {{-- ─── HEADER & SETORAN PERTAMA BANNER ─── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
@@ -13,7 +13,7 @@
                 <span>🗺️ Peta Perjalanan Hafalan Murid</span>
             </h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Tabel rekam jejak capaian & tanggal setoran hafalan pertama yang tercatat di sistem per-Term (Kelas 10, 11, & 12).
+                Tabel rekam jejak capaian & tanggal setoran hafalan pertama yang tercatat di sistem per-Term (Kelas 10, 11, & 12). Klik sel Term untuk melihat detail ringkasan.
             </p>
         </div>
 
@@ -49,10 +49,11 @@
                 @forelse ($journey as $g)
                     @php
                         $gNum = data_get($g, 'grade_num');
+                        $gName = data_get($g, 'grade_name', 'Kelas '.$gNum);
                         $isCurrentGrade = data_get($g, 'is_current_grade');
                         $terms = data_get($g, 'terms', []);
                     @endphp
-                    <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-850/50 transition">
+                    <tr class="transition">
                         <!-- KELAS Column -->
                         <td class="py-4 px-3 font-black text-sm border-r border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white bg-zinc-50/80 dark:bg-zinc-850/50 align-middle">
                             <div class="flex flex-col items-center justify-center gap-1">
@@ -71,23 +72,46 @@
                                 $firstSetoran = data_get($t, 'first_setoran');
                                 $isCurrent = data_get($t, 'is_current', false);
                             @endphp
-                            <td class="p-3.5 border-r last:border-r-0 border-zinc-300 dark:border-zinc-700 text-center align-middle {{ $isCurrent ? 'bg-emerald-50/30 dark:bg-emerald-950/20' : '' }}">
-                                @if ($hasData && $firstSetoran)
-                                    <div class="space-y-1">
+                            <td @click="activeTerm = {{ json_encode($t) }}; activeGrade = '{{ $gName }}'; showModal = true"
+                                class="p-3 border-r last:border-r-0 border-zinc-300 dark:border-zinc-700 text-center align-middle cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/40 transition group relative">
+                                
+                                <div class="space-y-1.5">
+                                    <!-- Status Pill Badge -->
+                                    <div class="flex items-center justify-center gap-1">
+                                        @if ($hasData)
+                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60">
+                                                🟢 Ada Setoran
+                                            </span>
+                                        @elseif ($isCurrent)
+                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200/60 animate-pulse">
+                                                🟡 Term Aktif
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                                                ⚪ Belum Setoran
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    @if ($hasData && $firstSetoran)
                                         <!-- Top Line: Surah (ayat awal-ayat akhir) -->
-                                        <p class="font-black text-zinc-900 dark:text-zinc-100 text-xs">
+                                        <p class="font-black text-zinc-900 dark:text-zinc-100 text-xs group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                                             {{ data_get($firstSetoran, 'full_text') }}
                                         </p>
                                         <!-- Bottom Line: Tanggal Setoran -->
                                         <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
                                             <span>📅</span> {{ data_get($firstSetoran, 'date') }}
                                         </p>
+                                    @else
+                                        <div class="py-1 text-zinc-400 dark:text-zinc-600 text-xs italic font-medium">
+                                            -
+                                        </div>
+                                    @endif
+
+                                    <div class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition">
+                                        🔍 Detail Term
                                     </div>
-                                @else
-                                    <div class="py-2 text-zinc-400 dark:text-zinc-600 text-xs italic font-medium">
-                                        -
-                                    </div>
-                                @endif
+                                </div>
                             </td>
                         @endforeach
                     </tr>
@@ -100,5 +124,97 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- ─── ALPINE QUICK DETAIL MODAL ─── --}}
+    <div x-show="showModal" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        
+        <div @click.away="showModal = false"
+             class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 relative">
+            
+            <!-- Close Button -->
+            <button @click="showModal = false" class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold p-1">
+                ✕
+            </button>
+
+            <!-- Modal Header -->
+            <div class="border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs">
+                        <span x-text="activeGrade"></span>
+                    </span>
+                    <h3 class="text-base font-extrabold text-zinc-900 dark:text-white" x-text="activeTerm?.name || 'Detail Term'"></h3>
+                </div>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                    Periode: <span class="font-semibold text-zinc-700 dark:text-zinc-300" x-text="activeTerm?.start_date + ' s/d ' + activeTerm?.end_date"></span>
+                </p>
+            </div>
+
+            <!-- Modal Content -->
+            <template x-if="activeTerm && activeTerm.has_data">
+                <div class="space-y-4 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Setoran Pertama -->
+                        <div class="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/40">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block mb-1">
+                                🌱 Setoran Pertama Term
+                            </span>
+                            <p class="font-extrabold text-zinc-900 dark:text-white text-xs" x-text="activeTerm.first_setoran?.full_text || '-'"></p>
+                            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
+                                📅 Tanggal: <span x-text="activeTerm.first_setoran?.date || '-'"></span>
+                            </p>
+                        </div>
+
+                        <!-- Setoran Terakhir -->
+                        <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/40">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block mb-1">
+                                🏁 Setoran Terakhir Term
+                            </span>
+                            <p class="font-extrabold text-zinc-900 dark:text-white text-xs" x-text="activeTerm.last_setoran?.full_text || '-'"></p>
+                            <p class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1 font-semibold">
+                                📅 Tanggal: <span x-text="activeTerm.last_setoran?.date || '-'"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Summary -->
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+                            <span class="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-semibold block">Total Frekuensi Setoran</span>
+                            <span class="text-lg font-black text-zinc-900 dark:text-white" x-text="activeTerm.total_records || 0"></span>
+                            <span class="text-xs text-zinc-500"> Kali</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+                            <span class="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-semibold block">Total Baris Setoran</span>
+                            <span class="text-lg font-black text-indigo-600 dark:text-indigo-400" x-text="activeTerm.total_lines || 0"></span>
+                            <span class="text-xs text-indigo-500"> Baris</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="activeTerm && !activeTerm.has_data">
+                <div class="p-6 text-center text-zinc-500 dark:text-zinc-400 space-y-2">
+                    <span class="text-3xl block">📭</span>
+                    <p class="text-xs font-semibold">Belum Ada Rekam Setoran pada Term Ini.</p>
+                    <p class="text-[11px] text-zinc-400">Setoran hafalan yang dilakukan murid pada periode term ini akan otomatis tercatat di sini.</p>
+                </div>
+            </template>
+
+            <div class="pt-2 text-right">
+                <button @click="showModal = false" 
+                        class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl text-xs transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
     </div>
 </div>
