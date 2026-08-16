@@ -115,13 +115,13 @@ class SettingController extends Controller
         $startDate = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        $startDayOfWeek = $startDate->dayOfWeekIso;
-        $endDayOfWeek = $endDate->dayOfWeekIso;
+        // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        $startDayOfWeek = $startDate->dayOfWeek;
 
         $gridDates = [];
 
-        // Previous month padding
-        for ($i = $startDayOfWeek - 1; $i > 0; $i--) {
+        // Previous month padding (starting Sunday)
+        for ($i = $startDayOfWeek; $i > 0; $i--) {
             $gridDates[] = [
                 'date' => $startDate->copy()->subDays($i),
                 'isCurrentMonth' => false,
@@ -138,14 +138,25 @@ class SettingController extends Controller
             $current->addDay();
         }
 
-        // Next month padding
-        $paddingCount = 7 - $endDayOfWeek;
-        for ($i = 0; $i < $paddingCount; $i++) {
-            $gridDates[] = [
-                'date' => $endDate->copy()->addDays($i + 1),
-                'isCurrentMonth' => false,
-            ];
+        // Next month padding to complete 7-column rows
+        $remainder = count($gridDates) % 7;
+        if ($remainder > 0) {
+            $paddingCount = 7 - $remainder;
+            for ($i = 0; $i < $paddingCount; $i++) {
+                $gridDates[] = [
+                    'date' => $endDate->copy()->addDays($i + 1),
+                    'isCurrentMonth' => false,
+                ];
+            }
         }
+
+        $prevCarbon = $startDate->copy()->subMonth();
+        $nextCarbon = $startDate->copy()->addMonth();
+
+        $prevMonth = $prevCarbon->month;
+        $prevYear = $prevCarbon->year;
+        $nextMonth = $nextCarbon->month;
+        $nextYear = $nextCarbon->year;
 
         $holidays = Setting::getNationalHolidays($year);
         $classRooms = \App\Models\ClassRoom::query()->orderBy('name')->get();
@@ -153,7 +164,10 @@ class SettingController extends Controller
         $classHolidaysRaw = Setting::get("class_holidays_{$year}");
         $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
 
-        return view('settings.calendar', compact('gridDates', 'year', 'month', 'holidays', 'classRooms', 'classHolidays'));
+        return view('settings.calendar', compact(
+            'gridDates', 'year', 'month', 'holidays', 'classRooms', 'classHolidays',
+            'prevMonth', 'prevYear', 'nextMonth', 'nextYear'
+        ));
     }
 
     public function calendarUpdate(Request $request)
