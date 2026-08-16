@@ -152,11 +152,11 @@
                     </template>
                 </template>
 
-                <!-- Main Calendar Grid Container (Google Calendar Style Table Grid) -->
+                <!-- Main Calendar Grid Container (Explicit 7-Column Layout Inline Style for 100% Compatibility) -->
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm">
                     
                     <!-- 7-Column Day Names Header (Sunday to Saturday) -->
-                    <div class="grid grid-cols-7 border-b border-gray-200 dark:border-zinc-800 bg-gray-50/80 dark:bg-zinc-850/60 text-center">
+                    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center;" class="border-b border-gray-200 dark:border-zinc-800 bg-gray-50/80 dark:bg-zinc-850/60">
                         @foreach (['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'] as $idx => $dayName)
                             <div class="py-3 text-[11px] font-black tracking-wider uppercase {{ $idx === 0 || $idx === 6 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500 dark:text-zinc-400' }}">
                                 {{ $dayName }}
@@ -165,7 +165,7 @@
                     </div>
 
                     <!-- 7-Column Date Cells Grid -->
-                    <div class="grid grid-cols-7 border-l border-t border-gray-200 dark:border-zinc-800 bg-gray-200 dark:bg-zinc-800 gap-[1px]">
+                    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-left: 1px solid #e5e7eb; border-top: 1px solid #e5e7eb;" class="dark:border-zinc-800 bg-gray-200 dark:bg-zinc-800 gap-[1px]">
                         @foreach ($gridDates as $day)
                             @php
                                 $dateStr = $day['date']->toDateString();
@@ -184,13 +184,14 @@
                                         : (selectedClassHolidays['{{ $dateStr }}'] && selectedClassHolidays['{{ $dateStr }}'].length > 0)
                                             ? 'bg-amber-50/80 dark:bg-amber-950/20'
                                             : '{{ $isWeekend ? 'bg-gray-50/80 dark:bg-zinc-900/90' : 'bg-white dark:bg-zinc-900' }} hover:bg-indigo-50/50 dark:hover:bg-zinc-800/60'"
-                                    class="min-h-[110px] p-2.5 flex flex-col justify-between cursor-pointer select-none transition duration-150 group"
+                                    style="min-height: 120px;"
+                                    class="p-2.5 flex flex-col justify-between cursor-pointer select-none transition duration-150 group"
                                 >
                                     <!-- Top Row: Date Number & Today Circle Badge -->
                                     <div class="flex justify-between items-start">
                                         @if ($isToday)
                                             <!-- Google Calendar Blue Circle Badge for Today -->
-                                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white font-black flex items-center justify-center text-xs shadow-md shadow-blue-500/30">
+                                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-black flex items-center justify-center text-xs shadow-md shadow-blue-500/30">
                                                 {{ $dayNum }}
                                             </span>
                                         @else
@@ -207,36 +208,33 @@
                                         @endif
                                     </div>
 
-                                    <!-- Event Pills / Holiday Tags Slot -->
+                                    <!-- Event Pills / Holiday Tags Slot (Solid Google Calendar Style Bars) -->
                                     <div class="mt-2 space-y-1">
-                                        <!-- Global Total Holiday Event Pill -->
+                                        <!-- Global Total Holiday Solid Event Pill -->
                                         <template x-if="selectedHolidays.includes('{{ $dateStr }}')">
-                                            <div class="bg-rose-500/10 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 rounded-lg px-2 py-1 text-[10px] font-bold flex items-center gap-1.5 shadow-2xs">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-                                                <span class="truncate">🚨 Libur Total</span>
+                                            <div class="bg-emerald-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs">
+                                                🚨 Libur Total
                                             </div>
                                         </template>
 
-                                        <!-- Partial Class Holiday Event Pill -->
+                                        <!-- Partial Class Holiday Solid Event Pill -->
                                         <template x-if="selectedClassHolidays['{{ $dateStr }}'] && selectedClassHolidays['{{ $dateStr }}'].length > 0">
-                                            <div class="bg-amber-500/10 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 rounded-lg px-2 py-1 text-[10px] font-bold flex items-center gap-1.5 shadow-2xs">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-                                                <span class="truncate">⚠️ Libur <span x-text="selectedClassHolidays['{{ $dateStr }}'].length"></span> Kelas</span>
+                                            <div class="bg-amber-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs">
+                                                ⚠️ Libur <span x-text="selectedClassHolidays['{{ $dateStr }}'].length"></span> Kelas
                                             </div>
                                         </template>
 
                                         <!-- Default Active School Day Pill on Hover -->
                                         <template x-if="!selectedHolidays.includes('{{ $dateStr }}') && (!selectedClassHolidays['{{ $dateStr }}'] || selectedClassHolidays['{{ $dateStr }}'].length === 0)">
-                                            <div class="opacity-0 group-hover:opacity-100 transition duration-150 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-lg px-2 py-1 text-[10px] font-semibold flex items-center gap-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                                <span class="truncate">{{ $isWeekend ? 'Akhir Pekan' : 'Hari Sekolah' }}</span>
+                                            <div class="opacity-0 group-hover:opacity-100 transition duration-150 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-200 rounded-md px-2 py-1 text-[10px] font-semibold truncate">
+                                                {{ $isWeekend ? 'Akhir Pekan' : 'Hari Sekolah' }}
                                             </div>
                                         </template>
                                     </div>
                                 </div>
                             @else
                                 <!-- Non-Current Month Padded Date Cell (Muted Gray) -->
-                                <div class="min-h-[110px] p-2.5 bg-gray-50/50 dark:bg-zinc-950/40 opacity-40 select-none flex flex-col justify-between">
+                                <div style="min-height: 120px;" class="p-2.5 bg-gray-50/50 dark:bg-zinc-950/40 opacity-40 select-none flex flex-col justify-between">
                                     <span class="font-semibold text-xs text-gray-400 dark:text-zinc-600 px-1 py-0.5">
                                         {{ $dayNum }}
                                     </span>
