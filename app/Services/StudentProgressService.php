@@ -160,6 +160,15 @@ class StudentProgressService
             ->latest('target_date')
             ->first();
 
+        if (! $latestUmmiTarget) {
+            $latestUmmiTarget = HafalanTarget::query()
+                ->with('surah')
+                ->where('student_id', $student->id)
+                ->where('status', 'active')
+                ->latest('target_date')
+                ->first();
+        }
+
         $currentJilidStr = $latestUmmiRecord?->ummi_jilid ?? 'Jilid 1';
         preg_match('/(\d+)/', $currentJilidStr, $mJilid);
         $currentJilidNum = isset($mJilid[1]) ? min(3, max(1, (int) $mJilid[1])) : 1;

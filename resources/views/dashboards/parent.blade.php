@@ -190,13 +190,25 @@
                                     </div>
 
                                     <div class="rounded-xl border border-cyan-100 dark:border-cyan-900/40 bg-cyan-50/40 dark:bg-cyan-950/20 p-4">
-                                        <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Surah Ummi</p>
+                                        <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
                                         <p class="text-lg font-bold text-cyan-900 dark:text-cyan-100">
-                                            {{ data_get($row, 'ummi_target.surah.name_latin', 'Mengikuti Jilid') }}
+                                            @if(data_get($row, 'ummi_target.ummi_jilid'))
+                                                📗 {{ data_get($row, 'ummi_target.ummi_jilid') }}
+                                            @elseif(data_get($row, 'ummi_target.surah.name_latin'))
+                                                📖 {{ data_get($row, 'ummi_target.surah.name_latin') }}
+                                            @else
+                                                📗 Target Sesuai Jilid
+                                            @endif
                                         </p>
                                         <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
                                             @if(data_get($row, 'ummi_target'))
-                                                Ayat {{ data_get($row, 'ummi_target.ayah_start') }} - {{ data_get($row, 'ummi_target.ayah_end') }}
+                                                @if(data_get($row, 'ummi_target.halaman_peraga') || data_get($row, 'ummi_target.halaman_buku'))
+                                                    Peraga: {{ data_get($row, 'ummi_target.halaman_peraga', '-') }} · Buku: {{ data_get($row, 'ummi_target.halaman_buku', '-') }}
+                                                @elseif(data_get($row, 'ummi_target.ayah_start'))
+                                                    Ayat {{ data_get($row, 'ummi_target.ayah_start') }} - {{ data_get($row, 'ummi_target.ayah_end') }}
+                                                @else
+                                                    Tahsin &amp; Hafalan Ummi
+                                                @endif
                                             @else
                                                 Tahsin &amp; Hafalan Ummi
                                             @endif
@@ -292,14 +304,36 @@
 
                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             @forelse ($latestTargets as $target)
+                                @php
+                                    $targetClass = $target->student?->classRoom?->name ?? '';
+                                    $targetIsUmmi = (bool) $target->ummi_jilid || (bool) (
+                                        (preg_match('/\bX\b/i', $targetClass) && !preg_match('/\b(XI|XII)\b/i', $targetClass))
+                                        || preg_match('/\b10\b/i', $targetClass)
+                                    ) && !preg_match('/\b(XI|XII|11|12)\b/i', $targetClass);
+                                @endphp
                                 <div class="p-5">
                                     <p class="font-semibold text-zinc-900 dark:text-white">
                                         {{ $target->student?->name ?? '-' }}
+                                        <span class="text-xs text-zinc-400 font-normal">({{ $targetClass ?: '-' }})</span>
                                     </p>
-                                    <p class="mt-1 text-sm text-zinc-650 dark:text-zinc-400">
-                                        {{ $target->surah?->name_latin ?? '-' }}
-                                        · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
-                                    </p>
+                                    @if ($targetIsUmmi)
+                                        <p class="mt-1 text-sm font-bold text-teal-800 dark:text-teal-300">
+                                            📗 {{ $target->ummi_jilid ?? 'Target Ummi' }}
+                                            @if($target->halaman_peraga || $target->halaman_buku)
+                                                <span class="text-xs font-normal text-teal-600 dark:text-teal-400 block sm:inline">(Peraga: {{ $target->halaman_peraga ?? '-' }}, Buku: {{ $target->halaman_buku ?? '-' }})</span>
+                                            @endif
+                                        </p>
+                                        @if($target->surah)
+                                            <p class="text-xs text-teal-700 dark:text-teal-400 mt-0.5 font-medium">
+                                                Surah {{ $target->surah->name_latin }} (Ayat {{ $target->ayah_start ?? 1 }}-{{ $target->ayah_end ?? '-' }})
+                                            </p>
+                                        @endif
+                                    @else
+                                        <p class="mt-1 text-sm text-zinc-650 dark:text-zinc-400 font-semibold">
+                                            📘 {{ $target->surah?->name_latin ?? '-' }}
+                                            · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                        </p>
+                                    @endif
                                     <p class="mt-1 text-xs text-zinc-400">
                                         Target: {{ $target->target_date ? \Carbon\Carbon::parse($target->target_date)->format('d M Y') : '-' }}
                                     </p>
