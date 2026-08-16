@@ -155,11 +155,13 @@
                                    class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
                                     📥 Ekspor Excel
                                 </a>
-                                <a href="{{ route('class-rooms.print-ummi-cards', $classRoom->id) }}" 
-                                   target="_blank"
-                                   class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                                    🖨️ Cetak Kartu UMMI Kelas
-                                </a>
+                                @if (!auth()->user()->hasRole('student'))
+                                    <a href="{{ route('class-rooms.print-ummi-cards', $classRoom->id) }}" 
+                                       target="_blank"
+                                       class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                                        🖨️ Cetak Kartu UMMI Kelas
+                                    </a>
+                                @endif
                             </div>
                         </form>
                     </div>

@@ -20,7 +20,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-                @if ($student->tahfizh_level === 'ummi' || $student->ummiRecords()->exists())
+                @if (!auth()->user()->hasRole('student') && ($student->tahfizh_level === 'ummi' || $student->ummiRecords()->exists()))
                     <a href="{{ route('hafalan-records.student.ummi-card', $student->id) }}"
                        target="_blank"
                        class="inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition">

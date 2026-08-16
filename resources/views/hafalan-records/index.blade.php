@@ -128,12 +128,14 @@
                                         <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
                                         <span>•</span>
                                         <span>{{ $record->tanggal?->format('d M Y') }}</span>
-                                        <span>•</span>
-                                        <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
-                                           target="_blank"
-                                           class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
-                                            📄 Kartu
-                                        </a>
+                                        @if (!auth()->user()->hasRole('student'))
+                                            <span>•</span>
+                                            <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
+                                               target="_blank"
+                                               class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
+                                                📄 Kartu
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50">
@@ -268,12 +270,14 @@
                                             </div>
                                             <div class="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
                                                 <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
-                                                <span>•</span>
-                                                <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
-                                                   target="_blank"
-                                                   class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
-                                                    📄 Kartu
-                                                </a>
+                                                @if (!auth()->user()->hasRole('student'))
+                                                    <span>•</span>
+                                                    <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
+                                                       target="_blank"
+                                                       class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold flex items-center gap-0.5">
+                                                        📄 Kartu
+                                                    </a>
+                                                @endif
                                             </div>
                                         </td>
 
