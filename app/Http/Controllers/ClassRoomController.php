@@ -448,6 +448,8 @@ class ClassRoomController extends Controller
     {
         $user = $request->user();
 
+        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Akses cetak kartu UMMI kelas tidak diperbolehkan untuk akun murid dan orang tua.');
+
         // Get visible students to ensure access control
         $visibleStudentIds = app(\App\Services\StudentProgressService::class)
             ->visibleStudentQuery($user)

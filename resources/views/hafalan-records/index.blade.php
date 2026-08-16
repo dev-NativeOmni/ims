@@ -128,7 +128,7 @@
                                         <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
                                         <span>•</span>
                                         <span>{{ $record->tanggal?->format('d M Y') }}</span>
-                                        @if (!auth()->user()->hasRole('student'))
+                                        @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                             <span>•</span>
                                             <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
                                                target="_blank"
@@ -270,7 +270,7 @@
                                             </div>
                                             <div class="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
                                                 <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
-                                                @if (!auth()->user()->hasRole('student'))
+                                                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                                     <span>•</span>
                                                     <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" 
                                                        target="_blank"

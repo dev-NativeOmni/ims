@@ -148,7 +148,7 @@ class StudentProgressService
         $latestUmmiRecord = \App\Models\UmmiRecord::query()
             ->with('surah')
             ->where('student_id', $student->id)
-            ->latest('reviewed_at')
+            ->latest('tanggal')
             ->latest()
             ->first();
 
@@ -544,182 +544,207 @@ class StudentProgressService
     {
         try {
             $firstHafalan = HafalanRecord::query()
-            ->with('surah')
-            ->where('student_id', $student->id)
-            ->where('status', 'passed')
-            ->orderBy('submitted_at', 'asc')
-            ->orderBy('id', 'asc')
-            ->first();
+                ->with('surah')
+                ->where('student_id', $student->id)
+                ->where(function ($q) {
+                    $q->where('status', 'passed')->orWhereNull('status');
+                })
+                ->orderBy('submitted_at', 'asc')
+                ->orderBy('id', 'asc')
+                ->first();
 
-        $firstUmmi = \App\Models\UmmiRecord::query()
-            ->with('surah')
-            ->where('student_id', $student->id)
-            ->orderBy('reviewed_at', 'asc')
-            ->orderBy('id', 'asc')
-            ->first();
+            $firstUmmi = \App\Models\UmmiRecord::query()
+                ->with('surah')
+                ->where('student_id', $student->id)
+                ->orderBy('tanggal', 'asc')
+                ->orderBy('id', 'asc')
+                ->first();
 
-        $firstRecord = null;
-        if ($firstHafalan && $firstUmmi) {
-            $hafDate = \Carbon\Carbon::parse($firstHafalan->submitted_at);
-            $ummiDate = \Carbon\Carbon::parse($firstUmmi->reviewed_at);
-            if ($hafDate->lte($ummiDate)) {
+            $firstRecord = null;
+            if ($firstHafalan && $firstUmmi) {
+                $hafDate = \Carbon\Carbon::parse($firstHafalan->submitted_at);
+                $ummiDate = \Carbon\Carbon::parse($firstUmmi->tanggal);
+                if ($hafDate->lte($ummiDate)) {
+                    $firstRecord = [
+                        'type' => 'hafalan',
+                        'date' => $firstHafalan->submitted_at?->format('d M Y'),
+                        'raw_date' => $firstHafalan->submitted_at,
+                        'title' => ($firstHafalan->surah?->name_latin ?? 'Surah #'.$firstHafalan->surah_id).' (Ayat '.$firstHafalan->ayah_start.' - '.$firstHafalan->ayah_end.')',
+                    ];
+                } else {
+                    $uTitle = $firstUmmi->surah?->name_latin
+                        ? ($firstUmmi->surah->name_latin . ' (Ayat ' . ($firstUmmi->hafalan_ayah ?: '-') . ')')
+                        : (($firstUmmi->ummi_jilid ?? 'Ummi') . ' (Hal. ' . ($firstUmmi->ummi_halaman ?? '-') . ')');
+                    $firstRecord = [
+                        'type' => 'ummi',
+                        'date' => $firstUmmi->tanggal?->format('d M Y'),
+                        'raw_date' => $firstUmmi->tanggal,
+                        'title' => $uTitle,
+                    ];
+                }
+            } elseif ($firstHafalan) {
                 $firstRecord = [
                     'type' => 'hafalan',
                     'date' => $firstHafalan->submitted_at?->format('d M Y'),
                     'raw_date' => $firstHafalan->submitted_at,
                     'title' => ($firstHafalan->surah?->name_latin ?? 'Surah #'.$firstHafalan->surah_id).' (Ayat '.$firstHafalan->ayah_start.' - '.$firstHafalan->ayah_end.')',
                 ];
-            } else {
+            } elseif ($firstUmmi) {
+                $uTitle = $firstUmmi->surah?->name_latin
+                    ? ($firstUmmi->surah->name_latin . ' (Ayat ' . ($firstUmmi->hafalan_ayah ?: '-') . ')')
+                    : (($firstUmmi->ummi_jilid ?? 'Ummi') . ' (Hal. ' . ($firstUmmi->ummi_halaman ?? '-') . ')');
                 $firstRecord = [
                     'type' => 'ummi',
-                    'date' => $firstUmmi->reviewed_at?->format('d M Y'),
-                    'raw_date' => $firstUmmi->reviewed_at,
-                    'title' => ($firstUmmi->ummi_jilid ?? 'Ummi').' (Hal. '.($firstUmmi->ummi_halaman ?? '-').')',
-                ];
-            }
-        } elseif ($firstHafalan) {
-            $firstRecord = [
-                'type' => 'hafalan',
-                'date' => $firstHafalan->submitted_at?->format('d M Y'),
-                'raw_date' => $firstHafalan->submitted_at,
-                'title' => ($firstHafalan->surah?->name_latin ?? 'Surah #'.$firstHafalan->surah_id).' (Ayat '.$firstHafalan->ayah_start.' - '.$firstHafalan->ayah_end.')',
-            ];
-        } elseif ($firstUmmi) {
-            $firstRecord = [
-                'type' => 'ummi',
-                'date' => $firstUmmi->reviewed_at?->format('d M Y'),
-                'raw_date' => $firstUmmi->reviewed_at,
-                'title' => ($firstUmmi->ummi_jilid ?? 'Ummi').' (Hal. '.($firstUmmi->ummi_halaman ?? '-').')',
-            ];
-        }
-
-        $currentMonth = (int) date('n');
-        $currentYear = (int) date('Y');
-        $currentSchoolYearStart = $currentMonth >= 7 ? $currentYear : $currentYear - 1;
-
-        $className = $student->classRoom?->name ?? '';
-        $isGrade12 = (bool) (preg_match('/\bXII\b/i', $className) || preg_match('/\b12\b/i', $className));
-        $isGrade11 = (bool) ((preg_match('/\bXI\b/i', $className) && !preg_match('/\bXII\b/i', $className)) || preg_match('/\b11\b/i', $className));
-
-        $currentGradeNum = 10;
-        if ($isGrade12) {
-            $currentGradeNum = 12;
-        } elseif ($isGrade11) {
-            $currentGradeNum = 11;
-        }
-
-        $grades = [
-            10 => ['code' => 'X', 'name' => 'Kelas 10', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 10)],
-            11 => ['code' => 'XI', 'name' => 'Kelas 11', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 11)],
-            12 => ['code' => 'XII', 'name' => 'Kelas 12', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 12)],
-        ];
-
-        $todayStr = now()->toDateString();
-        $journey = [];
-
-        foreach ($grades as $gNum => $gInfo) {
-            $syStart = $gInfo['year_start'];
-            $syEnd = $syStart + 1;
-
-            $terms = [
-                1 => ['name' => 'Term 1 (Jul - Sep)', 'start' => "{$syStart}-07-01", 'end' => "{$syStart}-09-30"],
-                2 => ['name' => 'Term 2 (Okt - Des)', 'start' => "{$syStart}-10-01", 'end' => "{$syStart}-12-31"],
-                3 => ['name' => 'Term 3 (Jan - Mar)', 'start' => "{$syEnd}-01-01", 'end' => "{$syEnd}-03-31"],
-                4 => ['name' => 'Term 4 (Apr - Jun)', 'start' => "{$syEnd}-04-01", 'end' => "{$syEnd}-06-30"],
-            ];
-
-            $termResults = [];
-
-            foreach ($terms as $tNum => $tInfo) {
-                $tStart = $tInfo['start'];
-                $tEnd = $tInfo['end'];
-                $isCurrent = ($todayStr >= $tStart && $todayStr <= $tEnd);
-
-                $hafalanInTerm = HafalanRecord::query()
-                    ->with('surah')
-                    ->where('student_id', $student->id)
-                    ->where('status', 'passed')
-                    ->whereBetween('submitted_at', [$tStart, $tEnd])
-                    ->orderBy('submitted_at', 'asc')
-                    ->get();
-
-                $ummiInTerm = \App\Models\UmmiRecord::query()
-                    ->with('surah')
-                    ->where('student_id', $student->id)
-                    ->whereBetween('reviewed_at', [$tStart, $tEnd])
-                    ->orderBy('reviewed_at', 'asc')
-                    ->get();
-
-                $firstH = $hafalanInTerm->first();
-                $lastH = $hafalanInTerm->last();
-
-                $firstU = $ummiInTerm->first();
-                $lastU = $ummiInTerm->last();
-
-                $termFirst = null;
-                $termLast = null;
-
-                if ($firstH) {
-                    $termFirst = [
-                        'date' => $firstH->submitted_at?->format('d/m/Y'),
-                        'surah_name' => $firstH->surah?->name_latin ?? '-',
-                        'ayah_range' => 'Ayat '.$firstH->ayah_start.'-'.$firstH->ayah_end,
-                        'full_text' => ($firstH->surah?->name_latin ?? '-').' (Ayat '.$firstH->ayah_start.'-'.$firstH->ayah_end.')',
-                    ];
-                } elseif ($firstU) {
-                    $termFirst = [
-                        'date' => $firstU->reviewed_at?->format('d/m/Y'),
-                        'surah_name' => $firstU->ummi_jilid ?? 'Ummi',
-                        'ayah_range' => 'Hal. '.($firstU->ummi_halaman ?? '-'),
-                        'full_text' => ($firstU->ummi_jilid ?? 'Ummi').' (Hal. '.($firstU->ummi_halaman ?? '-').')',
-                    ];
-                }
-
-                if ($lastH) {
-                    $termLast = [
-                        'date' => $lastH->submitted_at?->format('d/m/Y'),
-                        'surah_name' => $lastH->surah?->name_latin ?? '-',
-                        'ayah_range' => 'Ayat '.$lastH->ayah_start.'-'.$lastH->ayah_end,
-                        'full_text' => ($lastH->surah?->name_latin ?? '-').' (Ayat '.$lastH->ayah_start.'-'.$lastH->ayah_end.')',
-                    ];
-                } elseif ($lastU) {
-                    $termLast = [
-                        'date' => $lastU->reviewed_at?->format('d/m/Y'),
-                        'surah_name' => $lastU->ummi_jilid ?? 'Ummi',
-                        'ayah_range' => 'Hal. '.($lastU->ummi_halaman ?? '-'),
-                        'full_text' => ($lastU->ummi_jilid ?? 'Ummi').' (Hal. '.($lastU->ummi_halaman ?? '-').')',
-                    ];
-                }
-
-                $totalLines = $hafalanInTerm->sum('lines_count');
-
-                $termResults[$tNum] = [
-                    'term_number' => $tNum,
-                    'name' => $tInfo['name'],
-                    'start_date' => $tStart,
-                    'end_date' => $tEnd,
-                    'is_current' => $isCurrent,
-                    'has_data' => ($termFirst !== null),
-                    'first_setoran' => $termFirst,
-                    'last_setoran' => $termLast,
-                    'total_records' => $hafalanInTerm->count() + $ummiInTerm->count(),
-                    'total_lines' => $totalLines,
+                    'date' => $firstUmmi->tanggal?->format('d M Y'),
+                    'raw_date' => $firstUmmi->tanggal,
+                    'title' => $uTitle,
                 ];
             }
 
-            $journey[] = [
-                'grade_num' => $gNum,
-                'grade_name' => $gInfo['name'],
-                'school_year' => "{$syStart}/{$syEnd}",
-                'is_current_grade' => ($gNum === $currentGradeNum),
-                'terms' => $termResults,
-            ];
-        }
+            $currentMonth = (int) date('n');
+            $currentYear = (int) date('Y');
+            $currentSchoolYearStart = $currentMonth >= 7 ? $currentYear : $currentYear - 1;
 
-        return [
-            'first_record' => $firstRecord,
-            'journey' => $journey,
-        ];
+            $className = $student->classRoom?->name ?? '';
+            $level = (int) ($student->classRoom?->level ?? 0);
+
+            $isGrade12 = (bool) ($level === 12 || preg_match('/\bXII\b/i', $className) || preg_match('/\b12\b/i', $className));
+            $isGrade11 = (bool) ($level === 11 || (preg_match('/\bXI\b/i', $className) && !preg_match('/\bXII\b/i', $className)) || preg_match('/\b11\b/i', $className));
+
+            $currentGradeNum = 10;
+            if ($isGrade12) {
+                $currentGradeNum = 12;
+            } elseif ($isGrade11) {
+                $currentGradeNum = 11;
+            }
+
+            $grades = [
+                10 => ['code' => 'X', 'name' => 'Kelas 10', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 10)],
+                11 => ['code' => 'XI', 'name' => 'Kelas 11', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 11)],
+                12 => ['code' => 'XII', 'name' => 'Kelas 12', 'year_start' => $currentSchoolYearStart - ($currentGradeNum - 12)],
+            ];
+
+            $todayStr = now()->toDateString();
+            $journey = [];
+
+            foreach ($grades as $gNum => $gInfo) {
+                $syStart = $gInfo['year_start'];
+                $syEnd = $syStart + 1;
+
+                $terms = [
+                    1 => ['name' => 'Term 1 (Jul - Sep)', 'start' => "{$syStart}-07-01", 'end' => "{$syStart}-09-30"],
+                    2 => ['name' => 'Term 2 (Okt - Des)', 'start' => "{$syStart}-10-01", 'end' => "{$syStart}-12-31"],
+                    3 => ['name' => 'Term 3 (Jan - Mar)', 'start' => "{$syEnd}-01-01", 'end' => "{$syEnd}-03-31"],
+                    4 => ['name' => 'Term 4 (Apr - Jun)', 'start' => "{$syEnd}-04-01", 'end' => "{$syEnd}-06-30"],
+                ];
+
+                $termResults = [];
+
+                foreach ($terms as $tNum => $tInfo) {
+                    $tStart = $tInfo['start'];
+                    $tEnd = $tInfo['end'];
+                    $isCurrent = ($todayStr >= $tStart && $todayStr <= $tEnd);
+
+                    $hafalanInTerm = HafalanRecord::query()
+                        ->with('surah')
+                        ->where('student_id', $student->id)
+                        ->where(function ($q) {
+                            $q->where('status', 'passed')->orWhereNull('status');
+                        })
+                        ->whereDate('submitted_at', '>=', $tStart)
+                        ->whereDate('submitted_at', '<=', $tEnd)
+                        ->orderBy('submitted_at', 'asc')
+                        ->get();
+
+                    $ummiInTerm = \App\Models\UmmiRecord::query()
+                        ->with('surah')
+                        ->where('student_id', $student->id)
+                        ->whereDate('tanggal', '>=', $tStart)
+                        ->whereDate('tanggal', '<=', $tEnd)
+                        ->orderBy('tanggal', 'asc')
+                        ->get();
+
+                    $firstH = $hafalanInTerm->first();
+                    $lastH = $hafalanInTerm->last();
+
+                    $firstU = $ummiInTerm->first();
+                    $lastU = $ummiInTerm->last();
+
+                    $termFirst = null;
+                    $termLast = null;
+
+                    // Format Reguler
+                    $formatH = function ($h) {
+                        return [
+                            'date' => $h->submitted_at?->format('d/m/Y'),
+                            'surah_name' => $h->surah?->name_latin ?? '-',
+                            'ayah_range' => 'Ayat '.$h->ayah_start.'-'.$h->ayah_end,
+                            'full_text' => ($h->surah?->name_latin ?? '-').' (Ayat '.$h->ayah_start.'-'.$h->ayah_end.')',
+                        ];
+                    };
+
+                    // Format Ummi
+                    $formatU = function ($u) {
+                        $fullStr = $u->surah?->name_latin
+                            ? ($u->surah->name_latin . ' (Ayat ' . ($u->hafalan_ayah ?: '-') . ')')
+                            : (($u->ummi_jilid ?? 'Ummi') . ' (Hal. ' . ($u->ummi_halaman ?? '-') . ')');
+                        return [
+                            'date' => $u->tanggal?->format('d/m/Y'),
+                            'surah_name' => $u->surah?->name_latin ?? ($u->ummi_jilid ?? 'Ummi'),
+                            'ayah_range' => $u->hafalan_ayah ? ('Ayat '.$u->hafalan_ayah) : ('Hal. '.($u->ummi_halaman ?? '-')),
+                            'full_text' => $fullStr,
+                        ];
+                    };
+
+                    if ($firstH && $firstU) {
+                        $hDate = \Carbon\Carbon::parse($firstH->submitted_at);
+                        $uDate = \Carbon\Carbon::parse($firstU->tanggal);
+                        $termFirst = $hDate->lte($uDate) ? $formatH($firstH) : $formatU($firstU);
+                    } elseif ($firstH) {
+                        $termFirst = $formatH($firstH);
+                    } elseif ($firstU) {
+                        $termFirst = $formatU($firstU);
+                    }
+
+                    if ($lastH && $lastU) {
+                        $hDate = \Carbon\Carbon::parse($lastH->submitted_at);
+                        $uDate = \Carbon\Carbon::parse($lastU->tanggal);
+                        $termLast = $hDate->gte($uDate) ? $formatH($lastH) : $formatU($lastU);
+                    } elseif ($lastH) {
+                        $termLast = $formatH($lastH);
+                    } elseif ($lastU) {
+                        $termLast = $formatU($lastU);
+                    }
+
+                    $totalLines = $hafalanInTerm->sum('lines_count') + $ummiInTerm->sum('lines_count');
+
+                    $termResults[$tNum] = [
+                        'term_number' => $tNum,
+                        'name' => $tInfo['name'],
+                        'start_date' => $tStart,
+                        'end_date' => $tEnd,
+                        'is_current' => $isCurrent,
+                        'has_data' => ($termFirst !== null),
+                        'first_setoran' => $termFirst,
+                        'last_setoran' => $termLast,
+                        'total_records' => $hafalanInTerm->count() + $ummiInTerm->count(),
+                        'total_lines' => $totalLines,
+                    ];
+                }
+
+                $journey[] = [
+                    'grade_num' => $gNum,
+                    'grade_name' => $gInfo['name'],
+                    'school_year' => "{$syStart}/{$syEnd}",
+                    'is_current_grade' => ($gNum === $currentGradeNum),
+                    'terms' => $termResults,
+                ];
+            }
+
+            return [
+                'first_record' => $firstRecord,
+                'journey' => $journey,
+            ];
         } catch (\Throwable $e) {
             return [
                 'first_record' => null,

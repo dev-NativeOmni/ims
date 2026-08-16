@@ -280,7 +280,7 @@ class HafalanRecordController extends Controller
     {
         $user = $request->user();
 
-        abort_if($user->hasRole('student'), 403, 'Opsi cetak kartu UMMI tidak diperbolehkan untuk akun murid.');
+        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Opsi cetak kartu UMMI tidak diperbolehkan untuk akun murid dan orang tua.');
 
         // Check if student belongs to the visible students for this user
         $visibleStudentIds = app(\App\Services\StudentProgressService::class)
