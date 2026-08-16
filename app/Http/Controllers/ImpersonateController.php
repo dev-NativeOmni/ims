@@ -25,6 +25,10 @@ class ImpersonateController extends Controller
             return back()->with('error', 'Anda sudah masuk dengan akun ini.');
         }
 
+        if (! $user->isActive()) {
+            return back()->with('error', 'Tidak dapat masuk sebagai pengguna ini karena akun sedang nonaktif.');
+        }
+
         // Save original admin ID if not already impersonating
         if (! session()->has('impersonated_by')) {
             session(['impersonated_by' => $currentUser->id]);

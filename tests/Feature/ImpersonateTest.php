@@ -20,12 +20,14 @@ class ImpersonateTest extends TestCase
             'role_id' => $superAdminRole->id,
             'name' => 'Super Admin Utama',
             'username' => 'superadmin_test',
+            'status' => 'active',
         ]);
 
         $teacher = User::factory()->create([
             'role_id' => $teacherRole->id,
             'name' => 'Ustadz Ahmad',
             'username' => 'ust_ahmad',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($superAdmin)->post(route('impersonate.start', $teacher));
@@ -44,12 +46,14 @@ class ImpersonateTest extends TestCase
             'role_id' => $superAdminRole->id,
             'name' => 'Super Admin Utama',
             'username' => 'superadmin_test2',
+            'status' => 'active',
         ]);
 
         $parentUser = User::factory()->create([
             'role_id' => $parentRole->id,
             'name' => 'Bapak Budi',
             'username' => 'pak_budi',
+            'status' => 'active',
         ]);
 
         // Start impersonating
