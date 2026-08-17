@@ -48,13 +48,13 @@
                                 $firstChild = $childrenProgress->first();
                                 $lastSetoran = $latestHafalanRecords->first();
                             @endphp
-                            <div class="bg-emerald-800 text-white rounded-2xl p-4 min-w-[250px] text-left md:text-right shrink-0 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-200">Setoran Hafalan Terbaru Pekan Ini</p>
-                                <p class="text-sm font-black text-white mt-0.5">
+                            <div class="rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800 p-4 min-w-[260px] text-left md:text-right shrink-0">
+                                <p class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Setoran Hafalan Terbaru Pekan Ini</p>
+                                <p class="text-sm font-black text-zinc-900 dark:text-white mt-1">
                                     {{ $lastSetoran?->surah?->name_latin ?? 'Belum ada setoran' }} 
                                     {{ $lastSetoran ? '(Ayat '.$lastSetoran->ayah_start.'-'.$lastSetoran->ayah_end.')' : '' }}
                                 </p>
-                                <p class="text-[11px] text-emerald-100 mt-0.5 font-semibold">
+                                <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mt-1">
                                     Murid: {{ $lastSetoran?->student?->name ?? data_get($firstChild, 'student_name', '-') }}
                                     {{ $lastSetoran?->submitted_at ? '· '.$lastSetoran->submitted_at->format('d M Y') : '' }}
                                 </p>
