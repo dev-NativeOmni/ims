@@ -31,4 +31,12 @@ class ProfileUpdateRequest extends FormRequest
             'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'username.unique' => 'Username ini sudah digunakan oleh pengguna lain. Silakan gunakan username yang berbeda.',
+            'username.required' => 'Username tidak boleh kosong.',
+        ];
+    }
 }

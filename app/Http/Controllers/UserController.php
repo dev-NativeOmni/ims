@@ -155,6 +155,9 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'password' => 'nullable|string|min:6',
             'status' => 'required|in:active,inactive',
+        ], [
+            'username.unique' => 'Username ini sudah digunakan oleh pengguna lain. Silakan gunakan username yang berbeda.',
+            'username.required' => 'Username tidak boleh kosong.',
         ]);
 
         DB::transaction(function () use ($validated, $user) {
@@ -212,6 +215,9 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'password' => 'required|string|min:6',
             'status' => 'required|in:active,inactive',
+        ], [
+            'username.unique' => 'Username ini sudah digunakan oleh pengguna lain. Silakan gunakan username yang berbeda.',
+            'username.required' => 'Username tidak boleh kosong.',
         ]);
 
         DB::transaction(function () use ($validated) {
