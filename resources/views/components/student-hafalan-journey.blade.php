@@ -102,6 +102,14 @@
                                         <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
                                             <span>📅</span> {{ data_get($firstSetoran, 'date') }}
                                         </p>
+                                    @elseif (data_get($t, 'target'))
+                                        <!-- Target assigned for term -->
+                                        <p class="font-bold text-teal-800 dark:text-teal-300 text-xs">
+                                            🎯 {{ data_get($t, 'target.full_text') }}
+                                        </p>
+                                        <p class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                                            DL: {{ data_get($t, 'target.date') }}
+                                        </p>
                                     @else
                                         <div class="py-1 text-zinc-400 dark:text-zinc-600 text-xs italic font-medium">
                                             -
@@ -157,6 +165,19 @@
                     Periode: <span class="font-semibold text-zinc-700 dark:text-zinc-300" x-text="activeTerm?.start_date + ' s/d ' + activeTerm?.end_date"></span>
                 </p>
             </div>
+
+            <!-- Target Term Card (If Assigned) -->
+            <template x-if="activeTerm && activeTerm.target">
+                <div class="p-3.5 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-900/40">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 block mb-1">
+                        🎯 Target Term Yang Ditetapkan
+                    </span>
+                    <p class="font-black text-zinc-900 dark:text-white text-xs" x-text="activeTerm.target.full_text || '-'"></p>
+                    <p class="text-[11px] text-cyan-800 dark:text-cyan-300 mt-1 font-semibold">
+                        📅 Batas Target: <span x-text="activeTerm.target.date || '-'"></span> · Status: <span x-text="activeTerm.target.status || '-'"></span>
+                    </p>
+                </div>
+            </template>
 
             <!-- Modal Content -->
             <template x-if="activeTerm && activeTerm.has_data">

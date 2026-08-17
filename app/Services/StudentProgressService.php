@@ -731,6 +731,36 @@ class StudentProgressService
 
                     $totalLines = $hafalanInTerm->sum('lines_count') + $ummiInTerm->sum('lines_count');
 
+                    // Target per Term
+                    $targetsInTerm = HafalanTarget::query()
+                        ->with('surah')
+                        ->where('student_id', $student->id)
+                        ->whereDate('target_date', '>=', $tStart)
+                        ->whereDate('target_date', '<=', $tEnd)
+                        ->orderBy('target_date', 'asc')
+                        ->get();
+
+                    $termTarget = null;
+                    if ($firstTarget = $targetsInTerm->first()) {
+                        if ($firstTarget->ummi_jilid || $gNum === 10) {
+                            $tStr = '📗 ' . ($firstTarget->ummi_jilid ?? 'Target Ummi');
+                            if ($firstTarget->halaman_peraga || $firstTarget->halaman_buku) {
+                                $tStr .= ' (Peraga: ' . ($firstTarget->halaman_peraga ?? '-') . ', Buku: ' . ($firstTarget->halaman_buku ?? '-') . ')';
+                            }
+                            if ($firstTarget->surah) {
+                                $tStr .= ' · Surah ' . $firstTarget->surah->name_latin;
+                            }
+                        } else {
+                            $tStr = '📘 ' . ($firstTarget->surah?->name_latin ?? 'Target Reguler') . ' (Ayat ' . $firstTarget->ayah_start . '-' . $firstTarget->ayah_end . ')';
+                        }
+
+                        $termTarget = [
+                            'full_text' => $tStr,
+                            'date' => $firstTarget->target_date?->format('d/m/Y'),
+                            'status' => $firstTarget->status_label,
+                        ];
+                    }
+
                     $termResults[$tNum] = [
                         'term_number' => $tNum,
                         'name' => $tInfo['name'],
@@ -738,6 +768,7 @@ class StudentProgressService
                         'end_date' => $tEnd,
                         'is_current' => $isCurrent,
                         'has_data' => ($termFirst !== null),
+                        'target' => $termTarget,
                         'first_setoran' => $termFirst,
                         'last_setoran' => $termLast,
                         'total_records' => $hafalanInTerm->count() + $ummiInTerm->count(),
