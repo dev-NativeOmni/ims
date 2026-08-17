@@ -62,7 +62,7 @@
                 @endphp
 
                 {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200 dark:border-zinc-800">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
                         <div class="flex items-center gap-3">
                             <span class="text-3xl">{{ $isUmmi ? '📗' : '📘' }}</span>
@@ -78,15 +78,15 @@
 
                         <div>
                             @if ($statusColor === 'emerald')
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @elseif ($statusColor === 'amber')
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @endif
@@ -95,17 +95,16 @@
 
                     @if ($isUmmi)
                         {{-- ─── PROGRAM UMMI UI (KELAS 10) ─── --}}
-                        {{-- ─── PROGRAM UMMI UI (KELAS 10) ─── --}}
                         <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="rounded-xl border border-teal-200 dark:border-teal-900/50 bg-teal-50/70 dark:bg-teal-950/30 p-4">
-                                <p class="text-xs font-extrabold text-teal-900 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
-                                <p class="text-2xl font-black text-teal-950 dark:text-teal-100">{{ data_get($progress, 'ummi_jilid_str', 'Jilid 1') }}</p>
-                                <p class="text-xs text-teal-800 dark:text-teal-300 mt-0.5 font-semibold">Halaman {{ data_get($progress, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($progress, 'ummi_tatap_muka', '-') }}</p>
+                            <div class="rounded-xl border border-teal-100/80 dark:border-teal-900/40 bg-teal-50/50 dark:bg-teal-950/20 p-4">
+                                <p class="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($progress, 'ummi_jilid_str', 'Jilid 1') }}</p>
+                                <p class="text-xs text-teal-700 dark:text-teal-400 mt-0.5 font-semibold">Halaman {{ data_get($progress, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($progress, 'ummi_tatap_muka', '-') }}</p>
                             </div>
 
-                            <div class="rounded-xl border border-cyan-200 dark:border-cyan-900/50 bg-cyan-50/70 dark:bg-cyan-950/30 p-4">
-                                <p class="text-xs font-extrabold text-cyan-900 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
-                                <p class="text-lg font-black text-cyan-950 dark:text-cyan-100">
+                            <div class="rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 p-4">
+                                <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
+                                <p class="text-lg font-black text-zinc-900 dark:text-white">
                                     @if(data_get($progress, 'ummi_target.ummi_jilid'))
                                         📗 {{ data_get($progress, 'ummi_target.ummi_jilid') }}
                                     @elseif(data_get($progress, 'ummi_target.surah.name_latin'))
@@ -114,7 +113,7 @@
                                         📗 Target Sesuai Jilid
                                     @endif
                                 </p>
-                                <p class="text-xs text-cyan-800 dark:text-cyan-300 mt-0.5 font-semibold">
+                                <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-semibold">
                                     @if(data_get($progress, 'ummi_target'))
                                         @if(data_get($progress, 'ummi_target.halaman_peraga') || data_get($progress, 'ummi_target.halaman_buku'))
                                             Peraga: {{ data_get($progress, 'ummi_target.halaman_peraga', '-') }} · Buku: {{ data_get($progress, 'ummi_target.halaman_buku', '-') }}
@@ -132,52 +131,52 @@
                                 </p>
                             </div>
 
-                            <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 p-4">
-                                <p class="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
-                                <p class="text-2xl font-black text-emerald-950 dark:text-emerald-100">
+                            <div class="rounded-xl border border-emerald-100/80 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
+                                <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white">
                                     {{ data_get($progress, 'ummi_munaqasyah_score') !== null ? number_format((float) data_get($progress, 'ummi_munaqasyah_score'), 1) : '-' }}
                                 </p>
-                                <p class="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 font-semibold">Evaluasi kelancaran &amp; tajwid</p>
+                                <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-semibold">Evaluasi kelancaran &amp; tajwid</p>
                             </div>
                         </div>
 
                         <div class="mt-4 pt-3">
-                            <div class="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <div class="flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">
                                 <span>Progress Ketercapaian Jilid Ummi</span>
                                 <span>{{ data_get($progress, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($progress, 'ummi_jilid_num', 1) }} / 3 Dewasa)</span>
                             </div>
-                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                                 <div class="h-3 rounded-full bg-teal-600 transition-all duration-300" style="width: {{ data_get($progress, 'ummi_jilid_percent', 0) }}%"></div>
                             </div>
                         </div>
                     @else
                         {{-- ─── PROGRAM REGULER UI (KELAS 11 & 12) ─── --}}
                         <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/30 p-4">
-                                <p class="text-xs font-extrabold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
-                                <p class="text-2xl font-black text-indigo-950 dark:text-indigo-100">{{ data_get($progress, 'level_baris', 5) }} Baris / Hari</p>
-                                <p class="text-xs text-indigo-800 dark:text-indigo-300 mt-0.5 font-semibold">Level: {{ ucfirst(data_get($progress, 'tahfizh_level', 'reguler')) }}</p>
+                            <div class="rounded-xl border border-indigo-100/80 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-950/20 p-4">
+                                <p class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($progress, 'level_baris', 5) }} Baris / Hari</p>
+                                <p class="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5 font-semibold">Level: {{ ucfirst(data_get($progress, 'tahfizh_level', 'reguler')) }}</p>
                             </div>
 
-                            <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 p-4">
-                                <p class="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
-                                <p class="text-2xl font-black text-emerald-950 dark:text-emerald-100">{{ data_get($progress, 'capaian_baris_month', 0) }} / {{ data_get($progress, 'target_baris_month', 100) }} Baris</p>
-                                <p class="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 font-semibold">Ketercapaian: {{ data_get($progress, 'reguler_baris_percent', 0) }}%</p>
+                            <div class="rounded-xl border border-emerald-100/80 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
+                                <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($progress, 'capaian_baris_month', 0) }} / {{ data_get($progress, 'target_baris_month', 100) }} Baris</p>
+                                <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-semibold">Ketercapaian: {{ data_get($progress, 'reguler_baris_percent', 0) }}%</p>
                             </div>
 
-                            <div class="rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50/70 dark:bg-purple-950/30 p-4">
-                                <p class="text-xs font-extrabold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Juz Lengkap</p>
-                                <p class="text-2xl font-black text-purple-950 dark:text-purple-100">{{ data_get($progress, 'completed_juz_count', 0) }} Juz</p>
-                                <p class="text-xs text-purple-800 dark:text-purple-300 mt-0.5 font-semibold">{{ data_get($progress, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
+                            <div class="rounded-xl border border-purple-100/80 dark:border-purple-900/40 bg-purple-50/50 dark:bg-purple-950/20 p-4">
+                                <p class="text-xs font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Juz Lengkap</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($progress, 'completed_juz_count', 0) }} Juz</p>
+                                <p class="text-xs text-purple-700 dark:text-purple-400 mt-0.5 font-semibold">{{ data_get($progress, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
                             </div>
                         </div>
 
                         <div class="mt-4 pt-3">
-                            <div class="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <div class="flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">
                                 <span>Progress Ketercapaian Baris Setoran Bulan Ini</span>
                                 <span>{{ data_get($progress, 'reguler_baris_percent', 0) }}% ({{ data_get($progress, 'capaian_baris_month', 0) }} Baris)</span>
                             </div>
-                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+                            <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                                 <div class="h-3 rounded-full bg-emerald-600 transition-all duration-300" style="width: {{ data_get($progress, 'reguler_baris_percent', 0) }}%"></div>
                             </div>
                         </div>
