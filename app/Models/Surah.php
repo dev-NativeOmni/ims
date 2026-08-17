@@ -29,6 +29,19 @@ class Surah extends Model
         ];
     }
 
+    public static function getAllCached()
+    {
+        return \Illuminate\Support\Facades\Cache::remember('all_surahs_cached', 86400, function () {
+            return static::orderBy('number')->get();
+        });
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('all_surahs_cached'));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('all_surahs_cached'));
+    }
+
     public function ayahs(): HasMany
     {
         return $this->hasMany(Ayah::class);

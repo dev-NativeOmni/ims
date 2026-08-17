@@ -31,6 +31,19 @@ class ClassRoom extends Model
         return json_decode($value, true) ?: [1, 2, 3, 4, 5];
     }
 
+    public static function getAllCached()
+    {
+        return \Illuminate\Support\Facades\Cache::remember('all_class_rooms_cached', 3600, function () {
+            return static::with('program')->orderBy('name')->get();
+        });
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget('all_class_rooms_cached'));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget('all_class_rooms_cached'));
+    }
+
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
