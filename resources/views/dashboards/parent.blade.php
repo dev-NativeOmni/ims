@@ -29,7 +29,7 @@
                 </div>
             @else
                 {{-- 🌟 SYSTEM APRESIASI & HIGHLIGHTS DECK UNTUK ORANG TUA 🌟 --}}
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 space-y-4 relative overflow-hidden">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md space-y-4 relative overflow-hidden">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="space-y-1.5">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider">
@@ -48,7 +48,7 @@
                                 $firstChild = $childrenProgress->first();
                                 $lastSetoran = $latestHafalanRecords->first();
                             @endphp
-                            <div class="rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/50 p-4 min-w-[260px] text-left md:text-right shrink-0">
+                            <div class="rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/50 p-4 min-w-[260px] text-left md:text-right shrink-0 shadow-xs">
                                 <p class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Setoran Hafalan Terbaru Pekan Ini</p>
                                 <p class="text-sm font-black text-zinc-900 dark:text-white mt-1">
                                     {{ $lastSetoran?->surah?->name_latin ?? 'Belum ada setoran' }} 
@@ -64,28 +64,28 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800/80">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-md hover:shadow-lg transition-shadow duration-200">
                         <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Anak</p>
                         <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format(data_get($stats, 'total_children', $children->count())) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800/80">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-md hover:shadow-lg transition-shadow duration-200">
                         <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Aktif</p>
                         <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format(data_get($stats, 'active_targets', 0)) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800/80">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-md hover:shadow-lg transition-shadow duration-200">
                         <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Terlambat</p>
                         <p class="mt-2 text-3xl font-black text-red-650 dark:text-red-400">
                             {{ number_format(data_get($stats, 'overdue_targets', 0)) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800/80">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-md hover:shadow-lg transition-shadow duration-200">
                         <p class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Aktivitas Terbaru</p>
                         <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format($latestHafalanRecords->count() + $latestMurajaahRecords->count()) }}
@@ -137,7 +137,7 @@
                             $progressWidth = min(100, max(0, $progressPercent));
                         @endphp
 
-                        <div x-show="activeChild === {{ $idx }}" x-transition class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 space-y-5">
+                        <div x-show="activeChild === {{ $idx }}" x-transition class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md space-y-5">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
                                 <div class="flex items-center gap-3">
                                     <span class="text-3xl">{{ $isUmmi ? '📗' : '📘' }}</span>
@@ -345,7 +345,7 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-extrabold text-zinc-900 dark:text-white">
                                 Hafalan Terbaru
@@ -375,7 +375,7 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-extrabold text-zinc-900 dark:text-white">
                                 Murajaah Terbaru

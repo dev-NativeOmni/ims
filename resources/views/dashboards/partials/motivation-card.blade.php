@@ -39,7 +39,7 @@
     $progressWidth = min(100, max(0, $progressPercent));
 @endphp
 
-<div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+<div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-md">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h3 class="text-base font-semibold text-gray-900">

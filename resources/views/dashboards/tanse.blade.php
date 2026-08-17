@@ -15,7 +15,7 @@
 
             {{-- Metric Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-2xl p-5">
+                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Total Pelanggaran (Bulan Ini)</span>
                         <span class="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl text-lg">⚠️</span>
@@ -24,7 +24,7 @@
                     <p class="text-xs text-rose-600 dark:text-rose-400 mt-1 font-semibold">Total Poin: -{{ $stats['total_violation_points_month'] }} Poin</p>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-2xl p-5">
+                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Keterlambatan</span>
                         <span class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-lg">⏰</span>
@@ -33,7 +33,7 @@
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">Pelanggaran Keterlambatan</p>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-2xl p-5">
+                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Atribut / Seragam</span>
                         <span class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-lg">👔</span>
@@ -42,7 +42,7 @@
                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold">Pelanggaran Atribut</p>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-2xl p-5">
+                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Prestasi / Penghargaan</span>
                         <span class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl text-lg">🏆</span>
@@ -53,20 +53,20 @@
             </div>
 
             {{-- Quick Action Shortcuts --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-md">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
                     <span>⚡</span> Akses Cepat Menu Tanse
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <a href="{{ route('student-points.create') }}" class="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-2xl hover:bg-rose-100 transition text-center group">
+                    <a href="{{ route('student-points.create') }}" class="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-2xl hover:bg-rose-100 transition text-center group shadow-xs">
                         <span class="text-2xl block mb-1">➕</span>
                         <span class="text-xs font-bold text-rose-900 dark:text-rose-300">Catat Poin Baru</span>
                     </a>
-                    <a href="{{ route('student-points.index') }}" class="p-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl hover:bg-indigo-100 transition text-center group">
+                    <a href="{{ route('student-points.index') }}" class="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl hover:bg-indigo-100 transition text-center group shadow-xs">
                         <span class="text-2xl block mb-1">📋</span>
                         <span class="text-xs font-bold text-indigo-900 dark:text-indigo-300">Daftar Poin & Disiplin</span>
                     </a>
-                    <a href="{{ route('student-points.chart') }}" class="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl hover:bg-amber-100 transition text-center group">
+                    <a href="{{ route('student-points.chart') }}" class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl hover:bg-amber-100 transition text-center group shadow-xs">
                         <span class="text-2xl block mb-1">📊</span>
                         <span class="text-xs font-bold text-amber-900 dark:text-amber-300">Grafik Perkembangan Tanse</span>
                     </a>
@@ -74,7 +74,7 @@
             </div>
 
             {{-- Recent Violations Feed --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-md">
                 <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 border-b pb-3 dark:border-zinc-800">
                     📋 Catatan Kedisiplinan Terbaru
                 </h3>

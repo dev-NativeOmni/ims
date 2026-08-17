@@ -62,7 +62,7 @@
                 @endphp
 
                 {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-100 dark:border-zinc-800">
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
                         <div class="flex items-center gap-3">
                             <span class="text-3xl">{{ $isUmmi ? '📗' : '📘' }}</span>
@@ -343,7 +343,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Target Aktif
@@ -391,7 +391,7 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Target Terlambat
@@ -433,7 +433,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Hafalan Terbaru
@@ -461,7 +461,7 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-md overflow-hidden">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
                             <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
                                 Murajaah Terbaru

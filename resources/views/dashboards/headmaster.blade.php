@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-100 leading-tight flex items-center gap-2">
@@ -17,7 +17,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 
                 {{-- Hafalan Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition col-span-1">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition col-span-1">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Hafalan/bln</span>
                         <span class="p-1.5 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-lg text-base">📖</span>
@@ -27,7 +27,7 @@
                 </div>
 
                 {{-- Target Selesai --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Target ✓</span>
                         <span class="p-1.5 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-lg text-base">🎯</span>
@@ -37,7 +37,7 @@
                 </div>
 
                 {{-- Adab Diisi Hari Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Adab Hari Ini</span>
                         <span class="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg text-base">✅</span>
@@ -47,7 +47,7 @@
                 </div>
 
                 {{-- Rata-rata Adab --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Rerata Adab</span>
                         <span class="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg text-base">⭐</span>
@@ -57,7 +57,7 @@
                 </div>
 
                 {{-- Pelanggaran Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Pelanggaran</span>
                         <span class="p-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg text-base">⚠️</span>
@@ -67,7 +67,7 @@
                 </div>
 
                 {{-- Penghargaan Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Reward</span>
                         <span class="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg text-base">🏆</span>
@@ -78,7 +78,7 @@
             </div>
 
             {{-- ═══════════════ SECTION 1: TAHFIZH ═══════════════ --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-md overflow-hidden">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-teal-50/60 to-transparent dark:from-teal-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -92,17 +92,17 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="rounded-xl border border-teal-100 dark:border-teal-900/40 bg-teal-50/40 dark:bg-teal-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-teal-50/40 dark:bg-teal-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-teal-700 dark:text-teal-300 uppercase tracking-wider mb-1">Kelas X</p>
                             <p class="text-3xl font-extrabold text-teal-800 dark:text-teal-200">{{ $tahfizhByLevel['X'] }}</p>
                             <p class="text-xs text-teal-600 dark:text-teal-400 mt-1">Setoran bulan ini</p>
                         </div>
-                        <div class="rounded-xl border border-cyan-100 dark:border-cyan-900/40 bg-cyan-50/40 dark:bg-cyan-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-cyan-50/40 dark:bg-cyan-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">Kelas XI</p>
                             <p class="text-3xl font-extrabold text-cyan-800 dark:text-cyan-200">{{ $tahfizhByLevel['XI'] }}</p>
                             <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-1">Setoran bulan ini</p>
                         </div>
-                        <div class="rounded-xl border border-sky-100 dark:border-sky-900/40 bg-sky-50/40 dark:bg-sky-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-sky-50/40 dark:bg-sky-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wider mb-1">Kelas XII</p>
                             <p class="text-3xl font-extrabold text-sky-800 dark:text-sky-200">{{ $tahfizhByLevel['XII'] }}</p>
                             <p class="text-xs text-sky-600 dark:text-sky-400 mt-1">Setoran bulan ini</p>
@@ -115,7 +115,7 @@
             </div>
 
             {{-- ═══════════════ SECTION 2: ADAB ═══════════════ --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-md overflow-hidden">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-amber-50/60 to-transparent dark:from-amber-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -129,17 +129,17 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-amber-50/40 dark:bg-amber-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-1">Kelas X</p>
                             <p class="text-3xl font-extrabold text-amber-800 dark:text-amber-200">{{ $adabByLevel['X'] }}</p>
                             <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Rerata nilai / 100</p>
                         </div>
-                        <div class="rounded-xl border border-orange-100 dark:border-orange-900/40 bg-orange-50/40 dark:bg-orange-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-orange-50/40 dark:bg-orange-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wider mb-1">Kelas XI</p>
                             <p class="text-3xl font-extrabold text-orange-800 dark:text-orange-200">{{ $adabByLevel['XI'] }}</p>
                             <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Rerata nilai / 100</p>
                         </div>
-                        <div class="rounded-xl border border-yellow-100 dark:border-yellow-900/40 bg-yellow-50/40 dark:bg-yellow-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-yellow-50/40 dark:bg-yellow-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-yellow-700 dark:text-yellow-300 uppercase tracking-wider mb-1">Kelas XII</p>
                             <p class="text-3xl font-extrabold text-yellow-800 dark:text-yellow-200">{{ $adabByLevel['XII'] }}</p>
                             <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Rerata nilai / 100</p>
@@ -163,7 +163,7 @@
             </div>
 
             {{-- ═══════════════ SECTION 3: TANSE ═══════════════ --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-md overflow-hidden">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-red-50/60 to-transparent dark:from-red-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -177,22 +177,22 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50/40 dark:bg-red-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-red-50/40 dark:bg-red-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wider mb-1">Pelanggaran</p>
                             <p class="text-3xl font-extrabold text-red-800 dark:text-red-200">{{ $tanseStats['violations'] }}</p>
                             <p class="text-xs text-red-600 dark:text-red-400 mt-1">Bulan ini</p>
                         </div>
-                        <div class="rounded-xl border border-orange-100 dark:border-orange-900/40 bg-orange-50/40 dark:bg-orange-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-orange-50/40 dark:bg-orange-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wider mb-1">Total Poin</p>
                             <p class="text-3xl font-extrabold text-orange-800 dark:text-orange-200">{{ $tanseStats['violation_points'] }}</p>
                             <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Poin dipotong</p>
                         </div>
-                        <div class="rounded-xl border border-yellow-100 dark:border-yellow-900/40 bg-yellow-50/40 dark:bg-yellow-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-yellow-50/40 dark:bg-yellow-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-yellow-700 dark:text-yellow-300 uppercase tracking-wider mb-1">Keterlambatan</p>
                             <p class="text-3xl font-extrabold text-yellow-800 dark:text-yellow-200">{{ $tanseStats['lateness'] }}</p>
                             <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Kasus</p>
                         </div>
-                        <div class="rounded-xl border border-purple-100 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/20 p-4 text-center">
+                        <div class="rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-4 text-center shadow-xs">
                             <p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-1">Reward</p>
                             <p class="text-3xl font-extrabold text-purple-800 dark:text-purple-200">{{ $tanseStats['rewards'] }}</p>
                             <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Penghargaan</p>
@@ -205,13 +205,13 @@
             </div>
 
             {{-- ═══════════════ QUICK NAVIGATION ═══════════════ --}}
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-md">
                 <h3 class="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <span>⚡</span> Akses Cepat Laporan
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <a href="{{ route('reports.periodic') }}"
-                        class="flex items-center gap-3 p-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 rounded-2xl hover:bg-teal-100 dark:hover:bg-teal-950/50 transition">
+                        class="flex items-center gap-3 p-4 bg-teal-50 dark:bg-teal-950/30 rounded-2xl hover:bg-teal-100 dark:hover:bg-teal-950/50 transition shadow-xs">
                         <span class="text-2xl">📈</span>
                         <div>
                             <p class="text-sm font-bold text-teal-900 dark:text-teal-200">Grafik Perkembangan Tahfizh</p>
@@ -219,7 +219,7 @@
                         </div>
                     </a>
                     <a href="{{ route('adab.chart') }}"
-                        class="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl hover:bg-amber-100 dark:hover:bg-amber-950/50 transition">
+                        class="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl hover:bg-amber-100 dark:hover:bg-amber-950/50 transition shadow-xs">
                         <span class="text-2xl">📊</span>
                         <div>
                             <p class="text-sm font-bold text-amber-900 dark:text-amber-200">Grafik Pengisian Adab</p>
@@ -227,7 +227,7 @@
                         </div>
                     </a>
                     <a href="{{ route('student-points.chart') }}"
-                        class="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl hover:bg-red-100 dark:hover:bg-red-950/50 transition">
+                        class="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-2xl hover:bg-red-100 dark:hover:bg-red-950/50 transition shadow-xs">
                         <span class="text-2xl">🛡️</span>
                         <div>
                             <p class="text-sm font-bold text-red-900 dark:text-red-200">Grafik Perkembangan Tanse</p>

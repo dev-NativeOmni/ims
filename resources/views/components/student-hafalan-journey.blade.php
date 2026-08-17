@@ -5,7 +5,7 @@
     $journey = data_get($milestones, 'journey', []);
 @endphp
 
-<div x-data="{ showModal: false, activeTerm: null, activeGrade: '' }" class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-5">
+<div x-data="{ showModal: false, activeTerm: null, activeGrade: '' }" class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md space-y-5">
     {{-- ─── HEADER & SETORAN PERTAMA BANNER ─── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
@@ -18,7 +18,7 @@
         </div>
 
         @if ($firstRecord)
-            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200 shadow-sm">
+            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 shadow-xs">
                 <span class="text-xl">🌱</span>
                 <div>
                     <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Setoran Hafalan Pertama Sistem</p>
