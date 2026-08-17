@@ -29,17 +29,17 @@
                 </div>
             @else
                 {{-- 🌟 SYSTEM APRESIASI & HIGHLIGHTS DECK UNTUK ORANG TUA 🌟 --}}
-                <div class="rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 p-6 text-white shadow-lg space-y-4 relative overflow-hidden">
+                <div class="rounded-2xl bg-gradient-to-r from-emerald-800 via-teal-800 to-indigo-900 p-6 text-white shadow-xl space-y-4 relative overflow-hidden border border-emerald-700/50">
                     <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none">✨</div>
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="space-y-1">
-                            <span class="px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
+                        <div class="space-y-1.5">
+                            <span class="px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-black uppercase tracking-wider backdrop-blur-xs shadow-xs">
                                 🌟 Highlights Capaian Anak
                             </span>
-                            <h3 class="text-xl font-black text-white">
+                            <h3 class="text-xl sm:text-2xl font-black text-white drop-shadow-sm">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
                             </h3>
-                            <p class="text-xs text-emerald-100 max-w-2xl leading-relaxed">
+                            <p class="text-xs sm:text-sm text-teal-50 max-w-2xl leading-relaxed font-medium drop-shadow-xs">
                                 Alhamdulillah, Ananda terus melangkah dalam menjaga hafalan Al-Qur'an. Mari senantiasa berikan motivasi &amp; apresiasi terbaik untuk setiap capaian ananda.
                             </p>
                         </div>
@@ -49,13 +49,13 @@
                                 $firstChild = $childrenProgress->first();
                                 $lastSetoran = $latestHafalanRecords->first();
                             @endphp
-                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 min-w-[240px] text-left md:text-right shrink-0">
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-200">Setoran Hafalan Terbaru Pekan Ini</p>
-                                <p class="text-sm font-extrabold text-white mt-0.5">
+                            <div class="bg-emerald-950/70 border border-emerald-400/30 backdrop-blur-md rounded-2xl p-4 min-w-[250px] text-left md:text-right shrink-0 shadow-md">
+                                <p class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">Setoran Hafalan Terbaru Pekan Ini</p>
+                                <p class="text-sm font-black text-white mt-0.5">
                                     {{ $lastSetoran?->surah?->name_latin ?? 'Belum ada setoran' }} 
                                     {{ $lastSetoran ? '(Ayat '.$lastSetoran->ayah_start.'-'.$lastSetoran->ayah_end.')' : '' }}
                                 </p>
-                                <p class="text-[11px] text-emerald-200 mt-0.5 font-medium">
+                                <p class="text-[11px] text-teal-200 mt-0.5 font-semibold">
                                     Murid: {{ $lastSetoran?->student?->name ?? data_get($firstChild, 'student_name', '-') }}
                                     {{ $lastSetoran?->submitted_at ? '· '.$lastSetoran->submitted_at->format('d M Y') : '' }}
                                 </p>
@@ -65,30 +65,30 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total Anak</p>
-                        <p class="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200/80 dark:border-zinc-800">
+                        <p class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Total Anak</p>
+                        <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format(data_get($stats, 'total_children', $children->count())) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Target Aktif</p>
-                        <p class="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200/80 dark:border-zinc-800">
+                        <p class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Target Aktif</p>
+                        <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format(data_get($stats, 'active_targets', 0)) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Target Terlambat</p>
-                        <p class="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200/80 dark:border-zinc-800">
+                        <p class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Target Terlambat</p>
+                        <p class="mt-2 text-3xl font-black text-red-650 dark:text-red-400">
                             {{ number_format(data_get($stats, 'overdue_targets', 0)) }}
                         </p>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Aktivitas Terbaru</p>
-                        <p class="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 border border-zinc-200/80 dark:border-zinc-800">
+                        <p class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Aktivitas Terbaru</p>
+                        <p class="mt-2 text-3xl font-black text-zinc-900 dark:text-white">
                             {{ number_format($latestHafalanRecords->count() + $latestMurajaahRecords->count()) }}
                         </p>
                     </div>
@@ -100,13 +100,13 @@
                     @if ($childrenProgress->count() > 1)
                         {{-- Tab Selector for multiple children --}}
                         <div class="flex items-center gap-2 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 pb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 mr-2 flex items-center gap-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mr-2 flex items-center gap-1">
                                 <span>👨‍👩‍👧</span> Pilih Anak:
                             </span>
                             @foreach ($childrenProgress as $idx => $row)
                                 <button @click="activeChild = {{ $idx }}"
-                                        :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'"
-                                        class="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition">
+                                        :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-sm font-black' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-bold'"
+                                        class="flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition">
                                     <span>👦</span>
                                     <span>{{ data_get($row, 'student_name', 'Anak '.($idx+1)) }}</span>
                                     <span class="text-xs font-normal opacity-80">({{ data_get($row, 'class_room_name', '-') }})</span>
@@ -147,11 +147,11 @@
                                             <h3 class="text-lg font-extrabold text-zinc-900 dark:text-white">
                                                 {{ data_get($row, 'student_name', $student?->name ?? '-') }}
                                             </h3>
-                                            <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                            <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                                                 Kelas {{ data_get($row, 'class_room_name', '-') }}
                                             </span>
                                         </div>
-                                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                        <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
                                             Program: {{ $isUmmi ? 'Ummi & Tahsin (Kelas X)' : 'Reguler Tahfizh (Kelas XI / XII)' }} · Nis: {{ data_get($row, 'student_number', '-') }}
                                         </p>
                                     </div>
@@ -159,15 +159,15 @@
 
                                 <div class="flex items-center gap-3">
                                     @if ($statusColor === 'emerald')
-                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800">
                                             <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                         </span>
                                     @elseif ($statusColor === 'amber')
-                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800">
                                             <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800">
                                             <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                         </span>
                                     @endif
@@ -183,15 +183,15 @@
                             @if ($isUmmi)
                                 {{-- PROGRAM UMMI DETAILS --}}
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="rounded-xl border border-teal-100 dark:border-teal-900/40 bg-teal-50/40 dark:bg-teal-950/20 p-4">
-                                        <p class="text-xs font-semibold text-teal-700 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
-                                        <p class="text-2xl font-extrabold text-teal-900 dark:text-teal-100">{{ data_get($row, 'ummi_jilid_str', 'Jilid 1') }}</p>
-                                        <p class="text-xs text-teal-600 dark:text-teal-400 mt-0.5">Halaman {{ data_get($row, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($row, 'ummi_tatap_muka', '-') }}</p>
+                                    <div class="rounded-xl border border-teal-200 dark:border-teal-900/50 bg-teal-50/70 dark:bg-teal-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-teal-900 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
+                                        <p class="text-2xl font-black text-teal-950 dark:text-teal-100">{{ data_get($row, 'ummi_jilid_str', 'Jilid 1') }}</p>
+                                        <p class="text-xs text-teal-800 dark:text-teal-300 mt-0.5 font-semibold">Halaman {{ data_get($row, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($row, 'ummi_tatap_muka', '-') }}</p>
                                     </div>
 
-                                    <div class="rounded-xl border border-cyan-100 dark:border-cyan-900/40 bg-cyan-50/40 dark:bg-cyan-950/20 p-4">
-                                        <p class="text-xs font-semibold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
-                                        <p class="text-lg font-bold text-cyan-900 dark:text-cyan-100">
+                                    <div class="rounded-xl border border-cyan-200 dark:border-cyan-900/50 bg-cyan-50/70 dark:bg-cyan-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-cyan-900 dark:text-cyan-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
+                                        <p class="text-lg font-black text-cyan-950 dark:text-cyan-100">
                                             @if(data_get($row, 'ummi_target.ummi_jilid'))
                                                 📗 {{ data_get($row, 'ummi_target.ummi_jilid') }}
                                             @elseif(data_get($row, 'ummi_target.surah.name_latin'))
@@ -200,7 +200,7 @@
                                                 📗 Target Sesuai Jilid
                                             @endif
                                         </p>
-                                        <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
+                                        <p class="text-xs text-cyan-800 dark:text-cyan-300 mt-0.5 font-semibold">
                                             @if(data_get($row, 'ummi_target'))
                                                 @if(data_get($row, 'ummi_target.halaman_peraga') || data_get($row, 'ummi_target.halaman_buku'))
                                                     Peraga: {{ data_get($row, 'ummi_target.halaman_peraga', '-') }} · Buku: {{ data_get($row, 'ummi_target.halaman_buku', '-') }}
@@ -215,52 +215,52 @@
                                         </p>
                                     </div>
 
-                                    <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
-                                        <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
-                                        <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">
+                                    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
+                                        <p class="text-2xl font-black text-emerald-950 dark:text-emerald-100">
                                             {{ data_get($row, 'ummi_munaqasyah_score') !== null ? number_format((float) data_get($row, 'ummi_munaqasyah_score'), 1) : '-' }}
                                         </p>
-                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Evaluasi kelancaran &amp; tajwid</p>
+                                        <p class="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 font-semibold">Evaluasi kelancaran &amp; tajwid</p>
                                     </div>
                                 </div>
 
                                 <div class="pt-2">
-                                    <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                    <div class="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
                                         <span>Progress Ketercapaian Jilid Ummi</span>
                                         <span>{{ data_get($row, 'ummi_jilid_percent', 0) }}% (Jilid {{ data_get($row, 'ummi_jilid_num', 1) }} / 3 Dewasa)</span>
                                     </div>
-                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                                         <div class="h-3 rounded-full bg-teal-600 transition-all duration-300" style="width: {{ data_get($row, 'ummi_jilid_percent', 0) }}%"></div>
                                     </div>
                                 </div>
                             @else
                                 {{-- PROGRAM REGULER DETAILS --}}
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/40 dark:bg-indigo-950/20 p-4">
-                                        <p class="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
-                                        <p class="text-2xl font-extrabold text-indigo-900 dark:text-indigo-100">{{ data_get($row, 'level_baris', 5) }} Baris / Hari</p>
-                                        <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Level: {{ ucfirst(data_get($row, 'tahfizh_level', 'reguler')) }}</p>
+                                    <div class="rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
+                                        <p class="text-2xl font-black text-indigo-950 dark:text-indigo-100">{{ data_get($row, 'level_baris', 5) }} Baris / Hari</p>
+                                        <p class="text-xs text-indigo-800 dark:text-indigo-300 mt-0.5 font-semibold">Level: {{ ucfirst(data_get($row, 'tahfizh_level', 'reguler')) }}</p>
                                     </div>
 
-                                    <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
-                                        <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
-                                        <p class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-100">{{ data_get($row, 'capaian_baris_month', 0) }} / {{ data_get($row, 'target_baris_month', 100) }} Baris</p>
-                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Ketercapaian: {{ data_get($row, 'reguler_baris_percent', 0) }}%</p>
+                                    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
+                                        <p class="text-2xl font-black text-emerald-950 dark:text-emerald-100">{{ data_get($row, 'capaian_baris_month', 0) }} / {{ data_get($row, 'target_baris_month', 100) }} Baris</p>
+                                        <p class="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 font-semibold">Ketercapaian: {{ data_get($row, 'reguler_baris_percent', 0) }}%</p>
                                     </div>
 
-                                    <div class="rounded-xl border border-purple-100 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/20 p-4">
-                                        <p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Hafalan Lengkap</p>
-                                        <p class="text-2xl font-extrabold text-purple-900 dark:text-purple-100">{{ data_get($row, 'completed_juz_count', 0) }} Juz</p>
-                                        <p class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">{{ data_get($row, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
+                                    <div class="rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50/70 dark:bg-purple-950/30 p-4">
+                                        <p class="text-xs font-extrabold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Hafalan Lengkap</p>
+                                        <p class="text-2xl font-black text-purple-950 dark:text-purple-100">{{ data_get($row, 'completed_juz_count', 0) }} Juz</p>
+                                        <p class="text-xs text-purple-800 dark:text-purple-300 mt-0.5 font-semibold">{{ data_get($row, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
                                     </div>
                                 </div>
 
                                 <div class="pt-2">
-                                    <div class="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                                    <div class="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
                                         <span>Progress Ketercapaian Baris Setoran Bulan Ini</span>
-                                        <span>{{ data_get($row, 'reguler_baris_percent', 0) }}% ({{ data_get($row, 'capaian_baris_month', 0) }} Baris)</span>
+                                        <span>{{ data_get($row, 'reguler_baris_percent', 0) }}%</span>
                                     </div>
-                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                                         <div class="h-3 rounded-full bg-emerald-600 transition-all duration-300" style="width: {{ data_get($row, 'reguler_baris_percent', 0) }}%"></div>
                                     </div>
                                 </div>
@@ -329,12 +329,12 @@
                                             </p>
                                         @endif
                                     @else
-                                        <p class="mt-1 text-sm text-zinc-650 dark:text-zinc-400 font-semibold">
+                                        <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300 font-semibold">
                                             📘 {{ $target->surah?->name_latin ?? '-' }}
                                             · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
                                         </p>
                                     @endif
-                                    <p class="mt-1 text-xs text-zinc-400">
+                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                                         Target: {{ $target->target_date ? \Carbon\Carbon::parse($target->target_date)->format('d M Y') : '-' }}
                                     </p>
                                 </div>
@@ -346,9 +346,9 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
-                            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
+                            <h3 class="text-base font-extrabold text-zinc-900 dark:text-white">
                                 Hafalan Terbaru
                             </h3>
                         </div>
@@ -356,16 +356,16 @@
                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             @forelse ($latestHafalanRecords as $record)
                                 <div class="p-5">
-                                    <p class="font-semibold text-zinc-900 dark:text-white">
+                                    <p class="font-extrabold text-zinc-900 dark:text-white">
                                         {{ $record->student?->name ?? '-' }}
                                     </p>
-                                    <p class="mt-1 text-sm text-zinc-655 dark:text-zinc-400">
+                                    <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300 font-semibold">
                                         {{ $record->surah?->name_latin ?? '-' }}
                                         · Ayat {{ $record->ayah_start }} - {{ $record->ayah_end }}
                                     </p>
-                                    <p class="mt-1 text-xs text-zinc-400">
+                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                                         {{ $record->submitted_at ? \Carbon\Carbon::parse($record->submitted_at)->format('d M Y') : '-' }}
-                                        · {{ $record->status ?? '-' }}
+                                        · Status: {{ $record->status ?? '-' }}
                                     </p>
                                 </div>
                             @empty
@@ -376,9 +376,9 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-zinc-900 shadow-sm overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
                         <div class="border-b border-zinc-100 dark:border-zinc-800/80 px-5 py-4">
-                            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
+                            <h3 class="text-base font-extrabold text-zinc-900 dark:text-white">
                                 Murajaah Terbaru
                             </h3>
                         </div>
@@ -386,16 +386,16 @@
                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                             @forelse ($latestMurajaahRecords as $record)
                                 <div class="p-5">
-                                    <p class="font-semibold text-zinc-900 dark:text-white">
+                                    <p class="font-extrabold text-zinc-900 dark:text-white">
                                         {{ $record->student?->name ?? '-' }}
                                     </p>
-                                    <p class="mt-1 text-sm text-zinc-655 dark:text-zinc-400">
+                                    <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300 font-semibold">
                                         {{ $record->surah?->name_latin ?? '-' }}
                                         · Ayat {{ $record->ayah_start }} - {{ $record->ayah_end }}
                                     </p>
-                                    <p class="mt-1 text-xs text-zinc-400">
+                                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                                         {{ $record->reviewed_at ? \Carbon\Carbon::parse($record->reviewed_at)->format('d M Y') : '-' }}
-                                        · {{ $record->status ?? '-' }}
+                                        · Status: {{ $record->status ?? '-' }}
                                     </p>
                                 </div>
                             @empty
