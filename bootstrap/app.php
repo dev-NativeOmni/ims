@@ -41,6 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
+            if (! auth()->check()) {
+                return redirect()->route('login')
+                    ->with('error', 'Sesi Anda telah berakhir karena tidak aktif semalaman. Silakan login kembali.');
+            }
+
             return redirect()->back()
                 ->withInput($request->except('_token', 'password', 'password_confirmation'))
                 ->with('error', 'Sesi halaman telah kadaluarsa. Data isian Anda telah dipulihkan, silakan coba kirim ulang.');

@@ -1,0 +1,81 @@
+{
+  "role_key": "super_admin",
+  "role_name": "Super Admin",
+  "role_description": "Peran tingkat tertinggi dengan akses tanpa batas ke seluruh modul, sistem keamanan, manajemen akun pengguna, pengaturan aplikasi, otomatisasi backup database, dan audit log aktivitas.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Super Admin",
+      "route": "/super-admin/dashboard",
+      "purpose": "Halaman utama pemantauan statistik sistem menyeluruh, total pengguna, kesehatan database, dan aktivitas terkini.",
+      "how_to_use": [
+        "1. Login menggunakan akun bertipe Super Admin.",
+        "2. Sistem secara otomatis mengarahkan ke halaman Dashboard Super Admin.",
+        "3. Pantau ringkasan total pengguna, murid, guru, orangtua, dan log aktivitas sistem."
+      ]
+    },
+    {
+      "menu_name": "Manajemen Pengguna (User Management)",
+      "route": "/superadmin/users",
+      "purpose": "Mengelola akun pengguna, membuat akun baru, mengubah role/permission, melihat password bawaan, dan melakukan reset password paksa.",
+      "how_to_use": [
+        "1. Klik menu 'Manajemen Pengguna' atau navigasi ke /superadmin/users.",
+        "2. Untuk menambah pengguna baru, klik tombol 'Tambah Pengguna', isi nama, email, username (wajib unik), password, dan pilih Role.",
+        "3. Untuk mereset password pengguna yang lupa, gunakan fitur 'Force Reset' atau klik ikon 'Reset Password'. Password baru akan digenerate dan sistem menampilkan pesan validasi jika username pernah digunakan orang lain.",
+        "4. Untuk menghubungkan akun Orang Tua ke Murid, gunakan tombol 'Link Parent / Student'."
+      ]
+    },
+    {
+      "menu_name": "Impersonate (Login Sebagai Pengguna)",
+      "route": "/impersonate/{user}",
+      "purpose": "Masuk ke dalam akun pengguna lain (seperti Guru, Orang Tua, atau Murid) tanpa perlu tahu password mereka untuk troubleshooting dan bantuan pengguna.",
+      "how_to_use": [
+        "1. Pada daftar Pengguna (/superadmin/users), cari akun yang ingin diuji.",
+        "2. Klik tombol 'Impersonate' (Login Sebagai User Ini).",
+        "3. Anda akan masuk ke tampilan pengguna tersebut. Banner pemberitahuan impersonasi akan muncul di bagian atas layar.",
+        "4. Untuk kembali ke akun Super Admin, klik tombol 'Kembali ke Super Admin' di banner atas."
+      ]
+    },
+    {
+      "menu_name": "Backup Database (Database Backup)",
+      "route": "/database-backups",
+      "purpose": "Membuat, mengunduh, dan mengelola berkas cadangan (backup) database sistem secara aman.",
+      "how_to_use": [
+        "1. Navigasi ke menu 'Backup Database' (/database-backups).",
+        "2. Klik tombol 'Buat Backup Baru' untuk melakukan snapshot database SQLite/SQL saat ini.",
+        "3. Berkas backup akan muncul di daftar. Klik tombol 'Download' untuk menyimpan file ke komputer lokal.",
+        "4. Jika berkas backup sudah lama dan tidak diperlukan, klik tombol 'Hapus' untuk menghemat kapasitas server."
+      ]
+    },
+    {
+      "menu_name": "Pengaturan Aplikasi (System Settings)",
+      "route": "/settings",
+      "purpose": "Mengatur identitas sekolah, nama aplikasi, logo sekolah, gambar latar belakang login, dan kalender akademik.",
+      "how_to_use": [
+        "1. Buka menu 'Pengaturan Aplikasi' (/settings).",
+        "2. Unggah logo sekolah baru (format PNG/JPG) atau gambar background login.",
+        "3. Isikan nama instansi/sekolah dan informasi footer.",
+        "4. Klik 'Simpan Pengaturan' untuk menerapkan perubahan ke seluruh aplikasi."
+      ]
+    },
+    {
+      "menu_name": "Audit Log Aktivitas (Audit Logs)",
+      "route": "/audit-logs",
+      "purpose": "Memantau jejak audit seluruh transaksi data (penambahan, perubahan, dan penghapusan) oleh pengguna sistem.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Audit Log' (/audit-logs).",
+        "2. Gunakan filter tanggal, nama pengguna, atau jenis tindakan (Create/Update/Delete).",
+        "3. Klik 'Rincian' pada baris log untuk melihat data sebelum dan sesudah diubah."
+      ]
+    },
+    {
+      "menu_name": "Pengumuman Sistem (System Notifications)",
+      "route": "/system-notifications",
+      "purpose": "Membuat dan menyebarkan pengumuman/notifikasi sistem kepada seluruh atau peran pengguna tertentu.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Notifikasi Sistem' (/system-notifications).",
+        "2. Klik 'Buat Pengumuman Baru', isi judul, isi pesan, dan target penerima (misal: Semua Guru / Semua Orang Tua).",
+        "3. Klik 'Kirim' agar pesan tampil di lonceng notifikasi pengguna."
+      ]
+    }
+  ]
+}

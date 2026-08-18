@@ -33,7 +33,7 @@ if (initialCsrfToken) {
 | Session Keep-Alive & CSRF Token Auto-Refresh
 |--------------------------------------------------------------------------
 | Prevent Error 419 (Page Expired) by pinging /keep-alive periodically
-| and whenever the user returns/focuses on the browser tab.
+| and whenever the user returns/focuses/wakes the browser tab (iOS & Android).
 */
 let lastKeepAliveTime = Date.now();
 
@@ -47,30 +47,43 @@ async function pingKeepAlive() {
             lastKeepAliveTime = Date.now();
         }
     } catch (error) {
-        // Silent catch if user is logged out or offline
+        // If 401 Unauthorized or 419 Page Expired occurs during ping, redirect to login
+        const status = error.response ? error.response.status : 0;
+        const isAuthPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/register');
+        if ((status === 401 || status === 419) && !isAuthPage) {
+            console.warn('Session expired overnight. Redirecting to login...');
+            window.location.href = '/login';
+        }
     }
 }
 
-// Ping every 10 minutes (600,000 ms)
-setInterval(pingKeepAlive, 10 * 60 * 1000);
+// Ping every 5 minutes (300,000 ms)
+setInterval(pingKeepAlive, 5 * 60 * 1000);
 
-// Ping when user returns to tab if more than 3 minutes have passed
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
+// Ping when user returns to tab or wakes mobile browser from sleep (pageshow, focus, visibilitychange)
+['visibilitychange', 'pageshow', 'focus'].forEach(eventType => {
+    window.addEventListener(eventType, (event) => {
+        if (eventType === 'visibilitychange' && document.visibilityState !== 'visible') return;
+        if (eventType === 'pageshow' && event.persisted) {
+            pingKeepAlive();
+            return;
+        }
         const elapsed = Date.now() - lastKeepAliveTime;
-        if (elapsed > 3 * 60 * 1000) {
+        if (elapsed > 2 * 60 * 1000) {
             pingKeepAlive();
         }
-    }
+    });
 });
 
-// Handle Axios 419 response gracefully
+// Handle Axios 419 / 401 response gracefully
 window.axios.interceptors.response.use(
     response => response,
     async error => {
-        if (error.response && error.response.status === 419) {
-            console.warn('Session 419 detected. Attempting CSRF token refresh...');
-            await pingKeepAlive();
+        const status = error.response ? error.response.status : 0;
+        const isAuthPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/register');
+        if ((status === 419 || status === 401) && !isAuthPage) {
+            console.warn('Session 419/401 detected. Redirecting to login page...');
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     }

@@ -1,0 +1,47 @@
+{
+  "role_key": "student",
+  "role_name": "Murid",
+  "role_description": "Peran portal mandiri murid untuk melihat target hafalan aktif, peta perjalanan hafalan 3 tahun (12 Term), riwayat setoran, serta mengisi kuisioner adab harian secara mandiri.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Murid",
+      "route": "/student/dashboard",
+      "purpose": "Pusat informasi pribadi murid yang menampilkan kartu status capaian program (Metode Ummi / Reguler Tahfizh), target aktif, target terlambat, dan setoran hafalan/murajaah terbaru.",
+      "how_to_use": [
+        "1. Login menggunakan akun Murid (Username NIS).",
+        "2. Lihat Kartu Hero 'Target & Capaian Program' di bagian atas.",
+        "3. Tinjau 'Peta Perjalanan Hafalan Murid' untuk melihat rekam jejak capaian dan tanggal setoran pertama di sistem.",
+        "4. Cek daftar 'Target Aktif' untuk mengetahui surah/jilid yang harus disetorkan minggu ini."
+      ]
+    },
+    {
+      "menu_name": "Pengisian Kuisioner Adab Harian (Self-Assessment Adab)",
+      "route": "/adab/student/{student}/create",
+      "purpose": "Mengisi evaluasi kebiasaan ibadah dan adab harian murid secara mandiri sebelum hari berganti.",
+      "how_to_use": [
+        "1. Klik tombol 'Isi Kuisioner Adab Hari Ini' di dashboard atau navigasi ke menu Adab.",
+        "2. Pilih jawaban untuk setiap poin pertanyaan: Shalat Subuh, Dzuhur, Ashar, Maghrib, Isya (Berjamaah/Munfarid), Shalat Dhuha, Tahajud, Tilawah Al-Qur'an, dan Membantu Orang Tua.",
+        "3. Klik tombol 'Simpan Penilaian Adab'. Nilai total akan otomatis dikalkulasi."
+      ]
+    },
+    {
+      "menu_name": "Mushaf Al-Qur'an & Kitab PDF",
+      "route": "/mushaf",
+      "purpose": "Membaca Al-Qur'an digital dan mengunduh berkas Al-Qur'an PDF untuk persiapan hafalan & murajaah.",
+      "how_to_use": [
+        "1. Buka menu 'Mushaf Al-Qur'an' (/mushaf) atau 'Quran PDF' (/quran-pdf).",
+        "2. Pilih Surah yang ingin dibaca atau dihafalkan.",
+        "3. Gunakan mode tampilan mushaf untuk membantu proses menghafal mandiri."
+      ]
+    },
+    {
+      "menu_name": "Materi Pembinaan Adab",
+      "route": "/materi-adab",
+      "purpose": "Membaca artikel, materi halaqoh, dan mendownload panduan pembinaan adab keagamaan.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Materi Adab' (/materi-adab).",
+        "2. Klik materi yang ingin dibaca atau diunduh berkas lampirannya."
+      ]
+    }
+  ]
+}

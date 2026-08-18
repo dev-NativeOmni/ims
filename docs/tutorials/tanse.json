@@ -1,0 +1,48 @@
+{
+  "role_key": "tanse",
+  "role_name": "Koordinator Tanse (Ketahanan Sekolah)",
+  "role_description": "Peran penanggung jawab kedisiplinan, ketertiban sekolah, dan pengawasan poin murid (pelanggaran tata tertib, keterlambatan, kelengkapan atribut, serta reward prestasi).",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Tanse",
+      "route": "/tanse/dashboard",
+      "purpose": "Monitoring total kasus pelanggaran bulan ini, keterlambatan, pelanggaran atribut seragam, dan total reward prestasi.",
+      "how_to_use": [
+        "1. Login sebagai Koordinator Tanse.",
+        "2. Pantau indikator pelanggaran dan poin terpotong bulan ini pada kartu statistik.",
+        "3. Gunakan pintasan 'Catat Poin Baru' untuk mencatat kedisiplinan murid."
+      ]
+    },
+    {
+      "menu_name": "Catat Poin Pelanggaran & Reward (Student Points)",
+      "route": "/student-points/create",
+      "purpose": "Memasukkan catatan kedisiplinan baru untuk murid (Poin Pelanggaran (-) atau Poin Reward Prestasi (+)).",
+      "how_to_use": [
+        "1. Masuk ke menu 'Catat Poin Baru' (/student-points/create).",
+        "2. Pilih Nama Murid dan Tanggal kejadian.",
+        "3. Pilih Tipe: 'Pelanggaran' (Keterlambatan, Atribut, dll) atau 'Reward' (Prestasi, Keberhasilan).",
+        "4. Tentukan jumlah Poin dan berikan keterangan/catatan spesifik.",
+        "5. Klik 'Simpan Catatan Poin'."
+      ]
+    },
+    {
+      "menu_name": "Daftar Rekap Poin Kedisiplinan",
+      "route": "/student-points",
+      "purpose": "Melihat riwayat akumulasi poin kedisiplinan seluruh murid, filter kelas, dan tindakan pembinaan.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Daftar Poin & Disiplin' (/student-points).",
+        "2. Cari murid berdasarkan nama atau kelas.",
+        "3. Lihat saldo akumulasi poin (Merah jika poin minus tinggi, Hijau jika banyak reward)."
+      ]
+    },
+    {
+      "menu_name": "Grafik Perkembangan Disiplin (Tanse Charts)",
+      "route": "/student-points/chart",
+      "purpose": "Menampilkan grafik tren pelanggaran dan prestasi murid selama 6 bulan terakhir.",
+      "how_to_use": [
+        "1. Akses menu 'Grafik Perkembangan Tanse' (/student-points/chart).",
+        "2. Tinjau grafik garis tren untuk kebutuhan rapat evaluasi pembinaan murid."
+      ]
+    }
+  ]
+}

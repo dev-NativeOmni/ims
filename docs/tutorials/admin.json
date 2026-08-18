@@ -1,0 +1,68 @@
+{
+  "role_key": "admin",
+  "role_name": "Admin Operasional",
+  "role_description": "Peran manajemen operasional harian sekolah untuk mengelola data master murid, guru, orang tua, kelas, program akademik, serta impor/ekspor data Excel.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Admin",
+      "route": "/admin/dashboard",
+      "purpose": "Halaman utama pemantauan statistik murid aktif, jumlah guru, setoran hari ini, dan target hafalan terlambat.",
+      "how_to_use": [
+        "1. Login sebagai Admin Operasional.",
+        "2. Lihat kartu statistik utama (Total Murid, Guru, Orangtua, Setoran Hari Ini, Target Aktif).",
+        "3. Gunakan pintasan tombol cepat untuk langsung menuju modul pengelolaan."
+      ]
+    },
+    {
+      "menu_name": "Kelola Data Murid (Students Management)",
+      "route": "/students",
+      "purpose": "Menambah, mengubah, menghapus data murid, mengatur program hafalan (Reguler/Ummi), dan menetapkan wali kelas.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Data Murid' (/students).",
+        "2. Klik 'Tambah Murid' untuk mengisi data personal murid (Nama, NIS, Kelas, Jenis Kelamin, Orang Tua).",
+        "3. Gunakan tombol 'Export Excel/CSV' untuk mengunduh daftar murid.",
+        "4. Gunakan tombol 'Import Excel' untuk mengunggah massal data murid dari file Excel/CSV."
+      ]
+    },
+    {
+      "menu_name": "Kelola Data Guru & Musyrif (Teachers)",
+      "route": "/teachers",
+      "purpose": "Mengelola data pendidik, musyrif tahfizh, dan pembimbing kelas.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Data Guru' (/teachers).",
+        "2. Klik 'Tambah Guru' dan pilih akun pengguna yang terhubung.",
+        "3. Tentukan spesialisasi (Musyrif Tahfizh / Pendamping Adab) dan kelas bimbingannya."
+      ]
+    },
+    {
+      "menu_name": "Kelola Data Orang Tua (Parents)",
+      "route": "/parents",
+      "purpose": "Mengelola profil wali murid dan menghubungkan akun orang tua dengan satu atau beberapa murid (kakak-adik).",
+      "how_to_use": [
+        "1. Masuk ke menu 'Data Orang Tua' (/parents).",
+        "2. Klik 'Tambah Orang Tua' atau pilih akun yang sudah terdaftar.",
+        "3. Hubungkan data anak ke akun orang tua tersebut."
+      ]
+    },
+    {
+      "menu_name": "Kelola Kelas & Jadwal (Class Rooms & Schedules)",
+      "route": "/class-rooms",
+      "purpose": "Mengatur rombel/kelas (misal: X-A, XI-IPA), tingkat kelas, wali kelas, dan jadwal halaqoh harian.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Data Kelas' (/class-rooms).",
+        "2. Tambahkan nama kelas dan tingkat (X, XI, XII).",
+        "3. Atur wali kelas dan jadwal pembelajaran pada menu 'Jadwal Kelas' (/class-schedules)."
+      ]
+    },
+    {
+      "menu_name": "Laporan Triwulan / Periodic Reports",
+      "route": "/admin/reports/quarterly",
+      "purpose": "Mencetak dan meninjau rekapitulasi capaian hafalan dan adab seluruh murid secara periodik/triwulan.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Laporan Triwulan' (/admin/reports/quarterly).",
+        "2. Pilih tahun ajaran dan periode triwulan.",
+        "3. Klik 'Filter' lalu ekspor atau cetak ringkasan laporan."
+      ]
+    }
+  ]
+}

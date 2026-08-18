@@ -1,0 +1,62 @@
+{
+  "application": "IMS / HafizPlus 2.0",
+  "system_overview": "Sistem Informasi Manajemen Sekolah Terpadu yang mengintegrasikan 3 Pilar Utama: Tahfizh Al-Qur'an (Reguler & Ummi), Pembinaan Adab & Keagamaan, serta Ketahanan Sekolah (Tanse/Kedisiplinan & Prestasi).",
+  "folder_directory": "docs/tutorials/",
+  "total_roles": 9,
+  "role_tutorials": [
+    {
+      "role_key": "super_admin",
+      "role_name": "Super Admin",
+      "file": "super_admin.json",
+      "description": "Tutorial dan panduan lengkap akses penuh manajemen pengguna, reset password, backup database, pengaturan aplikasi, dan audit log."
+    },
+    {
+      "role_key": "admin",
+      "role_name": "Admin Operasional",
+      "file": "admin.json",
+      "description": "Tutorial kelola data master murid, guru, orang tua, kelas, program, serta impor/ekspor data Excel/CSV."
+    },
+    {
+      "role_key": "teacher",
+      "role_name": "Guru / Musyrif Tahfizh",
+      "file": "teacher.json",
+      "description": "Panduan input setoran hafalan, murajaah, spreadsheet input massal, dan penetapan target murid bimbingan."
+    },
+    {
+      "role_key": "coordinator_tahfizh",
+      "role_name": "Koordinator Tahfizh",
+      "file": "coordinator_tahfizh.json",
+      "description": "Panduan eksekutif monitoring hafalan/murajaah, penjadwalan ujian tahfizh & munaqasyah, serta kelola rapor digital."
+    },
+    {
+      "role_key": "pendamping_adab",
+      "role_name": "Koordinator Adab (Keagamaan)",
+      "file": "pendamping_adab.json",
+      "description": "Panduan monitoring pengisian kuisioner adab harian, nilai pendamping, kelola materi halaqoh adab, dan peringkat kelas."
+    },
+    {
+      "role_key": "tanse",
+      "role_name": "Koordinator Tanse (Ketahanan Sekolah)",
+      "file": "tanse.json",
+      "description": "Panduan pencatatan poin pelanggaran tata tertib, keterlambatan, atribut, dan reward prestasi murid."
+    },
+    {
+      "role_key": "headmaster",
+      "role_name": "Kepala Sekolah",
+      "file": "headmaster.json",
+      "description": "Panduan dashboard eksekutif pemantauan 3 pilar (Tahfizh, Adab, Tanse) dan grafik agregat perkembangan tingkat kelas."
+    },
+    {
+      "role_key": "parent",
+      "role_name": "Orang Tua / Wali Murid",
+      "file": "parent.json",
+      "description": "Panduan monitoring perkembangan anak, progres hafalan reguler/ummi, target per term, serta riwayat adab & poin disiplin."
+    },
+    {
+      "role_key": "student",
+      "role_name": "Murid",
+      "file": "student.json",
+      "description": "Panduan dashboard personal murid, peta perjalanan hafalan 3 tahun (12 Term), target aktif, dan pengisian kuisioner adab harian."
+    }
+  ]
+}

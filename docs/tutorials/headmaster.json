@@ -1,0 +1,36 @@
+{
+  "role_key": "headmaster",
+  "role_name": "Kepala Sekolah",
+  "role_description": "Peran kepemimpinan puncak untuk pengawasan eksekutif 3 Pilar Sekolah (Tahfizh, Adab, & Tanse), analisis performa guru, dan grafik perbandingan antar tingkat kelas.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Eksekutif Kepala Sekolah",
+      "route": "/headmaster/dashboard",
+      "purpose": "Halaman utama pemantauan KPI puncak 3 Pilar: Total Setoran Hafalan, Persentase Target Selesai, Kehadiran Adab, Rerata Adab, Total Pelanggaran, dan Reward.",
+      "how_to_use": [
+        "1. Login sebagai Kepala Sekolah.",
+        "2. Tinjau 6 Kartu KPI Utama di bagian atas layar.",
+        "3. Geser ke bawah untuk melihat 3 grafik seksi terpisah: (1) Grafik Tahfizh per Kelas X, XI, XII; (2) Grafik Pengisian & Nilai Adab; (3) Grafik Tren Tanse."
+      ]
+    },
+    {
+      "menu_name": "Laporan Performa Guru & Musyrif (Teacher Performance)",
+      "route": "/reports/teachers",
+      "purpose": "Mengevaluasi keaktifan dan kinerja guru/musyrif dalam membimbing hafalan dan pengisian nilai murid.",
+      "how_to_use": [
+        "1. Akses menu 'Laporan Performa Guru' (/reports/teachers).",
+        "2. Tinjau tabel daftar guru beserta jumlah murid bimbingan, total setoran yang disimak, dan persentase ketuntasan target murid.",
+        "3. Gunakan data ini sebagai dasar supervisi dan pembinaan pendidik."
+      ]
+    },
+    {
+      "menu_name": "Akses Cepat Laporan Periodik 3 Pilar",
+      "route": "/reports/periodic",
+      "purpose": "Melihat detail laporan periodik hafalan, grafik adab, dan poin disiplin murid secara langsung.",
+      "how_to_use": [
+        "1. Gunakan widget 'Akses Cepat Laporan' di dashboard.",
+        "2. Klik grafik yang ingin didalami untuk membuka perincian per kelas atau per murid."
+      ]
+    }
+  ]
+}

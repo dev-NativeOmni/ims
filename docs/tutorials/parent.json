@@ -1,0 +1,47 @@
+{
+  "role_key": "parent",
+  "role_name": "Orang Tua / Wali Murid",
+  "role_description": "Peran portal wali murid untuk memantau kemajuan hafalan, target aktif/per-term, riwayat setoran & murajaah, perkembangan adab ibadah harian, dan poin kedisiplinan putra-putri mereka.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Orang Tua (Multi-Child Switcher)",
+      "route": "/parent/dashboard",
+      "purpose": "Halaman pemantauan perkembangan anak. Jika orang tua memiliki lebih dari satu anak (kakak-adik di sekolah), sistem menyediakan tab beralih nama anak.",
+      "how_to_use": [
+        "1. Login menggunakan akun Orang Tua.",
+        "2. Jika memiliki beberapa anak, klik tab nama anak di bagian atas untuk berpindah tampilan.",
+        "3. Tinjau Kartu Highlight Capaian Anak (Total Hafalan Lengkap, Target Aktif, Nilai Munaqasyah, Jilid Ummi / Surah Reguler).",
+        "4. Tinjau tabel 'Hafalan Terbaru' dan 'Murajaah Terbaru' untuk melihat riwayat setoran minggu ini."
+      ]
+    },
+    {
+      "menu_name": "Detail Progres & Peta Perjalanan Anak",
+      "route": "/progress/{student}",
+      "purpose": "Melihat detail perkembangan hafalan Al-Qur'an anak dan peta milestone perjalanan 3 tahun (12 Term).",
+      "how_to_use": [
+        "1. Buka menu 'Progres Anak' atau klik tombol 'Lihat Rincian Progres'.",
+        "2. Tinjau Peta Perjalanan Hafalan (Kelas 10, 11, 12). Klik kotak Term untuk melihat tanggal setoran pertama dan ringkasan pencapaian.",
+        "3. Untuk anak di Kelas X (Metode Ummi), lihat 'Kartu Prestasi Ummi' yang menampilkan Jilid aktif, Halaman Peraga, Halaman Buku, dan Nilai Munaqasyah."
+      ]
+    },
+    {
+      "menu_name": "Monitoring Adab & Karakter Anak",
+      "route": "/adab/student/{student}",
+      "purpose": "Memantau catatan kebiasaan ibadah harian anak (Shalat 5 Waktu, Dhuha, Tahajud, Tilawah, Birrul Walidain).",
+      "how_to_use": [
+        "1. Masuk ke menu 'Adab Anak' (/adab/student/{student}).",
+        "2. Lihat riwayat skor adab harian anak dan grafik perkembangannya.",
+        "3. Berikan bimbingan dan motivasi di rumah berdasarkan hasil penilaian."
+      ]
+    },
+    {
+      "menu_name": "Catatan Disiplin & Prestasi (Tanse)",
+      "route": "/student-points",
+      "purpose": "Melihat poin kedisiplinan dan penghargaan prestasi anak di sekolah.",
+      "how_to_use": [
+        "1. Buka menu 'Poin Disiplin & Prestasi' (/student-points).",
+        "2. Lihat daftar poin reward prestasi (+) maupun poin pelanggaran (-) beserta catatan penjelasan dari sekolah."
+      ]
+    }
+  ]
+}

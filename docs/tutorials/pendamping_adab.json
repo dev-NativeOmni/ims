@@ -1,0 +1,48 @@
+{
+  "role_key": "pendamping_adab",
+  "role_name": "Koordinator Adab (Keagamaan)",
+  "role_description": "Peran pembimbing karakter dan keagamaan murid untuk memantau kuisioner adab harian, memberikan skor pendamping, mengelola materi pembinaan, dan meninjau peringkat kelas.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Koordinator Adab",
+      "route": "/pendamping-adab/dashboard",
+      "purpose": "Monitoring harian pengisian kuisioner adab, rerata skor adab sekolah, total materi aktif, dan peringkat kedisiplinan per kelas.",
+      "how_to_use": [
+        "1. Login sebagai Koordinator Adab / Musyrif Keagamaan.",
+        "2. Pantau jumlah murid yang sudah mengisi adab hari ini pada kartu statistik.",
+        "3. Tinjau tabel 'Peringkat Kedisiplinan Adab Per Kelas' untuk melihat kelas mana yang paling konsisten."
+      ]
+    },
+    {
+      "menu_name": "Monitoring & Penilaian Adab (Adab Monitoring)",
+      "route": "/adab",
+      "purpose": "Melihat status pengisian kuisioner mandiri murid dan memberikan masukan/skor pengesahan dari pendamping.",
+      "how_to_use": [
+        "1. Buka menu 'Monitoring Adab' (/adab).",
+        "2. Pilih tanggal dan kelas.",
+        "3. Klik nama murid untuk melihat rincian poin (Shalat 5 Waktu, Dhuha, Tahajud, Tilawah, Birrul Walidain).",
+        "4. Jika murid belum mengisi, klik tombol 'Bantu Isi' untuk membantu proses penilaian.",
+        "5. Masukkan skor verifikasi pendamping lalu simpan."
+      ]
+    },
+    {
+      "menu_name": "Kelola Materi Pembinaan Adab (Adab Materials)",
+      "route": "/materi-adab",
+      "purpose": "Unggah dan kelola modul, berkas PDF, panduan halaqoh adab, dan bacaan materi pembinaan karakter murid.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Materi Adab' (/materi-adab).",
+        "2. Klik 'Tambah Materi Baru', isikan judul, kategori, deskripsi, dan unggah berkas PDF/bacaan.",
+        "3. Materi yang diunggah akan otomatis dapat diakses oleh seluruh Guru, Murid, dan Orang Tua."
+      ]
+    },
+    {
+      "menu_name": "Grafik Pengisian Adab (Adab Charts)",
+      "route": "/adab/chart",
+      "purpose": "Menampilkan grafik tren kebiasaan ibadah harian dan rerata skor adab bulanan.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Grafik Pengisian' (/adab/chart).",
+        "2. Analisis grafik kehadiran dan tren nilai adab per tingkat kelas."
+      ]
+    }
+  ]
+}

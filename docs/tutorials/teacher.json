@@ -1,0 +1,70 @@
+{
+  "role_key": "teacher",
+  "role_name": "Guru / Musyrif Tahfizh",
+  "role_description": "Peran pendidik/musyrif yang berinteraksi langsung dengan murid dalam menyimak setoran hafalan baru, murajaah, menginput penilaian via spreadsheet massal, dan menetapkan target hafalan.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Guru",
+      "route": "/teacher/dashboard",
+      "purpose": "Ringkasan murid bimbingan, total setoran hari ini, murajaah hari ini, dan daftar target murid terdekat.",
+      "how_to_use": [
+        "1. Login sebagai Guru / Musyrif.",
+        "2. Pantau jumlah murid bimbingan dan indikator yang membutuhkan perhatian pada card statistik.",
+        "3. Gunakan tombol pintasan 'Input Setoran', 'Input Murajaah', atau 'Buat Target'."
+      ]
+    },
+    {
+      "menu_name": "Spreadsheet Input Massal (Spreadsheet Mode)",
+      "route": "/spreadsheet-input",
+      "purpose": "Fitur unggulan input cepat berbasis tabel spreadsheet untuk mencatat setoran/murajaah/ummi seluruh murid dalam satu kelas sekaligus.",
+      "how_to_use": [
+        "1. Klik menu 'Spreadsheet Input' (/spreadsheet-input).",
+        "2. Pilih Kelas dan Minggu/Tanggal pelaksanaan halaqoh.",
+        "3. Tentukan mode: 'Reguler Tahfizh' atau 'Metode Ummi'.",
+        "4. Isikan surah, ayat awal, ayat akhir, dan nilai langsung pada sel tabel murid.",
+        "5. Klik tombol 'Simpan Semua Data' di bagian atas/bawah tabel."
+      ]
+    },
+    {
+      "menu_name": "Input Setoran Hafalan Baru",
+      "route": "/hafalan-records/create",
+      "purpose": "Mencatat satu setoran hafalan Al-Qur'an murid secara mendetail.",
+      "how_to_use": [
+        "1. Pilih nama murid.",
+        "2. Pilih Nama Surah, Isikan Ayat Awal dan Ayat Akhir.",
+        "3. Isikan Nilai (0-100), Status (Lancar/Kurang Lancar), dan Catatan Evaluasi.",
+        "4. Klik 'Simpan Setoran Hafalan'."
+      ]
+    },
+    {
+      "menu_name": "Input Murajaah (Pengulangan)",
+      "route": "/murajaah-records/create",
+      "purpose": "Mencatat kegiatan murajaah/pengulangan hafalan lama murid.",
+      "how_to_use": [
+        "1. Buka menu 'Input Murajaah' (/murajaah-records/create).",
+        "2. Pilih nama murid, surah, serta rentang ayat yang diulang.",
+        "3. Masukkan kelancaran dan tanggal evaluasi, lalu simpan."
+      ]
+    },
+    {
+      "menu_name": "Kelola & Buat Target Hafalan",
+      "route": "/hafalan-targets",
+      "purpose": "Menetapkan sasaran target hafalan murid per-Term (Reguler Surah / Ummi Jilid & Halaman).",
+      "how_to_use": [
+        "1. Pilih menu 'Target Hafalan' (/hafalan-targets).",
+        "2. Untuk buat target individu: Klik 'Tambah Target', pilih jenis (Reguler/Ummi), batas tanggal, dan target surah/jilid.",
+        "3. Untuk buat target massal sekelas: Gunakan tombol 'Bulk Target Reguler' atau 'Bulk Target Ummi'."
+      ]
+    },
+    {
+      "menu_name": "Laporan Rekap Perkembangan Murid",
+      "route": "/reports/periodic",
+      "purpose": "Melihat grafik dan rekap kemajuan hafalan seluruh murid bimbingan per minggu atau bulan.",
+      "how_to_use": [
+        "1. Buka menu 'Laporan Periodik' (/reports/periodic).",
+        "2. Filter berdasarkan Kelas atau Rentang Tanggal.",
+        "3. Gunakan tombol 'Cetak Laporan' untuk mencetak berkas fisik."
+      ]
+    }
+  ]
+}

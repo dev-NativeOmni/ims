@@ -1,0 +1,50 @@
+{
+  "role_key": "coordinator_tahfizh",
+  "role_name": "Koordinator Tahfizh",
+  "role_description": "Peran penanggung jawab bidang Tahfizh Al-Qur'an untuk memantau capaian hafalan seluruh murid, mengelola ujian tahfizh, munaqasyah Ummi, dan menerbitkan Rapor Digital.",
+  "menu_access": [
+    {
+      "menu_name": "Dashboard Koordinator Tahfizh",
+      "route": "/coordinator-tahfizh/dashboard",
+      "purpose": "Ringkasan eksekutif pencapaian setoran hafalan, murajaah, target aktif, dan ujian tahfizh bulan ini.",
+      "how_to_use": [
+        "1. Login sebagai Koordinator Tahfizh.",
+        "2. Tinjau statistik setoran hafalan bulan ini, murajaah, target tuntas, dan lulus ujian.",
+        "3. Gunakan pintasan menu cepat untuk langsung menguji murid atau melihat rapor digital."
+      ]
+    },
+    {
+      "menu_name": "Ujian Tahfizh & Munaqasyah (Tahfizh Exams)",
+      "route": "/tahfizh-exams",
+      "purpose": "Penjadwalan, pengujian, dan pencatatan hasil ujian tahfizh juz/surah serta munaqasyah Metode Ummi.",
+      "how_to_use": [
+        "1. Masuk ke menu 'Ujian Tahfizh' (/tahfizh-exams).",
+        "2. Klik 'Jadwalkan Ujian Baru', pilih murid, kategori pengujian (Tasmi' Juz / Munaqasyah Ummi), dan penguji.",
+        "3. Isikan skor penilaian (Tajwid, Fasohah, Kelancaran) dan tentukan status 'Lulus' / 'Mengulang'.",
+        "4. Simpan record ujian."
+      ]
+    },
+    {
+      "menu_name": "Rapor Digital Terpadu (Digital Reports)",
+      "route": "/digital-reports",
+      "purpose": "Menerbitkan, mengedit deskripsi naratif, dan mencetak Rapor Digital murid (individual & massal se-kelas).",
+      "how_to_use": [
+        "1. Buka menu 'Rapor Digital' (/digital-reports).",
+        "2. Pilih Kelas dan Term aktif.",
+        "3. Klik 'Lihat Rapor' pada nama murid untuk pratinjau lembar rapor lengkap (Tahfizh, Adab, & Tanse).",
+        "4. Klik 'Cetak PDF' untuk mengunduh rapor murid individu.",
+        "5. Klik 'Cetak Rapor Kelas' di bagian atas untuk mencetak seluruh murid dalam kelas sekaligus."
+      ]
+    },
+    {
+      "menu_name": "Grafik Perkembangan Periodik (Periodic Progress)",
+      "route": "/reports/periodic",
+      "purpose": "Meninjau grafik distribusi hafalan per kelas dan persentase ketercapaian target sekolah.",
+      "how_to_use": [
+        "1. Akses menu 'Laporan Periodik' (/reports/periodic).",
+        "2. Tinjau diagram perbandingan capaian Kelas X, XI, dan XII.",
+        "3. Gunakan data ini sebagai bahan evaluasi rapat halaqoh guru."
+      ]
+    }
+  ]
+}
