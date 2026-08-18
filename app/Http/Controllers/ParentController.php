@@ -148,12 +148,12 @@ class ParentController extends Controller
     public function export(): StreamedResponse
     {
         $parents = ParentProfile::query()
-            ->with('user')
+            ->with(['user', 'students'])
             ->withCount('students')
             ->orderBy('id')
             ->get();
 
-        $headers = ['Nama', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Murid'];
+        $headers = ['Nama Orangtua', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Anak', 'Daftar Nama Anak'];
         $data = [];
 
         foreach ($parents as $parent) {
@@ -164,6 +164,7 @@ class ParentController extends Controller
                 $parent->address ?? '',
                 $parent->user?->status ?? '',
                 $parent->students_count,
+                $parent->students->pluck('name')->implode(', '),
             ];
         }
 
