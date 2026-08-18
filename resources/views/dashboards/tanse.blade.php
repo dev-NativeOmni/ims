@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-100 leading-tight flex items-center gap-2">
-                <span>🛡️</span> Dashboard Koordinator Ketahanan Sekolah (Tanse)
+                <x-heroicon-o-shield-check class="w-6 h-6 text-indigo-600 dark:text-indigo-400" /> Dashboard Koordinator Ketahanan Sekolah (Tanse)
             </h2>
             <p class="text-sm text-gray-500 dark:text-zinc-400">
                 Monitoring poin kedisiplinan, pelanggaran tata tertib, keterlambatan, atribut, dan prestasi murid.
@@ -18,7 +18,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Total Pelanggaran (Bulan Ini)</span>
-                        <span class="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl text-lg">⚠️</span>
+                        <div class="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
+                            <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['total_violations_month'] }}</p>
                     <p class="text-xs text-rose-600 dark:text-rose-400 mt-1 font-semibold">Total Poin: -{{ $stats['total_violation_points_month'] }} Poin</p>
@@ -27,7 +29,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Keterlambatan</span>
-                        <span class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-lg">⏰</span>
+                        <div class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl">
+                            <x-heroicon-o-clock class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['lateness_count_month'] }}</p>
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">Pelanggaran Keterlambatan</p>
@@ -36,7 +40,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Atribut / Seragam</span>
-                        <span class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-lg">👔</span>
+                        <div class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl">
+                            <x-heroicon-o-user class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['attribute_count_month'] }}</p>
                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold">Pelanggaran Atribut</p>

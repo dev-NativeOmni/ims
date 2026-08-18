@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-100 leading-tight flex items-center gap-2">
-                <span>📖</span> Dashboard Koordinator Tahfizh
+                <x-heroicon-o-book-open class="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> Dashboard Koordinator Tahfizh
             </h2>
             <p class="text-sm text-gray-500 dark:text-zinc-400">
                 Ringkasan eksekutif pencapaian setoran hafalan, muraja'ah, target, dan ujian tahfizh murid.
@@ -18,7 +18,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Setoran Hafalan (Bulan Ini)</span>
-                        <span class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl text-lg">📖</span>
+                        <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                            <x-heroicon-o-book-open class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['hafalan_this_month'] }}</p>
                     <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">Hari Ini: {{ $stats['hafalan_today'] }} setoran</p>
@@ -27,7 +29,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Muraja'ah (Bulan Ini)</span>
-                        <span class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-lg">🔄</span>
+                        <div class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl">
+                            <x-heroicon-o-arrow-path class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['murajaah_this_month'] }}</p>
                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold">Hari Ini: {{ $stats['murajaah_today'] }} murajaah</p>
@@ -36,7 +40,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Target Hafalan Aktif</span>
-                        <span class="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">🎯</span>
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                            <x-heroicon-o-check-badge class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['active_targets'] }}</p>
                     <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1 font-semibold">Selesai: {{ $stats['completed_targets'] }} target</p>

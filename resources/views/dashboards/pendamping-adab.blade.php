@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-100 leading-tight flex items-center gap-2">
-                <span>🕋</span> Dashboard Koordinator Adab (Keagamaan)
+                <x-heroicon-o-sparkles class="w-6 h-6 text-amber-500 dark:text-amber-400" /> Dashboard Koordinator Adab (Keagamaan)
             </h2>
             <p class="text-sm text-gray-500 dark:text-zinc-400">
                 Monitoring harian pengisian kuisioner adab, pembinaan karakter, dan materi keagamaan murid.
@@ -18,7 +18,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Adab Diisi Hari Ini</span>
-                        <span class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl text-lg">✅</span>
+                        <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                            <x-heroicon-o-check-circle class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['adab_filled_today'] }} / {{ $stats['total_students'] }}</p>
                     <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">Persentase: {{ $stats['fill_percentage_today'] }}%</p>
@@ -27,7 +29,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Rerata Adab Bulan Ini</span>
-                        <span class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-lg">⭐</span>
+                        <div class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl">
+                            <x-heroicon-o-star class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['avg_adab_score_month'] }} / 100</p>
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">Predikat: {{ $stats['adab_grade_month'] }}</p>
@@ -36,7 +40,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Total Materi Adab</span>
-                        <span class="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl text-lg">📚</span>
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                            <x-heroicon-o-academic-cap class="w-6 h-6" />
+                        </div>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['total_materials'] }}</p>
                     <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1 font-semibold">Modul Pembinaan Aktif</p>
