@@ -11,7 +11,7 @@
             </div>
             <div>
                 <button type="submit" form="schedules-form" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow shadow-teal-550/20 transition cursor-pointer">
-                    💾 Simpan Perubahan Jadwal
+                    <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Jadwal
                 </button>
             </div>
         </div>
@@ -23,7 +23,7 @@
             <!-- Success Alert Notification -->
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex items-center gap-3">
-                    <span class="text-emerald-600 dark:text-emerald-400 text-lg">✅</span>
+                    <x-heroicon-o-check-circle class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span class="text-sm text-emerald-800 dark:text-emerald-300 font-semibold">{{ session('success') }}</span>
                 </div>
             @endif
@@ -65,7 +65,7 @@
                             <!-- Day Header -->
                             <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-3">
                                 <h3 class="font-extrabold text-base text-gray-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                    📅 {{ $dayName }}
+                                    <x-heroicon-o-calendar class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> {{ $dayName }}
                                 </h3>
                                 <span class="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-750 dark:text-indigo-405 text-xs px-3 py-1 rounded-full font-extrabold">
                                     {{ $activeClassesCount }} Kelas Aktif

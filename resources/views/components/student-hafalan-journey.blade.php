@@ -100,12 +100,12 @@
                                         </p>
                                         <!-- Bottom Line: Tanggal Setoran -->
                                         <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                                            <span>📅</span> {{ data_get($firstSetoran, 'date') }}
+                                            <x-heroicon-o-calendar class="w-3.5 h-3.5" /> {{ data_get($firstSetoran, 'date') }}
                                         </p>
                                     @elseif (data_get($t, 'target'))
                                         <!-- Target assigned for term -->
-                                        <p class="font-bold text-teal-800 dark:text-teal-300 text-xs">
-                                            🎯 {{ data_get($t, 'target.full_text') }}
+                                        <p class="font-bold text-teal-800 dark:text-teal-300 text-xs flex items-center justify-center gap-1">
+                                            <x-heroicon-o-check-badge class="w-3.5 h-3.5" /> {{ data_get($t, 'target.full_text') }}
                                         </p>
                                         <p class="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
                                             DL: {{ data_get($t, 'target.date') }}
@@ -116,8 +116,8 @@
                                         </div>
                                     @endif
 
-                                    <div class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition">
-                                        🔍 Detail Term
+                                    <div class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1">
+                                        <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" /> Detail Term
                                     </div>
                                 </div>
                             </td>
@@ -169,12 +169,12 @@
             <!-- Target Term Card (If Assigned) -->
             <template x-if="activeTerm && activeTerm.target">
                 <div class="p-3.5 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-900/40">
-                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 block mb-1">
-                        🎯 Target Term Yang Ditetapkan
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 flex items-center gap-1 mb-1">
+                        <x-heroicon-o-check-badge class="w-4 h-4 text-cyan-700 dark:text-cyan-400" /> Target Term Yang Ditetapkan
                     </span>
                     <p class="font-black text-zinc-900 dark:text-white text-xs" x-text="activeTerm.target.full_text || '-'"></p>
                     <p class="text-[11px] text-cyan-800 dark:text-cyan-300 mt-1 font-semibold">
-                        📅 Batas Target: <span x-text="activeTerm.target.date || '-'"></span> · Status: <span x-text="activeTerm.target.status || '-'"></span>
+                        Batas Target: <span x-text="activeTerm.target.date || '-'"></span> · Status: <span x-text="activeTerm.target.status || '-'"></span>
                     </p>
                 </div>
             </template>
@@ -185,23 +185,23 @@
                     <div class="grid grid-cols-2 gap-3">
                         <!-- Setoran Pertama -->
                         <div class="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/40">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block mb-1">
-                                🌱 Setoran Pertama Term
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1 mb-1">
+                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Setoran Pertama Term
                             </span>
                             <p class="font-extrabold text-zinc-900 dark:text-white text-xs" x-text="activeTerm.first_setoran?.full_text || '-'"></p>
                             <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
-                                📅 Tanggal: <span x-text="activeTerm.first_setoran?.date || '-'"></span>
+                                Tanggal: <span x-text="activeTerm.first_setoran?.date || '-'"></span>
                             </p>
                         </div>
 
                         <!-- Setoran Terakhir -->
                         <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/40">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block mb-1">
-                                🏁 Setoran Terakhir Term
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1 mb-1">
+                                <x-heroicon-o-flag class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Setoran Terakhir Term
                             </span>
                             <p class="font-extrabold text-zinc-900 dark:text-white text-xs" x-text="activeTerm.last_setoran?.full_text || '-'"></p>
                             <p class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1 font-semibold">
-                                📅 Tanggal: <span x-text="activeTerm.last_setoran?.date || '-'"></span>
+                                Tanggal: <span x-text="activeTerm.last_setoran?.date || '-'"></span>
                             </p>
                         </div>
                     </div>
@@ -224,7 +224,7 @@
 
             <template x-if="activeTerm && !activeTerm.has_data">
                 <div class="p-6 text-center text-zinc-500 dark:text-zinc-400 space-y-2">
-                    <span class="text-3xl block">📭</span>
+                    <x-heroicon-o-inbox class="w-8 h-8 text-zinc-400 mx-auto block mb-1" />
                     <p class="text-xs font-semibold">Belum Ada Rekam Setoran pada Term Ini.</p>
                     <p class="text-[11px] text-zinc-400">Setoran hafalan yang dilakukan murid pada periode term ini akan otomatis tercatat di sini.</p>
                 </div>

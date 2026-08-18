@@ -181,7 +181,9 @@
                         <div class="bg-gradient-to-br from-emerald-50 to-white dark:from-zinc-900 dark:to-zinc-800 p-5 rounded-2xl border border-emerald-100 dark:border-zinc-700 shadow-sm relative overflow-hidden group hover:shadow-md transition duration-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Kehadiran Setoran</span>
-                                <span class="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded-xl text-lg">📈</span>
+                                <span class="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 rounded-xl">
+                                    <x-heroicon-o-chart-bar class="w-6 h-6" />
+                                </span>
                             </div>
                             <div class="mt-4 flex items-baseline gap-2">
                                 <span class="text-3xl font-extrabold text-gray-900 dark:text-white" x-text="'{{ $attendanceRatePercent }}%'"></span>
@@ -197,7 +199,9 @@
                         <div class="bg-gradient-to-br from-indigo-50 to-white dark:from-zinc-900 dark:to-zinc-800 p-5 rounded-2xl border border-indigo-100 dark:border-zinc-700 shadow-sm relative overflow-hidden group hover:shadow-md transition duration-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Total Capaian Kelas</span>
-                                <span class="p-2 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 rounded-xl text-lg">📖</span>
+                                <span class="p-2 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 rounded-xl">
+                                    <x-heroicon-o-book-open class="w-6 h-6" />
+                                </span>
                             </div>
                             <div class="mt-4 flex items-baseline gap-2">
                                 <span class="text-3xl font-extrabold text-gray-900 dark:text-white" x-text="'{{ $totalClassWeeklyLines }}'"></span>
@@ -210,7 +214,9 @@
                         <div class="bg-gradient-to-br from-amber-50 to-white dark:from-zinc-900 dark:to-zinc-800 p-5 rounded-2xl border border-amber-100 dark:border-zinc-700 shadow-sm relative overflow-hidden group hover:shadow-md transition duration-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Rata-rata Setoran</span>
-                                <span class="p-2 bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 rounded-xl text-lg">✨</span>
+                                <span class="p-2 bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 rounded-xl">
+                                    <x-heroicon-o-sparkles class="w-6 h-6" />
+                                </span>
                             </div>
                             <div class="mt-4 flex items-baseline gap-2">
                                 <span class="text-3xl font-extrabold text-gray-900 dark:text-white" x-text="'{{ $averageClassLines }}'"></span>

@@ -62,8 +62,8 @@
             <p class="text-xs text-zinc-500">Mencetak kartu UMMI untuk seluruh {{ count($studentsData) }} murid aktif sekaligus.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                🖨️ Cetak Semua Kartu
+            <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                <x-heroicon-o-printer class="w-4 h-4" /> Cetak Semua Kartu
             </button>
             <button onclick="window.close()" class="px-4 py-2 border border-zinc-300 text-zinc-700 rounded-lg text-sm font-semibold hover:bg-zinc-50 transition">
                 Tutup Halaman

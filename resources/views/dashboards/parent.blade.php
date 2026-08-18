@@ -33,7 +33,7 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="space-y-1.5">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider">
-                                🌟 Highlights Capaian Anak
+                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> Highlights Capaian Anak
                             </span>
                             <h3 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
@@ -100,13 +100,13 @@
                         {{-- Tab Selector for multiple children --}}
                         <div class="flex items-center gap-2 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 pb-2">
                             <span class="text-xs font-extrabold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mr-2 flex items-center gap-1">
-                                <span>👨‍👩‍👧</span> Pilih Anak:
+                                <x-heroicon-o-user-group class="w-4 h-4 text-zinc-500" /> Pilih Anak:
                             </span>
                             @foreach ($childrenProgress as $idx => $row)
                                 <button @click="activeChild = {{ $idx }}"
                                         :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-sm font-black' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-bold'"
                                         class="flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition">
-                                    <span>👦</span>
+                                    <x-heroicon-o-user class="w-4 h-4" />
                                     <span>{{ data_get($row, 'student_name', 'Anak '.($idx+1)) }}</span>
                                     <span class="text-xs font-normal opacity-80">({{ data_get($row, 'class_room_name', '-') }})</span>
                                 </button>
@@ -219,7 +219,9 @@
                                     </div>
 
                                     <div class="rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
-                                        <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">🏆 Nilai Munaqasyah / Penguji</p>
+                                        <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-trophy class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Nilai Munaqasyah / Penguji
+                                        </p>
                                         <p class="text-2xl font-black text-zinc-900 dark:text-white">
                                             {{ data_get($row, 'ummi_munaqasyah_score') !== null ? number_format((float) data_get($row, 'ummi_munaqasyah_score'), 1) : '-' }}
                                         </p>
@@ -240,19 +242,25 @@
                                 {{-- PROGRAM REGULER DETAILS --}}
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div class="rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 p-4">
-                                        <p class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider mb-1">🎯 Target Baris Harian</p>
+                                        <p class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-check-badge class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Target Baris Harian
+                                        </p>
                                         <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($row, 'level_baris', 5) }} Baris / Hari</p>
                                         <p class="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5 font-semibold">Level: {{ ucfirst(data_get($row, 'tahfizh_level', 'reguler')) }}</p>
                                     </div>
 
                                     <div class="rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
-                                        <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1">📊 Capaian Baris Bulan Ini</p>
+                                        <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-chart-bar class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Capaian Baris Bulan Ini
+                                        </p>
                                         <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($row, 'capaian_baris_month', 0) }} / {{ data_get($row, 'target_baris_month', 100) }} Baris</p>
                                         <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-semibold">Ketercapaian: {{ data_get($row, 'reguler_baris_percent', 0) }}%</p>
                                     </div>
 
                                     <div class="rounded-xl bg-purple-50/50 dark:bg-purple-950/20 p-4">
-                                        <p class="text-xs font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wider mb-1">🏆 Total Hafalan Lengkap</p>
+                                        <p class="text-xs font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-trophy class="w-4 h-4 text-purple-600 dark:text-purple-400" /> Total Hafalan Lengkap
+                                        </p>
                                         <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($row, 'completed_juz_count', 0) }} Juz</p>
                                         <p class="text-xs text-purple-700 dark:text-purple-400 mt-0.5 font-semibold">{{ data_get($row, 'completed_juz_list', 'Belum ada Juz lengkap') }}</p>
                                     </div>
@@ -320,8 +328,8 @@
                                         <span class="text-xs text-zinc-400 font-normal">({{ $targetClass ?: '-' }})</span>
                                     </p>
                                     @if ($targetIsUmmi)
-                                        <p class="mt-1 text-sm font-bold text-teal-800 dark:text-teal-300">
-                                            📗 {{ $target->ummi_jilid ?? 'Target Ummi' }}
+                                        <p class="mt-1 text-sm font-bold text-teal-800 dark:text-teal-300 flex items-center gap-1">
+                                            <x-heroicon-o-book-open class="w-4 h-4 text-teal-600 dark:text-teal-400" /> {{ $target->ummi_jilid ?? 'Target Ummi' }}
                                             @if($target->halaman_peraga || $target->halaman_buku)
                                                 <span class="text-xs font-normal text-teal-600 dark:text-teal-400 block sm:inline">(Peraga: {{ $target->halaman_peraga ?? '-' }}, Buku: {{ $target->halaman_buku ?? '-' }})</span>
                                             @endif
@@ -332,8 +340,8 @@
                                             </p>
                                         @endif
                                     @else
-                                        <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300 font-semibold">
-                                            📘 {{ $target->surah?->name_latin ?? '-' }}
+                                        <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300 font-semibold flex items-center gap-1">
+                                            <x-heroicon-o-book-open class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {{ $target->surah?->name_latin ?? '-' }}
                                             · Ayat {{ $target->ayah_start }} - {{ $target->ayah_end }}
                                         </p>
                                     @endif

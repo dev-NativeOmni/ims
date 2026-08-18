@@ -51,7 +51,9 @@
                 <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition rounded-2xl p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500 dark:text-zinc-400">Ujian Tahfizh (Bulan Ini)</span>
-                        <span class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-lg">📝</span>
+                        <span class="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl">
+                            <x-heroicon-o-pencil-square class="w-6 h-6" />
+                        </span>
                     </div>
                     <p class="text-3xl font-extrabold text-gray-900 dark:text-white mt-2">{{ $stats['exams_this_month'] }}</p>
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">Lulus: {{ $stats['passed_exams'] }} murid</p>
@@ -61,31 +63,31 @@
             {{-- Quick Action Shortcuts --}}
             <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-md">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
-                    <span>⚡</span> Akses Cepat Menu Tahfizh
+                    <x-heroicon-o-bolt class="w-5 h-5 text-amber-500" /> Akses Cepat Menu Tahfizh
                 </h3>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <a href="{{ route('hafalan-records.create') }}" class="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl hover:bg-emerald-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">➕</span>
+                    <a href="{{ route('hafalan-records.create') }}" class="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl hover:bg-emerald-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-plus-circle class="w-7 h-7 mb-1 text-emerald-600 dark:text-emerald-400" />
                         <span class="text-xs font-bold text-emerald-900 dark:text-emerald-300">Input Setoran</span>
                     </a>
-                    <a href="{{ route('murajaah-records.create') }}" class="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl hover:bg-blue-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">🔄</span>
+                    <a href="{{ route('murajaah-records.create') }}" class="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl hover:bg-blue-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-arrow-path class="w-7 h-7 mb-1 text-blue-600 dark:text-blue-400" />
                         <span class="text-xs font-bold text-blue-900 dark:text-blue-300">Input Muraja'ah</span>
                     </a>
-                    <a href="{{ route('tahfizh-exams.create') }}" class="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-2xl hover:bg-purple-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">📋</span>
+                    <a href="{{ route('tahfizh-exams.create') }}" class="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-2xl hover:bg-purple-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-clipboard-document-list class="w-7 h-7 mb-1 text-purple-600 dark:text-purple-400" />
                         <span class="text-xs font-bold text-purple-900 dark:text-purple-300">Jadwalkan Ujian</span>
                     </a>
-                    <a href="{{ route('hafalan-targets.index') }}" class="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl hover:bg-indigo-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">🎯</span>
+                    <a href="{{ route('hafalan-targets.index') }}" class="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl hover:bg-indigo-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-check-badge class="w-7 h-7 mb-1 text-indigo-600 dark:text-indigo-400" />
                         <span class="text-xs font-bold text-indigo-900 dark:text-indigo-300">Kelola Target</span>
                     </a>
-                    <a href="{{ route('reports.periodic') }}" class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl hover:bg-amber-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">📊</span>
+                    <a href="{{ route('reports.periodic') }}" class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl hover:bg-amber-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-chart-bar class="w-7 h-7 mb-1 text-amber-600 dark:text-amber-400" />
                         <span class="text-xs font-bold text-amber-900 dark:text-amber-300">Grafik Perkembangan</span>
                     </a>
-                    <a href="{{ route('digital-reports.index') }}" class="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-2xl hover:bg-rose-100 transition text-center group shadow-xs">
-                        <span class="text-2xl block mb-1">📄</span>
+                    <a href="{{ route('digital-reports.index') }}" class="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-2xl hover:bg-rose-100 transition text-center group shadow-xs flex flex-col items-center">
+                        <x-heroicon-o-document-text class="w-7 h-7 mb-1 text-rose-600 dark:text-rose-400" />
                         <span class="text-xs font-bold text-rose-900 dark:text-rose-300">Rapor Digital</span>
                     </a>
                 </div>
@@ -93,8 +95,8 @@
 
             {{-- Recent Feed --}}
             <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-md">
-                <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 border-b pb-3 dark:border-zinc-800">
-                    🕒 Setoran Hafalan Terbaru
+                <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
+                    <x-heroicon-o-clock class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Setoran Hafalan Terbaru
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm text-gray-600 dark:text-zinc-400">
