@@ -197,18 +197,42 @@
 
                     <div x-data="{
                         search: '',
+                        currentPage: 1,
+                        perPage: 10,
                         selectedIds: @json($selectedParentIds),
+                        parentsList: [
+                            @foreach($parents as $index => $parent)
+                                { index: {{ $index }}, id: {{ $parent->id }}, name: @json($parent->user?->name ?? ''), phone: @json($parent->phone ?? '') },
+                            @endforeach
+                        ],
+                        get filteredIndices() {
+                            if (!this.search.trim()) {
+                                return this.parentsList.map(p => p.index);
+                            }
+                            let q = this.search.toLowerCase().trim();
+                            return this.parentsList
+                                .filter(p => p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q)))
+                                .map(p => p.index);
+                        },
+                        get totalPages() {
+                            return Math.ceil(this.filteredIndices.length / this.perPage) || 1;
+                        },
+                        get paginatedIndices() {
+                            let start = (this.currentPage - 1) * this.perPage;
+                            return this.filteredIndices.slice(start, start + this.perPage);
+                        },
+                        prevPage() {
+                            if (this.currentPage > 1) this.currentPage--;
+                        },
+                        nextPage() {
+                            if (this.currentPage < this.totalPages) this.currentPage++;
+                        },
                         toggleSelect(id, isChecked) {
                             if (isChecked && !this.selectedIds.includes(id)) {
                                 this.selectedIds.push(id);
                             } else if (!isChecked) {
                                 this.selectedIds = this.selectedIds.filter(i => i !== id);
                             }
-                        },
-                        matchesSearch(name, phone) {
-                            if (!this.search.trim()) return false;
-                            let q = this.search.toLowerCase().trim();
-                            return name.toLowerCase().includes(q) || (phone && phone.toLowerCase().includes(q));
                         }
                     }" class="border-t pt-5">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -228,13 +252,14 @@
                             <input 
                                 type="text" 
                                 x-model="search" 
+                                @input="currentPage = 1"
                                 placeholder="🔍 Cari nama orangtua atau nomor telepon..." 
                                 class="block w-full pl-9 pr-8 py-2 rounded-lg border-gray-300 shadow-xs text-sm focus:ring-indigo-500 focus:border-indigo-500"
                             >
                             <button 
                                 type="button" 
                                 x-show="search.length > 0" 
-                                @click="search = ''" 
+                                @click="search = ''; currentPage = 1" 
                                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-400 hover:text-gray-600 font-bold"
                             >
                                 ✕
@@ -247,7 +272,7 @@
                                     $isInitiallySelected = in_array($parent->id, $selectedParentIds);
                                 @endphp
                                 <div 
-                                    x-show="selectedIds.includes({{ $parent->id }}) || matchesSearch('{{ addslashes($parent->user?->name ?? '') }}', '{{ addslashes($parent->phone ?? '') }}') || (!search.trim() && {{ $index }} < 10)"
+                                    x-show="paginatedIndices.includes({{ $index }})"
                                     class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center border rounded-xl p-3 transition"
                                     :class="selectedIds.includes({{ $parent->id }}) ? 'bg-indigo-50/60 dark:bg-indigo-950/20 border-indigo-200' : 'bg-white border-gray-200'"
                                 >
@@ -283,9 +308,40 @@
                             @endforelse
                         </div>
 
-                        <p x-show="!search.trim()" class="mt-2 text-xs text-gray-500 italic">
-                            💡 Menampilkan 10 orangtua teratas &amp; yang terpilih. Ketik di bar pencarian di atas untuk menemukan nama orangtua lainnya.
-                        </p>
+                        <!-- Pagination Navigation Bar -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-200">
+                            <div class="text-xs text-gray-500 font-medium">
+                                Menampilkan <span class="font-bold text-gray-800" x-text="filteredIndices.length > 0 ? ((currentPage - 1) * perPage + 1) : 0"></span> 
+                                s/d <span class="font-bold text-gray-800" x-text="Math.min(currentPage * perPage, filteredIndices.length)"></span> 
+                                dari <span class="font-bold text-gray-800" x-text="filteredIndices.length"></span> Orang Tua
+                            </div>
+
+                            <div class="flex items-center gap-2" x-show="totalPages > 1">
+                                <button 
+                                    type="button" 
+                                    @click="prevPage()" 
+                                    :disabled="currentPage === 1"
+                                    :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white hover:bg-gray-100 text-gray-700 shadow-xs border border-gray-300 cursor-pointer'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                >
+                                    « Sebelumnya
+                                </button>
+
+                                <span class="text-xs font-bold text-gray-700 px-2">
+                                    Halaman <span x-text="currentPage"></span> / <span x-text="totalPages"></span>
+                                </span>
+
+                                <button 
+                                    type="button" 
+                                    @click="nextPage()" 
+                                    :disabled="currentPage === totalPages"
+                                    :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white hover:bg-gray-100 text-gray-700 shadow-xs border border-gray-300 cursor-pointer'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                >
+                                    Berikutnya »
+                                </button>
+                            </div>
+                        </div>
 
                         @error('parent_ids')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
