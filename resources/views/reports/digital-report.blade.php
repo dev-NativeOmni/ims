@@ -91,7 +91,7 @@
                 <!-- Module 1: Tahfizh -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                        <span class="text-indigo-500">📖</span> Perkembangan Tahfizh
+                        <x-heroicon-o-book-open class="w-5 h-5 text-indigo-500" /> Perkembangan Tahfizh
                     </h4>
                     
                     <div class="mb-4 text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 px-3 py-2 rounded-xl border border-indigo-100 dark:border-indigo-950/30">
@@ -133,7 +133,7 @@
                 <!-- Module 2: Adab & Akhlak -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                        <span class="text-teal-500">🕋</span> Kepatuhan Adab Harian
+                        <x-heroicon-o-sparkles class="w-5 h-5 text-amber-500" /> Kepatuhan Adab Harian
                     </h4>
                     
                         @php
@@ -211,7 +211,7 @@
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                 <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800 mb-4">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                        <span>🛡️ Catatan Evaluasi Kedisiplinan & Ketahanan Sekolah (Tanse)</span>
+                        <x-heroicon-o-shield-check class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Catatan Evaluasi Kedisiplinan &amp; Ketahanan Sekolah (Tanse)
                     </h4>
                     <span class="px-3 py-1 rounded-full text-xs font-black {{ $tanseScore >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }}">
                         Skor Tanse: {{ $tanseScore }} (Predikat {{ $tanseGrade }})
@@ -227,7 +227,7 @@
                 <!-- Violations Log -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                        <span class="text-red-500">🚨</span> Catatan Pelanggaran Tata Tertib
+                        <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-red-500" /> Catatan Pelanggaran Tata Tertib
                     </h4>
                     @if($violations->isEmpty())
                         <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-8 italic">Tidak ada catatan pelanggaran.</p>

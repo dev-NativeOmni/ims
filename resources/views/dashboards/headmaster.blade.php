@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-100 leading-tight flex items-center gap-2">
-                <span>🏫</span> Dashboard Kepala Sekolah
+                <x-heroicon-o-academic-cap class="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> Dashboard Kepala Sekolah
             </h2>
             <p class="text-sm text-gray-500 dark:text-zinc-400">
                 Ringkasan perkembangan Tahfizh, Keagamaan (Adab), dan Ketahanan Sekolah (Tanse) — Bulan {{ date('F Y') }}
@@ -20,7 +20,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition col-span-1">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Hafalan/bln</span>
-                        <span class="p-1.5 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-lg text-base">📖</span>
+                        <div class="p-1.5 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-lg">
+                            <x-heroicon-o-book-open class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ number_format($hafalanThisMonth) }}</p>
                     <p class="text-xs text-teal-600 dark:text-teal-400 mt-0.5 font-semibold">Hari ini: {{ $hafalanToday }}</p>
@@ -30,7 +32,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Target ✓</span>
-                        <span class="p-1.5 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-lg text-base">🎯</span>
+                        <div class="p-1.5 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-lg">
+                            <x-heroicon-o-check-badge class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $targetRate }}%</p>
                     <p class="text-xs text-green-600 dark:text-green-400 mt-0.5 font-semibold">{{ $completedTargets }} / {{ $activeTargets + $completedTargets }}</p>
@@ -40,7 +44,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Adab Hari Ini</span>
-                        <span class="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg text-base">✅</span>
+                        <div class="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                            <x-heroicon-o-check-circle class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $fillPercentage }}%</p>
                     <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-semibold">{{ $adabFilledToday }}/{{ $totalStudents }} murid</p>
@@ -50,7 +56,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Rerata Adab</span>
-                        <span class="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg text-base">⭐</span>
+                        <div class="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg">
+                            <x-heroicon-o-star class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $avgAdabScore }}</p>
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5 font-semibold">Predikat: {{ $adabGrade }}</p>
@@ -60,7 +68,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Pelanggaran</span>
-                        <span class="p-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg text-base">⚠️</span>
+                        <div class="p-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg">
+                            <x-heroicon-o-exclamation-triangle class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $tanseStats['violations'] }}</p>
                     <p class="text-xs text-red-600 dark:text-red-400 mt-0.5 font-semibold">{{ $tanseStats['violation_points'] }} poin</p>
@@ -70,7 +80,9 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-md hover:shadow-lg transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Reward</span>
-                        <span class="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg text-base">🏆</span>
+                        <div class="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg">
+                            <x-heroicon-o-trophy class="w-5 h-5" />
+                        </div>
                     </div>
                     <p class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $tanseStats['rewards'] }}</p>
                     <p class="text-xs text-purple-600 dark:text-purple-400 mt-0.5 font-semibold">Bulan {{ date('M') }}</p>
@@ -82,7 +94,7 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-teal-50/60 to-transparent dark:from-teal-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            📖 Grafik Perkembangan Tahfizh
+                            <x-heroicon-o-book-open class="w-5 h-5 text-teal-600 dark:text-teal-400" /> Grafik Perkembangan Tahfizh
                         </h3>
                         <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Aktivitas hafalan per tingkat kelas bulan ini</p>
                     </div>
@@ -119,7 +131,7 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-amber-50/60 to-transparent dark:from-amber-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            🕋 Grafik Pengisian Adab (Keagamaan)
+                            <x-heroicon-o-sparkles class="w-5 h-5 text-amber-500 dark:text-amber-400" /> Grafik Pengisian Adab (Keagamaan)
                         </h3>
                         <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Rata-rata nilai adab per tingkat kelas &amp; kehadiran pengisian</p>
                     </div>
@@ -167,7 +179,7 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-red-50/60 to-transparent dark:from-red-950/20">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            🛡️ Grafik Perkembangan Tanse (Ketahanan Sekolah)
+                            <x-heroicon-o-shield-check class="w-5 h-5 text-red-600 dark:text-red-400" /> Grafik Perkembangan Tanse (Ketahanan Sekolah)
                         </h3>
                         <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Tren pelanggaran &amp; penghargaan 6 bulan terakhir</p>
                     </div>
@@ -207,12 +219,12 @@
             {{-- ═══════════════ QUICK NAVIGATION ═══════════════ --}}
             <div class="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-md">
                 <h3 class="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <span>⚡</span> Akses Cepat Laporan
+                    <x-heroicon-o-bolt class="w-4 h-4 text-amber-500" /> Akses Cepat Laporan
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <a href="{{ route('reports.periodic') }}"
                         class="flex items-center gap-3 p-4 bg-teal-50 dark:bg-teal-950/30 rounded-2xl hover:bg-teal-100 dark:hover:bg-teal-950/50 transition shadow-xs">
-                        <span class="text-2xl">📈</span>
+                        <x-heroicon-o-chart-bar class="w-6 h-6 text-teal-600 dark:text-teal-400 shrink-0" />
                         <div>
                             <p class="text-sm font-bold text-teal-900 dark:text-teal-200">Grafik Perkembangan Tahfizh</p>
                             <p class="text-xs text-teal-700 dark:text-teal-400">Laporan hafalan periodik</p>
@@ -220,7 +232,7 @@
                     </a>
                     <a href="{{ route('adab.chart') }}"
                         class="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl hover:bg-amber-100 dark:hover:bg-amber-950/50 transition shadow-xs">
-                        <span class="text-2xl">📊</span>
+                        <x-heroicon-o-sparkles class="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
                         <div>
                             <p class="text-sm font-bold text-amber-900 dark:text-amber-200">Grafik Pengisian Adab</p>
                             <p class="text-xs text-amber-700 dark:text-amber-400">Monitoring keagamaan</p>
@@ -228,7 +240,7 @@
                     </a>
                     <a href="{{ route('student-points.chart') }}"
                         class="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950/30 rounded-2xl hover:bg-red-100 dark:hover:bg-red-950/50 transition shadow-xs">
-                        <span class="text-2xl">🛡️</span>
+                        <x-heroicon-o-shield-check class="w-6 h-6 text-red-600 dark:text-red-400 shrink-0" />
                         <div>
                             <p class="text-sm font-bold text-red-900 dark:text-red-200">Grafik Perkembangan Tanse</p>
                             <p class="text-xs text-red-700 dark:text-red-400">Ketahanan sekolah</p>

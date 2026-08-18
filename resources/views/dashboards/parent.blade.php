@@ -183,20 +183,24 @@
                                 {{-- PROGRAM UMMI DETAILS --}}
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div class="rounded-xl bg-teal-50/50 dark:bg-teal-950/20 p-4">
-                                        <p class="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1">📖 Jilid &amp; Halaman Saat Ini</p>
+                                        <p class="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-book-open class="w-4 h-4 text-teal-600 dark:text-teal-400" /> Jilid &amp; Halaman Saat Ini
+                                        </p>
                                         <p class="text-2xl font-black text-zinc-900 dark:text-white">{{ data_get($row, 'ummi_jilid_str', 'Jilid 1') }}</p>
                                         <p class="text-xs text-teal-700 dark:text-teal-400 mt-0.5 font-semibold">Halaman {{ data_get($row, 'ummi_halaman', '-') }} · Tatap Muka #{{ data_get($row, 'ummi_tatap_muka', '-') }}</p>
                                     </div>
 
                                     <div class="rounded-xl bg-zinc-50/50 dark:bg-zinc-800/30 p-4">
-                                        <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1">🎯 Target Metode Ummi (Kelas 10)</p>
+                                        <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <x-heroicon-o-check-badge class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Target Metode Ummi (Kelas 10)
+                                        </p>
                                         <p class="text-lg font-black text-zinc-900 dark:text-white">
                                             @if(data_get($row, 'ummi_target.ummi_jilid'))
-                                                📗 {{ data_get($row, 'ummi_target.ummi_jilid') }}
+                                                {{ data_get($row, 'ummi_target.ummi_jilid') }}
                                             @elseif(data_get($row, 'ummi_target.surah.name_latin'))
-                                                📖 {{ data_get($row, 'ummi_target.surah.name_latin') }}
+                                                {{ data_get($row, 'ummi_target.surah.name_latin') }}
                                             @else
-                                                📗 Target Sesuai Jilid
+                                                Target Sesuai Jilid
                                             @endif
                                         </p>
                                         <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-semibold">
