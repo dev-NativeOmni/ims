@@ -254,7 +254,12 @@
                         };
                     </script>
 
-                    <div x-data="parentRelationsPicker(@json($parentsListFormatted), @json($selectedParentIds))" class="border-t pt-5">
+                    <div 
+                        data-parents="{{ json_encode($parentsListFormatted) }}"
+                        data-selected="{{ json_encode($selectedParentIds) }}"
+                        x-data="parentRelationsPicker(JSON.parse($el.dataset.parents), JSON.parse($el.dataset.selected))" 
+                        class="border-t pt-5"
+                    >
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <h3 class="font-semibold text-gray-900 flex items-center gap-2">
                                 <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" /> Relasi Orangtua/Wali
@@ -273,7 +278,7 @@
                                 type="text" 
                                 x-model="search" 
                                 @input="currentPage = 1"
-                                placeholder="🔍 Cari nama orangtua atau nomor telepon..." 
+                                placeholder="Cari nama orangtua atau nomor telepon..." 
                                 class="block w-full pl-9 pr-8 py-2 rounded-lg border-gray-300 shadow-xs text-sm focus:ring-indigo-500 focus:border-indigo-500"
                             >
                             <button 
