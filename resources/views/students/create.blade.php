@@ -327,23 +327,23 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('parentRelationsPicker', (parentsList, selectedIds) => ({
+        window.parentRelationsPicker = function(parentsList, selectedIds) {
+            return {
                 search: '',
                 currentPage: 1,
                 perPage: 10,
-                selectedIds: selectedIds || [],
-                parentsList: parentsList || [],
+                selectedIds: Array.isArray(selectedIds) ? selectedIds : [],
+                parentsList: Array.isArray(parentsList) ? parentsList : [],
 
                 get filteredIndices() {
-                    if (!this.search.trim()) {
+                    if (!this.search || !this.search.trim()) {
                         return this.parentsList.map(function(p) { return p.index; });
                     }
                     var q = this.search.toLowerCase().trim();
                     return this.parentsList
                         .filter(function(p) {
                             return (p.name && p.name.toLowerCase().indexOf(q) !== -1) || 
-                                   (p.phone && p.phone.toLowerCase().indexOf(q) !== -1);
+                                   (p.phone && String(p.phone).toLowerCase().indexOf(q) !== -1);
                         })
                         .map(function(p) { return p.index; });
                 },
@@ -372,7 +372,7 @@
                         this.selectedIds = this.selectedIds.filter(function(i) { return i !== id; });
                     }
                 }
-            }));
-        });
+            };
+        };
     </script>
 </x-app-layout>
