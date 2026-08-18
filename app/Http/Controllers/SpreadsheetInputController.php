@@ -245,6 +245,38 @@ class SpreadsheetInputController extends Controller
                     ];
                 }
             }
+            // Calculate last hafalan & auto +1 next verse continuation for each student
+            $lastHafalanMap = [];
+            foreach ($students as $student) {
+                $latestRec = HafalanRecord::with('surah')
+                    ->where('student_id', $student->id)
+                    ->latest('submitted_at')
+                    ->latest('id')
+                    ->first();
+
+                if ($latestRec && $latestRec->surah) {
+                    $lSurahId = (int)$latestRec->surah_id;
+                    $lAyahEnd = (int)$latestRec->ayah_end;
+                    $totalAyah = (int)$latestRec->surah->total_ayah;
+
+                    if ($lAyahEnd < $totalAyah) {
+                        $nSurahId = $lSurahId;
+                        $nAyahStart = $lAyahEnd + 1;
+                    } else {
+                        $nSurahId = $lSurahId < 114 ? $lSurahId + 1 : 1;
+                        $nAyahStart = 1;
+                    }
+
+                    $lastHafalanMap[$student->id] = [
+                        'last_surah_id' => $lSurahId,
+                        'last_ayah_end' => $lAyahEnd,
+                        'next_surah_id' => $nSurahId,
+                        'next_ayah_start' => $nAyahStart,
+                    ];
+                } else {
+                    $lastHafalanMap[$student->id] = null;
+                }
+            }
         }
 
         $surahs = Surah::query()->orderBy('number')->get();
@@ -264,6 +296,7 @@ class SpreadsheetInputController extends Controller
             'attendancesMap' => $attendancesMap,
             'hafalanRecordsMap' => $hafalanRecordsMap,
             'ummiRecordsMap' => $ummiRecordsMap,
+            'lastHafalanMap' => $lastHafalanMap,
         ]);
     }
 
@@ -283,7 +316,31 @@ class SpreadsheetInputController extends Controller
 
         $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
-        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds) {
+        $classRoom = ClassRoom::find($classRoomId);
+        $meetingFrequency = $classRoom?->program?->meeting_frequency ?? 'setiap hari';
+        $isWeekly = ($meetingFrequency === 'seminggu sekali');
+
+        // Build weekly dates map if weekly meeting frequency
+        $weekDatesMap = [];
+        if ($isWeekly) {
+            $year = (int) date('Y', strtotime($validated['month'] . '-01'));
+            $month = (int) date('m', strtotime($validated['month'] . '-01'));
+            $daysInMonth = (int) date('t', strtotime($validated['month'] . '-01'));
+            
+            $weeks = [];
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $time = mktime(0, 0, 0, $month, $d, $year);
+                $dateStr = date('Y-m-d', $time);
+                $weekNum = date('W', $time);
+                $weeks[$weekNum][] = $dateStr;
+            }
+            foreach ($weeks as $wDates) {
+                $repDate = $wDates[0];
+                $weekDatesMap[$repDate] = $wDates;
+            }
+        }
+
+        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap) {
             foreach ($request->input('records', []) as $studentId => $studentData) {
                 $studentId = (int)$studentId;
                 if (!$visibleStudentIds->contains($studentId)) {
@@ -298,6 +355,7 @@ class SpreadsheetInputController extends Controller
 
                 foreach ($studentData['dates'] ?? [] as $date => $cellData) {
                     $attendance = $cellData['attendance'] ?? null;
+                    $targetDates = ($isWeekly && !empty($weekDatesMap[$date])) ? $weekDatesMap[$date] : [$date];
 
                     // 1. Save Attendance
                     if (filled($attendance)) {
@@ -307,25 +365,25 @@ class SpreadsheetInputController extends Controller
                         );
                     } else {
                         Attendance::where('student_id', $studentId)
-                            ->where('tanggal', $date)
+                            ->whereIn('tanggal', $targetDates)
                             ->where('class_room_id', $classRoomId)
                             ->delete();
                     }
 
-                    // If not present, clear any records for this student on this date
+                    // If not present, clear any records for this student on this date/week
                     if ($attendance !== 'hadir') {
                         HafalanRecord::where('student_id', $studentId)
-                            ->where('submitted_at', $date)
+                            ->whereIn('submitted_at', $targetDates)
                             ->delete();
                         UmmiRecord::where('student_id', $studentId)
-                            ->where('tanggal', $date)
+                            ->whereIn('tanggal', $targetDates)
                             ->delete();
                         continue;
                     }
 
                     // 2. Save Setoran (Hafalan / UMMI)
                     if ($type === 'hafalan') {
-                        $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData);
+                        $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                     } elseif ($type === 'ummi') {
                         $hasUmmiData = filled($cellData['ummi_jilid'] ?? null)
                             || filled($cellData['ummi_halaman'] ?? null)
@@ -333,9 +391,9 @@ class SpreadsheetInputController extends Controller
                             || filled($cellData['nilai'] ?? null);
 
                         if ($student->tahfizh_level === 'ummi' || $hasUmmiData) {
-                            $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData);
+                            $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                         } else {
-                            $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData);
+                            $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                         }
                     }
                 }
@@ -351,13 +409,13 @@ class SpreadsheetInputController extends Controller
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
     }
 
-    private function saveHafalanRecords(int $studentId, int $teacherId, string $date, array $cellData): void
+    private function saveHafalanRecords(int $studentId, int $teacherId, string $date, array $cellData, array $targetDates): void
     {
-        $existingRecordIds = HafalanRecord::where('student_id', $studentId)
-            ->where('submitted_at', $date)
-            ->pluck('id')
-            ->toArray();
+        $existingRecords = HafalanRecord::where('student_id', $studentId)
+            ->whereIn('submitted_at', $targetDates)
+            ->get();
 
+        $existingRecordIds = $existingRecords->pluck('id')->toArray();
         $processedRecordIds = [];
 
         foreach ($cellData['hafalans'] ?? [] as $hafalanData) {
@@ -390,13 +448,26 @@ class SpreadsheetInputController extends Controller
                 'baris' => $baris,
             ];
 
-            $recordId = $hafalanData['id'] ?? null;
-            if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
+            $recordId = !empty($hafalanData['id']) ? (int)$hafalanData['id'] : null;
+
+            if ($recordId && (in_array($recordId, $existingRecordIds) || HafalanRecord::where('id', $recordId)->exists())) {
                 HafalanRecord::where('id', $recordId)->update($dataToSave);
-                $processedRecordIds[] = (int)$recordId;
+                $processedRecordIds[] = $recordId;
             } else {
-                $newRec = HafalanRecord::create($dataToSave);
-                $processedRecordIds[] = $newRec->id;
+                $matchingRecord = $existingRecords->first(function ($rec) use ($hafalanData, $processedRecordIds) {
+                    return !in_array($rec->id, $processedRecordIds)
+                        && (int)$rec->surah_id === (int)$hafalanData['surah_id']
+                        && (int)$rec->ayah_start === (int)$hafalanData['ayah_start']
+                        && (int)$rec->ayah_end === (int)$hafalanData['ayah_end'];
+                });
+
+                if ($matchingRecord) {
+                    $matchingRecord->update($dataToSave);
+                    $processedRecordIds[] = $matchingRecord->id;
+                } else {
+                    $newRec = HafalanRecord::create($dataToSave);
+                    $processedRecordIds[] = $newRec->id;
+                }
             }
         }
 
@@ -406,13 +477,13 @@ class SpreadsheetInputController extends Controller
         }
     }
 
-    private function saveUmmiRecords(int $studentId, int $teacherId, string $date, array $cellData): void
+    private function saveUmmiRecords(int $studentId, int $teacherId, string $date, array $cellData, array $targetDates): void
     {
-        $existingRecordIds = UmmiRecord::where('student_id', $studentId)
-            ->where('tanggal', $date)
-            ->pluck('id')
-            ->toArray();
+        $existingRecords = UmmiRecord::where('student_id', $studentId)
+            ->whereIn('tanggal', $targetDates)
+            ->get();
 
+        $existingRecordIds = $existingRecords->pluck('id')->toArray();
         $processedRecordIds = [];
 
         $ummiJilid = $cellData['ummi_jilid'] ?? null;
@@ -426,7 +497,7 @@ class SpreadsheetInputController extends Controller
 
         if (!$hasUmmiFields && empty($hafalansList)) {
             UmmiRecord::where('student_id', $studentId)
-                ->where('tanggal', $date)
+                ->whereIn('tanggal', $targetDates)
                 ->delete();
             return;
         }
@@ -458,13 +529,13 @@ class SpreadsheetInputController extends Controller
             }
         } else {
             foreach ($hafalansList as $hafalanData) {
-                if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah'])) {
+                if (empty($hafalanData['surah_id']) && empty($hafalanData['ayah'])) {
                     continue;
                 }
 
-                $surah = Surah::find($hafalanData['surah_id']);
+                $surah = !empty($hafalanData['surah_id']) ? Surah::find($hafalanData['surah_id']) : null;
                 $baris = 0.0;
-                if ($surah) {
+                if ($surah && !empty($hafalanData['ayah'])) {
                     $clean = str_replace(' ', '', $hafalanData['ayah']);
                     if (str_contains($clean, '-')) {
                         $parts = explode('-', $clean);
@@ -489,8 +560,8 @@ class SpreadsheetInputController extends Controller
                     'teacher_id' => $teacherId,
                     'tatap_muka' => $tatapMuka,
                     'tanggal' => $date,
-                    'hafalan_surah_id' => $hafalanData['surah_id'],
-                    'hafalan_ayah' => $hafalanData['ayah'],
+                    'hafalan_surah_id' => $hafalanData['surah_id'] ?? null,
+                    'hafalan_ayah' => $hafalanData['ayah'] ?? null,
                     'baris' => $baris,
                     'ummi_jilid' => $ummiJilid,
                     'ummi_halaman' => $ummiHalaman,
@@ -500,10 +571,11 @@ class SpreadsheetInputController extends Controller
                     'disimak_ortu' => 'Ya',
                 ];
 
-                $recordId = $hafalanData['id'] ?? null;
-                if ($recordId && in_array((int)$recordId, $existingRecordIds)) {
+                $recordId = !empty($hafalanData['id']) ? (int)$hafalanData['id'] : null;
+
+                if ($recordId && (in_array($recordId, $existingRecordIds) || UmmiRecord::where('id', $recordId)->exists())) {
                     UmmiRecord::where('id', $recordId)->update($dataToSave);
-                    $processedRecordIds[] = (int)$recordId;
+                    $processedRecordIds[] = $recordId;
                 } else {
                     $unprocessedIds = array_diff($existingRecordIds, $processedRecordIds);
                     if (!empty($unprocessedIds)) {

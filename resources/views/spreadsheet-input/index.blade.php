@@ -26,6 +26,7 @@
                 attendancesMap: @json($attendancesMap),
                 hafalanRecordsMap: @json($hafalanRecordsMap),
                 ummiRecordsMap: @json($ummiRecordsMap),
+                lastHafalanMap: @json($lastHafalanMap),
                 gridData: {},
                 surahDetails: {},
                 isDirty: false,
@@ -80,11 +81,35 @@
                         });
                     });
                 },
+                getNextHafalan(studentId, cellHafalans = []) {
+                    let validPrevious = (cellHafalans || []).filter(h => h.surah_id && h.ayah_end);
+                    if (validPrevious.length > 0) {
+                        let lastH = validPrevious[validPrevious.length - 1];
+                        let surahId = parseInt(lastH.surah_id);
+                        let ayahEnd = parseInt(lastH.ayah_end);
+                        let details = this.surahDetails[surahId];
+                        let totalAyah = details ? details.totalAyah : 1;
+
+                        if (ayahEnd < totalAyah) {
+                            return { id: null, surah_id: surahId, ayah_start: ayahEnd + 1, ayah_end: ayahEnd + 1, score: '', status: 'passed', submission_type: 'new' };
+                        } else {
+                            let nextSurahId = surahId < 114 ? surahId + 1 : 1;
+                            return { id: null, surah_id: nextSurahId, ayah_start: 1, ayah_end: 1, score: '', status: 'passed', submission_type: 'new' };
+                        }
+                    }
+
+                    let lastInfo = this.lastHafalanMap[studentId];
+                    if (lastInfo) {
+                        return { id: null, surah_id: lastInfo.next_surah_id, ayah_start: lastInfo.next_ayah_start, ayah_end: lastInfo.next_ayah_start, score: '', status: 'passed', submission_type: 'new' };
+                    }
+
+                    return { id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' };
+                },
                 syncAyahLimits(hafalan) {
                     if (!hafalan.surah_id) return;
                     const details = this.surahDetails[hafalan.surah_id];
                     if (details) {
-                        hafalan.ayah_start = 1;
+                        if (!hafalan.ayah_start) hafalan.ayah_start = 1;
                         hafalan.ayah_end = details.totalAyah;
                     }
                 },
@@ -99,7 +124,16 @@
                     this.isDirty = true;
                     let cell = this.gridData[studentId].dates[date];
                     cell.attendance = value;
-                    if (value !== 'hadir') {
+                    if (value === 'hadir') {
+                        if (cell.hafalans.length === 1 && !cell.hafalans[0].surah_id) {
+                            let autoNext = this.getNextHafalan(studentId, []);
+                            if (autoNext.surah_id) {
+                                cell.hafalans[0].surah_id = autoNext.surah_id;
+                                cell.hafalans[0].ayah_start = autoNext.ayah_start;
+                                cell.hafalans[0].ayah_end = autoNext.ayah_end;
+                            }
+                        }
+                    } else {
                         // Clear fields if absent
                         cell.hafalans.forEach(h => {
                             h.surah_id = '';
@@ -285,7 +319,7 @@
                                                                 </div>
                                                             </template>
                                                             <!-- Add Surah Button -->
-                                                            <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                            <button type="button" @click="isDirty = true; cell.hafalans.push(getNextHafalan(student.id, cell.hafalans))" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                 + Tambah Surat
                                                             </button>
                                                         </div>
@@ -389,7 +423,7 @@
                                                                             </template>
                                                                         </div>
                                                                     </template>
-                                                                    <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
+                                                                    <button type="button" @click="isDirty = true; cell.hafalans.push(getNextHafalan(student.id, cell.hafalans))" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full inline-flex items-center justify-center py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-indigo-650 dark:text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-200 dark:border-zinc-800 transition cursor-pointer">
                                                                         + Tambah Surat
                                                                     </button>
                                                                 </div>
@@ -625,7 +659,7 @@
                                                             </template>
                                                         </div>
                                                     </template>
-                                                    <button type="button" @click="isDirty = true; cell.hafalans.push({ id: null, surah_id: '', ayah_start: '', ayah_end: '', score: '', status: 'passed', submission_type: 'new' })" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                                                    <button type="button" @click="isDirty = true; cell.hafalans.push(getNextHafalan(student.id, cell.hafalans))" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="w-full py-2 bg-indigo-50 dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 border border-indigo-200 dark:border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer">
                                                         + Tambah Surat Setoran
                                                     </button>
                                                 </div>
