@@ -1,3 +1,14 @@
+@php
+    $parentsListFormatted = $parents->map(function($parent, $index) {
+        return [
+            'index' => $index,
+            'id' => $parent->id,
+            'name' => $parent->user?->name ?? '',
+            'phone' => $parent->phone ?? '',
+        ];
+    })->values();
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -184,46 +195,7 @@
                         </div>
                     </div>
 
-                    <div x-data="{
-                        search: '',
-                        currentPage: 1,
-                        perPage: 10,
-                        selectedIds: @json(old('parent_ids', [])),
-                        parentsList: [
-                            @foreach($parents as $index => $parent)
-                                { index: {{ $index }}, id: {{ $parent->id }}, name: @json($parent->user?->name ?? ''), phone: @json($parent->phone ?? '') },
-                            @endforeach
-                        ],
-                        get filteredIndices() {
-                            if (!this.search.trim()) {
-                                return this.parentsList.map(p => p.index);
-                            }
-                            let q = this.search.toLowerCase().trim();
-                            return this.parentsList
-                                .filter(p => p.name.toLowerCase().includes(q) || (p.phone && p.phone.toLowerCase().includes(q)))
-                                .map(p => p.index);
-                        },
-                        get totalPages() {
-                            return Math.ceil(this.filteredIndices.length / this.perPage) || 1;
-                        },
-                        get paginatedIndices() {
-                            let start = (this.currentPage - 1) * this.perPage;
-                            return this.filteredIndices.slice(start, start + this.perPage);
-                        },
-                        prevPage() {
-                            if (this.currentPage > 1) this.currentPage--;
-                        },
-                        nextPage() {
-                            if (this.currentPage < this.totalPages) this.currentPage++;
-                        },
-                        toggleSelect(id, isChecked) {
-                            if (isChecked && !this.selectedIds.includes(id)) {
-                                this.selectedIds.push(id);
-                            } else if (!isChecked) {
-                                this.selectedIds = this.selectedIds.filter(i => i !== id);
-                            }
-                        }
-                    }" class="border-t pt-5">
+                    <div x-data="parentRelationsPicker(@json($parentsListFormatted), @json(old('parent_ids', [])))" class="border-t pt-5">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <h3 class="font-semibold text-gray-900 flex items-center gap-2">
                                 <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" /> Relasi Orangtua/Wali
@@ -353,4 +325,54 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('parentRelationsPicker', (parentsList, selectedIds) => ({
+                search: '',
+                currentPage: 1,
+                perPage: 10,
+                selectedIds: selectedIds || [],
+                parentsList: parentsList || [],
+
+                get filteredIndices() {
+                    if (!this.search.trim()) {
+                        return this.parentsList.map(function(p) { return p.index; });
+                    }
+                    var q = this.search.toLowerCase().trim();
+                    return this.parentsList
+                        .filter(function(p) {
+                            return (p.name && p.name.toLowerCase().indexOf(q) !== -1) || 
+                                   (p.phone && p.phone.toLowerCase().indexOf(q) !== -1);
+                        })
+                        .map(function(p) { return p.index; });
+                },
+
+                get totalPages() {
+                    return Math.ceil(this.filteredIndices.length / this.perPage) || 1;
+                },
+
+                get paginatedIndices() {
+                    var start = (this.currentPage - 1) * this.perPage;
+                    return this.filteredIndices.slice(start, start + this.perPage);
+                },
+
+                prevPage() {
+                    if (this.currentPage > 1) this.currentPage--;
+                },
+
+                nextPage() {
+                    if (this.currentPage < this.totalPages) this.currentPage++;
+                },
+
+                toggleSelect(id, isChecked) {
+                    if (isChecked && !this.selectedIds.includes(id)) {
+                        this.selectedIds.push(id);
+                    } else if (!isChecked) {
+                        this.selectedIds = this.selectedIds.filter(function(i) { return i !== id; });
+                    }
+                }
+            }));
+        });
+    </script>
 </x-app-layout>
