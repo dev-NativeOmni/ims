@@ -26,7 +26,7 @@ return new class extends Migration
 
         if (Schema::hasTable('ummi_records')) {
             Schema::table('ummi_records', function (Blueprint $table) {
-                $table->index(['student_id', 'submitted_at'], 'idx_ummi_std_subdate');
+                $table->index(['student_id', 'tanggal'], 'idx_ummi_std_tanggal');
             });
         }
 
@@ -57,7 +57,7 @@ return new class extends Migration
 
         if (Schema::hasTable('ummi_records')) {
             Schema::table('ummi_records', function (Blueprint $table) {
-                $table->dropIndex('idx_ummi_std_subdate');
+                $table->dropIndex('idx_ummi_std_tanggal');
             });
         }
 
