@@ -170,18 +170,18 @@
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-3 rounded-xl shadow-sm">
                 <!-- Worksheet Tabs -->
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer">
-                        📖 Lembar Setoran Al-Qur'an
+                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <x-heroicon-o-book-open class="w-4 h-4" /> Lembar Setoran Al-Qur'an
                     </button>
-                    <button type="button" @click="tab = 'ummi'" :class="tab === 'ummi' ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer">
-                        🌱 Lembar Progres UMMI
+                    <button type="button" @click="tab = 'ummi'" :class="tab === 'ummi' ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <x-heroicon-o-sparkles class="w-4 h-4" /> Lembar Progres UMMI
                     </button>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="w-full sm:w-auto">
-                    <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer">
-                        💾 Simpan Perubahan Kelas
+                    <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
+                        <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Kelas
                     </button>
                 </div>
             </div>

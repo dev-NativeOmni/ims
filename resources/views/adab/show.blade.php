@@ -46,8 +46,8 @@
                     @endphp
 
                     @if (($isOwn || $isMentor) && !$filledToday)
-                        <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-sm">
-                            ✏️ Isi Kuisioner Hari Ini
+                        <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-sm gap-1.5">
+                            <x-heroicon-o-pencil-square class="w-4 h-4" /> Isi Kuisioner Hari Ini
                         </a>
                     @endif
                 </div>
@@ -88,7 +88,9 @@
 
                 {{-- Per-Kategori Breakdown (Kanan) --}}
                 <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
-                    <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-5">📊 Capaian per Kategori Adab</h4>
+                    <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-5 flex items-center gap-1.5">
+                        <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-500" /> Capaian per Kategori Adab
+                    </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         @foreach ($categories as $catIdx => $cat)
                             @php
@@ -138,7 +140,9 @@
             @if ($isMentor)
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-purple-50/50 dark:bg-purple-950/10">
-                        <h4 class="text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wide">🔑 Penilaian Pendamping Adab (Bulanan)</h4>
+                        <h4 class="text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wide flex items-center gap-1.5">
+                            <x-heroicon-o-key class="w-5 h-5 text-purple-600 dark:text-purple-400" /> Penilaian Pendamping Adab (Bulanan)
+                        </h4>
                         <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">
                             Isi nilai pendamping sekali per bulan. Nilai ini dikombinasikan 50/50 dengan nilai mandiri murid.
                             @if ($mentorAlreadyScoredThisMonth)
@@ -177,8 +181,12 @@
                                     class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
                             <div>
-                                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold transition shadow-sm">
-                                    {{ $mentorAlreadyScoredThisMonth ? '🔄 Perbarui Nilai' : '💾 Simpan Nilai' }}
+                                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold transition shadow-sm gap-1.5">
+                                    @if ($mentorAlreadyScoredThisMonth)
+                                        <x-heroicon-o-arrow-path class="w-4 h-4" /> Perbarui Nilai
+                                    @else
+                                        <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Nilai
+                                    @endif
                                 </button>
                             </div>
                         </div>
@@ -194,7 +202,9 @@
                 @if ($mentorAssessments->isNotEmpty())
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                            <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">📋 Riwayat Nilai Pendamping</h4>
+                            <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide flex items-center gap-1.5">
+                                <x-heroicon-o-clipboard-document-list class="w-5 h-5 text-purple-600 dark:text-purple-400" /> Riwayat Nilai Pendamping
+                            </h4>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-zinc-100 dark:divide-zinc-800 text-sm">
@@ -233,7 +243,9 @@
             {{-- Riwayat Kuisioner Harian --}}
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
-                    <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">📅 Riwayat Kuisioner Harian</h4>
+                    <h4 class="text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <x-heroicon-o-calendar class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Riwayat Kuisioner Harian
+                    </h4>
                     <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $adabRecords->total() }} entri</span>
                 </div>
                 <div class="overflow-x-auto">

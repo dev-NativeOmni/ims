@@ -10,16 +10,16 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
             <h3 class="text-lg font-black text-zinc-900 dark:text-white flex items-center gap-2">
-                <span>🗺️ Peta Perjalanan Hafalan Murid</span>
+                <x-heroicon-o-map class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Peta Perjalanan Hafalan Murid
             </h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Tabel rekam jejak capaian & tanggal setoran hafalan pertama yang tercatat di sistem per-Term (Kelas 10, 11, & 12). Klik sel Term untuk melihat detail ringkasan.
+                Tabel rekam jejak capaian &amp; tanggal setoran hafalan pertama yang tercatat di sistem per-Term (Kelas 10, 11, &amp; 12). Klik sel Term untuk melihat detail ringkasan.
             </p>
         </div>
 
         @if ($firstRecord)
             <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 shadow-xs">
-                <span class="text-xl">🌱</span>
+                <x-heroicon-o-sparkles class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <div>
                     <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Setoran Hafalan Pertama Sistem</p>
                     <p class="text-xs font-extrabold text-zinc-900 dark:text-white">{{ data_get($firstRecord, 'title') }}</p>

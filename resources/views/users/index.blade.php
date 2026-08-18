@@ -65,7 +65,7 @@
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-                        <span>🔘 Card Toggle Filter Peran &amp; Status Akun</span>
+                        <x-heroicon-o-funnel class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Card Toggle Filter Peran &amp; Status Akun
                         @if($hasActiveFilters)
                             <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
                                 Filter Aktif

@@ -54,14 +54,14 @@
                         <button @click="activeTab = 'murid'" 
                                 type="button"
                                 :class="activeTab === 'murid' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
-                            👥 Daftar Murid
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition flex items-center gap-1.5">
+                            <x-heroicon-o-user-group class="w-4 h-4" /> Daftar Murid
                         </button>
                         <button @click="activeTab = 'capaian'" 
                                 type="button"
                                 :class="activeTab === 'capaian' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
-                            📊 Capaian Hafalan (Format Excel)
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition flex items-center gap-1.5">
+                            <x-heroicon-o-chart-bar class="w-4 h-4" /> Capaian Hafalan (Format Excel)
                         </button>
                     </nav>
                 </div>
@@ -148,18 +148,18 @@
                                 </select>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                                    🔍 Filter
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition gap-1.5">
+                                    <x-heroicon-o-magnifying-glass class="w-4 h-4" /> Filter
                                 </button>
                                 <a href="{{ route('class-rooms.export-capaian', [$classRoom->id, 'month' => $month, 'year' => $year, 'week' => $week]) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                                    📥 Ekspor Excel
+                                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-750 text-white rounded-lg text-sm font-semibold shadow-sm transition gap-1.5">
+                                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" /> Ekspor Excel
                                 </a>
                                 @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                     <a href="{{ route('class-rooms.print-ummi-cards', $classRoom->id) }}" 
                                        target="_blank"
-                                       class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                                        🖨️ Cetak Kartu UMMI Kelas
+                                       class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold shadow-sm transition gap-1.5">
+                                        <x-heroicon-o-printer class="w-4 h-4" /> Cetak Kartu UMMI Kelas
                                     </a>
                                 @endif
                             </div>

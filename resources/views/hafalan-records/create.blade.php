@@ -297,13 +297,13 @@
                             @click="method = 'reguler'"
                             :class="method === 'reguler' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'"
                             class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <span>📖</span> Reguler (Al-Qur'an)
+                        <x-heroicon-o-book-open class="w-4 h-4" /> Reguler (Al-Qur'an)
                     </button>
                     <button type="button"
                             @click="method = 'ummi'"
                             :class="method === 'ummi' ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'"
                             class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <span>🌱</span> Metode UMMI
+                        <x-heroicon-o-sparkles class="w-4 h-4" /> Metode UMMI
                     </button>
                 </div>
             </div>

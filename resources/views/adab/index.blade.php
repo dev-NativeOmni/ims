@@ -194,8 +194,8 @@
             <div x-show="tab === 'dashboard'" x-transition class="space-y-6">
                 <!-- Compliance per Aspect -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-                    <h4 class="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-1.5 border-b pb-2">
-                        📊 Persentase Kepatuhan Berdasarkan Kategori Adab
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2 border-b pb-2">
+                        <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Persentase Kepatuhan Berdasarkan Kategori Adab
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         @foreach ($categories as $catIdx => $cat)
@@ -227,7 +227,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm lg:col-span-1">
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                            <span class="text-amber-500">🏆</span> Kelas dengan Adab Terbaik
+                            <x-heroicon-o-trophy class="w-5 h-5 text-amber-500" /> Kelas dengan Adab Terbaik
                         </h4>
                         @if($classRankings->isEmpty())
                             <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-6">Belum ada kelas yang terdata.</p>
@@ -251,7 +251,9 @@
                     <!-- Instructions and Advice -->
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm lg:col-span-2 flex flex-col justify-between">
                         <div>
-                            <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2">💡 Tips Pembinaan Karakter Murid</h4>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
+                                <x-heroicon-o-light-bulb class="w-5 h-5 text-amber-500" /> Tips Pembinaan Karakter Murid
+                            </h4>
                             <ul class="space-y-2 text-xs text-gray-600 dark:text-zinc-400 leading-relaxed list-disc list-inside">
                                 <li><strong>Target Kepatuhan Tinggi:</strong> Murid dengan kepatuhan adab di atas 85% dikategorikan sebagai <span class="text-green-600 dark:text-emerald-400 font-semibold">Mumtaz</span>. Berikan pujian untuk mempertahankan konsistensi.</li>
                                 <li><strong>Intervensi Dini:</strong> Jika adab Al-Qur'an memiliki nilai kepatuhan yang rendah, kaji ulang jadwal murojaah harian bersama asatidzah/guru tahfizh.</li>
