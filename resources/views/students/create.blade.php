@@ -184,27 +184,76 @@
                         </div>
                     </div>
 
-                    <div class="border-t pt-5">
-                        <h3 class="font-semibold text-gray-900 mb-3">
-                            Relasi Orangtua/Wali
-                        </h3>
+                    <div x-data="{
+                        search: '',
+                        selectedIds: @json(old('parent_ids', [])),
+                        toggleSelect(id, isChecked) {
+                            if (isChecked && !this.selectedIds.includes(id)) {
+                                this.selectedIds.push(id);
+                            } else if (!isChecked) {
+                                this.selectedIds = this.selectedIds.filter(i => i !== id);
+                            }
+                        },
+                        matchesSearch(name, phone) {
+                            if (!this.search.trim()) return false;
+                            let q = this.search.toLowerCase().trim();
+                            return name.toLowerCase().includes(q) || (phone && phone.toLowerCase().includes(q));
+                        }
+                    }" class="border-t pt-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                            <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                                <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" /> Relasi Orangtua/Wali
+                            </h3>
+                            <span class="text-xs text-gray-500 font-medium bg-gray-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full border border-gray-200 dark:border-zinc-700">
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400" x-text="selectedIds.length"></span> Terpilih
+                            </span>
+                        </div>
+
+                        <!-- Search Bar Input -->
+                        <div class="relative mb-4">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                            </div>
+                            <input 
+                                type="text" 
+                                x-model="search" 
+                                placeholder="🔍 Cari nama orangtua atau nomor telepon..." 
+                                class="block w-full pl-9 pr-8 py-2 rounded-lg border-gray-300 shadow-xs text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                            <button 
+                                type="button" 
+                                x-show="search.length > 0" 
+                                @click="search = ''" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-400 hover:text-gray-600 font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
 
                         <div class="space-y-3">
-                            @forelse ($parents as $parent)
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center border rounded-md p-3">
-                                    <label class="flex items-center gap-2">
+                            @forelse ($parents as $index => $parent)
+                                @php
+                                    $isInitiallySelected = in_array($parent->id, old('parent_ids', []));
+                                @endphp
+                                <div 
+                                    x-show="selectedIds.includes({{ $parent->id }}) || matchesSearch('{{ addslashes($parent->user?->name ?? '') }}', '{{ addslashes($parent->phone ?? '') }}') || (!search.trim() && {{ $index }} < 10)"
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center border rounded-xl p-3 transition"
+                                    :class="selectedIds.includes({{ $parent->id }}) ? 'bg-indigo-50/60 dark:bg-indigo-950/20 border-indigo-200' : 'bg-white border-gray-200'"
+                                >
+                                    <label class="flex items-center gap-2.5 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             name="parent_ids[]"
                                             value="{{ $parent->id }}"
-                                            @checked(in_array($parent->id, old('parent_ids', [])))
-                                            class="rounded border-gray-300"
+                                            @checked($isInitiallySelected)
+                                            @change="toggleSelect({{ $parent->id }}, $event.target.checked)"
+                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                         >
-                                        <span>
+                                        <span class="text-sm font-semibold text-gray-900">
                                             {{ $parent->user?->name }}
-                                            <span class="text-sm text-gray-500">
-                                                {{ $parent->phone ? ' - ' . $parent->phone : '' }}
-                                            </span>
+                                            @if($parent->phone)
+                                                <span class="text-xs font-normal text-gray-500 block sm:inline">({{ $parent->phone }})</span>
+                                            @endif
                                         </span>
                                     </label>
 
@@ -213,15 +262,19 @@
                                         name="parent_relations[{{ $parent->id }}]"
                                         value="{{ old('parent_relations.' . $parent->id) }}"
                                         placeholder="Relasi, contoh: ayah / ibu / wali"
-                                        class="rounded-md border-gray-300 shadow-sm"
+                                        class="rounded-md border-gray-300 shadow-xs text-sm"
                                     >
                                 </div>
                             @empty
-                                <p class="text-sm text-gray-500">
+                                <p class="text-sm text-gray-500 italic">
                                     Belum ada data orangtua/wali.
                                 </p>
                             @endforelse
                         </div>
+
+                        <p x-show="!search.trim()" class="mt-2 text-xs text-gray-500 italic">
+                            💡 Menampilkan 10 orangtua teratas &amp; yang terpilih. Ketik di bar pencarian di atas untuk menemukan nama orangtua lainnya.
+                        </p>
 
                         @error('parent_ids')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
