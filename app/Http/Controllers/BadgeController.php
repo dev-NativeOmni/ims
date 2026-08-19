@@ -22,7 +22,7 @@ class BadgeController extends Controller
             }
         }
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
             return response()->json([
                 'badges' => $badges,
                 'typeLabels' => $typeLabels,
@@ -46,7 +46,11 @@ class BadgeController extends Controller
             'sort_order'   => 'required|integer|min:0',
         ]);
 
-        Badge::create($validated + ['is_active' => true]);
+        $badge = Badge::create($validated + ['is_active' => true]);
+
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Badge berhasil dibuat!', 'badge' => $badge]);
+        }
 
         return redirect()->route('badges.index')->with('success', 'Badge berhasil dibuat!');
     }
@@ -65,19 +69,35 @@ class BadgeController extends Controller
 
         $badge->update($validated);
 
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Badge berhasil diperbarui!', 'badge' => $badge]);
+        }
+
         return redirect()->route('badges.index')->with('success', 'Badge berhasil diperbarui!');
     }
 
-    public function destroy(Badge $badge)
+    public function destroy(Request $request, Badge $badge)
     {
         $badge->delete();
+
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Badge berhasil dihapus!']);
+        }
 
         return redirect()->route('badges.index')->with('success', 'Badge berhasil dihapus!');
     }
 
-    public function toggleActive(Badge $badge)
+    public function toggleActive(Request $request, Badge $badge)
     {
         $badge->update(['is_active' => ! $badge->is_active]);
+
+        if ($request->wantsJson() || $request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $badge->is_active ? 'Badge diaktifkan.' : 'Badge dinonaktifkan.',
+                'is_active' => $badge->is_active,
+            ]);
+        }
 
         return redirect()->route('badges.index')->with('success', $badge->is_active ? 'Badge diaktifkan.' : 'Badge dinonaktifkan.');
     }

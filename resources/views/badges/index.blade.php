@@ -14,7 +14,7 @@
                     <button
                         type="button"
                         @click="openCreate()"
-                        class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition"
+                        class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition cursor-pointer"
                     >
                         + Tambah Badge Baru
                     </button>
@@ -113,8 +113,8 @@
                                             </button>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-right font-medium">
-                                            <button @click="openEdit(badge)" class="text-indigo-600 dark:text-indigo-400 hover:underline mr-3 font-semibold">Edit</button>
-                                            <button @click="destroyBadge(badge)" class="text-red-600 dark:text-red-400 hover:underline font-semibold">Hapus</button>
+                                            <button @click="openEdit(badge)" class="text-indigo-600 dark:text-indigo-400 hover:underline mr-3 font-semibold cursor-pointer">Edit</button>
+                                            <button @click="destroyBadge(badge)" class="text-red-600 dark:text-red-400 hover:underline font-semibold cursor-pointer">Hapus</button>
                                         </td>
                                     </tr>
                                 </template>
@@ -128,7 +128,7 @@
                     <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-2xl max-w-xl w-full p-6 space-y-5" @click.away="closeModal()">
                         <div class="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
                             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" x-text="editMode ? '✏️ Edit Badge' : '✨ Tambah Badge Baru'"></h3>
-                            <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 text-xl font-bold">&times;</button>
+                            <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 text-xl font-bold cursor-pointer">&times;</button>
                         </div>
 
                         <form @submit.prevent="submitForm" class="space-y-4">
@@ -179,10 +179,10 @@
                             </div>
 
                             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800">
-                                <button type="button" @click="closeModal()" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 dark:text-zinc-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                <button type="button" @click="closeModal()" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 dark:text-zinc-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer">
                                     Batal
                                 </button>
-                                <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-sm" x-text="editMode ? 'Simpan Perubahan' : 'Buat Badge'">
+                                <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-sm cursor-pointer" x-text="editMode ? 'Simpan Perubahan' : 'Buat Badge'">
                                 </button>
                             </div>
                         </form>
@@ -275,7 +275,6 @@
                     if (r.ok) {
                         this.closeModal();
                         this.fetchBadges();
-                        window.location.reload();
                     } else {
                         return r.json().then(err => alert(err.message || 'Gagal menyimpan badge. Periksa input data.'));
                     }
