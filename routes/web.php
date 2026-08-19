@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdabController;
 use App\Http\Controllers\AdabMaterialController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\ClassRoomController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
