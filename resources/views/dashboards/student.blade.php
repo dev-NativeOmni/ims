@@ -184,9 +184,6 @@
                                 <div class="h-3 rounded-full bg-emerald-600 transition-all duration-300" style="width: {{ data_get($progress, 'reguler_baris_percent', 0) }}%"></div>
                             </div>
                         </div>
-                    @endifbaris_percent', 0) }}%"></div>
-                            </div>
-                        </div>
                     @endif
                 </div>
 
