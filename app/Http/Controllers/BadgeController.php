@@ -4,19 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Badge;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class BadgeController extends Controller
 {
     public function index(Request $request)
     {
-        $badges = Badge::orderBy('sort_order')->orderBy('id')->get();
+        $dbMissing = ! Schema::hasTable('badges');
+        $badges = collect();
         $typeLabels = Badge::typeLabels();
 
-        if ($request->wantsJson()) {
-            return response()->json(['badges' => $badges, 'typeLabels' => $typeLabels]);
+        if (! $dbMissing) {
+            try {
+                $badges = Badge::orderBy('sort_order')->orderBy('id')->get();
+            } catch (\Throwable $e) {
+                $dbMissing = true;
+            }
         }
 
-        return view('badges.index', compact('badges', 'typeLabels'));
+        if ($request->wantsJson()) {
+            return response()->json([
+                'badges' => $badges,
+                'typeLabels' => $typeLabels,
+                'dbMissing' => $dbMissing,
+            ]);
+        }
+
+        return view('badges.index', compact('badges', 'typeLabels', 'dbMissing'));
     }
 
     public function store(Request $request)
