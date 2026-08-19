@@ -156,8 +156,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('class-rooms/{class_room}/export-capaian', [ClassRoomController::class, 'exportCapaian'])->name('class-rooms.export-capaian');
         Route::resource('class-rooms', ClassRoomController::class);
         // Badges Management (Super Admin / Admin / Koordinator Tahfizh)
-        Route::resource('badges', BadgeController::class)->middleware('role:super_admin,admin,coordinator_tahfizh');
-        Route::post('badges/{badge}/toggle', [BadgeController::class, 'toggleActive'])->name('badges.toggle')->middleware('role:super_admin,admin,coordinator_tahfizh');
+    });
+
+    Route::middleware(['role:super_admin,admin,coordinator_tahfizh'])->group(function () {
+        Route::resource('badges', BadgeController::class);
+        Route::post('badges/{badge}/toggle', [BadgeController::class, 'toggleActive'])->name('badges.toggle');
+    });
+
+    Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('class-schedules', [ClassRoomController::class, 'scheduleIndex'])->name('class-schedules.index');
         Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
         Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
