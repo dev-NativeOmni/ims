@@ -1,149 +1,313 @@
-@extends('layouts.app')
-
-@section('content')
-<div x-data="badgeManager()" class="p-4" x-init="init()">
-  <h1 class="text-2xl font-bold mb-4">Manajemen Badge</h1>
-  <button @click="openCreate()" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">Tambah Badge</button>
-
-  <template x-if="badges.length === 0">
-    <p>Loading...</p>
-  </template>
-
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Key</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active</th>
-        <th class="px-6 py-3"></th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      <template x-for="badge in badges" :key="badge.id">
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap" x-text="badge.key"></td>
-          <td class="px-6 py-4 whitespace-nowrap" x-text="badge.title"></td>
-          <td class="px-6 py-4 whitespace-nowrap" x-text="typeLabels[badge.type] || badge.type"></td>
-          <td class="px-6 py-4 whitespace-nowrap" x-text="badge.type === 'completed_juz' ? badge.target_juz : badge.target_value"></td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <button @click="toggleActive(badge)" :class="badge.is_active ? 'bg-green-500' : 'bg-gray-400'" class="text-white px-2 py-1 rounded">
-              <span x-text="badge.is_active ? 'Aktif' : 'Nonaktif'"></span>
-            </button>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button @click="openEdit(badge)" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-            <button @click="destroy(badge)" class="text-red-600 hover:text-red-900">Delete</button>
-          </td>
-        </tr>
-      </template>
-    </tbody>
-  </table>
-
-  <!-- Modal for Create / Edit -->
-  <div x-show="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded w-1/2">
-      <h2 class="text-xl font-semibold mb-4" x-text="editMode ? 'Edit Badge' : 'Tambah Badge'"></h2>
-      <form @submit.prevent="submitForm">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Key</label>
-            <input type="text" x-model="form.key" class="mt-1 block w-full border-gray-300 rounded-md" :readonly="editMode" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Title</label>
-            <input type="text" x-model="form.title" class="mt-1 block w-full border-gray-300 rounded-md" required>
-          </div>
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700">Description</label>
-            <textarea x-model="form.description" class="mt-1 block w-full border-gray-300 rounded-md"></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Icon</label>
-            <input type="text" x-model="form.icon" class="mt-1 block w-full border-gray-300 rounded-md" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Type</label>
-            <select x-model="form.type" class="mt-1 block w-full border-gray-300 rounded-md" required>
-              <template x-for="(label, key) in typeLabels" :key="key">
-                <option :value="key" x-text="label"></option>
-              </template>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Target Value</label>
-            <input type="number" step="0.01" x-model="form.target_value" class="mt-1 block w-full border-gray-300 rounded-md" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Target Juz</label>
-            <input type="number" x-model="form.target_juz" class="mt-1 block w-full border-gray-300 rounded-md">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Sort Order</label>
-            <input type="number" x-model="form.sort_order" class="mt-1 block w-full border-gray-300 rounded-md" required>
-          </div>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="font-bold text-2xl text-gray-900 dark:text-white leading-tight flex items-center gap-2">
+                    <span>🏆 Kelola Badge & Gamifikasi Hafalan</span>
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-zinc-400">
+                    Atur badge penghargaan, kriteria kelulusan, serta pencapaian hafalan santri.
+                </p>
+            </div>
+            <div>
+                <button
+                    type="button"
+                    @click="openCreate()"
+                    class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition"
+                >
+                    + Tambah Badge Baru
+                </button>
+            </div>
         </div>
-        <div class="mt-4 flex justify-end">
-          <button type="button" @click="closeModal()" class="mr-2 px-4 py-2 bg-gray-300 rounded">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded" x-text="editMode ? 'Update' : 'Create'"></button>
+    </x-slot>
+
+    <div x-data="badgeManager()" class="py-8" x-init="init()">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            @if (session('success'))
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 shadow-sm dark:bg-red-950/40 dark:border-red-800/60 dark:text-red-300">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <!-- Table Card -->
+            <div class="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-2xl border border-gray-200 dark:border-zinc-800">
+                <div class="p-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
+                        <thead>
+                            <tr class="text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                                <th class="px-4 py-3">Badge / Key</th>
+                                <th class="px-4 py-3">Judul & Deskripsi</th>
+                                <th class="px-4 py-3">Tipe Kriteria</th>
+                                <th class="px-4 py-3">Target</th>
+                                <th class="px-4 py-3">Urutan</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-zinc-800 text-sm">
+                            <template x-if="loading">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
+                                        Memuat data badge...
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-if="!loading && badges.length === 0">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-zinc-400">
+                                        Belum ada badge yang dibuat. Klik "+ Tambah Badge Baru" untuk memulai.
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-for="badge in badges" :key="badge.id">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-mono text-xs font-bold rounded-md">
+                                                <span x-text="badge.key"></span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        <div class="font-bold text-gray-900 dark:text-white" x-text="badge.title"></div>
+                                        <div class="text-xs text-gray-500 dark:text-zinc-400" x-text="badge.description || '-'"></div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-300" x-text="typeLabels[badge.type] || badge.type"></span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap font-semibold">
+                                        <span x-text="badge.type === 'completed_juz' ? ('Juz ' + (badge.target_juz || '-')) : badge.target_value"></span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-gray-600 dark:text-zinc-400" x-text="badge.sort_order"></td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <button
+                                            @click="toggleActive(badge)"
+                                            :class="badge.is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300' : 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-400 border-gray-300'"
+                                            class="px-3 py-1 rounded-full text-xs font-bold border transition cursor-pointer"
+                                        >
+                                            <span x-text="badge.is_active ? 'Aktif' : 'Nonaktif'"></span>
+                                        </button>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-right font-medium">
+                                        <button @click="openEdit(badge)" class="text-indigo-600 dark:text-indigo-400 hover:underline mr-3 font-semibold">Edit</button>
+                                        <button @click="destroyBadge(badge)" class="text-red-600 dark:text-red-400 hover:underline font-semibold">Hapus</button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal Create / Edit Badge -->
+            <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" @keydown.escape.window="closeModal()">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-2xl max-w-xl w-full p-6 space-y-5" @click.away="closeModal()">
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
+                        <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" x-text="editMode ? '✏️ Edit Badge' : '✨ Tambah Badge Baru'"></h3>
+                        <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 text-xl font-bold">&times;</button>
+                    </div>
+
+                    <form @submit.prevent="submitForm" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Key Identifier</label>
+                                <input type="text" x-model="form.key" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" :readonly="editMode" placeholder="contoh: first_hafalan" required>
+                                <p class="text-[10px] text-gray-500 mt-1">Hanya huruf kecil, angka, dan underscore (_).</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Judul Badge</label>
+                                <input type="text" x-model="form.title" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="contoh: Hafalan Perdana" required>
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Deskripsi</label>
+                                <textarea x-model="form.description" rows="2" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="Penjelasan mengenai syarat mendapatkan badge ini"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Icon Name</label>
+                                <input type="text" x-model="form.icon" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="trophy, star, book-open, dll." required>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Tipe Kriteria</label>
+                                <select x-model="form.type" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" required>
+                                    <template x-for="(label, key) in typeLabels" :key="key">
+                                        <option :value="key" x-text="label"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Target Value</label>
+                                <input type="number" step="0.01" x-model="form.target_value" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Target Juz (Opsional)</label>
+                                <input type="number" x-model="form.target_juz" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="Isi 1-30 jika tipe Khatam Juz">
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Urutan Tampil (Sort Order)</label>
+                                <input type="number" x-model="form.sort_order" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" required>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                            <button type="button" @click="closeModal()" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 dark:text-zinc-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-sm" x-text="editMode ? 'Simpan Perubahan' : 'Buat Badge'">
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         </div>
-      </form>
     </div>
-  </div>
-</div>
 
-<script>
-function badgeManager() {
-  return {
-    badges: [],
-    typeLabels: @json($typeLabels),
-    showModal: false,
-    editMode: false,
-    form: {},
-    fetchBadges() {
-      fetch('{{ route('badges.index') }}', { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json())
-        .then(data => { this.badges = data.badges; });
-    },
-    openCreate() {
-      this.editMode = false;
-      this.form = { key:'', title:'', description:'', icon:'', type:'count_hafalan', target_value:0, target_juz:null, sort_order:0 };
-      this.showModal = true;
-    },
-    openEdit(badge) {
-      this.editMode = true;
-      this.form = { ...badge };
-      this.showModal = true;
-    },
-    closeModal() { this.showModal = false; },
-    submitForm() {
-      const url = this.editMode ? `{{ route('badges.update', '') }}/${this.form.id}` : '{{ route('badges.store') }}';
-      const method = this.editMode ? 'PUT' : 'POST';
-      fetch(url, {
-        method,
-        headers: {
-          'X‑CSRF‑TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(this.form),
-      }).then(() => { this.closeModal(); this.fetchBadges(); });
-    },
-    toggleActive(badge) {
-      fetch(`{{ route('badges.toggleActive', '') }}/${badge.id}`, {
-        method: 'POST',
-        headers: { 'X‑CSRF‑TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
-      }).then(() => this.fetchBadges());
-    },
-    destroy(badge) {
-      fetch(`{{ route('badges.destroy', '') }}/${badge.id}`, {
-        method: 'DELETE',
-        headers: { 'X‑CSRF‑TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
-      }).then(() => this.fetchBadges());
-    },
-    init() { this.fetchBadges(); }
-  }
-}
-</script>
-@endsection
+    <script>
+    function badgeManager() {
+        return {
+            badges: [],
+            typeLabels: @json($typeLabels),
+            loading: true,
+            showModal: false,
+            editMode: false,
+            form: {
+                id: null,
+                key: '',
+                title: '',
+                description: '',
+                icon: 'trophy',
+                type: 'count_hafalan',
+                target_value: 1,
+                target_juz: null,
+                sort_order: 0
+            },
+
+            fetchBadges() {
+                this.loading = true;
+                fetch('{{ route('badges.index') }}', {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    this.badges = data.badges || [];
+                    this.loading = false;
+                })
+                .catch(() => {
+                    this.loading = false;
+                });
+            },
+
+            openCreate() {
+                this.editMode = false;
+                this.form = {
+                    id: null,
+                    key: '',
+                    title: '',
+                    description: '',
+                    icon: 'trophy',
+                    type: 'count_hafalan',
+                    target_value: 1,
+                    target_juz: null,
+                    sort_order: (this.badges.length + 1) * 10
+                };
+                this.showModal = true;
+            },
+
+            openEdit(badge) {
+                this.editMode = true;
+                this.form = { ...badge };
+                this.showModal = true;
+            },
+
+            closeModal() {
+                this.showModal = false;
+            },
+
+            submitForm() {
+                const url = this.editMode 
+                    ? '{{ route('badges.index') }}/' + this.form.id 
+                    : '{{ route('badges.store') }}';
+                
+                const method = this.editMode ? 'PUT' : 'POST';
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.form)
+                })
+                .then(r => {
+                    if (r.ok) {
+                        this.closeModal();
+                        this.fetchBadges();
+                        window.location.reload();
+                    } else {
+                        return r.json().then(err => alert(err.message || 'Gagal menyimpan badge. Periksa input data.'));
+                    }
+                })
+                .catch(err => {
+                    alert('Terjadi kesalahan jaringan.');
+                });
+            },
+
+            toggleActive(badge) {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                fetch('{{ route('badges.index') }}/' + badge.id + '/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => {
+                    if (r.ok) {
+                        this.fetchBadges();
+                    }
+                });
+            },
+
+            destroyBadge(badge) {
+                if (!confirm('Apakah Anda yakin ingin menghapus badge "' + badge.title + '"?')) {
+                    return;
+                }
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                fetch('{{ route('badges.index') }}/' + badge.id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => {
+                    if (r.ok) {
+                        this.fetchBadges();
+                    }
+                });
+            },
+
+            init() {
+                this.fetchBadges();
+            }
+        };
+    }
+    </script>
+</x-app-layout>
