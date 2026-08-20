@@ -86,14 +86,17 @@
                                 <template x-for="badge in badges" :key="badge.id">
                                     <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition">
                                         <td class="px-4 py-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-2">
-                                                <span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-mono text-xs font-bold rounded-md">
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/40 flex items-center justify-center text-lg flex-shrink-0" x-text="getIconEmoji(badge.icon)"></div>
+                                                <span class="px-2 py-1 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 font-mono text-xs font-bold rounded-md">
                                                     <span x-text="badge.key"></span>
                                                 </span>
                                             </div>
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="font-bold text-gray-900 dark:text-white" x-text="badge.title"></div>
+                                            <div class="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                                <span x-text="badge.title"></span>
+                                            </div>
                                             <div class="text-xs text-gray-500 dark:text-zinc-400" x-text="badge.description || '-'"></div>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap">
@@ -148,9 +151,34 @@
                                     <textarea x-model="form.description" rows="2" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="Penjelasan mengenai syarat mendapatkan badge ini"></textarea>
                                 </div>
 
-                                <div>
-                                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Icon Name</label>
-                                    <input type="text" x-model="form.icon" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="trophy, star, book-open, dll." required>
+                                <!-- Visual Icon Picker Grid -->
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-2 flex items-center justify-between">
+                                        <span>Pilih Ikon Visual Badge</span>
+                                        <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
+                                            Ikon Terpilih: <span x-text="getIconEmoji(form.icon) + ' ' + (form.icon || 'trophy')"></span>
+                                        </span>
+                                    </label>
+
+                                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                                        <template x-for="item in iconOptions" :key="item.key">
+                                            <button
+                                                type="button"
+                                                @click="form.icon = item.key"
+                                                :class="form.icon === item.key ? 'ring-2 ring-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 border-indigo-500 text-indigo-700 dark:text-indigo-300 scale-105 shadow-sm' : 'bg-gray-50 dark:bg-zinc-800/60 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'"
+                                                class="flex flex-col items-center justify-center p-2 rounded-xl border transition-all cursor-pointer text-center group"
+                                            >
+                                                <div class="text-xl mb-0.5" x-text="item.emoji"></div>
+                                                <span class="text-[10px] font-medium truncate w-full" x-text="item.label"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+
+                                    <!-- Custom Icon Name Input Fallback -->
+                                    <div class="mt-3 flex items-center gap-2">
+                                        <span class="text-xs text-gray-500 dark:text-zinc-400">Nama Ikon Custom:</span>
+                                        <input type="text" x-model="form.icon" class="flex-1 rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs px-3 py-1.5 font-mono" placeholder="trophy, star, crown, dll." required>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -172,7 +200,7 @@
                                     <input type="number" x-model="form.target_juz" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" placeholder="Isi 1-30 jika tipe Khatam Juz">
                                 </div>
 
-                                <div class="sm:col-span-2">
+                                <div>
                                     <label class="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1">Urutan Tampil (Sort Order)</label>
                                     <input type="number" x-model="form.sort_order" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" required>
                                 </div>
@@ -201,6 +229,20 @@
             loading: false,
             showModal: false,
             editMode: false,
+            iconOptions: [
+                { key: 'trophy', label: 'Piala', emoji: '🏆' },
+                { key: 'star', label: 'Bintang', emoji: '⭐' },
+                { key: 'sparkles', label: 'Kilauan', emoji: '✨' },
+                { key: 'bolt', label: 'Kilat', emoji: '⚡' },
+                { key: 'check-badge', label: 'Lencana', emoji: '🎖️' },
+                { key: 'book-open', label: 'Al-Qur\'an', emoji: '📖' },
+                { key: 'academic-cap', label: 'Khatam', emoji: '🎓' },
+                { key: 'shield-check', label: 'Tertib', emoji: '🛡️' },
+                { key: 'arrow-path', label: 'Murajaah', emoji: '🔄' },
+                { key: 'crown', label: 'Mahkota', emoji: '👑' },
+                { key: 'fire', label: 'Semangat', emoji: '🔥' },
+                { key: 'award', label: 'Medali', emoji: '🏅' }
+            ],
             form: {
                 id: null,
                 key: '',
@@ -211,6 +253,16 @@
                 target_value: 1,
                 target_juz: null,
                 sort_order: 0
+            },
+
+            getIconEmoji(icon) {
+                const item = this.iconOptions.find(i => i.key === icon);
+                if (item) return item.emoji;
+                const extra = {
+                    'sun': '☀️',
+                    'heart': '❤️'
+                };
+                return extra[icon] || '🎖️';
             },
 
             fetchBadges() {
