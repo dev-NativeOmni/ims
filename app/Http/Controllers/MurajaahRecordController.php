@@ -57,6 +57,105 @@ class MurajaahRecordController extends Controller
         ));
     }
 
+    public function fastInput(Request $request): View
+    {
+        $user = $request->user();
+        $this->authorize('create', MurajaahRecord::class);
+
+        $formData = $this->formData($user);
+        $classRooms = $formData['classRooms'];
+        
+        $selectedClassId = $request->integer('class_room_id') ?: ($classRooms->first()?->id ?? 0);
+
+        $students = Student::query()
+            ->with(['classRoom.program'])
+            ->where('status', 'active')
+            ->when($selectedClassId > 0, function ($query) use ($selectedClassId) {
+                $query->where('class_room_id', $selectedClassId);
+            })
+            ->when($user->hasRole('teacher'), function ($query) use ($user) {
+                $query->where('teacher_id', $user->teacherProfile?->id);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $studentIds = $students->pluck('id');
+
+        $latestRecords = MurajaahRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->latest('reviewed_at')
+            ->latest('id')
+            ->get()
+            ->unique('student_id')
+            ->keyBy('student_id');
+
+        $surahs = Surah::query()->orderBy('number')->get();
+
+        return view('murajaah-records.fast-input', [
+            'classRooms' => $classRooms,
+            'selectedClassId' => $selectedClassId,
+            'students' => $students,
+            'latestRecords' => $latestRecords,
+            'surahs' => $surahs,
+        ]);
+    }
+
+    public function fastStore(Request $request)
+    {
+        $this->authorize('create', MurajaahRecord::class);
+
+        $request->validate([
+            'entries' => 'required|array',
+            'entries.*.student_id' => 'required|exists:students,id',
+            'entries.*.surah_id' => 'required|exists:surahs,id',
+            'entries.*.ayah_start' => 'required|integer|min:1',
+            'entries.*.ayah_end' => 'required|integer|min:1',
+            'entries.*.score' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $teacherId = $request->user()->teacherProfile?->id;
+        $reviewedAt = $request->input('reviewed_at') ?: now()->toDateString();
+        $savedCount = 0;
+
+        DB::transaction(function () use ($request, $teacherId, $reviewedAt, &$savedCount) {
+            foreach ($request->input('entries', []) as $entry) {
+                if (empty($entry['surah_id']) || empty($entry['score'])) {
+                    continue;
+                }
+
+                $score = (float) $entry['score'];
+                $status = $score >= 80 ? 'passed' : ($score >= 70 ? 'needs_improvement' : 'repeat');
+
+                MurajaahRecord::create([
+                    'student_id' => $entry['student_id'],
+                    'teacher_id' => $teacherId,
+                    'surah_id' => $entry['surah_id'],
+                    'ayah_start' => $entry['ayah_start'],
+                    'ayah_end' => $entry['ayah_end'],
+                    'overall_score' => $score,
+                    'fluency_score' => $score,
+                    'status' => $status,
+                    'reviewed_at' => $reviewedAt,
+                    'notes' => $entry['notes'] ?? null,
+                ]);
+
+                $savedCount++;
+            }
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menyimpan {$savedCount} catatan murajaah.",
+            ]);
+        }
+
+        return redirect()
+            ->route('murajaah-records.index')
+            ->with('success', "Berhasil menyimpan {$savedCount} catatan murajaah.");
+    }
+
     public function create(Request $request): View
     {
         $this->authorize('create', MurajaahRecord::class);

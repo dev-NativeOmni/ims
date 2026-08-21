@@ -5,10 +5,16 @@
                 Data Murajaah
             </h2>
 
-            <a href="{{ route('murajaah-records.create') }}"
-               class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
-                + Tambah Murajaah
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('murajaah-records.fast-input') }}"
+                   class="inline-flex items-center justify-center px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
+                    ⚡ Input Murajaah Cepat
+                </a>
+                <a href="{{ route('murajaah-records.create') }}"
+                   class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
+                    + Tambah Single
+                </a>
+            </div>
         </div>
     </x-slot>
 

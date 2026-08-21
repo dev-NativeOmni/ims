@@ -236,6 +236,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:super_admin,admin,teacher,headmaster,supervisor,coordinator_tahfizh'])->group(function () {
         Route::resource('hafalan-records', HafalanRecordController::class);
+
+        Route::get('murajaah-records/fast-input', [MurajaahRecordController::class, 'fastInput'])
+            ->name('murajaah-records.fast-input');
+        Route::post('murajaah-records/fast-store', [MurajaahRecordController::class, 'fastStore'])
+            ->name('murajaah-records.fast-store');
+
         Route::resource('murajaah-records', MurajaahRecordController::class);
         Route::resource('tahfizh-exams', TahfizhExamController::class);
 
