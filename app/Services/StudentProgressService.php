@@ -362,6 +362,7 @@ class StudentProgressService
                     'first_record' => null,
                     'journey' => [],
                 ],
+            ];
         }
         });
     }
