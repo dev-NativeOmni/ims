@@ -97,8 +97,18 @@ class StudentProgressService
 
     public function calculate(Student $student): array
     {
+        if (app()->environment('testing')) {
+            return $this->computeStudentProgress($student);
+        }
+
         return Cache::remember("student_progress_calc_{$student->id}", 60, function () use ($student) {
-            try {
+            return $this->computeStudentProgress($student);
+        });
+    }
+
+    private function computeStudentProgress(Student $student): array
+    {
+        try {
             $totalQuranAyahs = $this->totalQuranAyahs();
         $memorizedAyahs = $this->memorizedAyahCount($student);
 
@@ -364,7 +374,6 @@ class StudentProgressService
                 ],
             ];
         }
-        });
     }
 
     private function getJuzStats(Student $student): array
