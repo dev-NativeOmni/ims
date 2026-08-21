@@ -114,13 +114,22 @@ class MurajaahRecordController extends Controller
             'entries.*.score' => 'required|numeric|min:0|max:100',
         ]);
 
-        $teacherId = $request->user()->teacherProfile?->id;
+        $user = $request->user();
+        $userTeacherId = $user->teacherProfile?->id;
+        $fallbackTeacherId = $userTeacherId ?? TeacherProfile::query()->first()?->id;
         $reviewedAt = $request->input('reviewed_at') ?: now()->toDateString();
         $savedCount = 0;
 
-        DB::transaction(function () use ($request, $teacherId, $reviewedAt, &$savedCount) {
+        DB::transaction(function () use ($request, $userTeacherId, $fallbackTeacherId, $reviewedAt, &$savedCount) {
             foreach ($request->input('entries', []) as $entry) {
-                if (empty($entry['surah_id']) || empty($entry['score'])) {
+                if (empty($entry['student_id']) || empty($entry['surah_id']) || empty($entry['score'])) {
+                    continue;
+                }
+
+                $student = Student::find($entry['student_id']);
+                $teacherId = $userTeacherId ?? ($student?->teacher_id ?? $fallbackTeacherId);
+
+                if (! $teacherId) {
                     continue;
                 }
 

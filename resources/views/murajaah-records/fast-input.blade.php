@@ -244,10 +244,25 @@
             },
 
             setScore(row, val) {
+                if (!row.surah_id) {
+                    if (row.default_surah_id) {
+                        row.surah_id = row.default_surah_id;
+                        this.onSurahChange(row);
+                    } else {
+                        alert('Silakan pilih Surah terlebih dahulu untuk santri ' + row.student_name + '.');
+                        return;
+                    }
+                }
                 row.score = val;
             },
 
             submitAll() {
+                const invalidRow = this.rows.find(r => r.score && !r.surah_id);
+                if (invalidRow) {
+                    alert('Harap pilih Surah terlebih dahulu untuk santri "' + invalidRow.student_name + '".');
+                    return;
+                }
+
                 const filledEntries = this.rows.filter(r => r.surah_id && r.score).map(r => ({
                     student_id: r.student_id,
                     surah_id: parseInt(r.surah_id),
@@ -258,7 +273,7 @@
                 }));
 
                 if (filledEntries.length === 0) {
-                    alert('Belum ada data murajaah yang terisi.');
+                    alert('Belum ada data murajaah yang terisi. Pilih Surah dan Nilai untuk minimal 1 santri.');
                     return;
                 }
 
@@ -277,19 +292,20 @@
                         entries: filledEntries
                     })
                 })
-                .then(r => r.json())
-                .then(res => {
+                .then(async r => {
                     this.isSubmitting = false;
-                    if (res.success) {
+                    const res = await r.json().catch(() => ({}));
+                    if (r.ok && res.success) {
                         alert(res.message || 'Data murajaah berhasil disimpan.');
                         window.location.href = '{{ route('murajaah-records.index') }}';
                     } else {
-                        alert(res.message || 'Gagal menyimpan data.');
+                        const errMsg = res.message || (res.errors ? Object.values(res.errors).flat().join('\n') : 'Gagal menyimpan data pada server.');
+                        alert(errMsg);
                     }
                 })
                 .catch(err => {
                     this.isSubmitting = false;
-                    alert('Terjadi kesalahan koneksi.');
+                    alert('Terjadi kesalahan koneksi atau server.');
                 });
             },
 
@@ -343,6 +359,7 @@
                         student_name: student.name,
                         class_name: student.class_room ? student.class_room.name : '',
                         last_history: lastHistoryInfo,
+                        default_surah_id: defaultSurahId,
                         surah_id: defaultSurahId,
                         ayah_start: defaultAyahStart,
                         ayah_end: defaultAyahEnd,
