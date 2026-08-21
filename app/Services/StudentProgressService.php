@@ -12,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class StudentProgressService
@@ -96,7 +97,8 @@ class StudentProgressService
 
     public function calculate(Student $student): array
     {
-        try {
+        return Cache::remember("student_progress_calc_{$student->id}", 60, function () use ($student) {
+            try {
             $totalQuranAyahs = $this->totalQuranAyahs();
         $memorizedAyahs = $this->memorizedAyahCount($student);
 
@@ -360,8 +362,8 @@ class StudentProgressService
                     'first_record' => null,
                     'journey' => [],
                 ],
-            ];
         }
+        });
     }
 
     private function getJuzStats(Student $student): array

@@ -432,7 +432,9 @@ class DashboardService
 
     private function studentsProgress(Collection $students): Collection
     {
-        return $students
+        $sample = $students->count() > 25 ? $students->take(25) : $students;
+
+        return $sample
             ->map(function (Student $student) {
                 $progress = $this->studentProgressService->calculate($student);
 
