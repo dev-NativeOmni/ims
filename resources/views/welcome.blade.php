@@ -1,9 +1,13 @@
+@php
+    $logo = Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
+    $namaInstansi = Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
+        <title>{{ $namaInstansi ? $namaInstansi . ' — ' : '' }}IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
 
         <!-- Theme Initialization Script -->
         <script>
@@ -13,6 +17,15 @@
                 document.documentElement.classList.remove('dark')
             }
         </script>
+
+        <!-- PWA Favicon & Icons -->
+        @if ($logo)
+            <link rel="icon" type="image/png" href="{{ asset('storage/' . $logo) }}">
+            <link rel="apple-touch-icon" href="{{ asset('storage/' . $logo) }}">
+        @else
+            <link rel="icon" type="image/png" href="{{ asset('images/logo_alazhar7.png') }}">
+            <link rel="apple-touch-icon" href="{{ asset('images/logo_alazhar7.png') }}">
+        @endif
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -34,17 +47,21 @@
             <div class="absolute w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
             
             <!-- Large Centered Ring & Logo Container -->
-            <div class="relative z-10 flex flex-col items-center gap-8">
+            <div class="relative z-10 flex flex-col items-center gap-8 px-4">
                 <!-- Glowing Ring -->
                 <div :class="logoVisible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
-                     class="w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-teal-500/35 flex items-center justify-center shadow-[0_0_80px_rgba(13,148,136,0.3)] transition-all duration-1000 ease-out p-0 overflow-hidden">
-                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-cover">
+                     class="w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-teal-500/35 flex items-center justify-center shadow-[0_0_80px_rgba(13,148,136,0.3)] transition-all duration-1000 ease-out p-4 overflow-hidden bg-black/40 backdrop-blur-sm">
+                    @if ($logo)
+                        <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="max-h-full max-w-full object-contain">
+                    @else
+                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="w-full h-full object-cover">
+                    @endif
                 </div>
                 
                 <!-- Large Text Reveal -->
                 <span :class="logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
                       class="font-black text-3xl sm:text-5xl tracking-widest text-white uppercase transition-all duration-1000 delay-300 ease-out text-center">
-                    Al Azhar <span class="text-amber-500">7</span>
+                    {{ $namaInstansi ?: 'Al Azhar 7' }}
                 </span>
             </div>
         </div>
@@ -58,10 +75,16 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-teal-500/10">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-teal-500/10 overflow-hidden">
+                            @if ($logo)
+                                <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="w-full h-full object-contain">
+                            @else
+                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="w-full h-full object-contain">
+                            @endif
                         </div>
-                        <span class="font-extrabold text-xl tracking-tight text-white uppercase">Al Azhar <span class="text-amber-500">7</span></span>
+                        <span class="font-extrabold text-xl tracking-tight text-white uppercase">
+                            {{ $namaInstansi ?: 'Al Azhar 7' }}
+                        </span>
                     </div>
 
                     <!-- Desktop Nav Menu -->
@@ -718,7 +741,7 @@
             <footer class="w-full bg-black border-t border-white/5 py-10 text-center relative z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p class="text-xs text-zinc-500">
-                        &copy; 2026 HafizPlus IMS (Integrated Management System). Dibuat dengan cinta untuk generasi Qur'ani masa depan.
+                        &copy; 2026 {{ $namaInstansi ?: 'HafizPlus IMS' }}. Dibuat dengan cinta untuk generasi Qur'ani masa depan.
                     </p>
                     <div class="flex items-center gap-6 text-xs text-zinc-500">
                         <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>

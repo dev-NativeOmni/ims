@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'IMS SMAIA 7') }} - {{ __('Log in') }}</title>
+    <title>{{ $namaInstansi ? $namaInstansi . ' — ' : '' }}{{ config('app.name', 'IMS') }} - {{ __('Log in') }}</title>
 
     <!-- PWA & Apple iOS Metadata -->
     <link rel="manifest" href="/manifest.json">
@@ -18,9 +18,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="IMS SMAIA 7">
-    <link rel="apple-touch-icon" href="/images/logo_alazhar7.png">
-    <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
+    <meta name="apple-mobile-web-app-title" content="{{ $namaInstansi ?: config('app.name', 'IMS') }}">
+    
+    <!-- Dynamic Favicon & Touch Icon -->
+    @if ($logo)
+        <link rel="apple-touch-icon" href="{{ asset('storage/' . $logo) }}">
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $logo) }}">
+    @else
+        <link rel="apple-touch-icon" href="{{ asset('images/logo_alazhar7.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/logo_alazhar7.png') }}">
+    @endif
 
     <!-- iOS Safari BFCache & Session Expiry Safeguard -->
     <script>
@@ -283,6 +290,7 @@
                             @endif
                         </div>
                     </div>
+                </div>
 
                 <!-- Submit Button -->
                 <div class="pt-2">
