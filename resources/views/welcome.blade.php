@@ -1,6 +1,17 @@
 @php
     $logo = Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
     $namaInstansi = Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
+
+    $logoUrl = null;
+    if ($logo) {
+        if (str_starts_with($logo, 'http://') || str_starts_with($logo, 'https://')) {
+            $logoUrl = $logo;
+        } elseif (str_starts_with($logo, 'storage/')) {
+            $logoUrl = asset($logo);
+        } else {
+            $logoUrl = asset('storage/' . $logo);
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
@@ -19,9 +30,9 @@
         </script>
 
         <!-- PWA Favicon & Icons -->
-        @if ($logo)
-            <link rel="icon" type="image/png" href="{{ asset('storage/' . $logo) }}">
-            <link rel="apple-touch-icon" href="{{ asset('storage/' . $logo) }}">
+        @if ($logoUrl)
+            <link rel="icon" type="image/png" href="{{ $logoUrl }}">
+            <link rel="apple-touch-icon" href="{{ $logoUrl }}">
         @else
             <link rel="icon" type="image/png" href="{{ asset('images/logo_alazhar7.png') }}">
             <link rel="apple-touch-icon" href="{{ asset('images/logo_alazhar7.png') }}">
@@ -51,8 +62,8 @@
                 <!-- Freeform Responsive Logo Container (Tanpa Border Lingkaran) -->
                 <div :class="logoVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'"
                      class="w-full flex items-center justify-center transition-all duration-1000 ease-out">
-                    @if ($logo)
-                        <img src="{{ asset('storage/' . $logo) }}" 
+                    @if ($logoUrl)
+                        <img src="{{ $logoUrl }}" 
                              alt="{{ $namaInstansi ?? 'Logo Instansi' }}" 
                              class="max-h-48 sm:max-h-64 max-w-[280px] sm:max-w-[380px] object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
                     @else
@@ -80,8 +91,8 @@
                     <!-- Brand Logo & Name -->
                     <div class="flex items-center gap-3">
                         <div class="h-10 max-w-[120px] flex items-center justify-center">
-                            @if ($logo)
-                                <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-10 w-auto object-contain drop-shadow-sm">
+                            @if ($logoUrl)
+                                <img src="{{ $logoUrl }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-10 w-auto object-contain drop-shadow-sm">
                             @else
                                 <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="h-10 w-auto object-contain drop-shadow-sm">
                             @endif
@@ -226,7 +237,7 @@
                                 <span class="text-[10px] text-zinc-400 font-bold uppercase">Rapor</span>
                             </div>
 
-                            <!-- Connecting Glowing Lines (Background Vector Representation) -->
+                            <!-- Connecting Glowing Lines -->
                             <svg class="absolute inset-0 w-full h-full text-zinc-800" fill="none" viewBox="0 0 100 100">
                                 <line x1="50" y1="20" x2="50" y2="80" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2,2"/>
                                 <line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2,2"/>
@@ -236,16 +247,14 @@
                 </div>
             </section>
 
-            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Light Background Transition) -->
+            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE -->
             <section id="fitur" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-y border-zinc-200/60 py-28 relative overflow-hidden">
-                <!-- Soft Light Glows -->
                 <div class="absolute inset-0 pointer-events-none z-0">
                     <div class="absolute w-[400px] h-[400px] -top-40 -right-20 bg-teal-100 rounded-full blur-[100px] opacity-60"></div>
                     <div class="absolute w-[400px] h-[400px] -bottom-40 -left-20 bg-amber-100 rounded-full blur-[100px] opacity-60"></div>
                 </div>
 
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <!-- Heading -->
                     <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-20">
                         <h2 class="text-3xl sm:text-4xl font-bold text-zinc-900 tracking-tight leading-tight">
                             Satu Platform, Semua Kebutuhan Pelacakan Hafalan Murid
@@ -255,12 +264,8 @@
                         </p>
                     </div>
 
-                    <!-- Split Columns: Mockup Mushaf & Stats Card -->
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                        
-                        <!-- Left Mockup: Mushaf Tracker & Targets -->
                         <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-float">
-                            <!-- Mockup Title Bar -->
                             <div class="flex items-center justify-between pb-4 border-b border-zinc-100 mb-5">
                                 <div class="flex items-center gap-1.5">
                                     <span class="w-3 h-3 rounded-full bg-red-400"></span>
@@ -271,7 +276,6 @@
                                 <div class="w-10"></div>
                             </div>
 
-                            <!-- Mockup Body (Surah & Setoran Log UI) -->
                             <div class="space-y-4">
                                 <div class="bg-zinc-50 rounded-2xl p-4 border border-zinc-150 flex items-center justify-between">
                                     <div>
@@ -296,21 +300,9 @@
                                         <div class="text-sm font-semibold text-zinc-800 mt-1">1 Halaman</div>
                                     </div>
                                 </div>
-
-                                <!-- Mini Mushaf Text Simulation -->
-                                <div class="p-4 bg-teal-50/50 rounded-2xl border border-teal-100 flex flex-col gap-2.5">
-                                    <div class="flex items-center justify-between text-xs text-teal-800 font-bold">
-                                        <span>Tinjauan Ayat</span>
-                                        <span class="font-serif font-normal">سُورَةُ الكَهْفِ</span>
-                                    </div>
-                                    <p class="text-right font-serif text-lg text-zinc-800 leading-loose py-2">
-                                        ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنzَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ﴿١﴾
-                                    </p>
-                                </div>
                             </div>
                         </div>
 
-                        <!-- Right Card: Stats & Global Achievements -->
                         <div class="lg:col-span-5 flex flex-col gap-6">
                             <h3 class="text-2xl font-bold text-zinc-900 leading-snug">
                                 Pantau Progres Capaian Murid dengan Data Akurat
@@ -319,7 +311,6 @@
                                 Dilengkapi indikator pencapaian target harian, mingguan, hingga bulanan. Membantu ustadz dan wali murid mengetahui tingkat kelancaran tanpa hambatan koordinasi.
                             </p>
 
-                            <!-- Metric Stack -->
                             <div class="grid grid-cols-2 gap-4 pt-4">
                                 <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col">
                                     <span class="text-xs text-zinc-400 font-bold uppercase">Hafalan Rata-Rata</span>
@@ -334,409 +325,6 @@
                                 </div>
                             </div>
                         </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 3: KEY ADVANTAGES (Dark background, Spotlight Glow Cards) -->
-            <section id="keunggulan" class="bg-[#09090b] bg-grid-pattern text-zinc-100 py-28 relative overflow-hidden border-b border-white/5">
-                <!-- Glow Blobs -->
-                <div class="absolute inset-0 pointer-events-none z-0">
-                    <div class="absolute w-[500px] h-[500px] top-[20%] left-[-200px] bg-teal-900 rounded-full blur-[120px] opacity-25"></div>
-                    <div class="absolute w-[500px] h-[500px] bottom-[-200px] right-[-200px] bg-amber-900 rounded-full blur-[120px] opacity-20"></div>
-                </div>
-
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <!-- Heading -->
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-20">
-                        <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
-                            Mengapa Memilih HafizPlus Tracker?
-                        </h2>
-                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
-                            Fitur-fitur tangguh yang dirancang spesifik untuk menyederhanakan manajemen tahfidz di sekolah, pondok pesantren, dan rumah tahfidz.
-                        </p>
-                    </div>
-
-                    <!-- Spotlight Cards Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        
-                        <!-- Card 1: Input Setoran Cepat (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Input Setoran Kilat</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Form input teroptimasi memudahkan ustadz merekam hasil setoran hafalan baru maupun murajaah murid dalam hitungan detik.
-                            </p>
-                        </div>
-
-                        <!-- Card 2: Portal Orang Tua (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Akses Transparan Wali</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Orang tua dapat masuk langsung untuk melihat log setoran, perkembangan hafalan, adab, dan catatan ustadz pembimbing dari rumah.
-                            </p>
-                        </div>
-
-                        <!-- Card 3: Rapor PDF & CSV (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Ekspor Rapor Digital</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Cetak hasil rapor terpadu (Hafalan, Adab, Disiplin) dengan satu klik. Dapat diekspor langsung ke berkas CSV atau PDF berstandar rapi.
-                            </p>
-                        </div>
-
-                        <!-- Card 4: Poin Disiplin / Tanse (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Poin Kedisiplinan & Prestasi</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Catat poin pelanggaran disiplin (Tanse) serta apresiasi poin prestasi secara real-time demi membentuk karakter murid yang tangguh.
-                            </p>
-                        </div>
-
-                        <!-- Card 5: Mushaf & Tafsir (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Mushaf Qur'an Terpadu</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Membaca Mushaf dan melihat tafsir secara langsung dalam sistem dengan pilihan tema kustom untuk kenyamanan mata.
-                            </p>
-                        </div>
-
-                        <!-- Card 6: Keamanan Data & Cadangan (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Cadangan & Keamanan Tinggi</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Database terlindungi dengan enkripsi terbaik, lengkap dengan fitur ekspor dan unduhan cadangan berkala guna menjamin keamanan data.
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 4: CONNECTIONS & MAP GEOLOCATION (Globe representation - Dark) -->
-            <section id="sebaran" class="bg-[#09090b] text-zinc-100 py-24 relative overflow-hidden border-b border-white/5">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
-                    
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-16">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
-                            Jaringan Konektivitas Terpadu Seluruh Indonesia
-                        </h2>
-                        <p class="text-zinc-400 text-sm leading-relaxed">
-                            Menghubungkan ratusan pondok pesantren, sekolah dasar, sekolah menengah, serta rumah tahfidz dalam satu dasbor pusat.
-                        </p>
-                    </div>
-
-                    <!-- Interactive Dotted Globe Placeholder with pulse pins -->
-                    <div class="relative w-full max-w-[650px] aspect-[2/1] bg-zinc-950/40 rounded-3xl border border-white/5 overflow-hidden flex items-center justify-center">
-                        <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-                        
-                        <!-- Dotted Map SVG Representation -->
-                        <svg class="w-4/5 h-4/5 text-zinc-800 animate-pulse-slow" fill="currentColor" viewBox="0 0 100 50">
-                            <!-- Simulated Dots representing Indonesia and nodes -->
-                            <circle cx="20" cy="20" r="0.6" class="text-zinc-700"/>
-                            <circle cx="25" cy="25" r="0.6" class="text-zinc-700"/>
-                            <circle cx="30" cy="23" r="0.8" class="text-zinc-600"/>
-                            <circle cx="35" cy="24" r="0.6" class="text-zinc-700"/>
-                            <circle cx="45" cy="28" r="0.7" class="text-zinc-600"/>
-                            <circle cx="50" cy="30" r="0.8" class="text-teal-500 animate-ping"/> <!-- Pulse Pin Jkt -->
-                            <circle cx="50" cy="30" r="1.2" class="text-teal-400"/>
-                            <circle cx="58" cy="31" r="0.8" class="text-amber-500 animate-ping"/> <!-- Pulse Pin Sby -->
-                            <circle cx="58" cy="31" r="1.2" class="text-amber-400"/>
-                            <circle cx="65" cy="32" r="0.8" class="text-zinc-600"/>
-                            <circle cx="70" cy="25" r="0.6" class="text-zinc-700"/>
-                            <circle cx="75" cy="22" r="0.8" class="text-teal-400"/>
-                            <circle cx="85" cy="26" r="0.6" class="text-zinc-700"/>
-                        </svg>
-
-                        <!-- Float overlay details representing active metrics -->
-                        <div class="absolute bottom-5 left-5 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl flex items-center gap-3">
-                            <span class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span>
-                            <span class="text-xs text-zinc-300 font-bold uppercase tracking-wider">12,400+ Murid Aktif</span>
-                        </div>
-
-                        <div class="absolute top-5 right-5 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl flex items-center gap-3">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span class="text-xs text-zinc-300 font-bold uppercase tracking-wider">150+ Lembaga Terhubung</span>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- SECTION 5: INTERACTIVE DASHBOARD SIMULATOR PLAYGROUND (Light Background) -->
-            <section id="simulator" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-y border-zinc-200/60 py-28 relative overflow-hidden">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    
-                    <!-- Head -->
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-14">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 leading-tight">
-                            Simulasi Dasbor Interaktif Kami
-                        </h2>
-                        <p class="text-zinc-500 text-sm leading-relaxed">
-                            Coba dasbor interaktif sekarang. Pilih peran Anda untuk melihat visualisasi alur setoran dan kemudahan antarmuka aplikasi.
-                        </p>
-                    </div>
-
-                    <!-- Role Tab buttons switcher -->
-                    <div class="flex items-center justify-center gap-2 max-w-md mx-auto mb-10 p-1.5 bg-zinc-200/80 rounded-2xl border border-zinc-300/40">
-                        <button @click="activeDashboardTab = 'siswa'" 
-                                :class="activeDashboardTab === 'siswa' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
-                            Dasbor Siswa
-                        </button>
-                        <button @click="activeDashboardTab = 'guru'" 
-                                :class="activeDashboardTab === 'guru' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
-                            Dasbor Ustadz
-                        </button>
-                        <button @click="activeDashboardTab = 'wali'" 
-                                :class="activeDashboardTab === 'wali' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
-                            Dasbor Wali
-                        </button>
-                    </div>
-
-                    <!-- Interactive Mockup Screen -->
-                    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.06)] min-h-[380px] flex flex-col justify-between transition-all duration-300">
-                        
-                        <!-- Inner Container transitions based on active role -->
-                        <!-- 1. SISWA VIEW -->
-                        <div x-show="activeDashboardTab === 'siswa'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
-                                <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Murid — Syamil Rabbani</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Kelas: VIII-A | Rumah Tahfidz Al-Ikhlas</p>
-                                </div>
-                                <span class="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-xs font-bold text-teal-700">Target Tercapai 90%</span>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Hafalan Baru</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">29 Juz</div>
-                                    <div class="text-[9px] text-teal-600 font-bold mt-1">Sisa Target: 1 Juz</div>
-                                </div>
-
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Lancarnya Murajaah</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">15 Juz</div>
-                                    <div class="text-[9px] text-amber-600 font-bold mt-1">Poin Nilai: Mumtaz</div>
-                                </div>
-
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Skor Disiplin</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">100 Poin</div>
-                                    <div class="text-[9px] text-teal-600 font-bold mt-1">Status: Tanpa Pelanggaran</div>
-                                </div>
-                            </div>
-
-                            <!-- Mini Chart Simulator -->
-                            <div class="p-4 border border-zinc-150 rounded-2xl flex flex-col gap-3">
-                                <div class="flex items-center justify-between text-xs font-bold text-zinc-700">
-                                    <span>Statistik Progres Setoran Bulanan</span>
-                                    <span>Bulan Juni</span>
-                                </div>
-                                <div class="h-20 flex items-end gap-2 pt-2 px-1">
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[30%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[50%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[40%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[75%]"></div>
-                                    <div class="bg-teal-600 border border-teal-400 rounded-t w-full h-[95%] shadow-[0_0_12px_rgba(20,184,166,0.25)]"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 2. GURU VIEW -->
-                        <div x-show="activeDashboardTab === 'guru'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6" style="display: none;">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
-                                <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Ustadz Penguji — Ustadz Ahmad</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Kelas: Halaqah Tahfidz VIII-A</p>
-                                </div>
-                                <button class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-xs font-bold text-white rounded-xl transition-colors duration-150 shadow-md shadow-teal-600/10">
-                                    + Input Setoran
-                                </button>
-                            </div>
-
-                            <!-- List of Students under evaluation -->
-                            <div class="space-y-3">
-                                <div class="p-3 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-700 text-xs">SR</div>
-                                        <div>
-                                            <div class="text-xs font-bold text-zinc-800">Syamil Rabbani</div>
-                                            <div class="text-[9px] text-zinc-400 mt-0.5">Baru saja menyetor QS. Al-Kahfi: 1-10</div>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] bg-teal-50 border border-teal-200 text-teal-700 font-bold px-2 py-1 rounded">Nilai: Mumtaz</span>
-                                </div>
-
-                                <div class="p-3 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-700 text-xs">AM</div>
-                                        <div>
-                                            <div class="text-xs font-bold text-zinc-800">Aisyah Muthmainnah</div>
-                                            <div class="text-[9px] text-zinc-400 mt-0.5">Mengulang setoran QS. Al-Baqarah: 1-20</div>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] bg-amber-50 border border-amber-200 text-amber-700 font-bold px-2 py-1 rounded">Nilai: Jayyid</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3. WALI VIEW -->
-                        <div x-show="activeDashboardTab === 'wali'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6" style="display: none;">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
-                                <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Portal Wali Murid — Bpk. Abdurrahman</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Mengawasi Murid: Syamil Rabbani</p>
-                                </div>
-                                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" title="Terhubung"></span>
-                            </div>
-
-                            <!-- Parents overview feed -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="p-4 bg-teal-50 border border-teal-150 rounded-2xl flex flex-col gap-1.5">
-                                    <span class="text-[10px] text-teal-800 font-bold uppercase">Pembaruan Hafalan Terakhir</span>
-                                    <div class="text-sm font-extrabold text-zinc-900">Syamil menyetor QS. Al-Kahfi: 1-10</div>
-                                    <span class="text-[9px] text-teal-700 font-semibold mt-1">Ustadz Ahmad: "Bacaan lancar, pertahankan tajwid"</span>
-                                </div>
-
-                                <div class="p-4 bg-amber-50 border border-amber-150 rounded-2xl flex flex-col gap-1.5">
-                                    <span class="text-[10px] text-amber-800 font-bold uppercase">Laporan Adab & Karakter</span>
-                                    <div class="text-sm font-extrabold text-zinc-900">Sikap: Sangat Menghormati Guru</div>
-                                    <span class="text-[9px] text-amber-700 font-semibold mt-1">Terakhir diperbarui: Juni 2026</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 6: FAQ ACCORDION (Dark Background) -->
-            <section id="faq" class="bg-[#09090b] text-zinc-100 py-28 relative overflow-hidden border-b border-white/5">
-                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    
-                    <div class="text-center flex flex-col gap-4 mx-auto mb-16 max-w-2xl">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
-                            Pertanyaan yang Sering Diajukan
-                        </h2>
-                        <p class="text-zinc-400 text-sm leading-relaxed">
-                            Butuh bantuan lebih lanjut? Berikut jawaban untuk beberapa pertanyaan umum mengenai penggunaan sistem kami.
-                        </p>
-                    </div>
-
-                    <!-- FAQ List with Alpine state toggles -->
-                    <div class="space-y-4">
-                        
-                        <!-- Item 1 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Bagaimana ustadz menginput data setoran?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
-                                Ustadz dapat menginput data langsung melalui form "Quick Input" di dasbor mereka, cukup memilih nama siswa, surah, ayat awal/akhir, dan nilai kelancaran. Semua proses memakan waktu kurang dari 10 detik.
-                            </div>
-                        </div>
-
-                        <!-- Item 2 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Apakah data kemajuan murid aman dari kehilangan?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
-                                Ya. Kami menggunakan basis data terenkripsi dan sistem cadangan (database backups) otomatis yang terhubung ke penyimpanan awan. Anda juga dapat mengunduh berkas cadangan secara manual kapan saja dari dasbor Super Admin.
-                            </div>
-                        </div>
-
-                        <!-- Item 3 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Bagaimana wali murid memantau perkembangan putra-putrinya?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
-                                Setiap wali murid akan diberikan akun akses khusus. Begitu masuk, mereka akan diarahkan langsung ke dasbor berisi riwayat setoran, persentase target hafalan yang tercapai, serta skor perilaku (adab) harian.
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 7: SUNSET HORIZON CTA (Dark Background, Huge Ambient Lighting Sunset Glow) -->
-            <section class="relative bg-black text-zinc-100 py-36 overflow-hidden flex flex-col items-center justify-center text-center">
-                <!-- Massive Bottom Horizon Glow (Sunset) -->
-                <div class="glow-horizon"></div>
-                <div class="glow-horizon-core"></div>
-
-                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center gap-6">
-                    <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-                        Siap Mewujudkan Generasi Rabbani Rapi & Terstruktur?
-                    </h2>
-                    <p class="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-                        Mulai langkah digitalisasi tahfidz Anda sekarang bersama ratusan lembaga lainnya di Indonesia. Cepat, aman, dan mudah digunakan.
-                    </p>
-
-                    <!-- CTA Action stack -->
-                    <div class="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                        @auth
-                            <a href="{{ url('/dashboard') }}" class="px-8 py-4 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-2xl shadow-teal-500/20 transition-all duration-200 hover:-translate-y-0.5">
-                                Masuk Dasbor Aplikasi
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" class="px-8 py-4 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-2xl shadow-teal-500/20 transition-all duration-200 hover:-translate-y-0.5">
-                                Masuk Aplikasi
-                            </a>
-                        @endif
-                        <a href="https://wa.me/628989789085" target="_blank" class="bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white px-8 py-4 text-sm font-semibold rounded-xl transition-all duration-150 hover:-translate-y-0.5 flex items-center gap-2">
-                            Hubungi Ustadz Pembimbing
-                        </a>
                     </div>
                 </div>
             </section>
@@ -747,10 +335,6 @@
                     <p class="text-xs text-zinc-500">
                         &copy; 2026 {{ $namaInstansi ?: 'HafizPlus IMS' }}. Dibuat dengan cinta untuk generasi Qur'ani masa depan.
                     </p>
-                    <div class="flex items-center gap-6 text-xs text-zinc-500">
-                        <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>
-                        <a href="#" class="hover:text-zinc-300 transition-colors">Kebijakan Privasi</a>
-                    </div>
                 </div>
             </footer>
 
