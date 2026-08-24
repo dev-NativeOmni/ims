@@ -29,6 +29,17 @@
     $logo = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
     $namaInstansi = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
 
+    $logoUrl = null;
+    if ($logo) {
+        if (str_starts_with($logo, 'http://') || str_starts_with($logo, 'https://')) {
+            $logoUrl = $logo;
+        } elseif (str_starts_with($logo, 'storage/')) {
+            $logoUrl = asset($logo);
+        } else {
+            $logoUrl = asset('storage/' . $logo);
+        }
+    }
+
     $isPureTahfizhCoordinator = $isCoordinatorTahfizh && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
     $isPureAdabCoordinator = $isPendampingAdab && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
     $isPureTanseCoordinator = $isTanse && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
@@ -91,16 +102,14 @@
              </button>
          </div>
 
-         <!-- Logo -->
+         <!-- Logo Sidebar (Frameless & Proper Size) -->
          <div class="flex-shrink-0 flex items-center px-4">
-             <span class="font-bold text-xl text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                  @if ($logo)
-                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/10 flex-shrink-0">
-                          <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
-                      </div>
+             <span class="font-bold text-xl text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
+                  @if ($logoUrl)
+                      <img src="{{ $logoUrl }}" class="h-8 sm:h-9 w-auto max-w-[130px] object-contain flex-shrink-0 drop-shadow-sm" alt="{{ $namaInstansi ?? 'Logo' }}">
                   @else
-                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-600 dark:text-indigo-400">
-                          <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div class="h-8 w-8 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                          <svg class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
                       </div>
@@ -118,7 +127,6 @@
 
          <!-- Profile Footer -->
          <div class="flex-shrink-0 border-t border-zinc-200 dark:border-white/5 p-3 bg-zinc-50/50 dark:bg-[#09090b]/40 transition-colors duration-200">
-             <!-- Row 1: Avatar + Name + Role -->
              <div class="flex items-center gap-2.5 min-w-0">
                  <div class="flex-shrink-0">
                      @if ($user?->avatar)
@@ -138,7 +146,6 @@
                      </p>
                  </div>
              </div>
-             <!-- Row 2: Action Buttons -->
              <div class="flex items-center gap-1 mt-2 pt-2 border-t border-zinc-200/60 dark:border-white/5">
                  @if ($hasRoute('profile.edit'))
                      <a href="{{ route('profile.edit') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 border border-transparent hover:border-zinc-200 dark:hover:border-white/5 transition-all duration-150">
@@ -161,11 +168,10 @@
              </div>
          </div>
     </div>
-    <!-- Dummy spacer to prevent overlay from closing immediately on tap close to edges -->
     <div class="flex-shrink-0 w-14"></div>
 </div>
 
-<!-- Global Top Bar -->
+<!-- Global Top Bar (Navbar Header) -->
 <div class="sticky top-0 z-30 flex h-16 bg-white/85 dark:bg-[#09090b]/60 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex-shrink-0 transition-colors duration-200">
     <button type="button" @click="sidebarOpen = true" class="px-4 border-r border-zinc-200 dark:border-white/5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none">
         <span class="sr-only">Buka sidebar</span>
@@ -175,19 +181,18 @@
     </button>
     <div class="flex-1 flex justify-between px-4 items-center">
         <div class="flex items-center gap-3">
-            <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
-                @if ($logo)
-                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0">
-                        <img src="{{ asset('storage/' . $logo) }}" class="h-4.5 w-4.5 object-contain" alt="Logo">
-                    </div>
+            <!-- Brand Logo & Name (Frameless, Proper Size) -->
+            <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-2.5">
+                @if ($logoUrl)
+                    <img src="{{ $logoUrl }}" class="h-7 sm:h-8 w-auto max-w-[120px] object-contain flex-shrink-0 drop-shadow-sm" alt="{{ $namaInstansi ?? 'Logo' }}">
                 @else
-                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-500 dark:text-indigo-400">
-                        <svg class="h-4.5 w-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="h-7 w-7 flex items-center justify-center text-indigo-500 dark:text-indigo-400 flex-shrink-0">
+                        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
                 @endif
-                <span class="truncate max-w-[120px]">{{ $namaInstansi ?: 'IMS' }}</span>
+                <span class="truncate max-w-[160px]">{{ $namaInstansi ?: 'IMS' }}</span>
             </span>
 
             <!-- Theme Toggle -->
