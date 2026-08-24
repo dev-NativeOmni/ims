@@ -44,23 +44,27 @@
             <div class="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
             
             <!-- Outer Glowing Ambient Light -->
-            <div class="absolute w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[140px] animate-pulse pointer-events-none"></div>
             
-            <!-- Large Centered Ring & Logo Container -->
-            <div class="relative z-10 flex flex-col items-center gap-8 px-4">
-                <!-- Glowing Ring -->
-                <div :class="logoVisible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
-                     class="w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-teal-500/35 flex items-center justify-center shadow-[0_0_80px_rgba(13,148,136,0.3)] transition-all duration-1000 ease-out p-4 overflow-hidden bg-black/40 backdrop-blur-sm">
+            <!-- Centered Logo & Brand Container -->
+            <div class="relative z-10 flex flex-col items-center justify-center gap-6 px-6 max-w-xl mx-auto text-center">
+                <!-- Freeform Responsive Logo Container (Tanpa Border Lingkaran) -->
+                <div :class="logoVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'"
+                     class="w-full flex items-center justify-center transition-all duration-1000 ease-out">
                     @if ($logo)
-                        <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="max-h-full max-w-full object-contain">
+                        <img src="{{ asset('storage/' . $logo) }}" 
+                             alt="{{ $namaInstansi ?? 'Logo Instansi' }}" 
+                             class="max-h-48 sm:max-h-64 max-w-[280px] sm:max-w-[380px] object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
                     @else
-                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/logo_alazhar7.png') }}" 
+                             alt="Logo Default" 
+                             class="max-h-48 sm:max-h-64 max-w-[280px] sm:max-w-[380px] object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
                     @endif
                 </div>
                 
                 <!-- Large Text Reveal -->
                 <span :class="logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
-                      class="font-black text-3xl sm:text-5xl tracking-widest text-white uppercase transition-all duration-1000 delay-300 ease-out text-center">
+                      class="font-black text-2xl sm:text-4xl lg:text-5xl tracking-widest text-white uppercase transition-all duration-1000 delay-200 ease-out text-center">
                     {{ $namaInstansi ?: 'Al Azhar 7' }}
                 </span>
             </div>
@@ -73,13 +77,13 @@
             <header :class="isScrolled ? 'bg-black/85 border-b border-white/5 shadow-xl shadow-black/40 py-3' : 'bg-transparent py-6'"
                     class="fixed top-0 inset-x-0 z-50 transition-all duration-300 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                    <!-- Brand Logo -->
+                    <!-- Brand Logo & Name -->
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-teal-500/10 overflow-hidden">
+                        <div class="h-10 max-w-[120px] flex items-center justify-center">
                             @if ($logo)
-                                <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="w-full h-full object-contain">
+                                <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-10 w-auto object-contain drop-shadow-sm">
                             @else
-                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="w-full h-full object-contain">
+                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo Default" class="h-10 w-auto object-contain drop-shadow-sm">
                             @endif
                         </div>
                         <span class="font-extrabold text-xl tracking-tight text-white uppercase">
@@ -300,7 +304,7 @@
                                         <span class="font-serif font-normal">سُورَةُ الكَهْفِ</span>
                                     </div>
                                     <p class="text-right font-serif text-lg text-zinc-800 leading-loose py-2">
-                                        ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ﴿١﴾
+                                        ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنzَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ﴿١﴾
                                     </p>
                                 </div>
                             </div>
