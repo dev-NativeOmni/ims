@@ -1,7 +1,6 @@
-const CACHE_NAME = 'ims-smaia7-v1';
+const CACHE_NAME = 'ims-smaia7-v2';
 const ASSETS_TO_CACHE = [
   '/images/logo_alazhar7.png',
-  '/images/ims_logo.png',
   '/favicon.ico'
 ];
 
