@@ -476,21 +476,11 @@
                     <!-- MOBILE VIEW (Layar HP / Tegak)             -->
                     <!-- ========================================== -->
                     <div class="md:hidden space-y-4">
-                        <!-- Date Selector for Mobile -->
-                        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-xl shadow-sm space-y-2">
-                            <label for="mobile_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider" x-text="isWeekly ? '📅 Pilih Pekan Input:' : '📅 Pilih Tanggal Input:'">
-                            </label>
-                            <select id="mobile_date" x-model="selectedMobileDate" class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:indigo-500 dark:text-white">
-                                <template x-for="col in columns" :key="col.date">
-                                    <option :value="col.date" x-text="isWeekly ? col.label + ' (' + col.sub_label + ')' : col.label + ', ' + col.sub_label" class="dark:bg-zinc-900"></option>
-                                </template>
-                            </select>
-                        </div>
 
                         <!-- Cards per Student -->
                         <div class="space-y-4">
-                            <template x-for="student in students" :key="student.id">
-                                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-4" x-data="{ cell: gridData[student.id].dates[selectedMobileDate] }">
+                            <template x-for="student in students" :key="student.id + '-' + selectedMobileDate">
+                                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-4" x-data="{ get cell() { return gridData[student.id].dates[selectedMobileDate] } }">
                                     <!-- Name Header -->
                                     <div class="flex items-center justify-between border-b dark:border-zinc-800 pb-2.5">
                                         <div>
