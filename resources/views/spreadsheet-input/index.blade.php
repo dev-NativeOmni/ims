@@ -198,6 +198,38 @@
                         </button>
                     </div>
                 </form>
+
+                <!-- Active Dates Number Toggles -->
+                @if (!$isWeekly && count($dates) > 0)
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
+                            📅 Tanggal Aktif ({{ $selectedWeek === 'all' ? 'Semua Pekan' : 'Pekan ' . $selectedWeek }}):
+                        </label>
+                        <span class="text-[11px] text-gray-500 dark:text-zinc-400">
+                            Klik nomor tanggal untuk melompat/fokus ke tanggal tersebut
+                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        @foreach ($dates as $d)
+                            @php
+                                $dDayNum = date('j', strtotime($d));
+                                $dDayName = \Carbon\Carbon::parse($d)->translatedFormat('D');
+                            @endphp
+                            <button
+                                type="button"
+                                @click="selectedMobileDate = '{{ $d }}'"
+                                :class="selectedMobileDate === '{{ $d }}' ? 'bg-indigo-600 text-white font-black ring-2 ring-indigo-500 scale-105 shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700/60'"
+                                class="px-2.5 py-1 rounded-xl text-xs transition cursor-pointer flex items-center gap-1 min-w-[40px] justify-center"
+                            >
+                                <span class="font-bold text-xs">{{ $dDayNum }}</span>
+                                <span class="text-[9px] opacity-75 uppercase">{{ $dDayName }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
 
             <!-- TABS & SAVE ACTION -->

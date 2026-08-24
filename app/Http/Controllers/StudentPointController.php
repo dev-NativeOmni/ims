@@ -334,10 +334,55 @@ class StudentPointController extends Controller
             ];
         })->sortByDesc('violation_count')->values();
 
+        // ─── Student Leaderboard (Rekap Murid Terbanyak Pelanggaran) ───
+        $timeFrame = $request->input('time_frame', 'month'); // 'month' or 'all'
+        $violationType = $request->input('violation_type', 'all'); // 'all', 'lateness', 'attribute', 'violation'
+        $sortBy = $request->input('sort_by', 'count'); // 'count' or 'points'
+
+        $leaderboardViolationsQuery = StudentPoint::violations()
+            ->whereIn('student_id', $studentIds)
+            ->when($timeFrame === 'month', function ($q) use ($year, $month) {
+                $q->whereYear('date', $year)->whereMonth('date', $month);
+            })
+            ->when($violationType !== 'all', function ($q) use ($violationType) {
+                $q->where('type', $violationType);
+            })
+            ->when($classRoomId, fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('class_room_id', $classRoomId)));
+
+        $leaderboardViolations = $leaderboardViolationsQuery->get()->groupBy('student_id');
+
+        $studentLeaderboard = $allStudentsInScope
+            ->when($classRoomId, fn ($collection) => $collection->where('class_room_id', $classRoomId))
+            ->map(function ($student) use ($leaderboardViolations) {
+                $stViolations = $leaderboardViolations->get($student->id, collect());
+                $vCount = $stViolations->count();
+                $vPoints = $stViolations->sum('points');
+
+                return [
+                    'student' => $student,
+                    'violation_count' => $vCount,
+                    'violation_points' => $vPoints,
+                    'lateness_count' => $stViolations->where('type', 'lateness')->count(),
+                    'attribute_count' => $stViolations->where('type', 'attribute')->count(),
+                    'tatib_count' => $stViolations->where('type', 'violation')->count(),
+                    'latest_violation_date' => $stViolations->max('date'),
+                    'recent_sanctions' => $stViolations->pluck('sanction')->filter()->unique()->values()->all(),
+                    'recent_titles' => $stViolations->pluck('title')->take(3)->values()->all(),
+                ];
+            })
+            ->filter(fn ($item) => $item['violation_count'] > 0);
+
+        if ($sortBy === 'points') {
+            $studentLeaderboard = $studentLeaderboard->sortByDesc('violation_points')->values();
+        } else {
+            $studentLeaderboard = $studentLeaderboard->sortByDesc('violation_count')->values();
+        }
+
         return view('student-points.chart', compact(
             'classReport', 'year', 'month', 'classRoomId',
             'monthViolationsCount', 'monthViolationsPoints',
-            'monthlyTrends', 'monthsList', 'classRooms', 'typeBreakdown'
+            'monthlyTrends', 'monthsList', 'classRooms', 'typeBreakdown',
+            'studentLeaderboard', 'timeFrame', 'violationType', 'sortBy'
         ));
     }
 
