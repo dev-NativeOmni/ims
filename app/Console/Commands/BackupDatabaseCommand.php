@@ -16,15 +16,20 @@ class BackupDatabaseCommand extends Command
     {
         $defaultConnection = config('database.default');
 
-        if ($defaultConnection !== 'mysql') {
-            $this->error('Backup ini hanya mendukung koneksi mysql. Koneksi aktif sekarang: '.$defaultConnection);
+        if (! in_array($defaultConnection, ['mysql', 'pgsql'], true)) {
+            $this->error('Backup ini hanya mendukung koneksi mysql dan pgsql. Koneksi aktif sekarang: '.$defaultConnection);
 
             return self::FAILURE;
         }
 
-        $connection = config('database.connections.mysql');
+        $connection = config("database.connections.{$defaultConnection}") ?? [];
 
         $database = (string) ($connection['database'] ?? '');
+
+        if ($database === '' && ! empty($connection['url'])) {
+            $parsedUrl = parse_url($connection['url']);
+            $database = ltrim($parsedUrl['path'] ?? '', '/');
+        }
 
         if ($database === '') {
             $this->error('Nama database tidak ditemukan di konfigurasi.');
@@ -39,13 +44,14 @@ class BackupDatabaseCommand extends Command
         $filename = now()->format('Y-m-d_His').'_'.$this->safeFilename($database).'.sql';
         $backupPath = $backupDirectory.DIRECTORY_SEPARATOR.$filename;
 
-        $command = $this->buildCommand($connection, $database, $backupPath);
+        [$command, $envVars] = $this->buildCommand($defaultConnection, $connection, $database, $backupPath);
 
         $this->info('Memulai backup database...');
+        $this->line('Driver: '.$defaultConnection);
         $this->line('Database: '.$database);
         $this->line('Target: '.$backupPath);
 
-        $process = new Process($command);
+        $process = new Process($command, null, $envVars);
         $process->setTimeout((int) config('database_backup.timeout', 300));
         $process->run();
 
@@ -85,12 +91,40 @@ class BackupDatabaseCommand extends Command
         return self::SUCCESS;
     }
 
-    private function buildCommand(array $connection, string $database, string $backupPath): array
+    private function buildCommand(string $driver, array $connection, string $database, string $backupPath): array
     {
         $host = (string) ($connection['host'] ?? '127.0.0.1');
-        $port = (string) ($connection['port'] ?? '3306');
+        $port = (string) ($connection['port'] ?? ($driver === 'pgsql' ? '5432' : '3306'));
         $username = (string) ($connection['username'] ?? '');
         $password = (string) ($connection['password'] ?? '');
+
+        if (! empty($connection['url'])) {
+            $parsedUrl = parse_url($connection['url']);
+            $host = $parsedUrl['host'] ?? $host;
+            $port = (string) ($parsedUrl['port'] ?? $port);
+            $username = $parsedUrl['user'] ?? $username;
+            $password = $parsedUrl['pass'] ?? $password;
+        }
+
+        $envVars = [];
+
+        if ($driver === 'pgsql') {
+            $command = [
+                (string) config('database_backup.pg_dump_path', 'pg_dump'),
+                '--host='.$host,
+                '--port='.$port,
+                '--username='.$username,
+                '--dbname='.$database,
+                '--file='.$backupPath,
+                '--no-password',
+            ];
+
+            if ($password !== '') {
+                $envVars['PGPASSWORD'] = $password;
+            }
+
+            return [$command, $envVars];
+        }
 
         $command = [
             (string) config('database_backup.mysqldump_path', 'mysqldump'),
@@ -113,7 +147,7 @@ class BackupDatabaseCommand extends Command
             $command[] = '--password='.$password;
         }
 
-        return $command;
+        return [$command, $envVars];
     }
 
     private function pruneOldBackups(): int

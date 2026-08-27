@@ -11,7 +11,7 @@ RUN npm run build
 FROM php:8.2-cli-alpine
 
 # Install ekstensi PostgreSQL dan dependensi
-RUN apk add --no-cache libpq-dev libzip-dev zip unzip \
+RUN apk add --no-cache libpq-dev libzip-dev zip unzip postgresql-client \
     && docker-php-ext-install pdo pdo_pgsql zip bcmath
 
 # Install Composer
@@ -32,5 +32,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 
 EXPOSE 8080
 
-# Jalankan server dan migrasi
-CMD sh -c "php artisan storage:link && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"
+# Jalankan optimize & server
+CMD sh -c "php artisan storage:link --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=8080"

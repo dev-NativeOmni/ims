@@ -79,8 +79,8 @@ class ProgressController extends Controller
 
                     $query->where(function (Builder $searchQuery) use ($keyword) {
                         $searchQuery
-                            ->where('name', 'like', '%'.$keyword.'%')
-                            ->orWhere('student_number', 'like', '%'.$keyword.'%');
+                            ->whereLike('name', '%'.$keyword.'%')
+                            ->orWhereLike('student_number', '%'.$keyword.'%');
                     });
                 })
                 ->orderBy('name');

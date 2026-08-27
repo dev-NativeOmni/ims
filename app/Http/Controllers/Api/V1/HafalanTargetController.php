@@ -97,18 +97,18 @@ class HafalanTargetController extends Controller
             })
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $subQuery) use ($search) {
-                    $subQuery->where('notes', 'like', "%{$search}%")
+                    $subQuery->whereLike('notes', "%{$search}%")
                         ->orWhereHas('student', function (Builder $studentQuery) use ($search) {
-                            $studentQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('student_number', 'like', "%{$search}%");
+                            $studentQuery->whereLike('name', "%{$search}%")
+                                ->orWhereLike('student_number', "%{$search}%");
                         })
                         ->orWhereHas('surah', function (Builder $surahQuery) use ($search) {
-                            $surahQuery->where('name_latin', 'like', "%{$search}%")
-                                ->orWhere('name_ar', 'like', "%{$search}%");
+                            $surahQuery->whereLike('name_latin', "%{$search}%")
+                                ->orWhereLike('name_ar', "%{$search}%");
                         })
                         ->orWhereHas('teacher.user', function (Builder $teacherUserQuery) use ($search) {
-                            $teacherUserQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                            $teacherUserQuery->whereLike('name', "%{$search}%")
+                                ->orWhereLike('email', "%{$search}%");
                         });
                 });
             })

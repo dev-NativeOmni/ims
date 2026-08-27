@@ -11,7 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('ims:prune-api-tokens --days=7')
     ->dailyAt('02:00');
 
-Schedule::command('notifications:generate')
+Schedule::command('ims:generate-system-notifications')
     ->dailyAt('06:00')
     ->withoutOverlapping();
 

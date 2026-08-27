@@ -44,8 +44,8 @@ class SurahController extends Controller
             ->withCount('ayahs')
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $subQuery) use ($search) {
-                    $subQuery->where('name_latin', 'like', "%{$search}%")
-                        ->orWhere('name_ar', 'like', "%{$search}%")
+                    $subQuery->whereLike('name_latin', "%{$search}%")
+                        ->orWhereLike('name_ar', "%{$search}%")
                         ->orWhere('number', $search);
                 });
             })

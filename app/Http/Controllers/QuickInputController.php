@@ -37,9 +37,7 @@ class QuickInputController extends Controller
             ->orderBy('name')
             ->get();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $latestHafalanRecords = HafalanRecord::query()
             ->with([

@@ -28,11 +28,11 @@ class ParentController extends Controller
                 $search = $request->string('search')->toString();
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('phone', 'like', "%{$search}%")
-                        ->orWhere('address', 'like', "%{$search}%")
+                    $subQuery->whereLike('phone', "%{$search}%")
+                        ->orWhereLike('address', "%{$search}%")
                         ->orWhereHas('user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('username', 'like', "%{$search}%");
+                            $userQuery->whereLike('name', "%{$search}%")
+                                ->orWhereLike('username', "%{$search}%");
                         });
                 });
             })

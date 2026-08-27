@@ -41,8 +41,8 @@ class StudentController extends Controller
                 $search = $request->string('search')->toString();
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('student_number', 'like', "%{$search}%");
+                    $subQuery->whereLike('name', "%{$search}%")
+                        ->orWhereLike('student_number', "%{$search}%");
                 });
             })
             ->when($request->filled('class_room_id'), function ($query) use ($request) {

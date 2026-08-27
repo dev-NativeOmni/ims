@@ -158,9 +158,7 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $statusOptions = $this->targetStatuses();
 
@@ -294,9 +292,7 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $statusOptions = $this->targetStatuses();
 
@@ -370,9 +366,7 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $statusOptions = $this->targetStatuses();
 

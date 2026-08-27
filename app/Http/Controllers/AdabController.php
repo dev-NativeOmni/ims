@@ -63,7 +63,7 @@ class AdabController extends Controller
         }
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
-            $studentQuery->where('name', 'like', "%{$search}%");
+            $studentQuery->whereLike('name', "%{$search}%");
         }
 
         $students = $studentQuery->orderBy('name')->paginate(20)->withQueryString();

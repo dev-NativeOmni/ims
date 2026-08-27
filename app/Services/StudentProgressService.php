@@ -101,7 +101,7 @@ class StudentProgressService
             return $this->computeStudentProgress($student);
         }
 
-        return Cache::remember("student_progress_calc_{$student->id}", 60, function () use ($student) {
+        return Cache::remember("student_progress_calc_{$student->id}", 86400, function () use ($student) {
             return $this->computeStudentProgress($student);
         });
     }
@@ -110,35 +110,27 @@ class StudentProgressService
     {
         try {
             $totalQuranAyahs = $this->totalQuranAyahs();
-        $memorizedAyahs = $this->memorizedAyahCount($student);
+            $memorizedAyahs = $this->memorizedAyahCount($student);
 
-        $progressPercent = $totalQuranAyahs > 0
-            ? round(($memorizedAyahs / $totalQuranAyahs) * 100, 2)
-            : 0;
+            $progressPercent = $totalQuranAyahs > 0
+                ? round(($memorizedAyahs / $totalQuranAyahs) * 100, 2)
+                : 0;
 
-        $hafalanRecordsQuery = HafalanRecord::query()
-            ->where('student_id', $student->id);
+            $latestHafalan = HafalanRecord::query()
+                ->where('student_id', $student->id)
+                ->with('surah')
+                ->latest('submitted_at')
+                ->latest('id')
+                ->first();
 
-        $murajaahRecordsQuery = MurajaahRecord::query()
-            ->where('student_id', $student->id);
+            $latestMurajaah = MurajaahRecord::query()
+                ->where('student_id', $student->id)
+                ->with('surah')
+                ->latest('reviewed_at')
+                ->latest('id')
+                ->first();
 
-        $targetQuery = HafalanTarget::query()
-            ->where('student_id', $student->id);
-
-        $latestHafalan = (clone $hafalanRecordsQuery)
-            ->with('surah')
-            ->latest('submitted_at')
-            ->latest()
-            ->first();
-
-        $latestMurajaah = (clone $murajaahRecordsQuery)
-            ->with('surah')
-            ->latest('reviewed_at')
-            ->latest()
-            ->first();
-
-        $activeTargetStatuses = ['active', 'planned', 'in_progress'];
-        $juzStats = $this->getJuzStats($student);
+            $juzStats = $this->getJuzStats($student);
 
         $classRoomName = $student->classRoom?->name ?? '';
         $classRoomLevel = $student->classRoom?->level ?? '';
@@ -226,11 +218,24 @@ class StudentProgressService
         $capaianBarisMonth = $passedRecordsThisMonth->sum(fn ($r) => $r->lines_count);
         $regulerBarisPercent = $targetBarisMonth > 0 ? min(100.0, round(($capaianBarisMonth / $targetBarisMonth) * 100, 1)) : 0;
 
-        // ─── Status Badge Calculation (🟢 On-Track / 🟡 Mendekati / 🔴 Perlu Ditingkatkan) ───
-        $overdueCount = (clone $targetQuery)
-            ->whereIn('status', $activeTargetStatuses)
-            ->whereDate('target_date', '<', today())
-            ->count();
+        $todayDate = today()->toDateString();
+        $targetStats = DB::table('hafalan_targets')
+            ->where('student_id', $student->id)
+            ->whereNull('deleted_at')
+            ->selectRaw("
+                COUNT(*) as total,
+                COUNT(CASE WHEN status IN ('active', 'planned', 'in_progress') THEN 1 END) as active,
+                COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+                COUNT(CASE WHEN status = 'missed' THEN 1 END) as missed,
+                COUNT(CASE WHEN status IN ('active', 'planned', 'in_progress') AND target_date < ? THEN 1 END) as overdue
+            ", [$todayDate])
+            ->first();
+
+        $totalTargets = (int) ($targetStats->total ?? 0);
+        $activeTargets = (int) ($targetStats->active ?? 0);
+        $completedTargets = (int) ($targetStats->completed ?? 0);
+        $missedTargets = (int) ($targetStats->missed ?? 0);
+        $overdueCount = (int) ($targetStats->overdue ?? 0);
 
         $achievementPercent = $isUmmiProgram ? $ummiJilidPercent : $regulerBarisPercent;
 
@@ -250,6 +255,34 @@ class StudentProgressService
             $statusColor = 'rose';
             $statusIcon = '🔴';
         }
+
+        $hafalanStats = DB::table('hafalan_records')
+            ->where('student_id', $student->id)
+            ->whereNull('deleted_at')
+            ->selectRaw("
+                COUNT(*) as total,
+                COUNT(CASE WHEN status = 'passed' THEN 1 END) as passed,
+                COUNT(CASE WHEN status IN ('repeat', 'needs_improvement') THEN 1 END) as repeat,
+                AVG(score) as avg_score
+            ")
+            ->first();
+
+        $totalHafalanRecords = (int) ($hafalanStats->total ?? 0);
+        $passedHafalanRecords = (int) ($hafalanStats->passed ?? 0);
+        $repeatHafalanRecords = (int) ($hafalanStats->repeat ?? 0);
+        $averageHafalanScore = round((float) ($hafalanStats->avg_score ?? 0), 2);
+
+        $murajaahStats = DB::table('murajaah_records')
+            ->where('student_id', $student->id)
+            ->whereNull('deleted_at')
+            ->selectRaw("
+                COUNT(*) as total,
+                AVG(overall_score) as avg_score
+            ")
+            ->first();
+
+        $totalMurajaahRecords = (int) ($murajaahStats->total ?? 0);
+        $averageMurajaahScore = round((float) ($murajaahStats->avg_score ?? 0), 2);
 
         return [
             'student' => $student,
@@ -292,32 +325,19 @@ class StudentProgressService
                 ? 'Juz '.implode(', ', $juzStats['completed_juz'])
                 : 'Belum ada Juz lengkap',
 
-            'total_hafalan_records' => (clone $hafalanRecordsQuery)->count(),
-            'passed_hafalan_records' => (clone $hafalanRecordsQuery)
-                ->where('status', 'passed')
-                ->count(),
-            'repeat_hafalan_records' => (clone $hafalanRecordsQuery)
-                ->whereIn('status', ['repeat', 'needs_improvement'])
-                ->count(),
+            'total_hafalan_records' => $totalHafalanRecords,
+            'passed_hafalan_records' => $passedHafalanRecords,
+            'repeat_hafalan_records' => $repeatHafalanRecords,
 
-            'total_murajaah_records' => (clone $murajaahRecordsQuery)->count(),
-            'average_hafalan_score' => round((float) (clone $hafalanRecordsQuery)->avg('score'), 2),
-            'average_murajaah_score' => $this->averageMurajaahScore($student),
+            'total_murajaah_records' => $totalMurajaahRecords,
+            'average_hafalan_score' => $averageHafalanScore,
+            'average_murajaah_score' => $averageMurajaahScore,
 
-            'total_targets' => (clone $targetQuery)->count(),
-            'active_targets' => (clone $targetQuery)
-                ->whereIn('status', $activeTargetStatuses)
-                ->count(),
-            'completed_targets' => (clone $targetQuery)
-                ->where('status', 'completed')
-                ->count(),
-            'missed_targets' => (clone $targetQuery)
-                ->where('status', 'missed')
-                ->count(),
-            'overdue_targets' => (clone $targetQuery)
-                ->whereIn('status', $activeTargetStatuses)
-                ->whereDate('target_date', '<', today())
-                ->count(),
+            'total_targets' => $totalTargets,
+            'active_targets' => $activeTargets,
+            'completed_targets' => $completedTargets,
+            'missed_targets' => $missedTargets,
+            'overdue_targets' => $overdueCount,
             'latest_hafalan_surah' => $latestHafalan?->surah?->name_latin
                 ?? $latestHafalan?->surah?->name
                 ?? null,
@@ -379,20 +399,27 @@ class StudentProgressService
     private function getJuzStats(Student $student): array
     {
         if (self::$allAyahs === null) {
-            $ayahs = DB::table('ayahs')
-                ->select('id', 'surah_id', 'ayah_number', 'juz')
-                ->get();
+            $cachedAyahs = Cache::rememberForever('quran:juz_ayahs_map', function () {
+                $ayahs = DB::table('ayahs')
+                    ->select('id', 'surah_id', 'ayah_number', 'juz')
+                    ->get();
 
-            self::$allAyahs = [];
-            self::$juzTotalAyahs = [];
+                $allAyahs = [];
+                $juzTotalAyahs = [];
 
-            foreach ($ayahs as $ayah) {
-                self::$allAyahs[$ayah->surah_id][$ayah->ayah_number] = $ayah->juz;
-                if (! isset(self::$juzTotalAyahs[$ayah->juz])) {
-                    self::$juzTotalAyahs[$ayah->juz] = 0;
+                foreach ($ayahs as $ayah) {
+                    $allAyahs[$ayah->surah_id][$ayah->ayah_number] = $ayah->juz;
+                    if (! isset($juzTotalAyahs[$ayah->juz])) {
+                        $juzTotalAyahs[$ayah->juz] = 0;
+                    }
+                    $juzTotalAyahs[$ayah->juz]++;
                 }
-                self::$juzTotalAyahs[$ayah->juz]++;
-            }
+
+                return [$allAyahs, $juzTotalAyahs];
+            });
+
+            self::$allAyahs = $cachedAyahs[0];
+            self::$juzTotalAyahs = $cachedAyahs[1];
         }
 
         $passedRecords = HafalanRecord::where('student_id', $student->id)
@@ -471,8 +498,9 @@ class StudentProgressService
             return 0;
         }
 
-        $surahTotals = Surah::query()
-            ->pluck('total_ayah', 'id');
+        $surahTotals = Cache::rememberForever('quran:surah_totals_by_id', function () {
+            return Surah::query()->pluck('total_ayah', 'id')->toArray();
+        });
 
         $total = 0;
 
@@ -545,9 +573,11 @@ class StudentProgressService
 
     private function totalQuranAyahs(): int
     {
-        $total = (int) Surah::query()->sum('total_ayah');
+        return Cache::rememberForever('quran:total_ayahs', function () {
+            $total = (int) Surah::query()->sum('total_ayah');
 
-        return $total > 0 ? $total : 6236;
+            return $total > 0 ? $total : 6236;
+        });
     }
 
     private function userHasAnyRole(User $user, array $roles): bool

@@ -218,9 +218,7 @@ class TahfizhExamController extends Controller
             ->sortBy(fn (TeacherProfile $teacher) => $teacher->user?->name)
             ->values();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
         $classRooms = ClassRoom::query()

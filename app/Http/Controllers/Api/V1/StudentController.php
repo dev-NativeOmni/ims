@@ -30,11 +30,11 @@ class StudentController extends Controller
             ])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $subQuery) use ($search) {
-                    $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('student_number', 'like', "%{$search}%")
+                    $subQuery->whereLike('name', "%{$search}%")
+                        ->orWhereLike('student_number', "%{$search}%")
                         ->orWhereHas('user', function (Builder $userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                            $userQuery->whereLike('name', "%{$search}%")
+                                ->orWhereLike('email', "%{$search}%");
                         });
                 });
             })

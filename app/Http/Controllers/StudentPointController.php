@@ -54,8 +54,8 @@ class StudentPointController extends Controller
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->whereHas('student', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('student_number', 'like', "%{$search}%");
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('student_number', "%{$search}%");
             });
         }
 

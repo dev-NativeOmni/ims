@@ -90,7 +90,7 @@ class MurajaahRecordController extends Controller
             ->unique('student_id')
             ->keyBy('student_id');
 
-        $surahs = Surah::query()->orderBy('number')->get();
+        $surahs = Surah::getAllCached();
 
         return view('murajaah-records.fast-input', [
             'classRooms' => $classRooms,
@@ -290,9 +290,7 @@ class MurajaahRecordController extends Controller
             ->sortBy(fn (TeacherProfile $teacher) => $teacher->user?->name)
             ->values();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
         $classRooms = ClassRoom::query()

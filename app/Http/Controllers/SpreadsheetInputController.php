@@ -279,7 +279,7 @@ class SpreadsheetInputController extends Controller
             }
         }
 
-        $surahs = Surah::query()->orderBy('number')->get();
+        $surahs = Surah::getAllCached();
 
         return view('spreadsheet-input.index', [
             'classRooms' => $classRooms,

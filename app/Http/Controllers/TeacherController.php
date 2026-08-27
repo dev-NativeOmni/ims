@@ -27,11 +27,11 @@ class TeacherController extends Controller
                 $search = $request->string('search')->toString();
 
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('employee_number', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%")
+                    $subQuery->whereLike('employee_number', "%{$search}%")
+                        ->orWhereLike('phone', "%{$search}%")
                         ->orWhereHas('user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('username', 'like', "%{$search}%");
+                            $userQuery->whereLike('name', "%{$search}%")
+                                ->orWhereLike('username', "%{$search}%");
                         });
                 });
             })

@@ -35,7 +35,7 @@ class StudentReportController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
-            $visibleStudentQuery->where('name', 'like', "%{$search}%");
+            $visibleStudentQuery->whereLike('name', "%{$search}%");
         }
 
         $students = $visibleStudentQuery->with(['classRoom'])->orderBy('name')->paginate(15)->withQueryString();

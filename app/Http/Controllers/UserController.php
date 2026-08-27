@@ -30,18 +30,18 @@ class UserController extends Controller
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%")
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('username', "%{$search}%")
                     ->orWhereHas('studentProfile.parents.user', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%")
-                           ->orWhere('username', 'like', "%{$search}%");
+                        $pq->whereLike('name', "%{$search}%")
+                           ->orWhereLike('username', "%{$search}%");
                     })
                     ->orWhereHas('parentProfile.students.user', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%")
-                           ->orWhere('username', 'like', "%{$search}%");
+                        $sq->whereLike('name', "%{$search}%")
+                           ->orWhereLike('username', "%{$search}%");
                     })
                     ->orWhereHas('parentProfile.students', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%");
+                        $sq->whereLike('name', "%{$search}%");
                     });
             });
         }

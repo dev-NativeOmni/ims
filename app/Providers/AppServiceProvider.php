@@ -10,9 +10,11 @@ use App\Models\ParentProfile;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Models\User;
 use App\Observers\HafalanRecordObserver;
 use App\Observers\ModelAuditObserver;
+use App\Observers\StudentProgressCacheObserver;
 use App\Policies\HafalanRecordPolicy;
 use App\Policies\HafalanTargetPolicy;
 use App\Policies\MurajaahRecordPolicy;
@@ -50,6 +52,11 @@ class AppServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         HafalanRecord::observe(HafalanRecordObserver::class);
+        HafalanRecord::observe(StudentProgressCacheObserver::class);
+        MurajaahRecord::observe(StudentProgressCacheObserver::class);
+        UmmiRecord::observe(StudentProgressCacheObserver::class);
+        HafalanTarget::observe(StudentProgressCacheObserver::class);
+        Student::observe(StudentProgressCacheObserver::class);
 
         /*
         |--------------------------------------------------------------------------

@@ -31,7 +31,7 @@ class Surah extends Model
 
     public static function getAllCached()
     {
-        return \Illuminate\Support\Facades\Cache::remember('all_surahs_cached', 86400, function () {
+        return \Illuminate\Support\Facades\Cache::rememberForever('all_surahs_cached', function () {
             return static::orderBy('number')->get();
         });
     }

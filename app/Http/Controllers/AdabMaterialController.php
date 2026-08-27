@@ -34,8 +34,8 @@ class AdabMaterialController extends Controller
         if ($request->filled('q')) {
             $search = trim((string) $request->input('q'));
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->whereLike('title', "%{$search}%")
+                    ->orWhereLike('description', "%{$search}%");
             });
         }
 

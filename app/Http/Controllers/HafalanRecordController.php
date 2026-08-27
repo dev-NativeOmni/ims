@@ -51,13 +51,13 @@ class HafalanRecordController extends Controller
                     $search = $request->string('search')->trim()->toString();
                     $query->where(function ($q) use ($search) {
                         $q->whereHas('student', function ($sub) use ($search) {
-                            $sub->where('name', 'like', "%{$search}%");
+                            $sub->whereLike('name', "%{$search}%");
                         })
                         ->orWhereHas('surah', function ($sub) use ($search) {
-                            $sub->where('name_latin', 'like', "%{$search}%");
+                            $sub->whereLike('name_latin', "%{$search}%");
                         })
-                        ->orWhere('ummi_jilid', 'like', "%{$search}%")
-                        ->orWhere('materi', 'like', "%{$search}%");
+                        ->orWhereLike('ummi_jilid', "%{$search}%")
+                        ->orWhereLike('materi', "%{$search}%");
                     });
                 })
                 ->latest('tanggal')
@@ -95,10 +95,10 @@ class HafalanRecordController extends Controller
                     $search = $request->string('search')->trim()->toString();
                     $query->where(function ($q) use ($search) {
                         $q->whereHas('student', function ($sub) use ($search) {
-                            $sub->where('name', 'like', "%{$search}%");
+                            $sub->whereLike('name', "%{$search}%");
                         })
                         ->orWhereHas('surah', function ($sub) use ($search) {
-                            $sub->where('name_latin', 'like', "%{$search}%");
+                            $sub->whereLike('name_latin', "%{$search}%");
                         });
                     });
                 })
@@ -252,9 +252,7 @@ class HafalanRecordController extends Controller
             ->sortBy(fn (TeacherProfile $teacher) => $teacher->user?->name)
             ->values();
 
-        $surahs = Surah::query()
-            ->orderBy('number')
-            ->get();
+        $surahs = Surah::getAllCached();
 
         $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
         $classRooms = ClassRoom::query()
