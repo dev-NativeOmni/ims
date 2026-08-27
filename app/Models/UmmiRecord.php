@@ -81,4 +81,14 @@ class UmmiRecord extends Model
     {
         return $this->belongsTo(Surah::class, 'hafalan_surah_id');
     }
+
+    public function getWhatsappShareUrlAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->getUmmiShareUrl($this);
+    }
+
+    public function getWhatsappMessageTextAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->generateUmmiMessage($this);
+    }
 }

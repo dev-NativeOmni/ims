@@ -165,6 +165,18 @@
                                 </div>
                                 @endif
                             </div>
+
+                            <!-- Action Bar Mobile UMMI -->
+                            <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                <a href="{{ $record->whatsapp_share_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition flex-1">
+                                    <span>💬 Kirim WA</span>
+                                </a>
+                                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                    <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" target="_blank" class="btn-action-detail flex-1 text-center">
+                                        📄 Kartu UMMI
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     @empty
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
@@ -210,11 +222,14 @@
                             </div>
 
                             <!-- Action Bar Mobile -->
-                            <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1">
+                            <div class="flex items-center gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                <a href="{{ $record->whatsapp_share_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition flex-1 text-center">
+                                    <span>💬 WA</span>
+                                </a>
+                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1 text-center">
                                     🔍 Detail
                                 </a>
-                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1">
+                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1 text-center">
                                     ✏️ Edit
                                 </a>
                                 <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
@@ -254,6 +269,7 @@
                                     <th class="px-4 py-3 text-center">Baris</th>
                                     <th class="px-4 py-3">Nilai</th>
                                     <th class="px-4 py-3">Simak</th>
+                                    <th class="px-4 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
 
@@ -315,10 +331,23 @@
                                             Guru: <span class="font-semibold {{ $record->disimak_guru === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_guru }}</span> | 
                                             Ortu: <span class="font-semibold {{ $record->disimak_ortu === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_ortu }}</span>
                                         </td>
+
+                                        <td class="px-4 py-3.5">
+                                            <div class="flex justify-end items-center gap-1.5">
+                                                <a href="{{ $record->whatsapp_share_url }}" target="_blank" rel="noopener noreferrer" title="Kirim Laporan via WhatsApp" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition">
+                                                    <span>💬 WA</span>
+                                                </a>
+                                                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                                    <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}" target="_blank" class="btn-action-detail">
+                                                        Kartu
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                        <td colspan="10" class="px-4 py-6 text-center text-xs text-zinc-500">
                                             Belum ada data catatan Tahsin UMMI.
                                         </td>
                                     </tr>
@@ -386,7 +415,11 @@
                                         </td>
 
                                         <td class="px-4 py-3.5">
-                                            <div class="flex justify-end items-center gap-2">
+                                            <div class="flex justify-end items-center gap-1.5">
+                                                <a href="{{ $record->whatsapp_share_url }}" target="_blank" rel="noopener noreferrer" title="Kirim Laporan via WhatsApp" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition">
+                                                    <span>💬 WA</span>
+                                                </a>
+
                                                 <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
                                                     Detail
                                                 </a>

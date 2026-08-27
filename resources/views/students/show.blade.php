@@ -125,7 +125,16 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">
-                                        {{ $parent->phone ?: '-' }}
+                                        @if($parent->phone)
+                                            @php
+                                                $cleanPhone = app(\App\Services\WhatsAppReportService::class)->formatPhoneNumber($parent->phone);
+                                            @endphp
+                                            <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-semibold hover:underline" title="Chat WhatsApp">
+                                                <span>💬 {{ $parent->phone }}</span>
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">

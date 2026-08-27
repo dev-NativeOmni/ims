@@ -112,4 +112,14 @@ class HafalanRecord extends Model
         if ($val >= 60) return 'D';
         return 'E';
     }
+
+    public function getWhatsappShareUrlAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->getHafalanShareUrl($this);
+    }
+
+    public function getWhatsappMessageTextAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->generateHafalanMessage($this);
+    }
 }

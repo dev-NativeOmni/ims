@@ -27,6 +27,7 @@ class HafalanRecordController extends Controller
             $hafalanRecords = UmmiRecord::query()
                 ->with([
                     'student.classRoom.program',
+                    'student.parents',
                     'teacher.user',
                     'surah',
                 ])
@@ -68,6 +69,7 @@ class HafalanRecordController extends Controller
             $hafalanRecords = HafalanRecord::query()
                 ->with([
                     'student.classRoom.program',
+                    'student.parents',
                     'teacher.user',
                     'surah',
                 ])
@@ -186,6 +188,7 @@ class HafalanRecordController extends Controller
 
         $hafalanRecord->load([
             'student.classRoom.program',
+            'student.parents',
             'teacher.user',
             'surah',
         ]);

@@ -24,6 +24,7 @@ class MurajaahRecordController extends Controller
         $murajaahRecords = MurajaahRecord::query()
             ->with([
                 'student.classRoom.program',
+                'student.parents',
                 'teacher.user',
                 'surah',
             ])
@@ -224,6 +225,7 @@ class MurajaahRecordController extends Controller
 
         $murajaahRecord->load([
             'student.classRoom.program',
+            'student.parents',
             'teacher.user',
             'surah',
         ]);

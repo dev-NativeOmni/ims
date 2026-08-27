@@ -141,11 +141,14 @@
                         </div>
 
                         <!-- Action Bar Mobile -->
-                        <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                            <a href="{{ route('murajaah-records.show', $record) }}" class="btn-action-detail flex-1">
+                        <div class="flex items-center gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            <a href="{{ $record->whatsapp_share_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition flex-1 text-center">
+                                <span>💬 WA</span>
+                            </a>
+                            <a href="{{ route('murajaah-records.show', $record) }}" class="btn-action-detail flex-1 text-center">
                                 🔍 Detail
                             </a>
-                            <a href="{{ route('murajaah-records.edit', $record) }}" class="btn-action-edit flex-1">
+                            <a href="{{ route('murajaah-records.edit', $record) }}" class="btn-action-edit flex-1 text-center">
                                 ✏️ Edit
                             </a>
                             <form action="{{ route('murajaah-records.destroy', $record) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data murajaah ini?')" class="flex-1">
@@ -224,7 +227,15 @@
                                     </td>
 
                                     <td class="px-4 py-3.5">
-                                         <div class="flex justify-end items-center gap-2">
+                                         <div class="flex justify-end items-center gap-1.5">
+                                             <a href="{{ $record->whatsapp_share_url }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title="Kirim Laporan via WhatsApp"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg font-bold text-xs shadow-sm transition">
+                                                 <span>💬 WA</span>
+                                             </a>
+
                                              <a href="{{ route('murajaah-records.show', $record) }}"
                                                 class="btn-action-detail">
                                                  Detail

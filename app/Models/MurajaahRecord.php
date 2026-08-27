@@ -71,4 +71,14 @@ class MurajaahRecord extends Model
             default => '-',
         };
     }
+
+    public function getWhatsappShareUrlAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->getMurajaahShareUrl($this);
+    }
+
+    public function getWhatsappMessageTextAttribute(): string
+    {
+        return app(\App\Services\WhatsAppReportService::class)->generateMurajaahMessage($this);
+    }
 }
