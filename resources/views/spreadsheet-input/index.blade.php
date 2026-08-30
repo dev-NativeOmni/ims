@@ -68,6 +68,11 @@
                                 uHafalans.push({ id: null, surah_id: '', ayah: '' });
                             }
 
+                            // Auto-default attendance to 'hadir' if hafalan or UMMI records exist for this cell
+                            if (!att && ((hList.length > 0 && hList[0].surah_id) || uData)) {
+                                att = 'hadir';
+                            }
+
                             this.gridData[s.id].dates[d] = {
                                 attendance: att,
                                 hafalans: hList,

@@ -215,6 +215,10 @@ class SpreadsheetInputController extends Controller
                     'status' => $record->status,
                     'submission_type' => $record->submission_type,
                 ];
+
+                if (empty($attendancesMap[$record->student_id][$dateStr])) {
+                    $attendancesMap[$record->student_id][$dateStr] = 'hadir';
+                }
             }
 
             // Load UmmiRecords
@@ -236,6 +240,10 @@ class SpreadsheetInputController extends Controller
                 $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman'] = $record->ummi_halaman;
                 $ummiRecordsMap[$record->student_id][$dateStr]['materi'] = $record->materi;
                 $ummiRecordsMap[$record->student_id][$dateStr]['nilai'] = $record->nilai;
+
+                if (empty($attendancesMap[$record->student_id][$dateStr])) {
+                    $attendancesMap[$record->student_id][$dateStr] = 'hadir';
+                }
 
                 if ($record->hafalan_surah_id) {
                     $ummiRecordsMap[$record->student_id][$dateStr]['hafalans'][] = [
@@ -288,6 +296,7 @@ class SpreadsheetInputController extends Controller
             'selectedMonth' => $selectedMonth,
             'weeksList' => $weeksList,
             'selectedWeek' => $selectedWeek,
+            'weeks' => $weeks,
             'dates' => $dates,
             'columns' => $columns,
             'isWeekly' => $isWeekly,
@@ -382,15 +391,10 @@ class SpreadsheetInputController extends Controller
                             ['student_id' => $studentId, 'tanggal' => $date, 'class_room_id' => $classRoomId],
                             ['status' => $attendance]
                         );
-                    } else {
-                        Attendance::where('student_id', $studentId)
-                            ->whereIn('tanggal', $targetDates)
-                            ->where('class_room_id', $classRoomId)
-                            ->delete();
                     }
 
-                    // If not present, clear any records for this student on this date/week
-                    if ($attendance !== 'hadir') {
+                    // ONLY clear records if student was explicitly marked absent ('sakit', 'izin', 'alpa')
+                    if (in_array($attendance, ['sakit', 'izin', 'alpa'], true)) {
                         HafalanRecord::where('student_id', $studentId)
                             ->whereIn('submitted_at', $targetDates)
                             ->delete();
@@ -401,13 +405,15 @@ class SpreadsheetInputController extends Controller
                     }
 
                     // 2. Save Setoran (Hafalan / UMMI)
-                    if ($type === 'hafalan') {
-                        $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
-                    } elseif ($type === 'ummi') {
-                        if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
-                            $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
-                        } else {
+                    if ($attendance === 'hadir' || $hasHafalanInput || $hasUmmiInput) {
+                        if ($type === 'hafalan') {
                             $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                        } elseif ($type === 'ummi') {
+                            if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
+                                $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                            } else {
+                                $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                            }
                         }
                     }
                 }
