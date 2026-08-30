@@ -166,7 +166,6 @@ class SpreadsheetInputController extends Controller
             $students = Student::query()
                 ->with(['classRoom.program', 'teacher.user'])
                 ->where('class_room_id', $selectedClassId)
-                ->whereIn('id', $visibleStudentIds)
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get();
@@ -340,11 +339,16 @@ class SpreadsheetInputController extends Controller
             }
         }
 
-        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap) {
+        $allowedStudentIds = Student::query()
+            ->where('class_room_id', $classRoomId)
+            ->where('status', 'active')
+            ->pluck('id');
+
+        DB::transaction(function () use ($request, $classRoomId, $type, $allowedStudentIds, $isWeekly, $weekDatesMap) {
             foreach ($request->input('records', []) as $studentId => $studentData) {
                 $studentId = (int)$studentId;
-                if (!$visibleStudentIds->contains($studentId)) {
-                    continue; // Skip student without access
+                if (!$allowedStudentIds->contains($studentId)) {
+                    continue; // Skip student if not in this class
                 }
 
                 $student = Student::findOrFail($studentId);
@@ -356,6 +360,25 @@ class SpreadsheetInputController extends Controller
                 foreach ($studentData['dates'] ?? [] as $date => $cellData) {
                     $attendance = $cellData['attendance'] ?? null;
                     $targetDates = ($isWeekly && !empty($weekDatesMap[$date])) ? $weekDatesMap[$date] : [$date];
+
+                    // Check if hafalan or UMMI data is filled in for this cell
+                    $hasHafalanInput = false;
+                    foreach ($cellData['hafalans'] ?? [] as $hData) {
+                        if (!empty($hData['surah_id']) && (filled($hData['ayah_start'] ?? null) || filled($hData['ayah_end'] ?? null))) {
+                            $hasHafalanInput = true;
+                            break;
+                        }
+                    }
+
+                    $hasUmmiInput = filled($cellData['ummi_jilid'] ?? null)
+                        || filled($cellData['ummi_halaman'] ?? null)
+                        || filled($cellData['materi'] ?? null)
+                        || filled($cellData['nilai'] ?? null);
+
+                    // Auto-mark attendance as 'hadir' if hafalan/UMMI is input but attendance pill was not set
+                    if (($hasHafalanInput || $hasUmmiInput) && empty($attendance)) {
+                        $attendance = 'hadir';
+                    }
 
                     // 1. Save Attendance
                     if (filled($attendance)) {
@@ -385,12 +408,7 @@ class SpreadsheetInputController extends Controller
                     if ($type === 'hafalan') {
                         $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                     } elseif ($type === 'ummi') {
-                        $hasUmmiData = filled($cellData['ummi_jilid'] ?? null)
-                            || filled($cellData['ummi_halaman'] ?? null)
-                            || filled($cellData['materi'] ?? null)
-                            || filled($cellData['nilai'] ?? null);
-
-                        if ($student->tahfizh_level === 'ummi' || $hasUmmiData) {
+                        if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
                             $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                         } else {
                             $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
@@ -419,9 +437,12 @@ class SpreadsheetInputController extends Controller
         $processedRecordIds = [];
 
         foreach ($cellData['hafalans'] ?? [] as $hafalanData) {
-            if (empty($hafalanData['surah_id']) || empty($hafalanData['ayah_start']) || empty($hafalanData['ayah_end'])) {
+            if (empty($hafalanData['surah_id'])) {
                 continue;
             }
+
+            $ayahStart = filled($hafalanData['ayah_start'] ?? null) ? (int)$hafalanData['ayah_start'] : 1;
+            $ayahEnd = filled($hafalanData['ayah_end'] ?? null) ? (int)$hafalanData['ayah_end'] : $ayahStart;
 
             // Calculate lines count
             $surah = Surah::find($hafalanData['surah_id']);
@@ -429,8 +450,8 @@ class SpreadsheetInputController extends Controller
             if ($surah) {
                 $baris = \App\Http\Controllers\ReportController::calculateLines(
                     $surah->number,
-                    (int)$hafalanData['ayah_start'],
-                    (int)$hafalanData['ayah_end'],
+                    $ayahStart,
+                    $ayahEnd,
                     $surah->total_ayah
                 );
             }
@@ -439,8 +460,8 @@ class SpreadsheetInputController extends Controller
                 'student_id' => $studentId,
                 'teacher_id' => $teacherId,
                 'surah_id' => $hafalanData['surah_id'],
-                'ayah_start' => $hafalanData['ayah_start'],
-                'ayah_end' => $hafalanData['ayah_end'],
+                'ayah_start' => $ayahStart,
+                'ayah_end' => $ayahEnd,
                 'score' => $hafalanData['score'] ?? null,
                 'status' => $hafalanData['status'] ?? 'passed',
                 'submission_type' => $hafalanData['submission_type'] ?? 'new',
