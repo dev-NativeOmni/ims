@@ -30,7 +30,12 @@
                 gridData: {},
                 surahDetails: {},
                 isDirty: false,
+                isMobileView: window.innerWidth < 768,
                 init() {
+                    window.addEventListener('resize', () => {
+                        this.isMobileView = window.innerWidth < 768;
+                    });
+
                     window.addEventListener('beforeunload', (e) => {
                         if (this.isDirty) {
                             e.preventDefault();
@@ -323,18 +328,18 @@
                                                             <button type="button" @click="handleAttendanceChange(student.id, date, 'izin')" :class="cell.attendance === 'izin' ? 'bg-blue-500 text-white border-blue-500' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">I</button>
                                                             <button type="button" @click="handleAttendanceChange(student.id, date, 'alpa')" :class="cell.attendance === 'alpa' ? 'bg-rose-600 text-white border-rose-600' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">A</button>
                                                         </div>
-                                                        <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][attendance]'" :value="cell.attendance">
+                                                        <input type="hidden" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][attendance]'" :value="cell.attendance" :disabled="isMobileView">
                                                     </div>
 
                                                     <!-- INPUT FIELDS (DENGAN LOGIKA ACTIVE/DISABLED) -->
-                                                    <div :class="cell.attendance !== 'hadir' ? 'opacity-30 pointer-events-none' : ''" class="transition-opacity space-y-2">
+                                                    <div :class="(cell.attendance && cell.attendance !== 'hadir') ? 'opacity-30 pointer-events-none' : ''" class="transition-opacity space-y-2">
                                                         
                                                         <!-- TAB 1: SETORAN AL-QUR'AN (Sama untuk semua murid) -->
                                                         <div x-show="tab === 'hafalan'" class="space-y-2">
                                                             <template x-for="(h, hIndex) in cell.hafalans" :key="hIndex">
                                                                 <div class="p-2 bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-255 dark:border-zinc-800 rounded-lg relative space-y-1.5">
                                                                     <!-- Surah select -->
-                                                                    <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                    <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, date)" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                         <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                         @foreach ($surahs as $surah)
                                                                             <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -342,27 +347,27 @@
                                                                     </select>
                                                                     <!-- Ayat range -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
-                                                                        <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <input type="number" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" @input="autoMarkHadir(student.id, date)" placeholder="Awal" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <input type="number" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" @input="autoMarkHadir(student.id, date)" placeholder="Akhir" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                     </div>
                                                                     <!-- Score & Status -->
                                                                     <div class="grid grid-cols-2 gap-1">
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                        <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                             <option value="" class="dark:bg-zinc-900">Nilai</option>
                                                                             <option value="95" class="dark:bg-zinc-900">A</option>
                                                                             <option value="85" class="dark:bg-zinc-900">B</option>
                                                                             <option value="75" class="dark:bg-zinc-900">C</option>
                                                                             <option value="65" class="dark:bg-zinc-900">D</option>
                                                                         </select>
-                                                                        <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
+                                                                        <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
                                                                             <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                             <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                             <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
                                                                         </select>
                                                                     </div>
                                                                     <!-- Hidden tracking fields -->
-                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
-                                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'hafalan'">
+                                                                    <input type="hidden" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="isMobileView || tab !== 'hafalan'">
+                                                                    <input type="hidden" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="isMobileView || tab !== 'hafalan'">
                                                                     <!-- Remove button -->
                                                                     <template x-if="cell.hafalans.length > 1">
                                                                         <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute -top-1.5 -right-1.5 bg-red-100 hover:bg-red-200 dark:bg-zinc-800 text-red-650 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-red-200 dark:border-zinc-700 cursor-pointer">×</button>
@@ -518,10 +523,11 @@
                                             <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'izin')" :class="cell.attendance === 'izin' ? 'bg-blue-500 text-white border-blue-500 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Izin</button>
                                             <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'alpa')" :class="cell.attendance === 'alpa' ? 'bg-rose-600 text-white border-rose-600 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Alpa</button>
                                         </div>
+                                        <input type="hidden" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][attendance]'" :value="cell.attendance" :disabled="!isMobileView">
                                     </div>
 
                                     <!-- Form Inputs (Locked if absent) -->
-                                    <div :class="cell.attendance !== 'hadir' ? 'opacity-30 pointer-events-none' : ''" class="transition-opacity space-y-4">
+                                    <div :class="(cell.attendance && cell.attendance !== 'hadir') ? 'opacity-30 pointer-events-none' : ''" class="transition-opacity space-y-4">
                                         
                                         <!-- MOBILE TAB 1: SETORAN AL-QUR'AN -->
                                         <div x-show="tab === 'hafalan'" class="space-y-3">
@@ -529,7 +535,7 @@
                                                 <div class="bg-gray-50/50 dark:bg-zinc-800/40 p-3 rounded-lg border border-gray-255 dark:border-zinc-800 relative space-y-3">
                                                     <div>
                                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Surah</label>
-                                                        <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                        <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, selectedMobileDate)" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                             <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                             @foreach ($surahs as $surah)
                                                                 <option value="{{ $surah->id }}" class="dark:bg-zinc-900">{{ $surah->number }}. {{ $surah->name_latin }}</option>
@@ -539,17 +545,17 @@
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Mulai</label>
-                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <input type="number" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" @input="autoMarkHadir(student.id, selectedMobileDate)" placeholder="Awal" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Akhir</label>
-                                                            <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <input type="number" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" @input="autoMarkHadir(student.id, selectedMobileDate)" placeholder="Akhir" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                         </div>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
                                                                 <option value="95" class="dark:bg-zinc-900">A</option>
                                                                 <option value="85" class="dark:bg-zinc-900">B</option>
@@ -559,7 +565,7 @@
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</label>
-                                                            <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                            <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][status]'" x-model="h.status" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 <option value="passed" class="dark:bg-zinc-900">Lulus</option>
                                                                 <option value="repeat" class="dark:bg-zinc-900">Ulang</option>
                                                                 <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
@@ -567,7 +573,7 @@
                                                         </div>
                                                     </div>
                                                     <!-- Hidden variables -->
-                                                    <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
+                                                    <input type="hidden" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="!isMobileView || tab !== 'hafalan'">
                                                     <!-- Delete button -->
                                                     <template x-if="cell.hafalans.length > 1">
                                                         <button type="button" @click="isDirty = true; cell.hafalans.splice(hIndex, 1)" class="absolute top-2 right-2 text-rose-650 text-xs font-bold bg-white dark:bg-zinc-800 border border-gray-255 dark:border-zinc-700 rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">×</button>
