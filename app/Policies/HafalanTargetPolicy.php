@@ -10,7 +10,7 @@ class HafalanTargetPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'parent', 'student', 'headmaster', 'supervisor', 'coordinator_tahfizh']);
+        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'parent', 'student', 'headmaster', 'coordinator_tahfizh']);
     }
 
     public function view(User $user, HafalanTarget $hafalanTarget): bool

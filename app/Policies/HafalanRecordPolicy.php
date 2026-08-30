@@ -10,7 +10,7 @@ class HafalanRecordPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'parent', 'student', 'headmaster', 'supervisor', 'coordinator_tahfizh']);
+        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'parent', 'student', 'headmaster', 'coordinator_tahfizh']);
     }
 
     public function view(User $user, HafalanRecord $hafalanRecord): bool
@@ -21,7 +21,7 @@ class HafalanRecordPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'headmaster', 'supervisor']);
+        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'headmaster']);
     }
 
     public function update(User $user, HafalanRecord $hafalanRecord): bool
