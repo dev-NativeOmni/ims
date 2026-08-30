@@ -166,6 +166,7 @@ class SpreadsheetInputController extends Controller
             $students = Student::query()
                 ->with(['classRoom.program', 'teacher.user'])
                 ->where('class_room_id', $selectedClassId)
+                ->whereIn('id', $visibleStudentIds)
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get();
@@ -339,16 +340,11 @@ class SpreadsheetInputController extends Controller
             }
         }
 
-        $allowedStudentIds = Student::query()
-            ->where('class_room_id', $classRoomId)
-            ->where('status', 'active')
-            ->pluck('id');
-
-        DB::transaction(function () use ($request, $classRoomId, $type, $allowedStudentIds, $isWeekly, $weekDatesMap) {
+        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap) {
             foreach ($request->input('records', []) as $studentId => $studentData) {
                 $studentId = (int)$studentId;
-                if (!$allowedStudentIds->contains($studentId)) {
-                    continue; // Skip student if not in this class
+                if (!$visibleStudentIds->contains($studentId)) {
+                    continue; // Skip student without access (halaqoh scope)
                 }
 
                 $student = Student::findOrFail($studentId);

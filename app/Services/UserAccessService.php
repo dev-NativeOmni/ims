@@ -65,10 +65,7 @@ class UserAccessService
             }
 
             return Student::query()
-                ->where(function ($q) use ($teacherProfile) {
-                    $q->where('teacher_id', $teacherProfile->id)
-                        ->orWhereNull('teacher_id');
-                })
+                ->where('teacher_id', $teacherProfile->id)
                 ->pluck('id');
         }
 
