@@ -247,16 +247,22 @@ class StoreHafalanRecordRequest extends FormRequest
             }
 
             if ($student && ! $student->teacher_id) {
-                $validator->errors()->add(
-                    'student_id',
-                    'Murid ini belum memiliki guru pembimbing.'
-                );
+                $fallbackTeacherId = $this->user()?->teacherProfile?->id ?? TeacherProfile::query()->value('id');
+                if ($fallbackTeacherId) {
+                    $student->update(['teacher_id' => $fallbackTeacherId]);
+                    $this->merge(['teacher_id' => $fallbackTeacherId]);
+                } else {
+                    $validator->errors()->add(
+                        'student_id',
+                        'Murid ini belum memiliki guru pembimbing.'
+                    );
+                }
             }
 
             if ($student && $this->user()?->hasRole('teacher')) {
                 $teacherId = $this->user()?->teacherProfile?->id;
 
-                if (! $teacherId || (int) $student->teacher_id !== (int) $teacherId) {
+                if (! $teacherId || ((int) $student->teacher_id !== (int) $teacherId)) {
                     $validator->errors()->add(
                         'student_id',
                         'Guru hanya boleh input setoran untuk murid bimbingannya.'

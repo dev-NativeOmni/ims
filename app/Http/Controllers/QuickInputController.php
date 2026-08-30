@@ -536,13 +536,29 @@ class QuickInputController extends Controller
     private function resolveTeacherId(Request $request, Student $student): ?int
     {
         $user = $request->user();
+        $teacherId = null;
 
-        if ($user?->hasRole('teacher')) {
-            return TeacherProfile::query()
-                ->where('user_id', $user->id)
-                ->value('id');
+        if ($user?->teacherProfile?->id) {
+            $teacherId = (int) $user->teacherProfile->id;
+        } elseif ($user?->hasRole('teacher')) {
+            $tId = TeacherProfile::query()->where('user_id', $user->id)->value('id');
+            if ($tId) {
+                $teacherId = (int) $tId;
+            }
         }
 
-        return $student->teacher_id;
+        if (! $teacherId && $student->teacher_id) {
+            $teacherId = (int) $student->teacher_id;
+        }
+
+        if (! $teacherId) {
+            $teacherId = (int) TeacherProfile::query()->value('id');
+        }
+
+        if ($teacherId && ! $student->teacher_id) {
+            $student->update(['teacher_id' => $teacherId]);
+        }
+
+        return $teacherId;
     }
 }
