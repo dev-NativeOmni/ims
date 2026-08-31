@@ -9,6 +9,9 @@
     $gemilangLogoBase64 = file_exists($gemilangImgPath) 
         ? 'data:image/png;base64,' . base64_encode(file_get_contents($gemilangImgPath))
         : asset('images/logo-gemilang-banner.png');
+
+    $className = $selectedClass?->name ?? '';
+    $hideZiyadah = (bool) preg_match('/(E2|E3|X\.?E2|X\.?E3|E-2|E-3)/i', $className);
 @endphp
 
 <div id="ummiGrade10ReportCard" class="mx-auto max-w-5xl rounded-[28px] p-5 sm:p-8 shadow-2xl relative font-sans border-[5px] border-amber-400" style="background-color: #ffffff !important; color: #0f172a !important; box-sizing: border-box !important;">
@@ -53,8 +56,10 @@
                     <th class="py-2 px-3 border-r border-emerald-600 text-left">Nama Murid</th>
                     <th class="py-2 px-2 border-r border-emerald-600 w-14">Jilid</th>
                     <th class="py-2 px-2 border-r border-emerald-600 w-16">Halaman</th>
-                    <th class="py-2 px-3 border-r border-emerald-600 text-left">Capaian Hafalan</th>
-                    <th class="py-2 px-3 text-left">Ziyadah</th>
+                    <th class="py-2 px-3 {{ $hideZiyadah ? '' : 'border-r border-emerald-600' }} text-left">Capaian Hafalan</th>
+                    @if (!$hideZiyadah)
+                        <th class="py-2 px-3 text-left">Ziyadah</th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200" style="color: #0f172a !important;">
@@ -72,16 +77,18 @@
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-black" style="color: #1e3a8a !important;">
                             {{ $row['ummi_halaman'] ?: '-' }}
                         </td>
-                        <td class="py-1.5 px-3 border-r border-zinc-200 font-semibold" style="color: #1e293b !important;">
+                        <td class="py-1.5 px-3 {{ $hideZiyadah ? '' : 'border-r border-zinc-200' }} font-semibold" style="color: #1e293b !important;">
                             {{ $row['ummi_capaian'] ?: '-' }}
                         </td>
-                        <td class="py-1.5 px-3 font-semibold" style="color: #0369a1 !important;">
-                            {{ $row['ziyadah'] ?: '-' }}
-                        </td>
+                        @if (!$hideZiyadah)
+                            <td class="py-1.5 px-3 font-semibold" style="color: #0369a1 !important;">
+                                {{ $row['ziyadah'] ?: '-' }}
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr style="background-color: #ffffff !important;">
-                        <td colspan="6" class="py-6 text-center text-xs font-semibold" style="color: #64748b !important;">
+                        <td colspan="{{ $hideZiyadah ? 5 : 6 }}" class="py-6 text-center text-xs font-semibold" style="color: #64748b !important;">
                             Belum ada data catatan Pembelajaran UMMI untuk kelas ini.
                         </td>
                     </tr>
