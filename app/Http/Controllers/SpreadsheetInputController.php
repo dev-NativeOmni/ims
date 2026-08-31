@@ -490,15 +490,18 @@ class SpreadsheetInputController extends Controller
                 );
             }
 
+            $rawScore = $hafalanData['score'] ?? null;
+            $score = (filled($rawScore) && is_numeric($rawScore)) ? (float)$rawScore : null;
+
             $dataToSave = [
                 'student_id' => $studentId,
                 'teacher_id' => $teacherId,
                 'surah_id' => $hafalanData['surah_id'],
                 'ayah_start' => $ayahStart,
                 'ayah_end' => $ayahEnd,
-                'score' => $hafalanData['score'] ?? null,
-                'status' => $hafalanData['status'] ?? 'passed',
-                'submission_type' => $hafalanData['submission_type'] ?? 'new',
+                'score' => $score,
+                'status' => filled($hafalanData['status'] ?? null) ? $hafalanData['status'] : 'passed',
+                'submission_type' => filled($hafalanData['submission_type'] ?? null) ? $hafalanData['submission_type'] : 'new',
                 'submitted_at' => $date,
                 'baris' => $baris,
             ];
@@ -541,11 +544,11 @@ class SpreadsheetInputController extends Controller
         $existingRecordIds = $existingRecords->pluck('id')->toArray();
         $processedRecordIds = [];
 
-        $ummiJilid = $cellData['ummi_jilid'] ?? null;
-        $ummiHalaman = $cellData['ummi_halaman'] ?? null;
-        $materi = $cellData['materi'] ?? null;
-        $nilai = $cellData['nilai'] ?? null;
-        $tatapMuka = $cellData['tatap_muka'] ?? 1;
+        $ummiJilid = filled($cellData['ummi_jilid'] ?? null) ? $cellData['ummi_jilid'] : null;
+        $ummiHalaman = filled($cellData['ummi_halaman'] ?? null) ? $cellData['ummi_halaman'] : null;
+        $materi = filled($cellData['materi'] ?? null) ? $cellData['materi'] : null;
+        $nilai = filled($cellData['nilai'] ?? null) ? $cellData['nilai'] : null;
+        $tatapMuka = filled($cellData['tatap_muka'] ?? null) ? (int)$cellData['tatap_muka'] : 1;
 
         $hasUmmiFields = filled($ummiJilid) || filled($ummiHalaman) || filled($materi) || filled($nilai);
         $hafalansList = $cellData['hafalans'] ?? [];
