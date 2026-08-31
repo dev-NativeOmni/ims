@@ -186,6 +186,7 @@
                         month: this.selectedMonth,
                         type: this.tab,
                         week: '{{ $selectedWeek }}',
+                        records: this.gridData,
                         records_json: JSON.stringify(this.gridData)
                     };
 

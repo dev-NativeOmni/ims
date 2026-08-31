@@ -349,12 +349,23 @@ class SpreadsheetInputController extends Controller
             }
         }
 
-        $records = $request->input('records', []);
-        if ($request->filled('records_json')) {
-            $decoded = json_decode($request->input('records_json'), true);
-            if (is_array($decoded) && (empty($records) || count($decoded) > count($records))) {
-                $records = $decoded;
+        $records = $request->input('records');
+
+        if (empty($records) && $request->has('records_json')) {
+            $rawJson = $request->input('records_json');
+            if (is_array($rawJson)) {
+                $records = $rawJson;
+            } elseif (is_string($rawJson) && filled($rawJson)) {
+                $records = json_decode($rawJson, true);
             }
+        }
+
+        if (is_string($records) && filled($records)) {
+            $records = json_decode($records, true);
+        }
+
+        if (!is_array($records)) {
+            $records = [];
         }
 
         DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap, $records) {
