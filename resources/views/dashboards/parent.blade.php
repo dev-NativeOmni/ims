@@ -277,6 +277,37 @@
                                 </div>
                             @endif
 
+                            {{-- ═══════════════ TARGET PROGRES HAFALAN SUMMARY ═══════════════ --}}
+                            <div class="rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 p-4 border border-emerald-200 dark:border-emerald-900/50 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">🎯 Target Kurikulum Hafalan</span>
+                                            @if (data_get($row, 'target_juz_label'))
+                                                <span class="px-2 py-0.5 rounded-md text-xs font-black bg-emerald-600 text-white shadow-xs">
+                                                    {{ data_get($row, 'target_juz_label') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                                            Ketercapaian hafalan sesuai standar kurikulum program santri.
+                                        </p>
+                                    </div>
+                                    <div class="text-left sm:text-right">
+                                        <p class="text-2xl font-black text-emerald-900 dark:text-emerald-200">
+                                            {{ number_format((float) data_get($row, 'progress_percent', 0), 1) }}%
+                                        </p>
+                                        <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                                            {{ number_format(data_get($row, 'memorized_ayahs', 0)) }} / {{ number_format(data_get($row, 'target_total_ayahs', data_get($row, 'total_quran_ayahs', 6236))) }} ayat
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="h-2.5 w-full overflow-hidden rounded-full bg-emerald-200/60 dark:bg-emerald-900/60">
+                                    <div class="h-2.5 rounded-full bg-emerald-600 transition-all duration-300"
+                                         style="width: {{ min(100, max(0, (float) data_get($row, 'progress_percent', 0))) }}%"></div>
+                                </div>
+                            </div>
+
                             {{-- ═══════════════ PETA PERJALANAN HAFALAN ANAK (4 TERM X 3 KELAS) ═══════════════ --}}
                             <div class="mt-4">
                                 <x-student-hafalan-journey :milestones="data_get($row, 'term_milestones', [])" />

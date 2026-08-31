@@ -253,6 +253,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/hafalan-targets/store-bulk-ummi', [HafalanTargetController::class, 'storeBulkUmmi'])
             ->name('hafalan-targets.store-bulk-ummi');
 
+        Route::post('/hafalan-targets/bulk-complete', [HafalanTargetController::class, 'bulkComplete'])
+            ->name('hafalan-targets.bulk-complete');
+        Route::post('/hafalan-targets/bulk-destroy', [HafalanTargetController::class, 'bulkDestroy'])
+            ->name('hafalan-targets.bulk-destroy');
+
         Route::patch('/hafalan-targets/{hafalanTarget}/complete', [HafalanTargetController::class, 'complete'])
             ->name('hafalan-targets.complete');
 

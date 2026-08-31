@@ -127,6 +127,22 @@ class HafalanTargetController extends Controller
             ->orderBy('name')
             ->get();
 
+        $grade10ClassRooms = $classRooms->filter(function ($c) {
+            $name = $c->name;
+            $level = $c->level ?? '';
+            return ((preg_match('/\bX\b/i', $name) && !preg_match('/\b(XI|XII)\b/i', $name))
+                || preg_match('/\b10\b/i', $name)
+                || preg_match('/^X[-_\s]?E/i', $name)
+                || preg_match('/kelas\s*(X|10)/i', $name)
+                || (preg_match('/\bX\b/i', $level) && !preg_match('/\b(XI|XII)\b/i', $level))
+                || preg_match('/\b10\b/i', $level))
+                && !preg_match('/\b(XI|XII|11|12)\b/i', $name);
+        })->values();
+
+        $regulerClassRooms = $classRooms->reject(function ($c) use ($grade10ClassRooms) {
+            return $grade10ClassRooms->contains('id', $c->id);
+        })->values();
+
         $user = $request->user();
         $isTeacherOnly = $user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']);
 
@@ -145,7 +161,7 @@ class HafalanTargetController extends Controller
             $currentTeacherId = (int) ($request->input('teacher_id') ?: ($user->teacherProfile?->id ?? $teachers->first()?->id));
         }
 
-        $students = Student::query()
+        $studentsQuery = Student::query()
             ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
             ->where('status', 'active')
@@ -154,9 +170,16 @@ class HafalanTargetController extends Controller
             })
             ->when($request->filled('teacher_id') || $isTeacherOnly, function ($q) use ($request, $currentTeacherId) {
                 $q->where('teacher_id', $currentTeacherId);
-            })
-            ->orderBy('name')
-            ->get();
+            });
+
+        if ($activeProgram === 'ummi' && ! $request->filled('class_room_id')) {
+            $grade10Ids = $grade10ClassRooms->pluck('id')->all();
+            if (! empty($grade10Ids)) {
+                $studentsQuery->whereIn('class_room_id', $grade10Ids);
+            }
+        }
+
+        $students = $studentsQuery->orderBy('name')->get();
 
         $surahs = Surah::query()
             ->orderBy('number')
@@ -168,6 +191,8 @@ class HafalanTargetController extends Controller
             'targets',
             'students',
             'classRooms',
+            'grade10ClassRooms',
+            'regulerClassRooms',
             'teachers',
             'surahs',
             'summary',
@@ -183,47 +208,50 @@ class HafalanTargetController extends Controller
         $this->authorize('create', HafalanTarget::class);
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
-        $request->validate([
+        $validated = $request->validate([
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
             'targets' => ['required', 'array'],
             'targets.*.student_id' => ['required', 'integer', 'exists:students,id'],
             'targets.*.surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
             'targets.*.ayah_start' => ['nullable', 'integer', 'min:1'],
             'targets.*.ayah_end' => ['nullable', 'integer', 'min:1'],
             'targets.*.target_date' => ['nullable', 'date'],
-            'targets.*.notes' => ['nullable', 'string', 'max:1000'],
+            'targets.*.notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $count = 0;
-        foreach ($request->input('targets', []) as $row) {
-            $studentId = (int) ($row['student_id'] ?? 0);
+        foreach ($validated['targets'] as $row) {
+            if (empty($row['surah_id']) || empty($row['ayah_start']) || empty($row['ayah_end'])) {
+                continue;
+            }
+
+            $studentId = (int) $row['student_id'];
             if (! $visibleStudentIds->contains($studentId)) {
                 continue;
             }
 
-            if (! empty($row['surah_id']) && ! empty($row['target_date'])) {
-                $student = Student::find($studentId);
-                if (! $student) {
-                    continue;
-                }
-
-                $teacherId = $this->resolveTeacherId($request, $student);
-
-                HafalanTarget::create([
-                    'student_id' => $student->id,
-                    'teacher_id' => $teacherId,
-                    'surah_id' => (int) $row['surah_id'],
-                    'ayah_start' => (int) ($row['ayah_start'] ?? 1),
-                    'ayah_end' => (int) ($row['ayah_end'] ?? 1),
-                    'target_date' => $row['target_date'],
-                    'notes' => $row['notes'] ?? null,
-                    'status' => $this->defaultOpenTargetStatus(),
-                ]);
-                $count++;
+            $student = Student::find($studentId);
+            if (! $student) {
+                continue;
             }
+
+            $teacherId = $this->resolveTeacherId($request, $student);
+
+            HafalanTarget::create([
+                'student_id' => $student->id,
+                'teacher_id' => $teacherId,
+                'surah_id' => $row['surah_id'],
+                'ayah_start' => $row['ayah_start'],
+                'ayah_end' => $row['ayah_end'],
+                'target_date' => $row['target_date'] ?: now()->addWeeks(2)->toDateString(),
+                'notes' => $row['notes'] ?? null,
+                'status' => $this->defaultOpenTargetStatus(),
+            ]);
+            $count++;
         }
 
         return redirect()
-            ->route('hafalan-targets.index', ['program' => 'reguler', 'class_room_id' => $request->input('class_room_id')])
+            ->route('hafalan-targets.index', ['program' => 'reguler', 'class_room_id' => $validated['class_room_id']])
             ->with('success', "Berhasil menyimpan {$count} target hafalan reguler.");
     }
 
@@ -233,6 +261,7 @@ class HafalanTargetController extends Controller
 
         $validated = $request->validate([
             'teacher_id' => ['required', 'integer', 'exists:teacher_profiles,id'],
+            'class_room_id' => ['nullable', 'integer', 'exists:class_rooms,id'],
             'ummi_jilid' => ['required', 'string', 'max:100'],
             'halaman_peraga' => ['nullable', 'string', 'max:100'],
             'halaman_buku' => ['nullable', 'string', 'max:100'],
@@ -248,10 +277,28 @@ class HafalanTargetController extends Controller
             $teacherProfile = \App\Models\TeacherProfile::findOrFail($validated['teacher_id']);
         }
 
-        $students = Student::query()
+        $studentsQuery = Student::query()
             ->where('teacher_id', $teacherProfile->id)
-            ->where('status', 'active')
-            ->get();
+            ->where('status', 'active');
+
+        if (! empty($validated['class_room_id'])) {
+            $studentsQuery->where('class_room_id', (int) $validated['class_room_id']);
+        } else {
+            // Apply only to Grade 10 students (Never apply to Grade 11 / Grade 12)
+            $studentsQuery->whereHas('classRoom', function ($q) {
+                $q->where(function ($sq) {
+                    $sq->where('name', 'like', '%X%')
+                       ->orWhere('name', 'like', '%10%')
+                       ->orWhere('level', 'like', '%X%')
+                       ->orWhere('level', 'like', '%10%');
+                })->where('name', 'not like', '%XI%')
+                  ->where('name', 'not like', '%XII%')
+                  ->where('name', 'not like', '%11%')
+                  ->where('name', 'not like', '%12%');
+            });
+        }
+
+        $students = $studentsQuery->get();
 
         $count = 0;
         foreach ($students as $student) {
@@ -271,9 +318,66 @@ class HafalanTargetController extends Controller
             $count++;
         }
 
+        $redirectParams = ['program' => 'ummi', 'teacher_id' => $validated['teacher_id']];
+        if (! empty($validated['class_room_id'])) {
+            $redirectParams['class_room_id'] = $validated['class_room_id'];
+        }
+
         return redirect()
-            ->route('hafalan-targets.index', ['program' => 'ummi', 'teacher_id' => $validated['teacher_id']])
-            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} murid di Halaqah Musyrif.");
+            ->route('hafalan-targets.index', $redirectParams)
+            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} murid Kelas 10 di Halaqah Musyrif.");
+    }
+
+    public function bulkComplete(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'target_ids' => ['required', 'array'],
+            'target_ids.*' => ['required', 'integer', 'exists:hafalan_targets,id'],
+        ]);
+
+        $visibleStudentIds = $this->visibleStudentIds($request->user());
+
+        $targets = HafalanTarget::query()
+            ->whereIn('id', $validated['target_ids'])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->get();
+
+        $count = 0;
+        foreach ($targets as $target) {
+            $this->authorize('update', $target);
+            $target->update(['status' => 'completed']);
+            $count++;
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Berhasil menandai {$count} target hafalan sebagai selesai.");
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'target_ids' => ['required', 'array'],
+            'target_ids.*' => ['required', 'integer', 'exists:hafalan_targets,id'],
+        ]);
+
+        $visibleStudentIds = $this->visibleStudentIds($request->user());
+
+        $targets = HafalanTarget::query()
+            ->whereIn('id', $validated['target_ids'])
+            ->whereIn('student_id', $visibleStudentIds)
+            ->get();
+
+        $count = 0;
+        foreach ($targets as $target) {
+            $this->authorize('delete', $target);
+            $target->delete();
+            $count++;
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Berhasil menghapus {$count} target hafalan terpilih.");
     }
 
     public function create(Request $request): View

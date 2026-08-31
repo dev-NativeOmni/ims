@@ -227,11 +227,18 @@
                     <div class="rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 lg:col-span-2">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
-                                    Progress Hafalan
-                                </h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-base font-semibold text-zinc-900 dark:text-white">
+                                        Progress Hafalan
+                                    </h3>
+                                    @if (!empty($progress['target_juz_label']))
+                                        <span class="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20">
+                                            Target: {{ $progress['target_juz_label'] }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                                    Progress dihitung dari hafalan lulus.
+                                    Progress dihitung dari setoran hafalan lulus sesuai target kurikulum program.
                                 </p>
                             </div>
 
@@ -240,9 +247,9 @@
                                     {{ number_format($progressPercent, 2) }}%
                                 </p>
                                 <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                                    {{ number_format(data_get($progress, 'memorized_ayahs', data_get($progress, 'memorized_ayah_count', 0))) }}
+                                    {{ number_format(data_get($progress, 'memorized_ayahs', 0)) }}
                                     /
-                                    {{ number_format(data_get($progress, 'total_quran_ayahs', data_get($progress, 'total_ayah_count', 6236))) }}
+                                    {{ number_format(data_get($progress, 'target_total_ayahs', data_get($progress, 'total_quran_ayahs', 6236))) }}
                                     ayat
                                 </p>
                             </div>

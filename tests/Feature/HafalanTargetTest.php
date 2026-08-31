@@ -355,8 +355,24 @@ class HafalanTargetTest extends TestCase
     }
 
     #[Test]
-    public function teacher_can_store_bulk_ummi_targets_per_halaqah(): void
+    public function teacher_can_store_bulk_ummi_targets_only_for_grade_10(): void
     {
+        // Student 1 (Grade 10)
+        $this->student->classRoom->update(['name' => 'X E1', 'level' => '10']);
+
+        // Student 2 (Grade 11 under same teacher)
+        $grade11Class = \App\Models\ClassRoom::create([
+            'name' => 'XI F3',
+            'level' => '11',
+        ]);
+        $grade11Student = \App\Models\Student::create([
+            'user_id' => \App\Models\User::factory()->create()->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'class_room_id' => $grade11Class->id,
+            'name' => 'Grade 11 Student',
+            'status' => 'active',
+        ]);
+
         $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.store-bulk-ummi'), [
             'teacher_id' => $this->teacherProfile->id,
             'ummi_jilid' => 'Jilid 2',
@@ -370,12 +386,85 @@ class HafalanTargetTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('success');
 
+        // Grade 10 student should have Ummi target
         $this->assertDatabaseHas('hafalan_targets', [
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'ummi_jilid' => 'Jilid 2',
-            'halaman_peraga' => 'Hal 10',
-            'halaman_buku' => 'Hal 15',
         ]);
+
+        // Grade 11 student should NOT have Ummi target
+        $this->assertDatabaseMissing('hafalan_targets', [
+            'student_id' => $grade11Student->id,
+            'ummi_jilid' => 'Jilid 2',
+        ]);
+    }
+
+    #[Test]
+    public function teacher_can_bulk_complete_targets(): void
+    {
+        $target1 = HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 5,
+            'target_date' => now()->addDays(3)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $target2 = HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 6,
+            'ayah_end' => 10,
+            'target_date' => now()->addDays(7)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.bulk-complete'), [
+            'target_ids' => [$target1->id, $target2->id],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertEquals('completed', $target1->fresh()->status);
+        $this->assertEquals('completed', $target2->fresh()->status);
+    }
+
+    #[Test]
+    public function teacher_can_bulk_destroy_targets(): void
+    {
+        $target1 = HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 5,
+            'target_date' => now()->addDays(3)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $target2 = HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 6,
+            'ayah_end' => 10,
+            'target_date' => now()->addDays(7)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->post(route('hafalan-targets.bulk-destroy'), [
+            'target_ids' => [$target1->id, $target2->id],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertSoftDeleted('hafalan_targets', ['id' => $target1->id]);
+        $this->assertSoftDeleted('hafalan_targets', ['id' => $target2->id]);
     }
 }

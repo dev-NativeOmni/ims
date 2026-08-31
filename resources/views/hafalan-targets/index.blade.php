@@ -151,28 +151,28 @@
                 <div class="rounded-2xl bg-white p-6 shadow-sm border border-gray-200 space-y-5">
                     <div class="border-b border-gray-100 pb-4">
                         <h3 class="text-lg font-extrabold text-teal-900 flex items-center gap-2">
-                            <span>📗 Target Metode Ummi Bulk Per-Halaqah Musyrif (Kelas 10)</span>
+                            <span>📗 Target Metode Ummi Bulk Per-Halaqah Musyrif (Khusus Kelas 10)</span>
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak untuk seluruh murid anggota Halaqah Musyrif.</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak hanya untuk murid Kelas 10 anggota Halaqah Musyrif.</p>
                     </div>
 
                     <form method="POST" action="{{ route('hafalan-targets.store-bulk-ummi') }}" class="space-y-6">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100 flex items-center justify-between">
+                            <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @if (! empty($isTeacherOnly) && $isTeacherOnly)
                                     <div>
                                         <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">🕌 Halaqah Musyrif Anda</label>
                                         <p class="text-base font-extrabold text-teal-900">
-                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Murid Bimbingan)
+                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Murid Kelas 10)
                                         </p>
                                     </div>
                                     <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
                                 @else
-                                    <div class="w-full">
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🕌 Pilih Halaqah Musyrif / Guru Pembimbing</label>
-                                        <select name="teacher_id" required onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id='+this.value" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🕌 Pilih Halaqah Musyrif / Guru</label>
+                                        <select name="teacher_id" required onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id='+this.value+'{{ request('class_room_id') ? '&class_room_id='.request('class_room_id') : '' }}'" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
                                             @foreach ($teachers as $t)
                                                 <option value="{{ $t->id }}" @selected((string) request('teacher_id', $currentTeacherId) === (string) $t->id)>
                                                     Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
@@ -181,7 +181,39 @@
                                         </select>
                                     </div>
                                 @endif
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🏫 Filter Kelas 10 (Opsional)</label>
+                                    <select name="class_room_id" onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id={{ $currentTeacherId }}&class_room_id='+this.value" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
+                                        <option value="">Semua Kelas 10 di Halaqah Ini ({{ $students->count() }} Murid)</option>
+                                        @foreach ($grade10ClassRooms as $gc)
+                                            <option value="{{ $gc->id }}" @selected((string) request('class_room_id') === (string) $gc->id)>
+                                                Kelas {{ $gc->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
+
+                            @if ($students->isNotEmpty())
+                                <div class="lg:col-span-3 bg-white p-3 rounded-xl border border-teal-200">
+                                    <p class="text-xs font-bold text-teal-800 mb-1.5 flex items-center gap-1">
+                                        <span>👥 Daftar Murid Kelas 10 Yang Akan Menerima Target Ini ({{ $students->count() }} Murid):</span>
+                                    </p>
+                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                                        @foreach ($students as $st)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+                                                <span>👤 {{ $st->name }}</span>
+                                                <span class="text-[10px] text-teal-600">({{ $st->classRoom?->name ?? '-' }})</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <div class="lg:col-span-3 bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs font-semibold text-amber-800">
+                                    ⚠️ Tidak ada murid Kelas 10 pada Halaqah / Kelas yang dipilih. Silakan pilih kelas atau halaqah lain.
+                                </div>
+                            @endif
 
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📖 Jilid Ummi</label>
@@ -230,10 +262,10 @@
 
                         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                             <p class="text-xs text-gray-500">
-                                💡 Target Ummi ini akan otomatis diterapkan ke seluruh murid di bawah Halaqah Musyrif yang dipilih.
+                                💡 Target Ummi hanya akan diterapkan kepada murid <strong>Kelas 10</strong> di Halaqah yang dipilih (Kelas 11 &amp; 12 tidak terpengaruh).
                             </p>
-                            <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition">
-                                <span>🚀 Terapkan Target Ummi Ke Halaqah Ini</span>
+                            <button type="submit" @disabled($students->isEmpty()) class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition disabled:opacity-50 cursor-pointer">
+                                <span>🚀 Terapkan Target Ummi Ke Murid Kelas 10</span>
                             </button>
                         </div>
                     </form>
@@ -268,15 +300,81 @@
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="font-extrabold text-base text-gray-900">Daftar Target Hafalan Tersimpan</h3>
+            <div x-data="{
+                selectedTargets: [],
+                allIds: {{ json_encode($targets->pluck('id')->all()) }},
+                selectAll: false,
+                toggleAll() {
+                    if (this.selectAll) {
+                        this.selectedTargets = [...this.allIds];
+                    } else {
+                        this.selectedTargets = [];
+                    }
+                },
+                updateSelectAll() {
+                    this.selectAll = this.allIds.length > 0 && this.selectedTargets.length === this.allIds.length;
+                }
+            }" class="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-200">
+
+                {{-- Floating / Top Bulk Action Bar --}}
+                <div x-show="selectedTargets.length > 0"
+                     x-transition
+                     class="bg-emerald-800 text-white px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 shadow-md">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-white text-emerald-900 text-xs font-black px-2.5 py-1 rounded-lg shadow-sm">
+                            <span x-text="selectedTargets.length"></span> Terpilih
+                        </span>
+                        <span class="text-sm font-bold">Pilih Aksi Massal untuk target yang dicentang:</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        {{-- Form Bulk Complete --}}
+                        <form method="POST" action="{{ route('hafalan-targets.bulk-complete') }}" class="inline">
+                            @csrf
+                            <template x-for="id in selectedTargets" :key="'comp_' + id">
+                                <input type="hidden" name="target_ids[]" :value="id">
+                            </template>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-3.5 py-1.5 text-xs font-bold text-white shadow transition cursor-pointer">
+                                ✅ Tandai Selesai (<span x-text="selectedTargets.length"></span>)
+                            </button>
+                        </form>
+
+                        {{-- Form Bulk Destroy --}}
+                        <form method="POST" action="{{ route('hafalan-targets.bulk-destroy') }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus target yang dicentang?')" class="inline">
+                            @csrf
+                            <template x-for="id in selectedTargets" :key="'del_' + id">
+                                <input type="hidden" name="target_ids[]" :value="id">
+                            </template>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 px-3.5 py-1.5 text-xs font-bold text-white shadow transition cursor-pointer">
+                                🗑️ Hapus Terpilih (<span x-text="selectedTargets.length"></span>)
+                            </button>
+                        </form>
+
+                        <button type="button" @click="selectedTargets = []; selectAll = false" class="text-xs text-emerald-200 hover:text-white underline ml-2 cursor-pointer">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                        <h3 class="font-extrabold text-base text-gray-900">Daftar Target Hafalan Tersimpan</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Centang target pada tabel untuk menyelesaikan atau menghapus beberapa target sekaligus.</p>
+                    </div>
                     <span class="text-xs font-semibold text-gray-500">Mode: {{ strtoupper($activeProgram) }}</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-4 py-3 text-center w-10">
+                                    <input type="checkbox"
+                                           x-model="selectAll"
+                                           @change="toggleAll()"
+                                           class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                                </th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Murid</th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Musyrif / Guru</th>
                                 <th class="px-4 py-3 text-left font-bold text-gray-600">Target Detail</th>
@@ -292,7 +390,7 @@
                                     $statusClass = match ($target->status) {
                                         'active' => $target->is_overdue
                                             ? 'bg-red-50 text-red-700 border-red-200'
-                                            : 'bg-blue-50 text-blue-700 border-blue-200',
+                                             : 'bg-blue-50 text-blue-700 border-blue-200',
                                         'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                                         'missed' => 'bg-amber-50 text-amber-700 border-amber-200',
                                         'cancelled' => 'bg-gray-50 text-gray-700 border-gray-200',
@@ -300,7 +398,15 @@
                                     };
                                 @endphp
 
-                                <tr>
+                                <tr :class="selectedTargets.includes({{ $target->id }}) ? 'bg-emerald-50/60' : ''" class="hover:bg-gray-50/70 transition">
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox"
+                                               :value="{{ $target->id }}"
+                                               x-model="selectedTargets"
+                                               @change="updateSelectAll()"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                                    </td>
+
                                     <td class="px-4 py-4">
                                         <div class="font-bold text-gray-900">{{ $target->student?->name ?? '-' }}</div>
                                         <div class="text-xs text-gray-500">
@@ -365,7 +471,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-10 text-center text-gray-500">
+                                    <td colspan="7" class="px-4 py-10 text-center text-gray-500">
                                         Belum ada target hafalan tersimpan.
                                     </td>
                                 </tr>
