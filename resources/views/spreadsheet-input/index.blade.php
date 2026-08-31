@@ -176,36 +176,19 @@
                         });
                     }
                 },
-                saveData() {
+                submitForm() {
                     if (this.isSaving) return;
                     this.isSaving = true;
                     this.isDirty = false;
 
-                    const payload = {
-                        class_room_id: this.selectedClass,
-                        month: this.selectedMonth,
-                        type: this.tab,
-                        week: '{{ $selectedWeek }}',
-                        records: this.gridData,
-                        records_json: JSON.stringify(this.gridData)
-                    };
-
-                    axios.post('{{ route('spreadsheet-input.save') }}', payload)
-                        .then(res => {
-                            if (res.data && res.data.redirect) {
-                                window.location.href = res.data.redirect;
-                            } else {
-                                window.location.reload();
-                            }
-                        })
-                        .catch(err => {
+                    this.$nextTick(() => {
+                        const form = document.getElementById('spreadsheet-form');
+                        if (form) {
+                            form.submit();
+                        } else {
                             this.isSaving = false;
-                            let msg = 'Gagal menyimpan data.';
-                            if (err.response && err.response.data && err.response.data.message) {
-                                msg += ' (' + err.response.data.message + ')';
-                            }
-                            alert(msg);
-                        });
+                        }
+                    });
                 }
             }));
         });
@@ -302,7 +285,7 @@
 
                 <!-- Submit Button -->
                 <div class="w-full sm:w-auto">
-                    <button type="button" @click="saveData()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
+                    <button type="button" @click="submitForm()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
                         <template x-if="!isSaving">
                             <span class="inline-flex items-center gap-1.5">
                                 <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Kelas
@@ -768,19 +751,31 @@
             <!-- Floating Unsaved Changes Save Bar -->
             <div x-show="isDirty"
                  x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="translate-y-12 opacity-0"
-                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:enter-start="translate-y-12 opacity-0 scale-95"
+                 x-transition:enter-end="translate-y-0 opacity-100 scale-100"
                  x-transition:leave="transition ease-in duration-200 transform"
-                 x-transition:leave-start="translate-y-0 opacity-100"
-                 x-transition:leave-end="translate-y-12 opacity-0"
-                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl border border-zinc-700 dark:border-zinc-200 flex items-center gap-4 text-xs font-bold"
+                 x-transition:leave-start="translate-y-0 opacity-100 scale-100"
+                 x-transition:leave-end="translate-y-12 opacity-0 scale-95"
+                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/95 text-white dark:bg-white/95 dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-zinc-700/80 dark:border-zinc-300 flex items-center gap-4 text-xs font-bold"
                  style="display: none;">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-                    <span>Ada perubahan yang belum disimpan!</span>
+                    <span>Ada perubahan setoran / presensi yang belum disimpan!</span>
                 </div>
-                <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-xl font-bold transition shadow-md cursor-pointer">
-                    💾 Simpan Sekarang
+                <button type="button" @click="submitForm()" :disabled="isSaving" class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-xl font-bold transition shadow-lg cursor-pointer flex items-center gap-1.5">
+                    <template x-if="!isSaving">
+                        <span class="inline-flex items-center gap-1.5">
+                            💾 Simpan Sekarang
+                        </span>
+                    </template>
+                    <template x-if="isSaving">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg> Menyimpan...
+                        </span>
+                    </template>
                 </button>
             </div>
 

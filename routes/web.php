@@ -322,19 +322,19 @@ Route::middleware(['auth'])->group(function () {
             ->name('reports.export.csv');
 
         Route::get('/reports/periodic', [ReportController::class, 'periodicProgress'])
-            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh')
+            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor')
             ->name('reports.periodic');
 
         Route::get('/reports/whatsapp', [ReportController::class, 'whatsappDaily'])
-            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh')
+            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor')
             ->name('reports.whatsapp');
 
         Route::get('/attendances/check', [\App\Http\Controllers\AttendanceController::class, 'check'])
-            ->middleware('role:super_admin,admin,teacher,coordinator_tahfizh')
+            ->middleware('role:super_admin,admin,teacher,coordinator_tahfizh,supervisor')
             ->name('attendances.check');
 
         Route::post('/attendances/save', [\App\Http\Controllers\AttendanceController::class, 'save'])
-            ->middleware('role:super_admin,admin,teacher,coordinator_tahfizh')
+            ->middleware('role:super_admin,admin,teacher,coordinator_tahfizh,supervisor')
             ->name('attendances.save');
 
         Route::get('/admin/reports/quarterly', [\App\Http\Controllers\QuarterlyReportController::class, 'index'])
@@ -342,7 +342,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('reports.quarterly');
 
         Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
-            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh')
+            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor')
             ->name('reports.periodic.print');
 
         Route::get('/reports/student/{student}', [ReportController::class, 'student'])

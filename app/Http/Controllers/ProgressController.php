@@ -133,6 +133,8 @@ class ProgressController extends Controller
                 || preg_match('/\b10\b/i', $selectedClassLevel)
             ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
+            $summary = $this->studentProgressService->summaryFromRows($progressRows);
+
             return view('progress.index', compact(
                 'summary',
                 'progressRows',
@@ -152,6 +154,7 @@ class ProgressController extends Controller
             $filterStudents = $students;
             $classRoomIds = $students->pluck('class_room_id')->filter()->unique()->values();
             $classRooms = ClassRoom::query()->with('program')->whereIn('id', $classRoomIds)->orderBy('name')->get();
+            $teachers = \App\Models\TeacherProfile::with('user')->get();
 
             $progressRows = $students->map(function ($s) {
                 return [
@@ -181,7 +184,8 @@ class ProgressController extends Controller
                 'summary',
                 'progressRows',
                 'filterStudents',
-                'classRooms'
+                'classRooms',
+                'teachers'
             ));
         }
     }
