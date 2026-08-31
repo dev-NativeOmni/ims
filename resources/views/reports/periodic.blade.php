@@ -324,13 +324,14 @@
                 tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
                 
                 // Draw Title Header Banner
+                tempCtx.textAlign = 'center';
                 tempCtx.fillStyle = '#111827';
-                tempCtx.font = 'bold 16px Arial, sans-serif';
-                tempCtx.fillText(title, 20, 32);
+                tempCtx.font = 'bold 18px Arial, sans-serif';
+                tempCtx.fillText(title, tempCanvas.width / 2, 32);
 
                 tempCtx.fillStyle = '#6B7280';
-                tempCtx.font = '12px Arial, sans-serif';
-                tempCtx.fillText("Aplikasi IMS HafizPlus — SMAIA 7", 20, 52);
+                tempCtx.font = '13px Arial, sans-serif';
+                tempCtx.fillText("IMS-SMAIA7", tempCanvas.width / 2, 54);
 
                 // Divider line
                 tempCtx.strokeStyle = '#E5E7EB';

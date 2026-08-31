@@ -435,14 +435,15 @@
                 ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
                 // Title
+                ctx.textAlign = 'center';
                 ctx.fillStyle = '#111827';
                 ctx.font = 'bold 18px Inter, sans-serif';
-                ctx.fillText(titleText, 20, 35);
+                ctx.fillText(titleText, tempCanvas.width / 2, 35);
 
                 // Subtitle
                 ctx.fillStyle = '#6B7280';
                 ctx.font = '13px Inter, sans-serif';
-                ctx.fillText(subTitleText, 20, 60);
+                ctx.fillText("IMS-SMAIA7", tempCanvas.width / 2, 58);
 
                 // Line separator
                 ctx.strokeStyle = '#E5E7EB';
