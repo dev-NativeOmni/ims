@@ -198,7 +198,15 @@
                                 alert('Elemen laporan tidak ditemukan.');
                                 return;
                             }
-                            htmlToImage.toPng(cardEl, { pixelRatio: 2, backgroundColor: '#ffffff' }).then(dataUrl => {
+                            const width = cardEl.offsetWidth;
+                            const height = cardEl.offsetHeight;
+                            htmlToImage.toPng(cardEl, {
+                                pixelRatio: 2,
+                                backgroundColor: '#ffffff',
+                                width: width,
+                                height: height,
+                                style: { margin: '0', left: '0', top: '0', transform: 'none' }
+                            }).then(dataUrl => {
                                 const a = document.createElement('a');
                                 a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
                                 a.href = dataUrl;

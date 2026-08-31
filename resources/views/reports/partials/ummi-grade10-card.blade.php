@@ -11,7 +11,7 @@
         : asset('images/logo-gemilang-banner.png');
 @endphp
 
-<div id="ummiGrade10ReportCard" class="mx-auto max-w-5xl rounded-[28px] p-5 sm:p-8 shadow-2xl relative overflow-hidden font-sans border-[5px] border-amber-400" style="background-color: #ffffff !important; color: #0f172a !important;">
+<div id="ummiGrade10ReportCard" class="mx-auto max-w-5xl rounded-[28px] p-5 sm:p-8 shadow-2xl relative font-sans border-[5px] border-amber-400" style="background-color: #ffffff !important; color: #0f172a !important; box-sizing: border-box !important;">
     
     <!-- Top Header Bar with Centered Logos -->
     <div class="flex items-center justify-center gap-3 sm:gap-5 border-b-2 border-amber-300 pb-3 mb-3 text-center">
