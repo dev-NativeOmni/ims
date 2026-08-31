@@ -22,7 +22,18 @@
         </div>
     </x-slot>
 
-    <div class="py-3 sm:py-6">
+    <div class="py-3 sm:py-6" x-data="{
+        selectedIds: [],
+        selectAll: false,
+        category: '{{ request('category', 'reguler') }}',
+        toggleSelectAll(recordIds) {
+            if (this.selectAll) {
+                this.selectedIds = recordIds.map(id => String(id));
+            } else {
+                this.selectedIds = [];
+            }
+        }
+    }">
         <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4">
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-3 rounded-xl text-sm font-semibold">
@@ -35,6 +46,22 @@
                     {{ session('error') }}
                 </div>
             @endif
+
+            <!-- Bulk Action Bar -->
+            <div x-show="selectedIds.length > 0" x-transition class="flex items-center justify-between bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 rounded-xl shadow-sm">
+                <span class="text-xs font-bold text-rose-800 dark:text-rose-300">
+                    <span x-text="selectedIds.length"></span> data dipilih
+                </span>
+                <form method="POST" :action="category === 'ummi' ? '{{ route('ummi-records.bulk-destroy') }}' : '{{ route('hafalan-records.bulk-destroy') }}'" onsubmit="return confirm('Hapus semua data yang dipilih?')" class="inline">
+                    @csrf
+                    <template x-for="id in selectedIds" :key="id">
+                        <input type="hidden" name="ids[]" :value="id">
+                    </template>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer flex items-center gap-1.5">
+                        <x-heroicon-o-trash class="w-4 h-4" /> Hapus Terpilih (<span x-text="selectedIds.length"></span>)
+                    </button>
+                </form>
+            </div>
 
             <!-- Hafalan Category Tabs (Scrollable on Mobile) -->
             <div class="flex overflow-x-auto items-center gap-2 sm:gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-3 scrollbar-none">
@@ -259,6 +286,11 @@
                         @if (request('category') === 'ummi')
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                    @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                        <th class="px-3 py-3 text-center">
+                                            <input type="checkbox" x-model="selectAll" @change="toggleSelectAll([{{ $hafalanRecords->pluck('id')->implode(',') }}])" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
+                                        </th>
+                                    @endif
                                     <th class="px-4 py-3">Tanggal</th>
                                     <th class="px-4 py-3">Murid</th>
                                     <th class="px-4 py-3">Tatap Muka</th>
@@ -277,6 +309,11 @@
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                                 @forelse ($hafalanRecords as $record)
                                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                        @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                            <td class="px-3 py-3.5 text-center">
+                                                <input type="checkbox" value="{{ $record->id }}" x-model="selectedIds" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
+                                            </td>
+                                        @endif
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             {{ $record->tanggal?->format('d M Y') }}
                                         </td>
@@ -361,6 +398,11 @@
                         @else
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                    @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                        <th class="px-3 py-3 text-center">
+                                            <input type="checkbox" x-model="selectAll" @change="toggleSelectAll([{{ $hafalanRecords->pluck('id')->implode(',') }}])" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
+                                        </th>
+                                    @endif
                                     <th class="px-4 py-3">Tanggal</th>
                                     <th class="px-4 py-3">Murid</th>
                                     <th class="px-4 py-3">Surah</th>
@@ -376,6 +418,11 @@
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                                 @forelse ($hafalanRecords as $record)
                                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                        @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                            <td class="px-3 py-3.5 text-center">
+                                                <input type="checkbox" value="{{ $record->id }}" x-model="selectedIds" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
+                                            </td>
+                                        @endif
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             {{ $record->submitted_at?->format('d M Y') }}
                                         </td>

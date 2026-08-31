@@ -278,6 +278,52 @@ class HafalanRecordController extends Controller
             ->with('success', 'Data progres UMMI berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:hafalan_records,id'],
+        ]);
+
+        $user = $request->user();
+        $records = HafalanRecord::whereIn('id', $validated['ids'])->get();
+
+        $count = 0;
+        foreach ($records as $record) {
+            if ($user->hasAnyRole(['super_admin', 'admin']) || ($user->hasRole('teacher') && (int)$record->teacher_id === (int)$user->teacherProfile?->id)) {
+                $record->delete();
+                $count++;
+            }
+        }
+
+        return redirect()
+            ->route('hafalan-records.index', ['category' => 'hafalan'])
+            ->with('success', "Berhasil menghapus {$count} data hafalan.");
+    }
+
+    public function bulkDestroyUmmi(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:ummi_records,id'],
+        ]);
+
+        $user = $request->user();
+        $records = UmmiRecord::whereIn('id', $validated['ids'])->get();
+
+        $count = 0;
+        foreach ($records as $record) {
+            if ($user->hasAnyRole(['super_admin', 'admin']) || ($user->hasRole('teacher') && (int)$record->teacher_id === (int)$user->teacherProfile?->id)) {
+                $record->delete();
+                $count++;
+            }
+        }
+
+        return redirect()
+            ->route('hafalan-records.index', ['category' => 'ummi'])
+            ->with('success', "Berhasil menghapus {$count} data UMMI.");
+    }
+
     private function formData(User $user): array
     {
         $students = Student::query()

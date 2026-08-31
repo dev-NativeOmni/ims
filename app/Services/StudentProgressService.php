@@ -251,6 +251,12 @@ class StudentProgressService
             $statusIcon = '🔴';
         }
 
+        $targetJuzCount = ($tahfizhLevel === 'reguler' || $isWeeklyProgram) ? 2 : 4;
+        $targetQuranAyahs = (int) round(($totalQuranAyahs / 30) * $targetJuzCount);
+        $targetProgressPercent = $targetQuranAyahs > 0
+            ? min(100.0, round(($memorizedAyahs / $targetQuranAyahs) * 100, 2))
+            : 0;
+
         return [
             'student' => $student,
             'student_id' => $student->id,
@@ -284,6 +290,9 @@ class StudentProgressService
             'reguler_baris_percent' => $regulerBarisPercent,
 
             'total_quran_ayahs' => $totalQuranAyahs,
+            'target_juz_count' => $targetJuzCount,
+            'target_quran_ayahs' => $targetQuranAyahs,
+            'target_progress_percent' => $targetProgressPercent,
             'memorized_ayahs' => $memorizedAyahs,
             'remaining_ayahs' => max(0, $totalQuranAyahs - $memorizedAyahs),
             'progress_percent' => $progressPercent,

@@ -59,20 +59,30 @@ class ProgressController extends Controller
 
             $classRooms = ClassRoom::query()
                 ->with('program')
-                ->when($classRoomIds->isNotEmpty(), function (Builder $query) use ($classRoomIds) {
-                    $query->whereIn('id', $classRoomIds);
-                })
                 ->orderBy('name')
                 ->get();
 
+            $teachers = \App\Models\TeacherProfile::with('user')->get();
+
             $studentsQuery = $this->studentProgressService
                 ->visibleStudentQuery($user)
-                ->with(['classRoom.program'])
+                ->with(['classRoom.program']);
+
+            if ($user->hasRole('teacher') && $request->filled('class_room_id')) {
+                $studentsQuery = Student::query()
+                    ->where('class_room_id', (int) $request->input('class_room_id'))
+                    ->with(['classRoom.program']);
+            }
+
+            $studentsQuery
                 ->when($request->filled('student_id'), function (Builder $query) use ($request) {
                     $query->where('id', (int) $request->input('student_id'));
                 })
-                ->when($request->filled('class_room_id'), function (Builder $query) use ($request) {
+                ->when($request->filled('class_room_id') && !$user->hasRole('teacher'), function (Builder $query) use ($request) {
                     $query->where('class_room_id', (int) $request->input('class_room_id'));
+                })
+                ->when($request->filled('teacher_id'), function (Builder $query) use ($request) {
+                    $query->where('teacher_id', (int) $request->input('teacher_id'));
                 })
                 ->when($request->filled('q'), function (Builder $query) use ($request) {
                     $keyword = trim((string) $request->input('q'));
@@ -117,7 +127,8 @@ class ProgressController extends Controller
                 'summary',
                 'progressRows',
                 'filterStudents',
-                'classRooms'
+                'classRooms',
+                'teachers'
             ));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('ProgressController index error: '.$e->getMessage(), [

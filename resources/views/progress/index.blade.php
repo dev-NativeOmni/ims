@@ -81,6 +81,22 @@
                     </div>
 
                     <div>
+                        <label for="teacher_id" class="mb-1 block text-sm font-semibold text-gray-700">
+                            Halaqoh / Musyrif
+                        </label>
+                        <select id="teacher_id"
+                                name="teacher_id"
+                                class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Semua Halaqoh</option>
+                            @foreach ($teachers as $t)
+                                <option value="{{ $t->id }}" @selected((string) request('teacher_id') === (string) $t->id)>
+                                    {{ $t->user?->name ?? 'Halaqoh #'.$t->id }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="sort" class="mb-1 block text-sm font-semibold text-gray-700">
                             Urutkan
                         </label>
@@ -155,18 +171,24 @@
                                 @if (request('class_room_id'))
                                     - {{ $classRooms->firstWhere('id', request('class_room_id'))?->name }}
                                 @endif
+                                @if (request('teacher_id'))
+                                    (Halaqoh {{ $teachers->firstWhere('id', request('teacher_id'))?->user?->name }})
+                                @endif
                             </h3>
                             <p class="text-xs text-gray-500 mt-1">
                                 Membandingkan jumlah target hafalan yang direncanakan dengan target yang telah terealisasi (selesai).
                             </p>
                         </div>
-                        <div class="flex gap-4 text-xs font-semibold">
+                        <div class="flex items-center gap-4 text-xs font-semibold">
                             <span class="flex items-center gap-1.5 text-zinc-500">
                                 <span class="w-3.5 h-3.5 bg-indigo-500 rounded"></span> Target Setoran
                             </span>
                             <span class="flex items-center gap-1.5 text-zinc-500">
                                 <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> Terealisasi (Lulus)
                             </span>
+                            <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
+                                📥 Download Grafik (PNG)
+                            </button>
                         </div>
                     </div>
 
@@ -224,20 +246,21 @@
                                     <td class="px-5 py-4 align-top">
                                         <div class="mb-1 flex items-center justify-between gap-3">
                                             <span class="font-semibold text-gray-900">
-                                                {{ number_format((float) $row['progress_percent'], 2) }}%
+                                                {{ number_format((float) ($row['target_progress_percent'] ?? $row['progress_percent']), 2) }}%
+                                                <span class="text-[10px] font-medium text-gray-500">(Target {{ $row['target_juz_count'] ?? 2 }} Juz)</span>
                                             </span>
                                             <span class="text-xs text-gray-500">
-                                                {{ number_format($row['memorized_ayahs']) }} / {{ number_format($row['total_quran_ayahs']) }} ayat
+                                                {{ number_format($row['memorized_ayahs']) }} / {{ number_format($row['target_quran_ayahs'] ?? 416) }} ayat
                                             </span>
                                         </div>
 
                                         <div class="mb-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                            {{ $row['completed_juz_count'] }} Juz ({{ $row['completed_juz_list'] }})
+                                            {{ $row['completed_juz_count'] }} Juz Terlampaui ({{ $row['completed_juz_list'] }})
                                         </div>
 
                                         <div class="h-2.5 w-56 overflow-hidden rounded-full bg-gray-100">
                                             <div class="h-2.5 rounded-full bg-emerald-600"
-                                                 style="width: {{ min(100, max(0, (float) $row['progress_percent'])) }}%"></div>
+                                                 style="width: {{ min(100, max(0, (float) ($row['target_progress_percent'] ?? $row['progress_percent']))) }}%"></div>
                                         </div>
                                     </td>
 
@@ -392,6 +415,52 @@
                     }
                 });
             });
+
+            function downloadChartWithTitle() {
+                const originalCanvas = document.getElementById('progressChart');
+                if (!originalCanvas) return;
+
+                const tempCanvas = document.createElement('canvas');
+                const ctx = tempCanvas.getContext('2d');
+
+                const titleText = "Diagram Progres Hafalan Murid";
+                const subTitleText = "IMS HafizPlus — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                const bannerHeight = 80;
+                tempCanvas.width = originalCanvas.width;
+                tempCanvas.height = originalCanvas.height + bannerHeight;
+
+                // Background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+                // Title
+                ctx.fillStyle = '#111827';
+                ctx.font = 'bold 18px Inter, sans-serif';
+                ctx.fillText(titleText, 20, 35);
+
+                // Subtitle
+                ctx.fillStyle = '#6B7280';
+                ctx.font = '13px Inter, sans-serif';
+                ctx.fillText(subTitleText, 20, 60);
+
+                // Line separator
+                ctx.strokeStyle = '#E5E7EB';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(20, 72);
+                ctx.lineTo(tempCanvas.width - 20, 72);
+                ctx.stroke();
+
+                // Draw original chart
+                ctx.drawImage(originalCanvas, 0, bannerHeight);
+
+                // Trigger Download
+                const a = document.createElement('a');
+                a.download = 'Grafik_Perkembangan_Hafalan.png';
+                a.href = tempCanvas.toDataURL('image/png');
+                a.click();
+            }
         </script>
     @endif
 </x-app-layout>

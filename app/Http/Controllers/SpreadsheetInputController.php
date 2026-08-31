@@ -572,7 +572,10 @@ class SpreadsheetInputController extends Controller
         $tatapMuka = filled($cellData['tatap_muka'] ?? null) ? (int)$cellData['tatap_muka'] : 1;
 
         $hasUmmiFields = filled($ummiJilid) || filled($ummiHalaman) || filled($materi) || filled($nilai);
-        $hafalansList = $cellData['hafalans'] ?? [];
+        $rawHafalans = $cellData['hafalans'] ?? [];
+        $hafalansList = array_values(array_filter($rawHafalans, function ($h) {
+            return !empty($h['surah_id']) || !empty($h['ayah']);
+        }));
 
         if (!$hasUmmiFields && empty($hafalansList)) {
             UmmiRecord::where('student_id', $studentId)
