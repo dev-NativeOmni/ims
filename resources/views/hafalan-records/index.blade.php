@@ -165,6 +165,20 @@
                                 </div>
                                 @endif
                             </div>
+                            @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                    <a href="{{ route('ummi-records.edit', $record) }}" class="btn-action-edit flex-1 text-center">
+                                        ✏️ Edit
+                                    </a>
+                                    <form method="POST" action="{{ route('ummi-records.destroy', $record) }}" onsubmit="return confirm('Hapus data progres UMMI ini?')" class="flex-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-action-delete w-full">
+                                            🗑️ Hapus
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     @empty
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
@@ -254,6 +268,9 @@
                                     <th class="px-4 py-3 text-center">Baris</th>
                                     <th class="px-4 py-3">Nilai</th>
                                     <th class="px-4 py-3">Simak</th>
+                                    @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                        <th class="px-4 py-3 text-right">Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
 
@@ -315,10 +332,27 @@
                                             Guru: <span class="font-semibold {{ $record->disimak_guru === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_guru }}</span> | 
                                             Ortu: <span class="font-semibold {{ $record->disimak_ortu === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_ortu }}</span>
                                         </td>
+
+                                        @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                            <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                                                <div class="flex items-center justify-end gap-1.5">
+                                                    <a href="{{ route('ummi-records.edit', $record) }}" class="btn-action-edit">
+                                                        ✏️ Edit
+                                                    </a>
+                                                    <form method="POST" action="{{ route('ummi-records.destroy', $record) }}" onsubmit="return confirm('Hapus data progres UMMI ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn-action-delete">
+                                                            🗑️ Hapus
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                        <td colspan="10" class="px-4 py-6 text-center text-xs text-zinc-500">
                                             Belum ada data catatan Tahsin UMMI.
                                         </td>
                                     </tr>

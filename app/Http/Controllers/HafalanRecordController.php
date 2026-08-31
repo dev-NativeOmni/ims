@@ -229,6 +229,55 @@ class HafalanRecordController extends Controller
             ->with('success', 'Data hafalan berhasil dihapus.');
     }
 
+    public function editUmmi(Request $request, UmmiRecord $ummiRecord): View
+    {
+        $this->authorize('update', HafalanRecord::class);
+
+        return view('hafalan-records.edit-ummi', array_merge(
+            [
+                'ummiRecord' => $ummiRecord,
+            ],
+            $this->formData($request->user())
+        ));
+    }
+
+    public function updateUmmi(Request $request, UmmiRecord $ummiRecord): RedirectResponse
+    {
+        $this->authorize('update', HafalanRecord::class);
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'integer', 'exists:students,id'],
+            'tanggal' => ['required', 'date'],
+            'tatap_muka' => ['nullable', 'integer', 'min:1'],
+            'ummi_jilid' => ['nullable', 'string', 'max:50'],
+            'ummi_halaman' => ['nullable', 'string', 'max:50'],
+            'materi' => ['nullable', 'string', 'max:255'],
+            'nilai' => ['nullable', 'string', 'max:10'],
+            'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'hafalan_ayah' => ['nullable', 'string', 'max:50'],
+            'disimak_guru' => ['required', \Illuminate\Validation\Rule::in(['Ya', 'Tidak'])],
+            'disimak_ortu' => ['required', \Illuminate\Validation\Rule::in(['Ya', 'Tidak'])],
+            'catatan' => ['nullable', 'string'],
+        ]);
+
+        $ummiRecord->update($validated);
+
+        return redirect()
+            ->route('hafalan-records.index', ['category' => 'ummi'])
+            ->with('success', 'Data progres UMMI berhasil diperbarui.');
+    }
+
+    public function destroyUmmi(Request $request, UmmiRecord $ummiRecord): RedirectResponse
+    {
+        $this->authorize('delete', HafalanRecord::class);
+
+        $ummiRecord->delete();
+
+        return redirect()
+            ->route('hafalan-records.index', ['category' => 'ummi'])
+            ->with('success', 'Data progres UMMI berhasil dihapus.');
+    }
+
     private function formData(User $user): array
     {
         $students = Student::query()

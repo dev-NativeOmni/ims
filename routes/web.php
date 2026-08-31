@@ -260,6 +260,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/ummi-records', [QuickInputController::class, 'storeUmmi'])
             ->name('ummi-records.store');
+        Route::get('/ummi-records/{ummiRecord}/edit', [HafalanRecordController::class, 'editUmmi'])
+            ->name('ummi-records.edit');
+        Route::put('/ummi-records/{ummiRecord}', [HafalanRecordController::class, 'updateUmmi'])
+            ->name('ummi-records.update');
+        Route::delete('/ummi-records/{ummiRecord}', [HafalanRecordController::class, 'destroyUmmi'])
+            ->name('ummi-records.destroy');
 
         Route::get('/spreadsheet-input', [SpreadsheetInputController::class, 'index'])
             ->name('spreadsheet-input.index');
