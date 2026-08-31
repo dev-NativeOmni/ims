@@ -342,25 +342,37 @@
                     return;
                 }
                 
-                html2canvas(cardEl, {
-                    scale: 2,
-                    backgroundColor: '#ffffff',
-                    logging: false
-                }).then(canvas => {
-                    const a = document.createElement('a');
-                    a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}_{{ $monthName }}.png';
-                    a.href = canvas.toDataURL('image/png');
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }).catch(err => {
-                    console.error('Gagal mengunduh gambar:', err);
-                    alert('Gagal mengunduh gambar. Silakan coba lagi.');
-                });
+                const executeDownload = () => {
+                    html2canvas(cardEl, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false
+                    }).then(canvas => {
+                        const a = document.createElement('a');
+                        a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}_{{ $monthName }}.png';
+                        a.href = canvas.toDataURL('image/png');
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }).catch(err => {
+                        console.error('Gagal mengunduh gambar:', err);
+                        printUmmiCard();
+                    });
+                };
+
+                if (typeof html2canvas === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = executeDownload;
+                    document.head.appendChild(script);
+                } else {
+                    executeDownload();
+                }
             }
 
             function printUmmiCard() {
-                const printUrl = "{{ route('reports.periodic.print', array_merge(request()->query(), ['class_room_id' => $selectedClassId])) }}";
+                const printUrl = "{!! route('reports.periodic.print', array_merge(request()->query(), ['class_room_id' => $selectedClassId])) !!}";
                 window.open(printUrl, '_blank');
             }
 

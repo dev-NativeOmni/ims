@@ -198,7 +198,7 @@
                                 alert('Elemen laporan tidak ditemukan.');
                                 return;
                             }
-                            html2canvas(cardEl, { scale: 2, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+                            html2canvas(cardEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false }).then(canvas => {
                                 const a = document.createElement('a');
                                 a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
                                 a.href = canvas.toDataURL('image/png');
