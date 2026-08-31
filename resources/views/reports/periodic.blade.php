@@ -312,16 +312,36 @@
             function downloadChart(chartId, title) {
                 const canvas = document.getElementById(chartId);
                 const tempCanvas = document.createElement('canvas');
+
+                const bannerHeight = 70;
                 tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
+                tempCanvas.height = canvas.height + bannerHeight;
+
                 const tempCtx = tempCanvas.getContext('2d');
                 
-                // White background
+                // Fill white background
                 tempCtx.fillStyle = '#ffffff';
                 tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
                 
-                // Draw original
-                tempCtx.drawImage(canvas, 0, 0);
+                // Draw Title Header Banner
+                tempCtx.fillStyle = '#111827';
+                tempCtx.font = 'bold 16px Arial, sans-serif';
+                tempCtx.fillText(title, 20, 32);
+
+                tempCtx.fillStyle = '#6B7280';
+                tempCtx.font = '12px Arial, sans-serif';
+                tempCtx.fillText("Aplikasi IMS HafizPlus — SMAIA 7", 20, 52);
+
+                // Divider line
+                tempCtx.strokeStyle = '#E5E7EB';
+                tempCtx.lineWidth = 1;
+                tempCtx.beginPath();
+                tempCtx.moveTo(20, 62);
+                tempCtx.lineTo(tempCanvas.width - 20, 62);
+                tempCtx.stroke();
+
+                // Draw original chart below banner
+                tempCtx.drawImage(canvas, 0, bannerHeight);
                 
                 const url = tempCanvas.toDataURL('image/png');
                 const a = document.createElement('a');
