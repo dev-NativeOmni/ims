@@ -130,64 +130,90 @@
                     $titleKetuntasan = "KETUNTASAN BULAN KELAS " . strtoupper($className);
                 @endphp
 
-                <!-- New Charts Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Left: Capaian & Target Chart (w-2/3) -->
-                    <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                                <div>
-                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                        {{ $titleCapaian }}
-                                    </h3>
-                                    <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
-                                        Membandingkan jumlah capaian baris setoran (batang) dengan target baris (garis).
-                                    </p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
-                                        📥 Unduh PNG
-                                    </button>
-                                    <button type="button" onclick="printChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
-                                        🖨️ Cetak F4
-                                    </button>
-                                </div>
+                @if (!empty($isGrade10))
+                    <!-- Grade 10 Ummi Capaian Tahfidz Card View -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-wrap gap-3">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                    Laporan Capaian Tahfidz — Pembelajaran UMMI {{ $selectedClass?->name }}
+                                </h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.
+                                </p>
                             </div>
-                            <div class="relative w-full overflow-x-auto" style="height: 380px;">
-                                <canvas id="capaianChart" style="min-width: 600px; height: 350px;"></canvas>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="downloadUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    📥 Unduh PNG
+                                </button>
+                                <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    🖨️ Cetak Halaman
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Right: Ketuntasan Pie Chart (w-1/3) -->
-                    <div class="lg:col-span-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                                <div>
-                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                        {{ $titleKetuntasan }}
-                                    </h3>
-                                    <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
-                                        Persentase ketuntasan target bulanan kelas.
-                                    </p>
+                        @include('reports.partials.ummi-grade10-card')
+                    </div>
+                @else
+                    <!-- Standard Grade 11 & 12 Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left: Capaian & Target Chart (w-2/3) -->
+                        <div class="lg:col-span-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                                    <div>
+                                        <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                            {{ $titleCapaian }}
+                                        </h3>
+                                        <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
+                                            Membandingkan jumlah capaian baris setoran (batang) dengan target baris (garis).
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
+                                            📥 Unduh PNG
+                                        </button>
+                                        <button type="button" onclick="printChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
+                                            🖨️ Cetak F4
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <button type="button" onclick="downloadChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
-                                        📥 Unduh PNG
-                                    </button>
-                                    <button type="button" onclick="printChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
-                                        🖨️ Cetak F4
-                                    </button>
+                                <div class="relative w-full overflow-x-auto" style="height: 380px;">
+                                    <canvas id="capaianChart" style="min-width: 600px; height: 350px;"></canvas>
                                 </div>
                             </div>
-                            <div class="relative w-full flex justify-center items-center" style="height: 380px;">
-                                <div style="width: 280px; height: 280px;">
-                                    <canvas id="ketuntasanChart"></canvas>
+                        </div>
+
+                        <!-- Right: Ketuntasan Pie Chart (w-1/3) -->
+                        <div class="lg:col-span-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                                    <div>
+                                        <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                            {{ $titleKetuntasan }}
+                                        </h3>
+                                        <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
+                                            Persentase ketuntasan target bulanan kelas.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="downloadChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
+                                            📥 Unduh PNG
+                                        </button>
+                                        <button type="button" onclick="printChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
+                                            🖨️ Cetak F4
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="relative w-full flex justify-center items-center" style="height: 380px;">
+                                    <div style="width: 280px; height: 280px;">
+                                        <canvas id="ketuntasanChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
                 <!-- Detailed table per student grouped by Teacher & Halaqah -->
                 <div class="space-y-8">
@@ -304,10 +330,29 @@
     </div>
 
     @if ($selectedClass)
-        <!-- ChartJS & DataLabels script -->
+        <!-- ChartJS & DataLabels script & html2canvas -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script>
+            function downloadUmmiCard() {
+                const cardEl = document.getElementById('ummiGrade10ReportCard');
+                if (!cardEl) return;
+                
+                html2canvas(cardEl, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null
+                }).then(canvas => {
+                    const a = document.createElement('a');
+                    a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}_{{ $monthName }}.png';
+                    a.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            }
+
             // Global functions for download and print
             function downloadChart(chartId, title) {
                 const canvas = document.getElementById(chartId);

@@ -927,6 +927,16 @@ class ReportController extends Controller
             ->get()
             ->groupBy('student_id');
 
+        // Bulk fetch latest UmmiRecords for Grade 10 / Ummi students
+        $allUmmiRecords = \App\Models\UmmiRecord::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('tanggal', '<=', $endDate)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
         foreach ($students as $student) {
             $studentHafalan = $hafalanRecords->where('student_id', $student->id);
             $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
@@ -991,6 +1001,19 @@ class ReportController extends Controller
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
+            // Ummi Record Details
+            $latestUmmi = $allUmmiRecords->get($student->id, collect())->first();
+            $ummiJilidRaw = $latestUmmi?->ummi_jilid ?: '-';
+            preg_match('/(\d+)/', (string) $ummiJilidRaw, $mJilid);
+            $ummiJilidNum = isset($mJilid[1]) ? $mJilid[1] : (is_numeric($ummiJilidRaw) ? $ummiJilidRaw : $ummiJilidRaw);
+            $ummiHalaman = $latestUmmi?->ummi_halaman ?: '-';
+            $ummiCapaian = $latestUmmi?->surah?->name_latin ?? ($latestUmmi?->materi ?? '-');
+
+            $ziyadahText = '-';
+            if ($latestHafalanPassed && $latestHafalanPassed->surah) {
+                $ziyadahText = $latestHafalanPassed->surah->name_latin . ($latestHafalanPassed->ayah_end ? ' (' . $latestHafalanPassed->ayah_end . ')' : '');
+            }
+
             // Violations count during the period
             $violationsCount = $allViolations->get($student->id, collect())->count();
 
@@ -1014,6 +1037,10 @@ class ReportController extends Controller
                 'target_ayat' => $targetAyat,
                 'capaian_surah' => $capaianSurah,
                 'capaian_ayat' => $capaianAyat,
+                'ummi_jilid' => $ummiJilidNum,
+                'ummi_halaman' => $ummiHalaman,
+                'ummi_capaian' => $ummiCapaian,
+                'ziyadah' => $ziyadahText,
                 'violations_count' => $violationsCount,
                 'sakit' => $sakit,
                 'izin' => $izin,
@@ -1032,9 +1059,22 @@ class ReportController extends Controller
             $groupedReports[$tName][$hLabel][] = $report;
         }
 
+        $selectedClassName = $selectedClass?->name ?? '';
+        $selectedClassLevel = $selectedClass?->level ?? '';
+
+        $isGrade10 = (bool) (
+            (preg_match('/\bX\b/i', $selectedClassName) && !preg_match('/\b(XI|XII)\b/i', $selectedClassName))
+            || preg_match('/\b10\b/i', $selectedClassName)
+            || preg_match('/^X[-_\s]?E/i', $selectedClassName)
+            || preg_match('/kelas\s*(X|10)/i', $selectedClassName)
+            || (preg_match('/\bX\b/i', $selectedClassLevel) && !preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
+            || preg_match('/\b10\b/i', $selectedClassLevel)
+        ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
+
         return [
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
+            'isGrade10' => $isGrade10,
             'studentReports' => $studentReports,
             'groupedReports' => $groupedReports,
             'summary' => $summary,

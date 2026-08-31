@@ -120,15 +120,27 @@ class ProgressController extends Controller
                     ->values();
             }
 
-            $summary = $this->studentProgressService
-                ->summaryFromRows($progressRows);
+            $selectedClass = $request->filled('class_room_id') ? $classRooms->firstWhere('id', (int) $request->input('class_room_id')) : null;
+            $selectedClassName = $selectedClass?->name ?? '';
+            $selectedClassLevel = $selectedClass?->level ?? '';
+
+            $isGrade10 = (bool) (
+                (preg_match('/\bX\b/i', $selectedClassName) && !preg_match('/\b(XI|XII)\b/i', $selectedClassName))
+                || preg_match('/\b10\b/i', $selectedClassName)
+                || preg_match('/^X[-_\s]?E/i', $selectedClassName)
+                || preg_match('/kelas\s*(X|10)/i', $selectedClassName)
+                || (preg_match('/\bX\b/i', $selectedClassLevel) && !preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
+                || preg_match('/\b10\b/i', $selectedClassLevel)
+            ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
             return view('progress.index', compact(
                 'summary',
                 'progressRows',
                 'filterStudents',
                 'classRooms',
-                'teachers'
+                'teachers',
+                'selectedClass',
+                'isGrade10'
             ));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('ProgressController index error: '.$e->getMessage(), [

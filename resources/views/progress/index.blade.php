@@ -155,47 +155,99 @@
             </div>
 
             @if ($progressRows->isNotEmpty())
-                @php
-                    $chartData = $progressRows->map(fn($row) => [
-                        'name' => $row['student_name'],
-                        'target' => $row['total_targets'],
-                        'realized' => $row['completed_targets'],
-                    ])->values();
-                    $chartHeight = max(220, $progressRows->count() * 45);
-                @endphp
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 border-b border-gray-150 pb-3 flex justify-between items-center flex-wrap gap-2">
-                        <div>
-                            <h3 class="text-base font-semibold text-gray-900">
-                                Diagram Progres Hafalan Murid
-                                @if (request('class_room_id'))
-                                    - {{ $classRooms->firstWhere('id', request('class_room_id'))?->name }}
-                                @endif
-                                @if (request('teacher_id'))
-                                    (Halaqoh {{ $teachers->firstWhere('id', request('teacher_id'))?->user?->name }})
-                                @endif
-                            </h3>
-                            <p class="text-xs text-gray-500 mt-1">
-                                Membandingkan jumlah target hafalan yang direncanakan dengan target yang telah terealisasi (selesai).
-                            </p>
+                @if (!empty($isGrade10))
+                    <!-- Grade 10 UMMI Card Display -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-wrap gap-3">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                    Laporan Capaian Tahfidz — Pembelajaran UMMI {{ $selectedClass?->name }}
+                                </h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="downloadUmmiCardProgress()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    📥 Download Gambar (PNG)
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-4 text-xs font-semibold">
-                            <span class="flex items-center gap-1.5 text-zinc-500">
-                                <span class="w-3.5 h-3.5 bg-indigo-500 rounded"></span> Target Setoran
-                            </span>
-                            <span class="flex items-center gap-1.5 text-zinc-500">
-                                <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> Terealisasi (Lulus)
-                            </span>
-                            <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
-                                📥 Download Grafik (PNG)
-                            </button>
-                        </div>
+
+                        @php
+                            $studentReports = $progressRows->map(function($r) {
+                                return [
+                                    'student' => $r['student'],
+                                    'ummi_jilid' => $r['ummi_jilid_num'] ?? '-',
+                                    'ummi_halaman' => $r['ummi_halaman'] ?? '-',
+                                    'ummi_capaian' => $r['ummi_record']?->surah?->name_latin ?? ($r['ummi_record']?->materi ?? '-'),
+                                    'ziyadah' => $r['student']->hafalanRecords()->where('status', 'passed')->latest('submitted_at')->first()?->surah?->name_latin ?? '-',
+                                ];
+                            });
+                            $monthName = date('F');
+                        @endphp
+
+                        @include('reports.partials.ummi-grade10-card')
                     </div>
 
-                    <div class="relative w-full overflow-x-auto" style="height: {{ $chartHeight }}px;">
-                        <canvas id="progressChart"></canvas>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+                    <script>
+                        function downloadUmmiCardProgress() {
+                            const cardEl = document.getElementById('ummiGrade10ReportCard');
+                            if (!cardEl) return;
+                            html2canvas(cardEl, { scale: 2, useCORS: true, backgroundColor: null }).then(canvas => {
+                                const a = document.createElement('a');
+                                a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
+                                a.href = canvas.toDataURL('image/png');
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                            });
+                        }
+                    </script>
+                @else
+                    @php
+                        $chartData = $progressRows->map(fn($row) => [
+                            'name' => $row['student_name'],
+                            'target' => $row['total_targets'],
+                            'realized' => $row['completed_targets'],
+                        ])->values();
+                        $chartHeight = max(220, $progressRows->count() * 45);
+                    @endphp
+                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="mb-4 border-b border-gray-150 pb-3 flex justify-between items-center flex-wrap gap-2">
+                            <div>
+                                <h3 class="text-base font-semibold text-gray-900">
+                                    Diagram Progres Hafalan Murid
+                                    @if (request('class_room_id'))
+                                        - {{ $classRooms->firstWhere('id', request('class_room_id'))?->name }}
+                                    @endif
+                                    @if (request('teacher_id'))
+                                        (Halaqoh {{ $teachers->firstWhere('id', request('teacher_id'))?->user?->name }})
+                                    @endif
+                                </h3>
+                                <p class="text-xs text-gray-550 mt-1">
+                                    Membandingkan jumlah target hafalan yang direncanakan dengan target yang telah terealisasi (selesai).
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-4 text-xs font-semibold">
+                                <span class="flex items-center gap-1.5 text-zinc-500">
+                                    <span class="w-3.5 h-3.5 bg-indigo-500 rounded"></span> Target Setoran
+                                </span>
+                                <span class="flex items-center gap-1.5 text-zinc-500">
+                                    <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> Terealisasi (Lulus)
+                                </span>
+                                <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
+                                    📥 Download Grafik (PNG)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative w-full overflow-x-auto" style="height: {{ $chartHeight }}px;">
+                            <canvas id="progressChart"></canvas>
+                        </div>
                     </div>
-                </div>
+                @endif
             @endif
 
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
