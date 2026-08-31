@@ -1,10 +1,13 @@
+@php
+    $printOrientation = request('orientation', 'landscape');
+@endphp
 @if (!empty($isGrade10))
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Laporan UMMI Landscape — {{ $selectedClass?->name ?? 'Kelas 10' }}</title>
+    <title>Cetak Laporan UMMI ({{ ucfirst($printOrientation) }}) — {{ $selectedClass?->name ?? 'Kelas 10' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -12,8 +15,13 @@
                 display: none !important;
             }
             @page {
-                size: 330mm 215mm landscape; /* F4 / A4 Landscape */
-                margin: 0.3cm;
+                @if ($printOrientation === 'portrait')
+                    size: 215mm 330mm portrait;
+                    margin: 0.5cm;
+                @else
+                    size: 330mm 215mm landscape;
+                    margin: 0.3cm;
+                @endif
             }
             html, body {
                 height: 100%;
@@ -26,7 +34,7 @@
             #ummiGrade10ReportCard {
                 box-shadow: none !important;
                 width: 100% !important;
-                max-width: 100% !important;
+                max-width: {{ $printOrientation === 'portrait' ? '4xl' : '100%' }} !important;
                 margin: 0 auto !important;
                 padding: 0.75rem 1rem !important;
                 border-width: 4px !important;
@@ -41,14 +49,14 @@
     <div class="no-print max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
         <div>
             <h3 class="text-sm font-bold text-zinc-900">Laporan Capaian Tahfidz UMMI — {{ $selectedClass?->name }}</h3>
-            <p class="text-xs text-zinc-500">Format Halaman: F4 / A4 Landscape</p>
+            <p class="text-xs text-zinc-500">Format Halaman: {{ ucfirst($printOrientation) }} (F4 / A4)</p>
         </div>
         <div class="flex gap-2">
             <button onclick="window.close()" class="px-4 py-2 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
                 Tutup
             </button>
             <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
-                🖨️ Cetak Sekarang (F4 / A4 Landscape)
+                🖨️ Cetak Sekarang ({{ ucfirst($printOrientation) }})
             </button>
         </div>
     </div>

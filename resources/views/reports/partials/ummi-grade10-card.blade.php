@@ -1,12 +1,25 @@
+@php
+    $circleImgPath = public_path('images/logo-alazhar7-circle.png');
+    $gemilangImgPath = public_path('images/logo-gemilang-banner.png');
+
+    $circleLogoBase64 = file_exists($circleImgPath) 
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($circleImgPath))
+        : asset('images/logo-alazhar7-circle.png');
+
+    $gemilangLogoBase64 = file_exists($gemilangImgPath) 
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($gemilangImgPath))
+        : asset('images/logo-gemilang-banner.png');
+@endphp
+
 <div id="ummiGrade10ReportCard" class="mx-auto max-w-5xl rounded-[28px] p-5 sm:p-8 shadow-2xl relative overflow-hidden font-sans border-[5px] border-amber-400" style="background-color: #ffffff !important; color: #0f172a !important;">
     
     <!-- Top Header Bar with Centered Logos -->
     <div class="flex items-center justify-center gap-3 sm:gap-5 border-b-2 border-amber-300 pb-3 mb-3 text-center">
         <!-- Logo Bulat (Left) -->
-        <img src="{{ asset('images/logo-alazhar7-circle.png') }}" alt="Logo Al Azhar 7" class="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" style="height: 48px !important; width: 48px !important; max-height: 48px !important; max-width: 48px !important;">
+        <img src="{{ $circleLogoBase64 }}" alt="Logo Al Azhar 7" class="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" style="height: 48px !important; width: 48px !important; max-height: 48px !important; max-width: 48px !important;">
 
         <!-- Logo Gemilang (Right of Logo Bulat) -->
-        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="SMA Islam Al Azhar 7 GEMILANG" class="h-10 sm:h-12 object-contain shrink-0" style="height: 44px !important; max-width: 320px !important; max-height: 44px !important;">
+        <img src="{{ $gemilangLogoBase64 }}" alt="SMA Islam Al Azhar 7 GEMILANG" class="h-10 sm:h-12 object-contain shrink-0" style="height: 44px !important; max-width: 320px !important; max-height: 44px !important;">
     </div>
 
     <!-- Main Title Section -->

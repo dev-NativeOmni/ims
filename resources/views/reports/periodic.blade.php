@@ -142,12 +142,15 @@
                                     Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-wrap">
                                 <button type="button" onclick="downloadUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
                                     📥 Unduh PNG
                                 </button>
-                                <button type="button" onclick="printUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    🖨️ Cetak F4 / A4 Landscape
+                                <button type="button" onclick="printUmmiCard('landscape')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    🖨️ Cetak Landscape
+                                </button>
+                                <button type="button" onclick="printUmmiCard('portrait')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    🖨️ Cetak Portrait
                                 </button>
                             </div>
                         </div>
@@ -345,7 +348,6 @@
                 const executeDownload = () => {
                     html2canvas(cardEl, {
                         scale: 2,
-                        useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false
                     }).then(canvas => {
@@ -357,7 +359,7 @@
                         document.body.removeChild(a);
                     }).catch(err => {
                         console.error('Gagal mengunduh gambar:', err);
-                        printUmmiCard();
+                        alert('Gagal membuat gambar PNG: ' + err.message);
                     });
                 };
 
@@ -371,8 +373,8 @@
                 }
             }
 
-            function printUmmiCard() {
-                const printUrl = "{!! route('reports.periodic.print', array_merge(request()->query(), ['class_room_id' => $selectedClassId])) !!}";
+            function printUmmiCard(orientation = 'landscape') {
+                const printUrl = "{!! route('reports.periodic.print', array_merge(request()->query(), ['class_room_id' => $selectedClassId])) !!}&orientation=" + orientation;
                 window.open(printUrl, '_blank');
             }
 
