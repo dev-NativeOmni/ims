@@ -253,36 +253,46 @@ class SpreadsheetInputController extends Controller
                     ];
                 }
             }
-            // Calculate last hafalan & auto +1 next verse continuation for each student
+            // Calculate last hafalan & auto +1 next verse continuation for each student in 1 batch query (O(1) instead of O(N))
             $lastHafalanMap = [];
-            foreach ($students as $student) {
-                $latestRec = HafalanRecord::with('surah')
-                    ->where('student_id', $student->id)
-                    ->latest('submitted_at')
-                    ->latest('id')
-                    ->first();
+            if (!empty($studentIds)) {
+                $latestRecordIds = HafalanRecord::query()
+                    ->whereIn('student_id', $studentIds)
+                    ->selectRaw('MAX(id) as id')
+                    ->groupBy('student_id')
+                    ->pluck('id');
 
-                if ($latestRec && $latestRec->surah) {
-                    $lSurahId = (int)$latestRec->surah_id;
-                    $lAyahEnd = (int)$latestRec->ayah_end;
-                    $totalAyah = (int)$latestRec->surah->total_ayah;
+                $latestRecords = HafalanRecord::query()
+                    ->with('surah')
+                    ->whereIn('id', $latestRecordIds)
+                    ->get()
+                    ->keyBy('student_id');
 
-                    if ($lAyahEnd < $totalAyah) {
-                        $nSurahId = $lSurahId;
-                        $nAyahStart = $lAyahEnd + 1;
+                foreach ($students as $student) {
+                    $latestRec = $latestRecords->get($student->id);
+
+                    if ($latestRec && $latestRec->surah) {
+                        $lSurahId = (int)$latestRec->surah_id;
+                        $lAyahEnd = (int)$latestRec->ayah_end;
+                        $totalAyah = (int)$latestRec->surah->total_ayah;
+
+                        if ($lAyahEnd < $totalAyah) {
+                            $nSurahId = $lSurahId;
+                            $nAyahStart = $lAyahEnd + 1;
+                        } else {
+                            $nSurahId = $lSurahId < 114 ? $lSurahId + 1 : 1;
+                            $nAyahStart = 1;
+                        }
+
+                        $lastHafalanMap[$student->id] = [
+                            'last_surah_id' => $lSurahId,
+                            'last_ayah_end' => $lAyahEnd,
+                            'next_surah_id' => $nSurahId,
+                            'next_ayah_start' => $nAyahStart,
+                        ];
                     } else {
-                        $nSurahId = $lSurahId < 114 ? $lSurahId + 1 : 1;
-                        $nAyahStart = 1;
+                        $lastHafalanMap[$student->id] = null;
                     }
-
-                    $lastHafalanMap[$student->id] = [
-                        'last_surah_id' => $lSurahId,
-                        'last_ayah_end' => $lAyahEnd,
-                        'next_surah_id' => $nSurahId,
-                        'next_ayah_start' => $nAyahStart,
-                    ];
-                } else {
-                    $lastHafalanMap[$student->id] = null;
                 }
             }
         }
