@@ -25,6 +25,9 @@ class ProgressController extends Controller
 
     public function index(Request $request)
     {
+        $selectedClass = null;
+        $isGrade10 = false;
+
         try {
             $user = $request->user();
 
@@ -175,6 +178,7 @@ class ProgressController extends Controller
                     'active_targets' => 0,
                     'completed_targets' => 0,
                     'overdue_targets' => 0,
+                    'total_targets' => 0,
                 ];
             });
 
@@ -185,7 +189,9 @@ class ProgressController extends Controller
                 'progressRows',
                 'filterStudents',
                 'classRooms',
-                'teachers'
+                'teachers',
+                'selectedClass',
+                'isGrade10'
             ));
         }
     }

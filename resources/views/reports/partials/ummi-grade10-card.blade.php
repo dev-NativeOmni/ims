@@ -42,7 +42,7 @@
                 KELAS {{ $selectedClass?->name ?? '10' }}
             </div>
             <div class="bg-amber-600 text-white font-extrabold text-xs px-4 py-1 rounded-lg shadow-sm border border-amber-500 uppercase" style="background-color: #d97706 !important; color: #ffffff !important;">
-                BULAN {{ strtoupper($monthName ?? ($monthsList[$selectedMonth] ?? '')) }} {{ $selectedYear ?? date('Y') }}
+                BULAN {{ strtoupper($monthName ?? (isset($monthsList, $selectedMonth) ? ($monthsList[$selectedMonth] ?? '') : date('F'))) }} {{ $selectedYear ?? date('Y') }}
             </div>
         </div>
     </div>
@@ -69,7 +69,7 @@
                             {{ $idx + 1 }}
                         </td>
                         <td class="py-1.5 px-3 border-r border-zinc-200 font-bold" style="color: #0f172a !important;">
-                            {{ $row['student']->name }}
+                            {{ is_object($row['student'] ?? null) ? $row['student']->name : ($row['student']['name'] ?? ($row['student_name'] ?? '-')) }}
                         </td>
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-black" style="color: #1e3a8a !important;">
                             {{ $row['ummi_jilid'] ?: '-' }}

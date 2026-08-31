@@ -189,12 +189,17 @@
 
                         @php
                             $studentReports = $progressRows->map(function($r) {
+                                $st = $r['student'] ?? null;
+                                $ziyadahName = '-';
+                                if ($st instanceof \App\Models\Student) {
+                                    $ziyadahName = $st->hafalanRecords()->where('status', 'passed')->latest('submitted_at')->first()?->surah?->name_latin ?? '-';
+                                }
                                 return [
-                                    'student' => $r['student'],
+                                    'student' => $st,
                                     'ummi_jilid' => $r['ummi_jilid_num'] ?? '-',
                                     'ummi_halaman' => $r['ummi_halaman'] ?? '-',
                                     'ummi_capaian' => $r['ummi_record']?->surah?->name_latin ?? ($r['ummi_record']?->materi ?? '-'),
-                                    'ziyadah' => $r['student']->hafalanRecords()->where('status', 'passed')->latest('submitted_at')->first()?->surah?->name_latin ?? '-',
+                                    'ziyadah' => $ziyadahName,
                                 ];
                             });
                             $monthName = date('F');
