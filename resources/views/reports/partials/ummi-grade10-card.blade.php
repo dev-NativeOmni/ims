@@ -74,8 +74,18 @@
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-black" style="color: #1e3a8a !important;">
                             {{ $row['ummi_jilid'] ?: '-' }}
                         </td>
+                        @php
+                            $rawH = $row['ummi_halaman'] ?? '-';
+                            if ($rawH !== '-' && !empty($rawH)) {
+                                $hParts = preg_split('/[-–—]/u', trim((string) $rawH));
+                                $lastHPart = trim(end($hParts));
+                                $displayH = is_numeric($lastHPart) ? $lastHPart : $rawH;
+                            } else {
+                                $displayH = '-';
+                            }
+                        @endphp
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-black" style="color: #1e3a8a !important;">
-                            {{ $row['ummi_halaman'] ?: '-' }}
+                            {{ $displayH }}
                         </td>
                         <td class="py-1.5 px-3 {{ $hideZiyadah ? '' : 'border-r border-zinc-200' }} font-semibold" style="color: #1e293b !important;">
                             {{ $row['ummi_capaian'] ?: '-' }}

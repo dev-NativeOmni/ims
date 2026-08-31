@@ -1006,7 +1006,14 @@ class ReportController extends Controller
             $ummiJilidRaw = $latestUmmi?->ummi_jilid ?: '-';
             preg_match('/(\d+)/', (string) $ummiJilidRaw, $mJilid);
             $ummiJilidNum = isset($mJilid[1]) ? $mJilid[1] : (is_numeric($ummiJilidRaw) ? $ummiJilidRaw : $ummiJilidRaw);
-            $ummiHalaman = $latestUmmi?->ummi_halaman ?: '-';
+            $rawHalaman = $latestUmmi?->ummi_halaman ?: '-';
+            if ($rawHalaman !== '-' && !empty($rawHalaman)) {
+                $hParts = preg_split('/[-–—]/u', trim((string) $rawHalaman));
+                $lastHPart = trim(end($hParts));
+                $ummiHalaman = is_numeric($lastHPart) ? $lastHPart : $rawHalaman;
+            } else {
+                $ummiHalaman = '-';
+            }
             $ummiCapaian = $latestUmmi?->surah?->name_latin ?? ($latestUmmi?->materi ?? '-');
 
             $ziyadahText = '-';
