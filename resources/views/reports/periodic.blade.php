@@ -333,10 +333,10 @@
     </div>
 
     @if ($selectedClass)
-        <!-- ChartJS & DataLabels script & html2canvas -->
+        <!-- ChartJS & DataLabels script & html-to-image -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
         <script>
             function downloadUmmiCard() {
                 const cardEl = document.getElementById('ummiGrade10ReportCard');
@@ -346,14 +346,13 @@
                 }
                 
                 const executeDownload = () => {
-                    html2canvas(cardEl, {
-                        scale: 2,
-                        backgroundColor: '#ffffff',
-                        logging: false
-                    }).then(canvas => {
+                    htmlToImage.toPng(cardEl, {
+                        pixelRatio: 2,
+                        backgroundColor: '#ffffff'
+                    }).then(dataUrl => {
                         const a = document.createElement('a');
                         a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}_{{ $monthName }}.png';
-                        a.href = canvas.toDataURL('image/png');
+                        a.href = dataUrl;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
@@ -363,9 +362,9 @@
                     });
                 };
 
-                if (typeof html2canvas === 'undefined') {
+                if (typeof htmlToImage === 'undefined') {
                     const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
                     script.onload = executeDownload;
                     document.head.appendChild(script);
                 } else {

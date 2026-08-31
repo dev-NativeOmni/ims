@@ -190,7 +190,7 @@
                         @include('reports.partials.ummi-grade10-card')
                     </div>
 
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
                     <script>
                         function downloadUmmiCardProgress() {
                             const cardEl = document.getElementById('ummiGrade10ReportCard');
@@ -198,16 +198,16 @@
                                 alert('Elemen laporan tidak ditemukan.');
                                 return;
                             }
-                            html2canvas(cardEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+                            htmlToImage.toPng(cardEl, { pixelRatio: 2, backgroundColor: '#ffffff' }).then(dataUrl => {
                                 const a = document.createElement('a');
                                 a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
-                                a.href = canvas.toDataURL('image/png');
+                                a.href = dataUrl;
                                 document.body.appendChild(a);
                                 a.click();
                                 document.body.removeChild(a);
                             }).catch(err => {
                                 console.error('Gagal mengunduh gambar:', err);
-                                alert('Gagal mengunduh gambar. Silakan coba lagi.');
+                                alert('Gagal mengunduh gambar: ' + err.message);
                             });
                         }
                     </script>
