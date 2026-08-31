@@ -51,12 +51,6 @@
     <div class="max-w-5xl mx-auto">
         @include('reports.partials.ummi-grade10-card')
     </div>
-
-    <script>
-        window.onload = function() {
-            // Auto focus or trigger print after page loads
-        };
-    </script>
 </body>
 </html>
 @else
@@ -104,7 +98,6 @@
 
     <!-- Printable Report Sheet -->
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl border border-zinc-200 shadow-sm print:border-none print:shadow-none">
-@endif
         
         <!-- Header / Kop Surat -->
         <div class="text-center border-b-2 border-zinc-900 pb-6 mb-6">
@@ -122,9 +115,9 @@
             <h2 class="text-lg font-bold text-zinc-900 uppercase">
                 LAPORAN KETUNTASAN PERKEMBANGAN {{ $periodType === 'monthly' ? 'BULANAN' : 'TIGA BULANAN (TERM)' }}
             </h2>
-            <p class="text-sm text-zinc-650 mt-1">
+            <p class="text-sm text-zinc-655 mt-1">
                 @if ($periodType === 'monthly')
-                    Periode: {{ $monthsList[$selectedMonth] }} {{ $selectedYear }}
+                    Periode: {{ $monthsList[$selectedMonth] ?? '-' }} {{ $selectedYear }}
                 @else
                     Periode: Term {{ $selectedQuarter }} ({{ $selectedQuarter == 1 ? 'Jul - Sep' : ($selectedQuarter == 2 ? 'Okt - Des' : ($selectedQuarter == 3 ? 'Jan - Mar' : 'Apr - Jun')) }}) {{ $selectedYear }}
                 @endif
@@ -136,24 +129,24 @@
         <div class="grid grid-cols-5 border border-zinc-300 rounded-xl mb-8 divide-x divide-zinc-300 text-center">
             <div class="p-3">
                 <span class="block text-[10px] font-bold text-zinc-400 uppercase">Total Murid</span>
-                <span class="text-lg font-extrabold text-zinc-900 mt-1 block">{{ $summary['total_students'] }}</span>
+                <span class="text-lg font-extrabold text-zinc-900 mt-1 block">{{ $summary['total_students'] ?? 0 }}</span>
             </div>
             <div class="p-3">
                 <span class="block text-[10px] font-bold text-zinc-400 uppercase">Tuntas</span>
-                <span class="text-lg font-extrabold text-blue-600 mt-1 block">{{ $tuntasCount }}</span>
+                <span class="text-lg font-extrabold text-blue-600 mt-1 block">{{ $tuntasCount ?? 0 }}</span>
             </div>
             <div class="p-3">
                 <span class="block text-[10px] font-bold text-zinc-400 uppercase">Tidak Tuntas</span>
-                <span class="text-lg font-extrabold text-rose-600 mt-1 block">{{ $tidakTuntasCount }}</span>
+                <span class="text-lg font-extrabold text-rose-600 mt-1 block">{{ $tidakTuntasCount ?? 0 }}</span>
             </div>
             <div class="p-3">
                 <span class="block text-[10px] font-bold text-zinc-400 uppercase">Rerata Nilai</span>
-                <span class="text-lg font-extrabold text-zinc-900 mt-1 block">{{ $summary['avg_hafalan_score'] }}</span>
+                <span class="text-lg font-extrabold text-zinc-900 mt-1 block">{{ $summary['avg_hafalan_score'] ?? 0 }}</span>
             </div>
             <div class="p-3">
                 <span class="block text-[10px] font-bold text-zinc-400 uppercase">% Tuntas</span>
                 <span class="text-lg font-extrabold text-emerald-600 mt-1 block">
-                    {{ $summary['total_students'] > 0 ? round(($tuntasCount / $summary['total_students']) * 100, 1) : 0 }}%
+                    {{ ($summary['total_students'] ?? 0) > 0 ? round((($tuntasCount ?? 0) / $summary['total_students']) * 100, 1) : 0 }}%
                 </span>
             </div>
         </div>
@@ -161,292 +154,112 @@
         <!-- Chart 1: Bar Chart (Grafik Ketuntasan) -->
         <div class="mb-10 border border-zinc-200 rounded-2xl p-6 bg-white shadow-sm page-break-after">
             <h3 class="text-sm font-bold text-zinc-800 text-center uppercase tracking-wider mb-2">
-                GRAFIK KETUNTASAN TAHFIDZ KELAS {{ $selectedClass?->name ?? 'KELAS' }} BULAN {{ strtoupper($monthsList[$selectedMonth] ?? 'BULAN') }}
+                Grafik Ketuntasan Target Setoran Per Murid
             </h3>
-            
-            <!-- Custom Legend matching the spreadsheet image -->
-            <div class="flex justify-center items-center gap-6 text-[10px] font-semibold text-zinc-600 mb-4">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-3.5 h-3 bg-[#4f81bd]"></span> CAPAIAN
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="w-3.5 h-0.5 bg-[#c00000] relative flex items-center justify-center">
-                        <span class="w-1.5 h-1.5 bg-[#c00000] rounded-full absolute"></span>
-                    </span> TARGET
-                </span>
-            </div>
-
-            <div class="relative w-full overflow-hidden" style="height: 320px;">
-                <canvas id="barCompletenessChart"></canvas>
+            <div class="relative w-full h-[320px]">
+                <canvas id="studentCompletenessChart"></canvas>
             </div>
         </div>
 
-        <!-- Page break for cleaner print layout -->
-        <div class="page-break"></div>
-
-        <!-- Chart 2: Pie Chart (Diagram Ketuntasan) -->
-        <div class="mb-10 border border-zinc-200 rounded-2xl p-6 bg-white shadow-sm">
-            <h3 class="text-sm font-bold text-zinc-800 text-center uppercase tracking-wider mb-6">
-                DIAGRAM KETUNTASAN TAHFIDZ KELAS {{ $selectedClass?->name ?? 'KELAS' }} BULAN {{ strtoupper($monthsList[$selectedMonth] ?? 'BULAN') }}
+        <!-- Chart 2: Pie Chart (Distribusi Ketuntasan) -->
+        <div class="mb-8 border border-zinc-200 rounded-2xl p-6 bg-white shadow-sm">
+            <h3 class="text-sm font-bold text-zinc-800 text-center uppercase tracking-wider mb-2">
+                Persentase Ketuntasan Kelas
             </h3>
-            <div class="relative w-full overflow-hidden flex justify-center items-center" style="height: 300px;">
-                <div class="w-72 h-72">
-                    <canvas id="pieCompletenessChart"></canvas>
-                </div>
+            <div class="relative w-full h-[220px]">
+                <canvas id="pieCompletenessChart"></canvas>
             </div>
         </div>
 
-        <!-- Detailed List of Students grouped by Teacher & Halaqah -->
-        <div class="mb-10 space-y-10">
-            <h3 class="text-xs font-bold text-zinc-900 mb-3 uppercase tracking-wider">Rincian Capaian Dan Ketuntasan Murid per Halaqah</h3>
-            
-            @forelse ($groupedReports as $teacherName => $halaqahs)
-                <div class="space-y-6" style="page-break-inside: avoid; break-inside: avoid;">
-                    <!-- Teacher Banner -->
-                    <div class="border-b-2 border-zinc-900 pb-1.5 mt-4">
-                        <h4 class="text-xs font-bold text-zinc-950 uppercase tracking-wide">
-                            PEMBIMBING (USTADZ/USTADZAH): {{ $teacherName }}
-                        </h4>
-                    </div>
-
-                    @foreach ($halaqahs as $halaqahLabel => $reports)
-                        <div class="mb-6" style="page-break-inside: avoid; break-inside: avoid;">
-                            <!-- Halaqah Header -->
-                            <div class="flex justify-between items-center bg-zinc-50 border border-zinc-350 px-4 py-1.5 mb-1.5">
-                                <span class="text-[10px] font-bold text-zinc-900 uppercase">Halaqah: {{ $halaqahLabel }}</span>
-                                <span class="text-[9px] text-zinc-500 font-semibold">{{ count($reports) }} Murid</span>
-                            </div>
-
-                            <table class="min-w-full border-collapse border border-zinc-350 text-left text-[11px]">
-                                <thead>
-                                    <!-- Row 1: Header groups -->
-                                    <tr class="bg-zinc-100 border-b border-zinc-350 text-center font-bold text-zinc-800">
-                                        <th rowspan="2" class="border border-zinc-350 px-3 py-2 text-left w-10 align-middle">No</th>
-                                        <th rowspan="2" class="border border-zinc-350 px-3 py-2 text-left align-middle min-w-[150px]">Nama Murid</th>
-                                        <th rowspan="2" class="border border-zinc-350 px-3 py-2 align-middle">Halaqah</th>
-                                        <th colspan="2" class="border border-zinc-350 px-2 py-1">Target</th>
-                                        <th colspan="2" class="border border-zinc-350 px-2 py-1">Capaian</th>
-                                        <th rowspan="2" class="border border-zinc-350 px-3 py-2 align-middle">Ketercapaian</th>
-                                        <th colspan="3" class="border border-zinc-350 px-2 py-1">Kehadiran</th>
-                                        <th rowspan="2" class="border border-zinc-350 px-3 py-2 align-middle w-20">Pelanggaran</th>
-                                    </tr>
-                                    <!-- Row 2: Header subcolumns -->
-                                    <tr class="bg-zinc-100 border-b border-zinc-350 text-center font-semibold text-[9px] text-zinc-700">
-                                        <th class="border border-zinc-350 px-2 py-1 font-semibold">Surah</th>
-                                        <th class="border border-zinc-350 px-2 py-1 w-12 font-semibold">Ayat</th>
-                                        <th class="border border-zinc-350 px-2 py-1 border-l font-semibold">Surat</th>
-                                        <th class="border border-zinc-350 px-2 py-1 w-12 font-semibold">Ayat</th>
-                                        <th class="border border-zinc-350 px-1 py-1 text-rose-700 w-8 font-bold">A</th>
-                                        <th class="border border-zinc-350 px-1 py-1 text-amber-600 w-8 font-bold">I</th>
-                                        <th class="border border-zinc-350 px-1 py-1 text-blue-600 w-8 font-bold">S</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reports as $index => $row)
-                                        <tr class="border-b border-zinc-350 text-center">
-                                            <td class="border border-zinc-350 px-3 py-1.5 text-left text-zinc-500">{{ $index + 1 }}</td>
-                                            <td class="border border-zinc-350 px-3 py-1.5 text-left font-bold text-zinc-900">
-                                                {{ $row['student']->name }}
-                                                <div class="text-[9px] text-zinc-400 font-normal mt-0.5">NIS: {{ $row['student']->student_number ?: '-' }}</div>
-                                            </td>
-                                            <td class="border border-zinc-350 px-3 py-1.5 text-zinc-650">{{ $row['halaqah_label'] }}</td>
-                                            <td class="border border-zinc-350 px-2 py-1.5 text-zinc-700 font-medium">{{ $row['target_surah'] }}</td>
-                                            <td class="border border-zinc-350 px-2 py-1.5 text-zinc-900 font-semibold text-center">{{ $row['target_ayat'] }}</td>
-                                            <td class="border border-zinc-350 px-2 py-1.5 text-zinc-700 font-medium">{{ $row['capaian_surah'] }}</td>
-                                            <td class="border border-zinc-350 px-2 py-1.5 text-zinc-900 font-bold text-center">{{ $row['capaian_ayat'] }}</td>
-                                            <td class="border border-zinc-350 px-3 py-1.5">
-                                                @if ($row['is_tuntas'])
-                                                    <span class="text-emerald-700 font-bold uppercase text-[9px]">Tuntas</span>
-                                                @else
-                                                    <span class="text-rose-700 font-bold uppercase text-[9px]">Belum Tuntas</span>
-                                                @endif
-                                            </td>
-                                            <!-- Kehadiran (A/I/S) -->
-                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['alpa'] > 0 ? 'text-rose-700' : 'text-zinc-400' }}">{{ $row['alpa'] ?: '-' }}</td>
-                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['izin'] > 0 ? 'text-amber-600' : 'text-zinc-400' }}">{{ $row['izin'] ?: '-' }}</td>
-                                            <td class="border border-zinc-350 px-1 py-1.5 font-semibold {{ $row['sakit'] > 0 ? 'text-blue-600' : 'text-zinc-400' }}">{{ $row['sakit'] ?: '-' }}</td>
-                                            <td class="border border-zinc-350 px-3 py-1.5 font-bold {{ $row['violations_count'] > 0 ? 'text-rose-700' : 'text-zinc-400' }}">
-                                                {{ $row['violations_count'] }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    <!-- Summary Row -->
-                                    <tr class="bg-zinc-50 font-bold text-zinc-900">
-                                        <td colspan="3" class="border border-zinc-350 px-3 py-1.5 text-right uppercase text-[10px]">Prosentase Ketuntasan:</td>
-                                        @php
-                                            $totalGroup = count($reports);
-                                            $tuntasGroup = collect($reports)->where('is_tuntas', true)->count();
-                                            $tidakTuntasGroup = $totalGroup - $tuntasGroup;
-                                            $tuntasPct = $totalGroup > 0 ? round(($tuntasGroup / $totalGroup) * 100, 1) : 0;
-                                            $tidakTuntasPct = $totalGroup > 0 ? round(($tidakTuntasGroup / $totalGroup) * 100, 1) : 0;
-                                        @endphp
-                                        <td colspan="2" class="border border-zinc-350 px-2 py-1.5 text-center text-emerald-700">Tuntas: {{ $tuntasPct }}%</td>
-                                        <td colspan="2" class="border border-zinc-350 px-2 py-1.5 text-center text-rose-700">Belum Tuntas: {{ $tidakTuntasPct }}%</td>
-                                        <td colspan="5" class="border border-zinc-350 px-3 py-1.5 text-center text-zinc-500 font-medium">
-                                            Tuntas: {{ $tuntasGroup }} murid, Belum Tuntas: {{ $tidakTuntasGroup }} murid
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    @endforeach
-                </div>
-            @empty
-                <div class="border border-zinc-300 p-8 text-center text-zinc-500 text-xs rounded-xl">
-                    Tidak ada data perkembangan pada rentang waktu ini.
-                </div>
-            @endforelse
+        <!-- Student Detail Table -->
+        <div class="mt-8 overflow-hidden rounded-xl border border-zinc-300">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-zinc-100 text-zinc-700 font-bold border-b border-zinc-300">
+                        <th class="py-2 px-3 border-r border-zinc-300 w-10 text-center">No</th>
+                        <th class="py-2 px-3 border-r border-zinc-300">Nama Murid</th>
+                        <th class="py-2 px-3 border-r border-zinc-300 text-center">Setoran (Target vs Realisasi)</th>
+                        <th class="py-2 px-3 border-r border-zinc-300 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-200">
+                    @forelse ($studentReports as $idx => $r)
+                        <tr>
+                            <td class="py-2 px-3 text-center border-r border-zinc-200 font-semibold text-zinc-500">{{ $idx + 1 }}</td>
+                            <td class="py-2 px-3 border-r border-zinc-200 font-bold text-zinc-900">{{ $r['student_name'] }}</td>
+                            <td class="py-2 px-3 border-r border-zinc-200 text-center font-semibold text-zinc-700">
+                                {{ $r['completed_targets'] }} / {{ $r['total_targets'] }} Target
+                            </td>
+                            <td class="py-2 px-3 text-center font-bold">
+                                @if ($r['completed_targets'] >= $r['total_targets'] && $r['total_targets'] > 0)
+                                    <span class="text-blue-600 uppercase">TUNTAS</span>
+                                @else
+                                    <span class="text-rose-600 uppercase">TIDAK TUNTAS</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-zinc-500">Tidak ada data murid.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-
-        <!-- Signature Block -->
-        <div class="grid grid-cols-2 text-center text-xs mt-16 pb-8">
-            <div>
-                <p class="text-zinc-550">Mengetahui,</p>
-                <p class="font-bold text-zinc-900 mt-0.5">Kepala Sekolah Lembaga</p>
-                <div class="h-20"></div>
-                <p class="font-bold text-zinc-900 border-b border-zinc-400 w-48 mx-auto pb-1">_______________________</p>
-                <p class="text-zinc-400 mt-1">NIP. .............................</p>
-            </div>
-            
-            <div>
-                <p class="text-zinc-550">Tanggal: {{ now()->format('d M Y') }}</p>
-                <p class="font-bold text-zinc-900 mt-0.5">Guru Pembimbing / Wali Kelas</p>
-                <div class="h-20"></div>
-                <p class="font-bold text-zinc-900 border-b border-zinc-400 w-48 mx-auto pb-1">{{ Auth::user()->name }}</p>
-                <p class="text-zinc-400 mt-1">ID Guru. {{ Auth::user()->id }}</p>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Chart rendering script -->
+    <!-- Chart rendering logic for non-Grade 10 -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Data Prep
-            const labels = @json(collect($studentReports)->pluck('student.name'));
-            const capaianData = @json(collect($studentReports)->pluck('capaian_baris'));
-            const targetData = @json(collect($studentReports)->pluck('target_baris'));
+        document.addEventListener("DOMContentLoaded", function () {
+            const barCtx = document.getElementById('studentCompletenessChart')?.getContext('2d');
+            if (barCtx) {
+                const labels = {!! json_encode(array_column($studentReports, 'student_name')) !!};
+                const targets = {!! json_encode(array_column($studentReports, 'total_targets')) !!};
+                const completed = {!! json_encode(array_column($studentReports, 'completed_targets')) !!};
 
-            // 1. Combo Bar & Line Chart (Grafik Ketuntasan)
-            const barCtx = document.getElementById('barCompletenessChart').getContext('2d');
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            type: 'bar',
-                            label: 'CAPAIAN',
-                            data: capaianData,
-                            backgroundColor: '#4f81bd',
-                            borderColor: '#385d8a',
-                            borderWidth: 1,
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.8
-                        },
-                        {
-                            type: 'line',
-                            label: 'TARGET',
-                            data: targetData,
-                            borderColor: '#c00000',
-                            backgroundColor: '#c00000',
-                            borderWidth: 2.5,
-                            tension: 0, // Straight connecting lines
-                            fill: false,
-                            pointStyle: 'circle',
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false, // For print compatibility
-                    plugins: {
-                        legend: {
-                            display: false // Using our custom HTML legend above
-                        }
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Target Setoran',
+                                data: targets,
+                                backgroundColor: '#4f81bd',
+                            },
+                            {
+                                label: 'Terealisasi',
+                                data: completed,
+                                backgroundColor: '#9bbb59',
+                            }
+                        ]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#e5e7eb'
-                            },
-                            ticks: {
-                                color: '#4b5563',
-                                font: {
-                                    size: 10
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 90,
-                                minRotation: 90,
-                                color: '#4b5563',
-                                font: {
-                                    size: 9,
-                                    weight: 'bold'
-                                }
-                            }
-                        }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
                     }
-                }
-            });
+                });
+            }
 
-            // 2. Pie Chart (Diagram Ketuntasan)
-            const pieCtx = document.getElementById('pieCompletenessChart').getContext('2d');
-            const tuntasVal = {{ $tuntasCount }};
-            const tidakTuntasVal = {{ $tidakTuntasCount }};
-            const totalVal = tuntasVal + tidakTuntasVal;
-            
-            const tuntasPct = totalVal > 0 ? ((tuntasVal / totalVal) * 100).toFixed(1) : '0.0';
-            const tidakTuntasPct = totalVal > 0 ? ((tidakTuntasVal / totalVal) * 100).toFixed(1) : '0.0';
-
-            new Chart(pieCtx, {
-                type: 'pie',
-                data: {
-                    labels: [
-                        `TUNTAS (${tuntasPct}%)`, 
-                        `TIDAK TUNTAS (${tidakTuntasPct}%)`
-                    ],
-                    datasets: [{
-                        data: [tuntasVal, tidakTuntasVal],
-                        backgroundColor: ['#4f81bd', '#c00000'],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#374151',
-                                font: {
-                                    size: 11,
-                                    weight: 'bold'
-                                },
-                                padding: 15
-                            }
-                        }
+            const pieCtx = document.getElementById('pieCompletenessChart')?.getContext('2d');
+            if (pieCtx) {
+                new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['TUNTAS', 'TIDAK TUNTAS'],
+                        datasets: [{
+                            data: [{{ $tuntasCount ?? 0 }}, {{ $tidakTuntasCount ?? 0 }}],
+                            backgroundColor: ['#4f81bd', '#c00000']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
                     }
-                }
-            });
-
-            // Automatically open print dialog when chart is fully rendered
-            setTimeout(function() {
-                window.print();
-            }, 750);
+                });
+            }
         });
     </script>
 </body>
