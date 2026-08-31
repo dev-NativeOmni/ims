@@ -146,8 +146,8 @@
                                 <button type="button" onclick="downloadUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
                                     📥 Unduh PNG
                                 </button>
-                                <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    🖨️ Cetak Halaman
+                                <button type="button" onclick="printUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                    🖨️ Cetak F4 / A4 Landscape
                                 </button>
                             </div>
                         </div>
@@ -344,8 +344,6 @@
                 
                 html2canvas(cardEl, {
                     scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
                     backgroundColor: '#ffffff',
                     logging: false
                 }).then(canvas => {
@@ -359,6 +357,41 @@
                     console.error('Gagal mengunduh gambar:', err);
                     alert('Gagal mengunduh gambar. Silakan coba lagi.');
                 });
+            }
+
+            function printUmmiCard() {
+                const cardEl = document.getElementById('ummiGrade10ReportCard');
+                if (!cardEl) return;
+                
+                const win = window.open('', '_blank');
+                win.document.write(`
+                    <html>
+                        <head>
+                            <title>Cetak Laporan UMMI {{ $selectedClass?->name }}</title>
+                            <script src="https://cdn.tailwindcss.com"></script>
+                            <style>
+                                @page {
+                                    size: 330mm 215mm landscape;
+                                    margin: 0.5cm;
+                                }
+                                body {
+                                    background: white;
+                                    padding: 10px;
+                                    font-family: system-ui, sans-serif;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            ${cardEl.outerHTML}
+                            <script>
+                                window.onload = function() {
+                                    window.print();
+                                }
+                            <\/script>
+                        </body>
+                    </html>
+                `);
+                win.document.close();
             }
 
             // Global functions for download and print
