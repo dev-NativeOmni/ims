@@ -360,38 +360,8 @@
             }
 
             function printUmmiCard() {
-                const cardEl = document.getElementById('ummiGrade10ReportCard');
-                if (!cardEl) return;
-                
-                const win = window.open('', '_blank');
-                win.document.write(`
-                    <html>
-                        <head>
-                            <title>Cetak Laporan UMMI {{ $selectedClass?->name }}</title>
-                            <script src="https://cdn.tailwindcss.com"></script>
-                            <style>
-                                @page {
-                                    size: 330mm 215mm landscape;
-                                    margin: 0.5cm;
-                                }
-                                body {
-                                    background: white;
-                                    padding: 10px;
-                                    font-family: system-ui, sans-serif;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            ${cardEl.outerHTML}
-                            <script>
-                                window.onload = function() {
-                                    window.print();
-                                }
-                            <\/script>
-                        </body>
-                    </html>
-                `);
-                win.document.close();
+                const printUrl = "{{ route('reports.periodic.print', array_merge(request()->query(), ['class_room_id' => $selectedClassId])) }}";
+                window.open(printUrl, '_blank');
             }
 
             // Global functions for download and print
