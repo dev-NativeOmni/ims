@@ -21,7 +21,7 @@ class HafalanRecordPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'headmaster']);
+        return $user->hasAnyRole(['super_admin', 'admin', 'teacher']);
     }
 
     public function update(User $user, HafalanRecord $hafalanRecord): bool

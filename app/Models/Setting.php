@@ -269,4 +269,59 @@ class Setting extends Model
             default => 'Dha\'if (Kurang)',
         };
     }
+
+    /**
+     * Get hafalan targets configuration per grade level and program.
+     */
+    public static function getHafalanTargetsConfig(): array
+    {
+        $default = [
+            'grade_10' => [
+                'tahfizh' => [
+                    'target_juz_count' => 4,
+                    'mode' => 'specific',
+                    'specific_juz' => [30, 29, 28, 1],
+                ],
+                'reguler' => [
+                    'target_juz_count' => 2,
+                    'mode' => 'specific',
+                    'specific_juz' => [30, 29],
+                ],
+            ],
+            'grade_11' => [
+                'tahfizh' => [
+                    'target_juz_count' => 4,
+                    'mode' => 'any',
+                    'specific_juz' => [],
+                ],
+                'reguler' => [
+                    'target_juz_count' => 2,
+                    'mode' => 'any',
+                    'specific_juz' => [],
+                ],
+            ],
+            'grade_12' => [
+                'tahfizh' => [
+                    'target_juz_count' => 4,
+                    'mode' => 'any',
+                    'specific_juz' => [],
+                ],
+                'reguler' => [
+                    'target_juz_count' => 2,
+                    'mode' => 'any',
+                    'specific_juz' => [],
+                ],
+            ],
+        ];
+
+        $val = self::get('hafalan_targets_config');
+        if (! $val) {
+            return $default;
+        }
+
+        $decoded = is_string($val) ? json_decode($val, true) : $val;
+
+        return is_array($decoded) ? array_replace_recursive($default, $decoded) : $default;
+    }
 }
+

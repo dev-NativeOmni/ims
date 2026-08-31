@@ -112,12 +112,19 @@
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-2">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <h3 class="text-base font-semibold text-gray-900">
-                                Ringkasan Progress Hafalan
-                            </h3>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="text-base font-semibold text-gray-900">
+                                    Ringkasan Progress Hafalan
+                                </h3>
+                                @if (!empty($progress['target_juz_label']))
+                                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                                        Target: {{ $progress['target_juz_label'] }}
+                                    </span>
+                                @endif
+                            </div>
 
                             <p class="mt-1 text-sm text-gray-600">
-                                Progress dihitung dari setoran hafalan berstatus lulus dan tidak menghitung ayat yang overlap dua kali.
+                                Progress dihitung dari setoran hafalan berstatus lulus yang sesuai dengan target kurikulum program santri.
                             </p>
                         </div>
 
@@ -129,7 +136,7 @@
                             <p class="mt-1 text-sm text-gray-500">
                                 {{ number_format($progress['memorized_ayahs'] ?? 0) }}
                                 /
-                                {{ number_format($progress['total_quran_ayahs'] ?? 0) }}
+                                {{ number_format($progress['target_total_ayahs'] ?? $progress['total_quran_ayahs'] ?? 0) }}
                                 ayat
                             </p>
                         </div>
@@ -150,6 +157,11 @@
                             <p class="mt-1 text-2xl font-bold text-gray-900">
                                 {{ number_format($progress['memorized_ayahs'] ?? 0) }}
                             </p>
+                            @if (!empty($progress['all_memorized_ayahs']) && $progress['all_memorized_ayahs'] !== $progress['memorized_ayahs'])
+                                <p class="text-[10px] text-gray-450 mt-1">
+                                    Total semua juz: {{ number_format($progress['all_memorized_ayahs']) }} ayat
+                                </p>
+                            @endif
                         </div>
 
                         <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
@@ -167,7 +179,7 @@
 
                         <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
                             <p class="text-sm text-gray-500">
-                                Sisa Ayat
+                                Sisa Target Ayat
                             </p>
 
                             <p class="mt-1 text-2xl font-bold text-gray-900">

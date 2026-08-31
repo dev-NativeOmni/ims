@@ -213,4 +213,72 @@ class SettingController extends Controller
             ->route('academic-calendar.index', ['year' => $year, 'month' => $month])
             ->with('success', 'Kalender akademik berhasil diperbarui.');
     }
+
+    public function hafalanTargetsIndex()
+    {
+        $config = Setting::getHafalanTargetsConfig();
+
+        return view('settings.hafalan-targets', [
+            'config' => $config,
+        ]);
+    }
+
+    public function hafalanTargetsUpdate(Request $request)
+    {
+        $inputConfig = $request->input('targets', []);
+
+        $formattedConfig = [
+            'grade_10' => [
+                'tahfizh' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_10']['tahfizh']['target_juz_count'] ?? 4)),
+                    'mode' => ($inputConfig['grade_10']['tahfizh']['mode'] ?? 'specific') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_10']['tahfizh']['specific_juz'] ?? []))),
+                ],
+                'reguler' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_10']['reguler']['target_juz_count'] ?? 2)),
+                    'mode' => ($inputConfig['grade_10']['reguler']['mode'] ?? 'specific') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_10']['reguler']['specific_juz'] ?? []))),
+                ],
+            ],
+            'grade_11' => [
+                'tahfizh' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_11']['tahfizh']['target_juz_count'] ?? 4)),
+                    'mode' => ($inputConfig['grade_11']['tahfizh']['mode'] ?? 'any') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_11']['tahfizh']['specific_juz'] ?? []))),
+                ],
+                'reguler' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_11']['reguler']['target_juz_count'] ?? 2)),
+                    'mode' => ($inputConfig['grade_11']['reguler']['mode'] ?? 'any') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_11']['reguler']['specific_juz'] ?? []))),
+                ],
+            ],
+            'grade_12' => [
+                'tahfizh' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_12']['tahfizh']['target_juz_count'] ?? 4)),
+                    'mode' => ($inputConfig['grade_12']['tahfizh']['mode'] ?? 'any') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_12']['tahfizh']['specific_juz'] ?? []))),
+                ],
+                'reguler' => [
+                    'target_juz_count' => max(1, (int) ($inputConfig['grade_12']['reguler']['target_juz_count'] ?? 2)),
+                    'mode' => ($inputConfig['grade_12']['reguler']['mode'] ?? 'any') === 'specific' ? 'specific' : 'any',
+                    'specific_juz' => array_values(array_map('intval', (array) ($inputConfig['grade_12']['reguler']['specific_juz'] ?? []))),
+                ],
+            ],
+        ];
+
+        Setting::set('hafalan_targets_config', json_encode($formattedConfig));
+
+        return redirect()
+            ->route('settings.hafalan-targets')
+            ->with('success', 'Konfigurasi target progres hafalan berhasil disimpan.');
+    }
+
+    public function hafalanTargetsReset()
+    {
+        Setting::set('hafalan_targets_config', null);
+
+        return redirect()
+            ->route('settings.hafalan-targets')
+            ->with('success', 'Konfigurasi target progres hafalan berhasil di-reset ke standar default.');
+    }
 }

@@ -220,6 +220,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
         Route::get('/pengaturan-adab', [SettingController::class, 'editAdab'])->name('settings.adab');
         Route::post('/pengaturan-adab', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
+        Route::get('/settings/hafalan-targets', [SettingController::class, 'hafalanTargetsIndex'])->name('settings.hafalan-targets');
+        Route::post('/settings/hafalan-targets', [SettingController::class, 'hafalanTargetsUpdate'])->name('settings.hafalan-targets.update');
+        Route::post('/settings/hafalan-targets/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
     });
 
     // Super Admin user management routes
@@ -298,7 +301,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,coordinator_tahfizh'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,supervisor,coordinator_tahfizh'])->group(function () {
         Route::get('/hafalan-records/student/{student}/ummi-card', [HafalanRecordController::class, 'ummiCard'])
             ->name('hafalan-records.student.ummi-card');
 

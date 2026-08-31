@@ -167,11 +167,11 @@ class StudentProgressServiceTest extends TestCase
 
         $progress = $this->service->calculate($this->student);
 
-        // Total memorized: 7 (Al-Fatihah) + 10 (Al-Baqarah) = 17 ayat
+        // Total memorized: 7 (Al-Fatihah) + 10 (Al-Baqarah) = 17 ayat (All in Juz 1)
         $this->assertEquals(17, $progress['memorized_ayahs']);
 
-        $totalQuranAyahs = 7 + 286; // Al-Fatihah + Al-Baqarah di DB
-        $expectedPercent = round((17 / $totalQuranAyahs) * 100, 2);
+        $targetTotalAyahs = $progress['target_total_ayahs'];
+        $expectedPercent = round((17 / $targetTotalAyahs) * 100, 2);
         $this->assertEquals($expectedPercent, $progress['progress_percent']);
     }
 
