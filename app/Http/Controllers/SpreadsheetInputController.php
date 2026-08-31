@@ -428,6 +428,19 @@ class SpreadsheetInputController extends Controller
             }
         });
 
+        if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
+            $request->session()->flash('success', 'Perubahan data kelas berhasil disimpan.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Perubahan data kelas berhasil disimpan.',
+                'redirect' => route('spreadsheet-input.index', [
+                    'class_room_id' => $classRoomId,
+                    'month' => $validated['month'],
+                    'week' => $request->input('week', 'all'),
+                ]),
+            ]);
+        }
+
         return redirect()
             ->route('spreadsheet-input.index', [
                 'class_room_id' => $classRoomId,

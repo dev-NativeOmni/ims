@@ -30,6 +30,7 @@
                 gridData: {},
                 surahDetails: {},
                 isDirty: false,
+                isSaving: false,
                 isMobileView: window.innerWidth < 768,
                 init() {
                     window.addEventListener('resize', () => {
@@ -174,6 +175,36 @@
                             uh.ayah = '';
                         });
                     }
+                },
+                saveData() {
+                    if (this.isSaving) return;
+                    this.isSaving = true;
+                    this.isDirty = false;
+
+                    const payload = {
+                        class_room_id: this.selectedClass,
+                        month: this.selectedMonth,
+                        type: this.tab,
+                        week: '{{ $selectedWeek }}',
+                        records_json: JSON.stringify(this.gridData)
+                    };
+
+                    axios.post('{{ route('spreadsheet-input.save') }}', payload)
+                        .then(res => {
+                            if (res.data && res.data.redirect) {
+                                window.location.href = res.data.redirect;
+                            } else {
+                                window.location.reload();
+                            }
+                        })
+                        .catch(err => {
+                            this.isSaving = false;
+                            let msg = 'Gagal menyimpan data.';
+                            if (err.response && err.response.data && err.response.data.message) {
+                                msg += ' (' + err.response.data.message + ')';
+                            }
+                            alert(msg);
+                        });
                 }
             }));
         });
@@ -270,8 +301,20 @@
 
                 <!-- Submit Button -->
                 <div class="w-full sm:w-auto">
-                    <button type="button" @click="isDirty = false; $nextTick(() => document.getElementById('spreadsheet-form').submit())" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
-                        <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Kelas
+                    <button type="button" @click="saveData()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
+                        <template x-if="!isSaving">
+                            <span class="inline-flex items-center gap-1.5">
+                                <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Kelas
+                            </span>
+                        </template>
+                        <template x-if="isSaving">
+                            <span class="inline-flex items-center gap-1.5">
+                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg> Menyimpan Perubahan...
+                            </span>
+                        </template>
                     </button>
                 </div>
             </div>
@@ -288,7 +331,6 @@
                     <input type="hidden" name="month" :value="selectedMonth">
                     <input type="hidden" name="type" :value="tab">
                     <input type="hidden" name="week" value="{{ $selectedWeek }}">
-                    <input type="hidden" name="records_json" :value="JSON.stringify(gridData)">
 
                     <!-- ========================================== -->
                     <!-- DESKTOP SPREADSHEET VIEW (Laptop/PC)       -->
