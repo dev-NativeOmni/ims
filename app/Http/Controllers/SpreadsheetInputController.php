@@ -368,76 +368,97 @@ class SpreadsheetInputController extends Controller
             $records = [];
         }
 
-        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap, $records) {
-            foreach ($records as $studentId => $studentData) {
-                $studentId = (int)$studentId;
-                if (!$visibleStudentIds->contains($studentId)) {
-                    continue; // Skip student without access (halaqoh scope)
-                }
-
-                $student = Student::findOrFail($studentId);
-                $teacherId = $this->resolveTeacherId($request, $student);
-                if (!$teacherId) {
-                    continue; // Skip student without teacher profile
-                }
-
-                foreach ($studentData['dates'] ?? [] as $date => $cellData) {
-                    $attendance = $cellData['attendance'] ?? null;
-                    $targetDates = ($isWeekly && !empty($weekDatesMap[$date])) ? $weekDatesMap[$date] : [$date];
-
-                    // Check if hafalan or UMMI data is filled in for this cell
-                    $hasHafalanInput = false;
-                    foreach ($cellData['hafalans'] ?? [] as $hData) {
-                        if (!empty($hData['surah_id']) && (filled($hData['ayah_start'] ?? null) || filled($hData['ayah_end'] ?? null))) {
-                            $hasHafalanInput = true;
-                            break;
-                        }
+        try {
+            DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap, $records) {
+                foreach ($records as $studentId => $studentData) {
+                    $studentId = (int)$studentId;
+                    if (!$visibleStudentIds->contains($studentId)) {
+                        continue; // Skip student without access (halaqoh scope)
                     }
 
-                    $hasUmmiInput = filled($cellData['ummi_jilid'] ?? null)
-                        || filled($cellData['ummi_halaman'] ?? null)
-                        || filled($cellData['materi'] ?? null)
-                        || filled($cellData['nilai'] ?? null);
-
-                    // Auto-mark attendance as 'hadir' if hafalan/UMMI is input but attendance pill was not set
-                    if (($hasHafalanInput || $hasUmmiInput) && empty($attendance)) {
-                        $attendance = 'hadir';
-                    }
-
-                    // 1. Save Attendance
-                    if (filled($attendance)) {
-                        Attendance::updateOrCreate(
-                            ['student_id' => $studentId, 'tanggal' => $date, 'class_room_id' => $classRoomId],
-                            ['status' => $attendance]
-                        );
-                    }
-
-                    // ONLY clear records if student was explicitly marked absent ('sakit', 'izin', 'alpa')
-                    if (in_array($attendance, ['sakit', 'izin', 'alpa'], true)) {
-                        HafalanRecord::where('student_id', $studentId)
-                            ->whereIn('submitted_at', $targetDates)
-                            ->delete();
-                        UmmiRecord::where('student_id', $studentId)
-                            ->whereIn('tanggal', $targetDates)
-                            ->delete();
+                    $student = Student::find($studentId);
+                    if (!$student) {
                         continue;
                     }
 
-                    // 2. Save Setoran (Hafalan / UMMI)
-                    if ($attendance === 'hadir' || $hasHafalanInput || $hasUmmiInput) {
-                        if ($type === 'hafalan') {
-                            $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
-                        } elseif ($type === 'ummi') {
-                            if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
-                                $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
-                            } else {
+                    $teacherId = $this->resolveTeacherId($request, $student);
+                    if (!$teacherId) {
+                        continue; // Skip student without teacher profile
+                    }
+
+                    foreach ($studentData['dates'] ?? [] as $date => $cellData) {
+                        $attendance = $cellData['attendance'] ?? null;
+                        $targetDates = ($isWeekly && !empty($weekDatesMap[$date])) ? $weekDatesMap[$date] : [$date];
+
+                        // Check if hafalan or UMMI data is filled in for this cell
+                        $hasHafalanInput = false;
+                        foreach ($cellData['hafalans'] ?? [] as $hData) {
+                            if (!empty($hData['surah_id']) && (filled($hData['ayah_start'] ?? null) || filled($hData['ayah_end'] ?? null))) {
+                                $hasHafalanInput = true;
+                                break;
+                            }
+                        }
+
+                        $hasUmmiInput = filled($cellData['ummi_jilid'] ?? null)
+                            || filled($cellData['ummi_halaman'] ?? null)
+                            || filled($cellData['materi'] ?? null)
+                            || filled($cellData['nilai'] ?? null);
+
+                        // Auto-mark attendance as 'hadir' if hafalan/UMMI is input but attendance pill was not set
+                        if (($hasHafalanInput || $hasUmmiInput) && empty($attendance)) {
+                            $attendance = 'hadir';
+                        }
+
+                        // 1. Save Attendance
+                        if (filled($attendance)) {
+                            Attendance::updateOrCreate(
+                                ['student_id' => $studentId, 'tanggal' => $date, 'class_room_id' => $classRoomId],
+                                ['status' => $attendance]
+                            );
+                        }
+
+                        // ONLY clear records if student was explicitly marked absent ('sakit', 'izin', 'alpa')
+                        if (in_array($attendance, ['sakit', 'izin', 'alpa'], true)) {
+                            HafalanRecord::where('student_id', $studentId)
+                                ->whereIn('submitted_at', $targetDates)
+                                ->delete();
+                            UmmiRecord::where('student_id', $studentId)
+                                ->whereIn('tanggal', $targetDates)
+                                ->delete();
+                            continue;
+                        }
+
+                        // 2. Save Setoran (Hafalan / UMMI)
+                        if ($attendance === 'hadir' || $hasHafalanInput || $hasUmmiInput) {
+                            if ($type === 'hafalan') {
                                 $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                            } elseif ($type === 'ummi') {
+                                if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
+                                    $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                                } else {
+                                    $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
+                                }
                             }
                         }
                     }
                 }
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Spreadsheet save error: ' . $e->getMessage(), [
+                'user_id' => $request->user()?->id,
+                'class_room_id' => $classRoomId,
+                'exception' => $e,
+            ]);
+
+            if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan: ' . $e->getMessage(),
+                ], 422);
             }
-        });
+
+            return redirect()->back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+        }
 
         if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
             $request->session()->flash('success', 'Perubahan data kelas berhasil disimpan.');
