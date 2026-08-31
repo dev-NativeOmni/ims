@@ -349,8 +349,16 @@ class SpreadsheetInputController extends Controller
             }
         }
 
-        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap) {
-            foreach ($request->input('records', []) as $studentId => $studentData) {
+        $records = $request->input('records', []);
+        if ($request->filled('records_json')) {
+            $decoded = json_decode($request->input('records_json'), true);
+            if (is_array($decoded) && (empty($records) || count($decoded) > count($records))) {
+                $records = $decoded;
+            }
+        }
+
+        DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap, $records) {
+            foreach ($records as $studentId => $studentData) {
                 $studentId = (int)$studentId;
                 if (!$visibleStudentIds->contains($studentId)) {
                     continue; // Skip student without access (halaqoh scope)

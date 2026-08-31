@@ -288,6 +288,7 @@
                     <input type="hidden" name="month" :value="selectedMonth">
                     <input type="hidden" name="type" :value="tab">
                     <input type="hidden" name="week" value="{{ $selectedWeek }}">
+                    <input type="hidden" name="records_json" :value="JSON.stringify(gridData)">
 
                     <!-- ========================================== -->
                     <!-- DESKTOP SPREADSHEET VIEW (Laptop/PC)       -->
