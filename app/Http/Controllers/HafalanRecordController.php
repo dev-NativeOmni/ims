@@ -231,7 +231,7 @@ class HafalanRecordController extends Controller
 
     public function editUmmi(Request $request, UmmiRecord $ummiRecord): View
     {
-        $this->authorize('update', HafalanRecord::class);
+        $this->authorize('create', HafalanRecord::class);
 
         return view('hafalan-records.edit-ummi', array_merge(
             [
@@ -243,7 +243,7 @@ class HafalanRecordController extends Controller
 
     public function updateUmmi(Request $request, UmmiRecord $ummiRecord): RedirectResponse
     {
-        $this->authorize('update', HafalanRecord::class);
+        $this->authorize('create', HafalanRecord::class);
 
         $validated = $request->validate([
             'student_id' => ['required', 'integer', 'exists:students,id'],
@@ -269,7 +269,7 @@ class HafalanRecordController extends Controller
 
     public function destroyUmmi(Request $request, UmmiRecord $ummiRecord): RedirectResponse
     {
-        $this->authorize('delete', HafalanRecord::class);
+        $this->authorize('create', HafalanRecord::class);
 
         $ummiRecord->delete();
 
