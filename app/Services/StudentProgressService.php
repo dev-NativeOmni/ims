@@ -101,7 +101,7 @@ class StudentProgressService
             return $this->computeStudentProgress($student);
         }
 
-        return Cache::remember("student_target_prog_v4_{$student->id}", 10, function () use ($student) {
+        return Cache::remember("student_target_prog_v6_{$student->id}", 10, function () use ($student) {
             return $this->computeStudentProgress($student);
         });
     }
@@ -360,10 +360,10 @@ class StudentProgressService
                     ? 'Juz '.implode(', ', $juzStats['completed_juz'])
                     : 'Belum ada Juz lengkap',
 
-                'total_hafalan_records' => (clone $hafalanRecordsQuery)->count(),
+                'total_hafalan_records' => (clone $hafalanRecordsQuery)->count() + \App\Models\UmmiRecord::where('student_id', $student->id)->whereNotNull('hafalan_surah_id')->count(),
                 'passed_hafalan_records' => (clone $hafalanRecordsQuery)
                     ->where('status', 'passed')
-                    ->count(),
+                    ->count() + \App\Models\UmmiRecord::where('student_id', $student->id)->whereNotNull('hafalan_surah_id')->count(),
                 'repeat_hafalan_records' => (clone $hafalanRecordsQuery)
                     ->whereIn('status', ['repeat', 'needs_improvement'])
                     ->count(),
@@ -386,13 +386,15 @@ class StudentProgressService
                     ->whereIn('status', $activeTargetStatuses)
                     ->whereDate('target_date', '<', today())
                     ->count(),
-                'latest_hafalan_surah' => $latestHafalan?->surah?->name_latin
-                    ?? $latestHafalan?->surah?->name
-                    ?? null,
-                'latest_hafalan_ayah' => $latestHafalan
-                    ? $latestHafalan->ayah_start.' - '.$latestHafalan->ayah_end
-                    : null,
-                'latest_hafalan_date' => $latestHafalan?->submitted_at,
+                'latest_hafalan_surah' => ($latestUmmiRecord && $latestUmmiRecord->hafalan_surah_id && (! $latestHafalan || $latestUmmiRecord->tanggal >= ($latestHafalan->submitted_at ?? '1970-01-01')))
+                    ? ($latestUmmiRecord->surah?->name_latin ?? $latestUmmiRecord->surah?->name)
+                    : ($latestHafalan?->surah?->name_latin ?? $latestHafalan?->surah?->name ?? null),
+                'latest_hafalan_ayah' => ($latestUmmiRecord && $latestUmmiRecord->hafalan_surah_id && (! $latestHafalan || $latestUmmiRecord->tanggal >= ($latestHafalan->submitted_at ?? '1970-01-01')))
+                    ? ($latestUmmiRecord->hafalan_ayah ? 'Ayat '.$latestUmmiRecord->hafalan_ayah : null)
+                    : ($latestHafalan ? $latestHafalan->ayah_start.' - '.$latestHafalan->ayah_end : null),
+                'latest_hafalan_date' => ($latestUmmiRecord && $latestUmmiRecord->hafalan_surah_id && (! $latestHafalan || $latestUmmiRecord->tanggal >= ($latestHafalan->submitted_at ?? '1970-01-01')))
+                    ? $latestUmmiRecord->tanggal
+                    : $latestHafalan?->submitted_at,
 
                 'latest_murajaah_surah' => $latestMurajaah?->surah?->name_latin
                     ?? $latestMurajaah?->surah?->name
@@ -533,6 +535,11 @@ class StudentProgressService
             ->whereNotNull('ayah_end')
             ->get(['surah_id', 'ayah_start', 'ayah_end']);
 
+        $ummiRecords = \App\Models\UmmiRecord::where('student_id', $student->id)
+            ->whereNotNull('hafalan_surah_id')
+            ->whereNotNull('hafalan_ayah')
+            ->get(['hafalan_surah_id', 'hafalan_ayah']);
+
         $juzMemorizedCount = [];
         $memorizedMap = [];
 
@@ -540,6 +547,35 @@ class StudentProgressService
             $start = (int) $record->ayah_start;
             $end = (int) $record->ayah_end;
             $surahNum = $surahMap[$record->surah_id] ?? (int) $record->surah_id;
+
+            for ($a = $start; $a <= $end; $a++) {
+                if (isset(self::$allAyahs[$surahNum][$a])) {
+                    $juz = self::$allAyahs[$surahNum][$a];
+                    $key = "{$surahNum}-{$a}";
+                    if (! isset($memorizedMap[$key])) {
+                        $memorizedMap[$key] = true;
+                        if (! isset($juzMemorizedCount[$juz])) {
+                            $juzMemorizedCount[$juz] = 0;
+                        }
+                        $juzMemorizedCount[$juz]++;
+                    }
+                }
+            }
+        }
+
+        foreach ($ummiRecords as $uRec) {
+            $clean = str_replace(' ', '', (string) $uRec->hafalan_ayah);
+            if (preg_match('/(\d+)\s*[-–—]\s*(\d+)/u', $clean, $m)) {
+                $start = (int) $m[1];
+                $end = (int) $m[2];
+            } elseif (is_numeric($clean)) {
+                $start = (int) $clean;
+                $end = (int) $clean;
+            } else {
+                continue;
+            }
+
+            $surahNum = $surahMap[$uRec->hafalan_surah_id] ?? (int) $uRec->hafalan_surah_id;
 
             for ($a = $start; $a <= $end; $a++) {
                 if (isset(self::$allAyahs[$surahNum][$a])) {
@@ -597,36 +633,67 @@ class StudentProgressService
             ->whereNotNull('surah_id')
             ->whereNotNull('ayah_start')
             ->whereNotNull('ayah_end')
-            ->get(['surah_id', 'ayah_start', 'ayah_end'])
-            ->groupBy('surah_id');
+            ->get(['surah_id', 'ayah_start', 'ayah_end']);
 
-        if ($records->isEmpty()) {
+        $ummiRecords = \App\Models\UmmiRecord::query()
+            ->where('student_id', $student->id)
+            ->whereNotNull('hafalan_surah_id')
+            ->whereNotNull('hafalan_ayah')
+            ->get(['hafalan_surah_id', 'hafalan_ayah']);
+
+        if ($records->isEmpty() && $ummiRecords->isEmpty()) {
             return 0;
         }
 
         $surahTotals = Surah::query()
             ->pluck('total_ayah', 'id');
 
-        $total = 0;
+        $surahIntervals = [];
 
-        foreach ($records as $surahId => $surahRecords) {
+        foreach ($records as $record) {
+            $surahId = $record->surah_id;
             $surahTotalAyah = (int) ($surahTotals[$surahId] ?? 0);
-
             if ($surahTotalAyah <= 0) {
                 continue;
             }
 
-            $intervals = [];
+            $start = max(1, (int) $record->ayah_start);
+            $end = min($surahTotalAyah, (int) $record->ayah_end);
 
-            foreach ($surahRecords as $record) {
-                $start = max(1, (int) $record->ayah_start);
-                $end = min($surahTotalAyah, (int) $record->ayah_end);
+            if ($start <= $end) {
+                $surahIntervals[$surahId][] = [$start, $end];
+            }
+        }
 
-                if ($start <= $end) {
-                    $intervals[] = [$start, $end];
-                }
+        foreach ($ummiRecords as $uRec) {
+            $surahId = $uRec->hafalan_surah_id;
+            $surahTotalAyah = (int) ($surahTotals[$surahId] ?? 0);
+            if ($surahTotalAyah <= 0) {
+                continue;
             }
 
+            $clean = str_replace(' ', '', (string) $uRec->hafalan_ayah);
+            if (preg_match('/(\d+)\s*[-–—]\s*(\d+)/u', $clean, $m)) {
+                $start = (int) $m[1];
+                $end = (int) $m[2];
+            } elseif (is_numeric($clean)) {
+                $start = (int) $clean;
+                $end = (int) $clean;
+            } else {
+                continue;
+            }
+
+            $start = max(1, $start);
+            $end = min($surahTotalAyah, $end);
+
+            if ($start <= $end) {
+                $surahIntervals[$surahId][] = [$start, $end];
+            }
+        }
+
+        $total = 0;
+
+        foreach ($surahIntervals as $surahId => $intervals) {
             $total += $this->countMergedIntervals($intervals);
         }
 
