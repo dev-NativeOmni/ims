@@ -13,19 +13,25 @@
             }
             @page {
                 size: 330mm 215mm landscape; /* F4 / A4 Landscape */
-                margin: 0.5cm;
+                margin: 0.3cm;
             }
-            body {
+            html, body {
+                height: 100%;
                 background: white !important;
                 color: black !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                overflow: hidden !important;
             }
             #ummiGrade10ReportCard {
                 box-shadow: none !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                margin: 0 auto !important;
+                padding: 0.75rem 1rem !important;
                 border-width: 4px !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
     </style>
