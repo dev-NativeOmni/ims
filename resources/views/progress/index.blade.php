@@ -194,14 +194,20 @@
                     <script>
                         function downloadUmmiCardProgress() {
                             const cardEl = document.getElementById('ummiGrade10ReportCard');
-                            if (!cardEl) return;
-                            html2canvas(cardEl, { scale: 2, useCORS: true, backgroundColor: null }).then(canvas => {
+                            if (!cardEl) {
+                                alert('Elemen laporan tidak ditemukan.');
+                                return;
+                            }
+                            html2canvas(cardEl, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false }).then(canvas => {
                                 const a = document.createElement('a');
                                 a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
                                 a.href = canvas.toDataURL('image/png');
                                 document.body.appendChild(a);
                                 a.click();
                                 document.body.removeChild(a);
+                            }).catch(err => {
+                                console.error('Gagal mengunduh gambar:', err);
+                                alert('Gagal mengunduh gambar. Silakan coba lagi.');
                             });
                         }
                     </script>
