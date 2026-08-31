@@ -117,12 +117,23 @@
             </div>
 
             <div class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl overflow-hidden">
-                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h3 class="font-semibold text-gray-900">Progress Murid Aktif</h3>
-                        <p class="text-sm text-gray-500">Diurutkan dari progress tertinggi.</p>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Progress Murid Aktif</h3>
+                        <p class="text-sm text-gray-500 dark:text-zinc-400">Diurutkan dari progress capaian target hafalan tertinggi.</p>
                     </div>
-                    <a href="{{ url('/students') }}" class="text-sm text-emerald-700 hover:underline">Lihat semua</a>
+                    <div class="flex items-center gap-3">
+                        @if (Route::has('settings.hafalan-targets'))
+                            <a href="{{ route('settings.hafalan-targets') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                ⚙️ Sesuaikan Target Progres
+                            </a>
+                        @endif
+                        <a href="{{ url('/students') }}" class="text-sm text-emerald-700 dark:text-emerald-400 hover:underline">Lihat semua</a>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">

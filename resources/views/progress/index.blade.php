@@ -10,12 +10,25 @@
                 </p>
             </div>
 
-            @if (Route::has('reports.index'))
-                <a href="{{ route('reports.index') }}"
-                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
-                    Buka Laporan
-                </a>
-            @endif
+            <div class="flex items-center gap-2">
+                @if (auth()->user()?->hasAnyRole(['super_admin', 'admin', 'supervisor', 'coordinator_tahfizh']) && Route::has('settings.hafalan-targets'))
+                    <a href="{{ route('settings.hafalan-targets') }}"
+                       class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-100 transition">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Atur Target Progres
+                    </a>
+                @endif
+
+                @if (Route::has('reports.index'))
+                    <a href="{{ route('reports.index') }}"
+                       class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                        Buka Laporan
+                    </a>
+                @endif
+            </div>
         </div>
     </x-slot>
 
