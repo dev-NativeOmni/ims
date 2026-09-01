@@ -287,17 +287,66 @@ class ParentController extends Controller
                 $userId = $map['user_id'] !== null ? (int) trim((string) ($row[$map['user_id']] ?? '')) : null;
                 $existingUser = null;
 
+                // 1. Cari berdasarkan ID User
                 if ($userId && $userId > 0) {
                     $existingUser = User::find($userId);
                 }
 
+                // 2. Cari berdasarkan Username
                 if (! $existingUser) {
                     $existingUser = User::where('username', $username)->first();
                 }
 
+                // 3. Cari berdasarkan Nama Ortu (persis atau tanpa prefix Orangtua/Ortu)
                 if (! $existingUser && $parentRole) {
-                    $existingUser = User::where('name', $name)->where('role_id', $parentRole->id)->first();
+                    $existingUser = User::where('role_id', $parentRole->id)
+                        ->where(function ($q) use ($name) {
+                            $clean = trim((string) preg_replace('/^(orangtua|ortu)\s+/i', '', $name));
+                            $q->where('name', $name)
+                                ->orWhere('name', 'like', "%{$clean}%");
+                        })
+                        ->first();
                 }
+
+                // 4. Cari berdasarkan Nama/Username Santri (jika ada kolom santri)
+                if (! $existingUser && $map['username_santri'] !== null) {
+                    $studentStr = trim((string) ($row[$map['username_santri']] ?? ''));
+                    if (! empty($studentStr)) {
+                        $studentTokens = preg_split('/[;,]/', $studentStr);
+                        foreach ($studentTokens as $token) {
+                            $token = trim((string) $token);
+                            if (empty($token)) {
+                                continue;
+                            }
+                            $foundStudent = Student::query()
+                                ->where('name', 'like', "%{$token}%")
+                                ->orWhere('student_number', $token)
+                                ->orWhereHas('user', fn ($sq) => $sq->where('username', $token))
+                                ->first();
+
+                            if ($foundStudent && $foundStudent->parents()->exists()) {
+                                $existingUser = $foundStudent->parents()->first()?->user;
+                                if ($existingUser) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Proteksi username duplikat: pastikan username aman dan unik sebelum disimpan
+                $targetUserId = $existingUser?->id;
+                $finalUsername = $username;
+                $counter = 2;
+                while (User::withTrashed()
+                    ->where('username', $finalUsername)
+                    ->when($targetUserId, fn ($q) => $q->where('id', '!=', $targetUserId))
+                    ->exists()
+                ) {
+                    $finalUsername = $username.$counter;
+                    $counter++;
+                }
+                $username = $finalUsername;
 
                 $profile = null;
 
