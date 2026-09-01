@@ -32,30 +32,24 @@
                 </div>
             @else
                 {{-- 🌟 APPRECIATION & HIGHLIGHTS BANNER 🌟 --}}
-                <div class="rounded-2xl bg-gradient-to-r from-emerald-800 via-teal-900 to-zinc-900 text-white p-6 sm:p-7 shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-                        <svg class="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        </svg>
-                    </div>
-
+                <div class="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-7 shadow-sm relative overflow-hidden">
                     <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
                         <div class="space-y-2">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-300" /> Portal Khusus Wali Santri
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
+                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> Portal Khusus Wali Santri
                             </span>
-                            <h3 class="text-xl sm:text-2xl font-black text-white">
+                            <h3 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
                             </h3>
-                            <p class="text-xs sm:text-sm text-emerald-100/80 max-w-2xl leading-relaxed">
+                            <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed font-medium">
                                 Pantau dan dukung terus ikhtiar Ananda dalam menghafal Al-Qur'an, menumbuhkan adab islami, dan mengukir prestasi terbaiknya di sekolah.
                             </p>
                         </div>
 
                         <div class="flex items-center gap-3 shrink-0">
-                            <div class="rounded-xl bg-white/10 backdrop-blur-md px-4 py-3 border border-white/10 text-center">
-                                <p class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider">Total Ananda</p>
-                                <p class="text-2xl font-black text-white mt-0.5">{{ $childrenProgress->count() }} Santri</p>
+                            <div class="rounded-xl bg-emerald-50 dark:bg-zinc-800/80 px-4 py-3 border border-emerald-100 dark:border-zinc-700/60 text-center">
+                                <p class="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 tracking-wider">Total Ananda</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">{{ $childrenProgress->count() }} Santri</p>
                             </div>
                         </div>
                     </div>
@@ -138,7 +132,7 @@
                                         <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                             <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                         </span>
-                                        <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs hover:bg-zinc-800 dark:hover:bg-zinc-100 transition shadow-sm">
+                                        <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm">
                                             <span>Arsip Rapor Lengkap</span> →
                                         </a>
                                     </div>
