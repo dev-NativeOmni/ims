@@ -728,7 +728,7 @@
                     { id: 99, name: "Az-Zalzalah", ar: "الزلزلة", page: 599 },
                     { id: 100, name: "Al-'Adiyat", ar: "العاديات", page: 599 },
                     { id: 101, name: "Al-Qari'ah", ar: "القارعة", page: 600 },
-                    { id: 102, name: "At-Takathur", ar: "التكاثر", page: 600 },
+                    { id: 102, name: "At-Takatsur", ar: "التكاثر", page: 600 },
                     { id: 103, name: "Al-'Asr", ar: "العصر", page: 601 },
                     { id: 104, name: "Al-Humazah", ar: "الهمزة", page: 601 },
                     { id: 105, name: "Al-Fil", ar: "الفيل", page: 601 },
@@ -737,7 +737,7 @@
                     { id: 108, name: "Al-Kawthar", ar: "الكوثر", page: 602 },
                     { id: 109, name: "Al-Kafirun", ar: "Al-Kafirun", page: 603 },
                     { id: 110, name: "An-Nasr", ar: "النصر", page: 603 },
-                    { id: 111, name: "Al-Masad", ar: "المسد", page: 603 },
+                    { id: 111, name: "Al-Lahab", ar: "اللهب", page: 603 },
                     { id: 112, name: "Al-Ikhlas", ar: "Al-Ikhlas", page: 604 },
                     { id: 113, name: "Al-Falaq", ar: "الفلق", page: 604 },
                     { id: 114, name: "An-Nas", ar: "الناس", page: 604 }
