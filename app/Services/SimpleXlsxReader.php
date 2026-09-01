@@ -43,12 +43,28 @@ class SimpleXlsxReader
             }
         }
 
-        // 2. Read sheet1
+        // 2. Read sheet with data
         $rows = [];
-        $sheetEntry = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $sheetEntry = false;
+
+        for ($i = 1; $i <= 10; $i++) {
+            $entry = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
+            if ($entry !== false) {
+                $testXml = simplexml_load_string($entry);
+                if ($testXml && isset($testXml->sheetData) && count($testXml->sheetData->row) > 0) {
+                    $sheetEntry = $entry;
+                    break;
+                }
+            }
+        }
+
+        if ($sheetEntry === false) {
+            $sheetEntry = $zip->getFromName('xl/worksheets/sheet1.xml');
+        }
+
         if ($sheetEntry === false) {
             $zip->close();
-            throw new \Exception('Lembar kerja pertama (sheet1.xml) tidak ditemukan di dalam berkas.');
+            throw new \Exception('Lembar kerja tidak ditemukan di dalam berkas.');
         }
 
         $xml = simplexml_load_string($sheetEntry);

@@ -153,11 +153,12 @@ class ParentController extends Controller
             ->orderBy('id')
             ->get();
 
-        $headers = ['Nama Orangtua', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Anak', 'Daftar Nama Anak'];
+        $headers = ['ID User', 'Nama Orangtua', 'Username', 'Telepon', 'Alamat', 'Status', 'Jumlah Anak', 'Daftar Nama Anak'];
         $data = [];
 
         foreach ($parents as $parent) {
             $data[] = [
+                $parent->user_id,
                 $parent->user?->name ?? '',
                 $parent->user?->username ?? '',
                 $parent->phone ?? '',
@@ -208,7 +209,12 @@ class ParentController extends Controller
             if ($handle === false) {
                 return redirect()->back()->with('error', 'Gagal membuka berkas.');
             }
-            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+
+            $firstLine = fgets($handle);
+            rewind($handle);
+            $delimiter = (substr_count((string) $firstLine, ';') > substr_count((string) $firstLine, ',')) ? ';' : ',';
+
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
                 $rows[] = $row;
             }
             fclose($handle);
@@ -224,20 +230,30 @@ class ParentController extends Controller
             (array) $header
         );
 
-        $col = static function (string $name) use ($header): ?int {
-            $v = array_search($name, $header, true);
+        $col = static function (array|string $names) use ($header): ?int {
+            $names = (array) $names;
+            foreach ($names as $name) {
+                $target = trim(strtolower((string) $name));
+                foreach ($header as $idx => $h) {
+                    $hStr = trim(strtolower((string) $h));
+                    if ($hStr === $target || str_contains($hStr, $target)) {
+                        return (int) $idx;
+                    }
+                }
+            }
 
-            return $v !== false ? (int) $v : null;
+            return null;
         };
 
         /** @var array<string, int|null> $map */
         $map = [
-            'nama' => $col('nama') ?? $col('name'),
-            'username' => $col('username'),
-            'telepon' => $col('telepon') ?? $col('phone'),
-            'alamat' => $col('alamat') ?? $col('address'),
-            'status' => $col('status'),
-            'username_santri' => $col('username santri') ?? $col('student_usernames') ?? $col('email santri') ?? $col('student_emails') ?? $col('nis_santri') ?? $col('nis santri'),
+            'user_id' => $col(['id user', 'id_user', 'user_id', 'id ortu', 'id']),
+            'nama' => $col(['nama', 'name', 'orangtua', 'ortu']),
+            'username' => $col(['username', 'user_name', 'user']),
+            'telepon' => $col(['telepon', 'phone', 'hp', 'wa']),
+            'alamat' => $col(['alamat', 'address']),
+            'status' => $col(['status']),
+            'username_santri' => $col(['username santri', 'student_usernames', 'email santri', 'nis_santri', 'daftar nama anak']),
         ];
 
         if ($map['nama'] === null || $map['username'] === null) {
@@ -268,12 +284,27 @@ class ParentController extends Controller
                 $telepon = $map['telepon'] !== null ? trim((string) ($row[$map['telepon']] ?? '')) : null;
                 $alamat = $map['alamat'] !== null ? trim((string) ($row[$map['alamat']] ?? '')) : null;
 
-                $existingUser = User::where('username', $username)->first();
+                $userId = $map['user_id'] !== null ? (int) trim((string) ($row[$map['user_id']] ?? '')) : null;
+                $existingUser = null;
+
+                if ($userId && $userId > 0) {
+                    $existingUser = User::find($userId);
+                }
+
+                if (! $existingUser) {
+                    $existingUser = User::where('username', $username)->first();
+                }
+
+                if (! $existingUser && $parentRole) {
+                    $existingUser = User::where('name', $name)->where('role_id', $parentRole->id)->first();
+                }
+
                 $profile = null;
 
                 if ($existingUser) {
                     $existingUser->update([
                         'name' => $name,
+                        'username' => $username,
                         'status' => $status,
                     ]);
 
