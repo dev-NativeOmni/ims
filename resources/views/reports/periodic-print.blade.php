@@ -1,5 +1,5 @@
 @php
-    $printOrientation = request('orientation', 'landscape');
+    $printOrientation = request('orientation', 'portrait');
 @endphp
 @if (!empty($isGrade10))
 <!DOCTYPE html>
@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Laporan UMMI ({{ ucfirst($printOrientation) }}) — {{ $selectedClass?->name ?? 'Kelas 10' }}</title>
+    <title>Cetak Laporan UMMI (A4 {{ ucfirst($printOrientation) }}) — {{ $selectedClass?->name ?? 'Kelas 10' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -15,53 +15,72 @@
                 display: none !important;
             }
             @page {
-                @if ($printOrientation === 'portrait')
-                    size: 215mm 330mm portrait;
-                    margin: 0.5cm;
+                @if ($printOrientation === 'landscape')
+                    size: A4 landscape;
+                    margin: 0.8cm;
                 @else
-                    size: 330mm 215mm landscape;
-                    margin: 0.3cm;
+                    size: A4 portrait;
+                    margin: 0.8cm;
                 @endif
             }
             html, body {
-                height: 100%;
+                height: auto !important;
                 background: white !important;
                 color: black !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                overflow: hidden !important;
+                overflow: visible !important;
             }
             #ummiGrade10ReportCard {
                 box-shadow: none !important;
                 width: 100% !important;
-                max-width: {{ $printOrientation === 'portrait' ? '4xl' : '100%' }} !important;
+                max-width: 100% !important;
                 margin: 0 auto !important;
                 padding: 0.75rem 1rem !important;
                 border-width: 4px !important;
+                box-sizing: border-box !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+            }
+            thead {
+                display: table-header-group !important;
+            }
+            tbody {
+                display: table-row-group !important;
             }
         }
     </style>
 </head>
 <body class="bg-gray-100 text-zinc-900 p-4 sm:p-8">
     <!-- Top Action Bar (no-print) -->
-    <div class="no-print max-w-5xl mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
+    <div class="no-print max-w-5xl mx-auto mb-6 flex flex-wrap justify-between items-center bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm gap-3">
         <div>
             <h3 class="text-sm font-bold text-zinc-900">Laporan Capaian Tahfidz UMMI — {{ $selectedClass?->name }}</h3>
-            <p class="text-xs text-zinc-500">Format Halaman: {{ ucfirst($printOrientation) }} (F4 / A4)</p>
+            <p class="text-xs text-zinc-500">Format Cetak: <strong>A4 {{ ucfirst($printOrientation) }}</strong> (Semua Nama Murid Terbaca & Utuh)</p>
         </div>
-        <div class="flex gap-2">
-            <button onclick="window.close()" class="px-4 py-2 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
-                Tutup
-            </button>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'portrait'])) }}" 
+               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               📄 A4 Portrait
+            </a>
+            <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'landscape'])) }}" 
+               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               📑 A4 Landscape
+            </a>
             <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
-                🖨️ Cetak Sekarang ({{ ucfirst($printOrientation) }})
+                🖨️ Cetak Sekarang
+            </button>
+            <button onclick="window.close()" class="px-3 py-2 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
+                Tutup
             </button>
         </div>
     </div>
 
-    <!-- Printable Landscape Sheet -->
+    <!-- Printable Sheet -->
     <div class="max-w-5xl mx-auto">
         @include('reports.partials.ummi-grade10-card')
     </div>
@@ -73,7 +92,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Perkembangan Berkala - {{ $selectedClass?->name ?? 'Kelas' }}</title>
+    <title>Laporan Perkembangan Berkala (A4 {{ ucfirst($printOrientation) }}) - {{ $selectedClass?->name ?? 'Kelas' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -81,31 +100,66 @@
             .no-print {
                 display: none !important;
             }
-            body {
+            @page {
+                @if ($printOrientation === 'landscape')
+                    size: A4 landscape;
+                    margin: 0.8cm;
+                @else
+                    size: A4 portrait;
+                    margin: 0.8cm;
+                @endif
+            }
+            html, body {
+                height: auto !important;
                 background: white !important;
                 color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
             }
-            .page-break {
-                page-break-before: always;
+            .printable-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
-        }
-        @page {
-            size: A4 portrait;
-            margin: 1.2cm;
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            thead {
+                display: table-header-group !important;
+            }
+            tbody {
+                display: table-row-group !important;
+            }
         }
     </style>
 </head>
 <body class="bg-gray-50 text-zinc-900 min-h-screen p-4 sm:p-8 selection:bg-teal-500 selection:text-white">
 
     <!-- Top Action bar (no-print) -->
-    <div class="no-print max-w-4xl mx-auto mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-        <span class="text-sm text-zinc-550">Laporan cetak siap dikirim ke Kepala Sekolah.</span>
-        <div class="flex gap-2">
+    <div class="no-print max-w-5xl mx-auto mb-6 flex flex-wrap justify-between items-center bg-white p-4 rounded-xl border border-zinc-200 shadow-sm gap-3">
+        <div>
+            <h3 class="text-sm font-bold text-zinc-900">Laporan Perkembangan Berkala — {{ $selectedClass?->name }}</h3>
+            <p class="text-xs text-zinc-500">Format Cetak: <strong>A4 {{ ucfirst($printOrientation) }}</strong> (Semua Nama Murid Terbaca & Utuh)</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'portrait'])) }}" 
+               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               📄 A4 Portrait
+            </a>
+            <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'landscape'])) }}" 
+               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               📑 A4 Landscape
+            </a>
+            <button onclick="window.print()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-1.5">
+                🖨️ Cetak Sekarang
+            </button>
             <button onclick="window.close()" class="px-4 py-2 border border-zinc-300 rounded-lg text-sm font-semibold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
                 Tutup Halaman
-            </button>
-            <button onclick="window.print()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold shadow-sm cursor-pointer">
-                Cetak Sekarang
             </button>
         </div>
     </div>

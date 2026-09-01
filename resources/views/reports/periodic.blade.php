@@ -346,16 +346,18 @@
                 }
                 
                 const executeDownload = () => {
-                    const width = cardEl.offsetWidth;
-                    const height = cardEl.offsetHeight;
+                    const width = cardEl.scrollWidth || cardEl.offsetWidth;
+                    const height = cardEl.scrollHeight || cardEl.offsetHeight;
 
                     htmlToImage.toPng(cardEl, {
                         pixelRatio: 2,
                         backgroundColor: '#ffffff',
-                        width: width,
-                        height: height,
+                        width: width + 24,
+                        height: height + 24,
                         style: {
-                            margin: '0',
+                            margin: '0 auto',
+                            padding: '12px',
+                            boxSizing: 'border-box',
                             left: '0',
                             top: '0',
                             transform: 'none'
