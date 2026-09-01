@@ -1,12 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-1">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ $title ?? 'Admin Dashboard' }}
-            </h2>
-            <p class="text-sm text-gray-500">
-                {{ $subtitle ?? 'Monitoring operasional IMS.' }}
-            </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h2 class="font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white tracking-tight">
+                    {{ $title ?? 'Executive Overview' }}
+                </h2>
+                <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
+                    {{ $subtitle ?? 'Monitoring operasional & progres pembelajaran Al-Qur\'an.' }}
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/70 dark:bg-white/10 text-teal-800 dark:text-teal-300 border border-white/80 dark:border-white/20 shadow-sm backdrop-blur-md">
+                    {{ now()->translatedFormat('l, d F Y') }}
+                </span>
+            </div>
         </div>
     </x-slot>
 
@@ -17,232 +24,304 @@
         $latestMurajaahRecords = collect(data_get($stats, 'latest_murajaah_records', []));
     @endphp
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Total Murid</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'total_students', 0) }}</p>
-                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Aktif: {{ data_get($stats, 'active_students', 0) }}</p>
+        <!-- Top Bento Stat Cards (Frosted Glass Style from Reference) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            
+            <!-- Stat 1: Total Murid -->
+            <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-white/60 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A2.25 2.25 0 0 1 12.75 21.5h-1.5a2.25 2.25 0 0 1-2.25-2.263V19.13" />
+                        </svg>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+                        Aktif {{ data_get($stats, 'active_students', 0) }}
+                    </span>
                 </div>
-
-                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Guru</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'total_teachers', 0) }}</p>
-                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Orangtua: {{ data_get($stats, 'total_parents', 0) }}</p>
-                </div>
-
-                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Setoran Hari Ini</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'hafalan_today', 0) }}</p>
-                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
-                </div>
-
-                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Target Aktif</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ data_get($stats, 'active_targets', 0) }}</p>
-                    <p class="text-xs text-red-500 mt-1">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
-                </div>
-
-                <div class="bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl p-5">
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Adab Hari Ini</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
-                        {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-sm text-gray-500 dark:text-zinc-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
+                <div class="mt-4">
+                    <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Total Santri</span>
+                    <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                        {{ data_get($stats, 'total_students', 0) }}
                     </p>
-                    <p class="text-xs text-gray-400 dark:text-zinc-500 mt-1">Status Pengisian Murid</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <a href="{{ url('/students') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A2.25 2.25 0 0 1 12.75 21.5h-1.5a2.25 2.25 0 0 1-2.25-2.263V19.13m4.786-3.07a9.348 9.348 0 0 0-2.813-1.077M14.214 16.06c-.822-.656-1.854-1.06-2.964-1.06-1.11 0-2.142.404-2.964 1.06m8.892 0c.501.91.786 1.957.786 3.07v.003m-11.784 0a4.125 4.125 0 0 1-7.533-2.493 9.337 9.337 0 0 1 4.121-.952 9.38 9.38 0 0 1 2.625.372m0 3.07c0-1.113.285-2.16.786-3.07m-5.412 3.07v.109A2.25 2.25 0 0 0 4.5 21.5h1.5a2.25 2.25 0 0 0 2.25-2.263V19.13m4.786-3.07a9.348 9.348 0 0 1 2.813-1.077M8.906 16.06a9.38 9.38 0 0 0-2.813-1.077m0 0a9.338 9.338 0 0 1 5.626 0M8.906 16.06v-.003c0-1.113.285-2.16.786-3.07M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5 2.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-13 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+            <!-- Stat 2: Guru & Wali -->
+            <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 flex items-center justify-center border border-white/60 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342" />
                         </svg>
                     </div>
-                    <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-150">Kelola Murid</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Data murid, kelas, guru, dan wali.</p>
-                    </div>
-                </a>
-
-                <a href="{{ url('/hafalan-targets') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
-                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-.593 3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150">Target Hafalan</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Pantau target aktif & selesai.</p>
-                    </div>
-                </a>
-
-                <a href="{{ route('adab.index') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
-                    <div class="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 0A48.536 48.536 0 0 1 12 3c2.208 0 4.3.349 6.277.986M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375 0 1 1-.75 0 .375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375 0 1 1-.75 0 .375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375 0 1 1-.75 0 .375 0 0 1 .75 0Z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors duration-150">Monitoring Adab</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Kuisioner penilaian adab murid.</p>
-                    </div>
-                </a>
-
-                <a href="{{ route('adab-materials.index') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-150">Materi Adab</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Berkas & panduan halaqoh adab.</p>
-                    </div>
-                </a>
-
-                <a href="{{ url('/reports') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
-                    <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9Z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-zinc-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors duration-150">Laporan & Rapor</h4>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Ekspor & rapor digital.</p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl overflow-hidden">
-                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
-                    <div>
-                        <h3 class="font-semibold text-gray-900">Progress Murid Aktif</h3>
-                        <p class="text-sm text-gray-500">Diurutkan dari progress tertinggi.</p>
-                    </div>
-                    <a href="{{ url('/students') }}" class="text-sm text-emerald-700 hover:underline">Lihat semua</a>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/15 text-indigo-800 dark:text-indigo-300 border border-indigo-500/20">
+                        Wali {{ data_get($stats, 'total_parents', 0) }}
+                    </span>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-gray-50 text-gray-600">
-                            <tr>
-                                <th class="px-5 py-3 text-left">Murid</th>
-                                <th class="px-5 py-3 text-left">Kelas</th>
-                                <th class="px-5 py-3 text-left">Progress</th>
-                                <th class="px-5 py-3 text-left">Target Aktif</th>
-                                <th class="px-5 py-3 text-left">Terlambat</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            @forelse ($studentsProgress as $item)
-                                @php
-                                    $student = $item['student'];
-                                    $percentage = $item['progress_percentage'] ?? 0;
-                                @endphp
-                                <tr>
-                                    <td class="px-5 py-3 font-medium text-gray-900">{{ $student->name }}</td>
-                                    <td class="px-5 py-3 text-gray-600">
-                                        {{ $student->classRoom?->name ?? '-' }}
-                                    </td>
-                                    <td class="px-5 py-3">
-                                        <div class="w-48 bg-gray-100 rounded-full h-2">
-                                            <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ min($percentage, 100) }}%"></div>
-                                        </div>
-                                        <span class="text-xs text-gray-500">{{ $percentage }}%</span>
-                                    </td>
-                                    <td class="px-5 py-3 text-gray-700">{{ $item['active_target_count'] ?? 0 }}</td>
-                                    <td class="px-5 py-3 text-red-600">{{ $item['overdue_target_count'] ?? 0 }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-5 py-6 text-center text-gray-500">Belum ada data progress.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                <div class="mt-4">
+                    <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Musyrif / Guru</span>
+                    <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                        {{ data_get($stats, 'total_teachers', 0) }}
+                    </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl overflow-hidden">
-                    <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
-                        <h3 class="font-semibold text-gray-900">Target Terdekat</h3>
+            <!-- Stat 3: Setoran Hari Ini -->
+            <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-white/60 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                        </svg>
                     </div>
-                    <div class="divide-y">
-                        @forelse ($latestTargets as $target)
-                            <div class="px-5 py-4">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $target->student?->name ?? '-' }}</p>
-                                        <p class="text-sm text-gray-600">
-                                            {{ $target->surah?->name_latin ?? '-' }} ayat {{ $target->ayah_range }}
-                                        </p>
-                                        <p class="text-xs text-gray-400">
-                                            Guru: {{ $target->teacher?->user?->name ?? '-' }}
-                                        </p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $target->target_date?->format('d M Y') }}
-                                        </p>
-                                        <p class="text-xs {{ $target->is_overdue ? 'text-red-600' : 'text-gray-500' }}">
-                                            {{ $target->status_label }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="px-5 py-6 text-center text-gray-500">Belum ada target.</div>
-                        @endforelse
-                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-500/15 text-teal-800 dark:text-teal-300 border border-teal-500/20">
+                        Muraja'ah {{ data_get($stats, 'murajaah_today', 0) }}
+                    </span>
                 </div>
-
-                <div class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl overflow-hidden">
-                    <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
-                        <h3 class="font-semibold text-gray-900">Setoran Hafalan Terbaru</h3>
-                    </div>
-                    <div class="divide-y">
-                        @forelse ($latestHafalanRecords as $record)
-                            <div class="px-5 py-4">
-                                <p class="font-medium text-gray-900">{{ $record->student?->name ?? '-' }}</p>
-                                <p class="text-sm text-gray-600">
-                                    {{ $record->surah?->name_latin ?? '-' }} ayat {{ $record->ayah_range }}
-                                </p>
-                                <p class="text-xs text-gray-400">
-                                    {{ $record->submitted_at?->format('d M Y') }} — {{ $record->status_label }}
-                                </p>
-                            </div>
-                        @empty
-                            <div class="px-5 py-6 text-center text-gray-500">Belum ada setoran.</div>
-                        @endforelse
-                    </div>
+                <div class="mt-4">
+                    <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Setoran Hari Ini</span>
+                    <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                        {{ data_get($stats, 'hafalan_today', 0) }}
+                    </p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl overflow-hidden">
-                <div class="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800/80">
-                    <h3 class="font-semibold text-gray-900">Murajaah Terbaru</h3>
+            <!-- Stat 4: Target Aktif -->
+            <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-white/60 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    @if(data_get($stats, 'overdue_targets', 0) > 0)
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/20">
+                            Terlambat {{ data_get($stats, 'overdue_targets', 0) }}
+                        </span>
+                    @else
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+                            Tepat Waktu
+                        </span>
+                    @endif
                 </div>
-                <div class="divide-y">
-                    @forelse ($latestMurajaahRecords as $record)
-                        <div class="px-5 py-4">
-                            <p class="font-medium text-gray-900">{{ $record->student?->name ?? '-' }}</p>
-                            <p class="text-sm text-gray-600">
-                                {{ $record->surah?->name_latin ?? '-' }} ayat {{ $record->ayah_range }}
-                            </p>
-                            <p class="text-xs text-gray-400">
-                                {{ $record->reviewed_at?->format('d M Y') }} — {{ $record->status_label }}
-                            </p>
-                        </div>
-                    @empty
-                        <div class="px-5 py-6 text-center text-gray-500">Belum ada murajaah.</div>
-                    @endforelse
+                <div class="mt-4">
+                    <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Target Aktif</span>
+                    <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                        {{ data_get($stats, 'active_targets', 0) }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stat 5: Adab Hari Ini -->
+            <div class="glass-card glass-card-hover rounded-3xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center border border-white/60 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                        </svg>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+                        Monitoring
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">Adab Terisi</span>
+                    <p class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">
+                        {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-sm font-bold text-zinc-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
+                    </p>
                 </div>
             </div>
 
         </div>
+
+        <!-- Quick Access Bento Tiles -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <a href="{{ url('/students') }}" class="glass-card glass-card-hover rounded-3xl p-5 flex items-center gap-4 group cursor-pointer">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/60 dark:border-white/10 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A2.25 2.25 0 0 1 12.75 21.5h-1.5a2.25 2.25 0 0 1-2.25-2.263V19.13" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">Kelola Murid</h4>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Data murid, kelas, guru.</p>
+                </div>
+            </a>
+
+            <a href="{{ url('/hafalan-targets') }}" class="glass-card glass-card-hover rounded-3xl p-5 flex items-center gap-4 group cursor-pointer">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/60 dark:border-white/10 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">Target Hafalan</h4>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Target aktif & selesai.</p>
+                </div>
+            </a>
+
+            <a href="{{ route('adab.index') }}" class="glass-card glass-card-hover rounded-3xl p-5 flex items-center gap-4 group cursor-pointer">
+                <div class="w-12 h-12 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/60 dark:border-white/10 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">Monitoring Adab</h4>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Penilaian karakter santri.</p>
+                </div>
+            </a>
+
+            <a href="{{ route('adab-materials.index') }}" class="glass-card glass-card-hover rounded-3xl p-5 flex items-center gap-4 group cursor-pointer">
+                <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/60 dark:border-white/10 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors">Materi Adab</h4>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Panduan halaqoh adab.</p>
+                </div>
+            </a>
+
+            <a href="{{ url('/reports') }}" class="glass-card glass-card-hover rounded-3xl p-5 flex items-center gap-4 group cursor-pointer">
+                <div class="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/60 dark:border-white/10 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-zinc-900 dark:text-white group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">Rapor Digital</h4>
+                    <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Ekspor rapor & berkas.</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Table Card: Progres Murid Aktif -->
+        <div class="glass-card rounded-3xl overflow-hidden p-5 sm:p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/40 dark:border-white/10">
+                <div>
+                    <h3 class="font-extrabold text-base text-zinc-900 dark:text-white tracking-tight">Progress Murid Aktif</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Diurutkan dari capaian progres tertinggi.</p>
+                </div>
+                <a href="{{ url('/students') }}" class="px-3.5 py-1.5 rounded-xl bg-white/60 dark:bg-white/10 text-teal-800 dark:text-teal-300 hover:bg-white dark:hover:bg-white/20 text-xs font-bold border border-white/70 dark:border-white/10 transition shadow-sm">
+                    Lihat Semua &rarr;
+                </a>
+            </div>
+
+            <div class="overflow-x-auto mt-3">
+                <table class="min-w-full text-sm divide-y divide-white/30 dark:divide-white/5">
+                    <thead>
+                        <tr class="text-left text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            <th class="py-3 px-3">Murid</th>
+                            <th class="py-3 px-3">Kelas</th>
+                            <th class="py-3 px-3">Progress</th>
+                            <th class="py-3 px-3">Target Aktif</th>
+                            <th class="py-3 px-3">Terlambat</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/20 dark:divide-white/5">
+                        @forelse ($studentsProgress as $item)
+                            @php
+                                $student = $item['student'];
+                                $percentage = $item['progress_percentage'] ?? 0;
+                            @endphp
+                            <tr class="hover:bg-white/30 dark:hover:bg-white/5 transition-colors">
+                                <td class="py-3.5 px-3 font-bold text-zinc-900 dark:text-white">{{ $student->name }}</td>
+                                <td class="py-3.5 px-3 text-zinc-600 dark:text-zinc-400 font-medium">
+                                    {{ $student->classRoom?->name ?? '-' }}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-36 sm:w-48 bg-white/60 dark:bg-zinc-800 rounded-full h-2.5 overflow-hidden border border-white/60 dark:border-white/10">
+                                            <div class="bg-gradient-to-r from-teal-500 to-emerald-500 h-2.5 rounded-full" style="width: {{ min($percentage, 100) }}%"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-teal-800 dark:text-teal-300">{{ $percentage }}%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3 font-bold text-zinc-700 dark:text-zinc-300">{{ $item['active_target_count'] ?? 0 }}</td>
+                                <td class="py-3.5 px-3 font-bold {{ ($item['overdue_target_count'] ?? 0) > 0 ? 'text-rose-600' : 'text-zinc-500' }}">
+                                    {{ $item['overdue_target_count'] ?? 0 }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-xs text-zinc-500">Belum ada data progress.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2 Column Section: Target & Setoran Terbaru -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Card 1: Target Terdekat -->
+            <div class="glass-card rounded-3xl p-5 sm:p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-white/40 dark:border-white/10">
+                    <h3 class="font-extrabold text-base text-zinc-900 dark:text-white tracking-tight">Target Terdekat</h3>
+                    <span class="text-xs text-zinc-500 font-medium">Batas Waktu</span>
+                </div>
+                <div class="divide-y divide-white/20 dark:divide-white/5 space-y-2">
+                    @forelse ($latestTargets as $target)
+                        <div class="pt-3 first:pt-0 flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-bold text-sm text-zinc-900 dark:text-white">{{ $target->student?->name ?? '-' }}</p>
+                                <p class="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-0.5">
+                                    {{ $target->surah?->name_latin ?? '-' }} ayat {{ $target->ayah_range }}
+                                </p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Guru: {{ $target->teacher?->user?->name ?? '-' }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-zinc-900 dark:text-white">
+                                    {{ $target->target_date?->format('d M Y') }}
+                                </p>
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded-lg text-[10px] font-bold {{ $target->is_overdue ? 'bg-rose-500/15 text-rose-800 dark:text-rose-300' : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300' }}">
+                                    {{ $target->status_label }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-6 text-center text-xs text-zinc-500">Belum ada target aktif.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Card 2: Setoran Hafalan Terbaru -->
+            <div class="glass-card rounded-3xl p-5 sm:p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-white/40 dark:border-white/10">
+                    <h3 class="font-extrabold text-base text-zinc-900 dark:text-white tracking-tight">Setoran Hafalan Terbaru</h3>
+                    <span class="text-xs text-zinc-500 font-medium">Riwayat</span>
+                </div>
+                <div class="divide-y divide-white/20 dark:divide-white/5 space-y-2">
+                    @forelse ($latestHafalanRecords as $record)
+                        <div class="pt-3 first:pt-0 flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-bold text-sm text-zinc-900 dark:text-white">{{ $record->student?->name ?? '-' }}</p>
+                                <p class="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-0.5">
+                                    {{ $record->surah?->name_latin ?? '-' }} ayat {{ $record->ayah_range }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    {{ $record->submitted_at?->format('d M Y') }}
+                                </p>
+                                <span class="inline-block mt-1 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300">
+                                    {{ $record->status_label }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-6 text-center text-xs text-zinc-500">Belum ada setoran tercatat.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
     </div>
 </x-app-layout>

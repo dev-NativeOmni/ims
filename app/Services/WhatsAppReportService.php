@@ -205,3 +205,4 @@ class WhatsAppReportService
         return $this->buildWhatsAppUrl($phone, $message);
     }
 }
+

@@ -44,44 +44,46 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-zinc-50 text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-indigo-500 selection:text-white">
-        <!-- Glow background blobs -->
+    <body class="font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors duration-300 selection:bg-teal-600 selection:text-white min-h-screen">
+        <!-- Ambient Mesh Background Glow Blobs -->
         <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="glow-blob bg-indigo-600 w-[500px] h-[500px] -top-60 -left-60 opacity-5 dark:opacity-20 transition-opacity duration-300"></div>
-            <div class="glow-blob bg-purple-600 w-[450px] h-[450px] top-[30%] -right-40 opacity-5 dark:opacity-20 transition-opacity duration-300"></div>
-            <div class="glow-blob bg-emerald-600 w-[400px] h-[400px] -bottom-40 left-[20%] opacity-5 dark:opacity-15 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-teal-400 w-[600px] h-[600px] -top-32 -left-32 opacity-25 dark:opacity-20 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-cyan-500 w-[550px] h-[550px] -top-24 right-10 opacity-20 dark:opacity-15 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-amber-400 w-[550px] h-[550px] -bottom-32 -right-32 opacity-35 dark:opacity-20 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-emerald-500 w-[450px] h-[450px] -bottom-20 left-10 opacity-25 dark:opacity-15 transition-opacity duration-300"></div>
         </div>
 
         <div class="min-h-screen relative z-10 flex flex-col" x-data="{ sidebarOpen: false, dark: document.documentElement.classList.contains('dark'), toggleTheme() { this.dark = !this.dark; if (this.dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); } } }">
             @if (session()->has('impersonated_by'))
-                <div class="bg-amber-600 text-white px-4 py-2.5 shadow-md flex items-center justify-between z-50 text-xs sm:text-sm font-medium sticky top-0">
+                <div class="mx-3 sm:mx-6 lg:mx-8 mt-2 bg-amber-500/90 dark:bg-amber-600/90 backdrop-blur-xl text-white px-4 py-2.5 shadow-lg rounded-2xl flex items-center justify-between z-50 text-xs sm:text-sm font-medium border border-amber-300/40 sticky top-2">
                     <div class="flex items-center gap-2">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-200 animate-ping"></span>
                         <span>⚠️ <strong>Mode Impersonasi:</strong> Anda sedang meninjau sistem sebagai <strong>{{ auth()->user()?->name }}</strong> ({{ auth()->user()?->role?->display_name ?? auth()->user()?->role?->name }}).</span>
                     </div>
                     <form method="POST" action="{{ route('impersonate.stop') }}" class="inline">
                         @csrf
-                        <button type="submit" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md text-xs font-semibold backdrop-blur transition cursor-pointer">
+                        <button type="submit" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-xl text-xs font-semibold backdrop-blur transition cursor-pointer">
                             Kembali ke Super Admin &rarr;
                         </button>
                     </form>
                 </div>
             @endif
 
+            <!-- Floating Top Bar -->
             @include('layouts.navigation')
 
             <div class="flex-grow flex flex-col min-h-screen">
                 <!-- Page Heading -->
                 @isset($header)
-                    <header class="bg-white/80 dark:bg-[#09090b]/50 backdrop-blur-lg border-b border-zinc-200/50 dark:border-white/5 sticky top-0 z-10 transition-colors duration-200">
-                        <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
+                    <div class="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 mb-4">
+                        <div class="glass-panel py-3.5 px-5 sm:px-6 rounded-2xl transition-all duration-200">
                             {{ $header }}
                         </div>
-                    </header>
+                    </div>
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 py-4 px-3 sm:px-6 lg:px-8">
+                <main class="flex-1 px-3 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto w-full">
                     {{ $slot }}
                 </main>
             </div>
@@ -100,8 +102,8 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-y-0 opacity-100"
              x-transition:leave-end="translate-y-8 opacity-0"
-             class="fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border"
-             :class="isOnline ? 'bg-emerald-800 text-emerald-100 border-emerald-600' : 'bg-red-800 text-red-100 border-red-600'"
+             class="fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border backdrop-blur-xl"
+             :class="isOnline ? 'bg-emerald-800/90 text-emerald-100 border-emerald-600' : 'bg-red-800/90 text-red-100 border-red-600'"
              style="display: none;">
             <template x-if="isOnline">
                 <span class="flex items-center gap-1.5">
