@@ -112,7 +112,7 @@ class HafalanRecordController extends Controller
             [
                 'hafalanRecords' => $hafalanRecords,
             ],
-            $this->formData($user)
+            $this->formData($user, $category)
         ));
     }
 
@@ -324,7 +324,7 @@ class HafalanRecordController extends Controller
             ->with('success', "Berhasil menghapus {$count} data UMMI.");
     }
 
-    private function formData(User $user): array
+    private function formData(User $user, string $category = 'reguler'): array
     {
         $students = Student::query()
             ->with([
@@ -356,6 +356,23 @@ class HafalanRecordController extends Controller
             ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
+
+        if ($category === 'ummi') {
+            $classRooms = $classRooms->filter(function ($class) {
+                $name = $class->name ?? '';
+                $level = (string) ($class->level ?? '');
+                $isGrade10 = (
+                    (preg_match('/\bX\b/i', $name) && !preg_match('/\b(XI|XII)\b/i', $name))
+                    || preg_match('/\b10\b/i', $name)
+                    || preg_match('/^X[-_\s]?E/i', $name)
+                    || preg_match('/kelas\s*(X|10)/i', $name)
+                    || (preg_match('/\bX\b/i', $level) && !preg_match('/\b(XI|XII)\b/i', $level))
+                    || preg_match('/\b10\b/i', $level)
+                ) && !preg_match('/\b(XI|XII|11|12)\b/i', $name);
+
+                return $isGrade10;
+            })->values();
+        }
 
         $latestTatapMukaPerStudent = DB::table('ummi_records')
             ->select('student_id', DB::raw('MAX(tatap_muka) as max_tatap_muka'))

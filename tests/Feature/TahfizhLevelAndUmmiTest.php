@@ -423,4 +423,22 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
         $this->assertEquals(5.25, $ummiRecord->lines_count);
     }
+
+    public function test_ummi_category_filters_out_non_grade_10_classes()
+    {
+        // When visiting reguler category, all classes are visible
+        $responseReguler = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'reguler']));
+        $responseReguler->assertStatus(200);
+        $classesReguler = $responseReguler->viewData('classRooms');
+        $this->assertTrue($classesReguler->contains('name', 'Kelas X-A'));
+        $this->assertTrue($classesReguler->contains('name', 'Kelas XI-A'));
+
+        // When visiting ummi category, only Grade 10 classes are visible
+        $responseUmmi = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+        $responseUmmi->assertStatus(200);
+        $classesUmmi = $responseUmmi->viewData('classRooms');
+        $this->assertTrue($classesUmmi->contains('name', 'Kelas X-A'));
+        $this->assertFalse($classesUmmi->contains('name', 'Kelas XI-A'));
+    }
 }
+
