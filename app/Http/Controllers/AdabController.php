@@ -39,6 +39,15 @@ class AdabController extends Controller
         $isParent = $user->hasRole('parent');
         $isPendampingAdab = $user->hasRole('pendamping_adab');
 
+        if ($isParent) {
+            $parentProfile = $user->parentProfile;
+            $parentChildren = $parentProfile ? $parentProfile->students()->where('students.status', 'active')->get() : collect();
+
+            if ($parentChildren->count() === 1) {
+                return redirect()->route('adab.show', $parentChildren->first());
+            }
+        }
+
         $classRoomsQuery = ClassRoom::query()->orderBy('name');
         $studentQuery = Student::query()->with(['classRoom']);
 
@@ -109,29 +118,33 @@ class AdabController extends Controller
         }
 
         try {
-            $classRankings = ClassRoom::query()
-                ->with(['students'])
-                ->get()
-                ->map(function ($classRoom) use ($year, $month) {
-                    $st = $classRoom->students ? $classRoom->students->filter(fn ($s) => ($s->status ?? 'active') === 'active') : collect();
-                    if ($st->isEmpty()) {
-                        return ['name' => $classRoom->name, 'avg_score' => 0];
-                    }
-                    $scores = $st->map(function ($s) use ($year, $month) {
-                        try {
-                            return Setting::calculateAdabScore($s->id, $year, $month)['final_score'] ?? 0;
-                        } catch (\Throwable $e) {
-                            return 0;
+            if ($isParent) {
+                $classRankings = collect();
+            } else {
+                $classRankings = ClassRoom::query()
+                    ->with(['students'])
+                    ->get()
+                    ->map(function ($classRoom) use ($year, $month) {
+                        $st = $classRoom->students ? $classRoom->students->filter(fn ($s) => ($s->status ?? 'active') === 'active') : collect();
+                        if ($st->isEmpty()) {
+                            return ['name' => $classRoom->name, 'avg_score' => 0];
                         }
-                    });
-                    return [
-                        'name' => $classRoom->name,
-                        'avg_score' => round($scores->avg() ?: 0, 1),
-                    ];
-                })
-                ->sortByDesc('avg_score')
-                ->take(5)
-                ->values();
+                        $scores = $st->map(function ($s) use ($year, $month) {
+                            try {
+                                return Setting::calculateAdabScore($s->id, $year, $month)['final_score'] ?? 0;
+                            } catch (\Throwable $e) {
+                                return 0;
+                            }
+                        });
+                        return [
+                            'name' => $classRoom->name,
+                            'avg_score' => round($scores->avg() ?: 0, 1),
+                        ];
+                    })
+                    ->sortByDesc('avg_score')
+                    ->take(5)
+                    ->values();
+            }
         } catch (\Throwable $e) {
             $classRankings = collect();
         }
@@ -145,9 +158,13 @@ class AdabController extends Controller
     /* -----------------------------------------------------------------------
      | MONTHLY CHART — Kuisioner Adab per Kelas per Bulan
      * -------------------------------------------------------------------- */
-    public function monthlyChart(Request $request): View
+    public function monthlyChart(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = Auth::user();
+
+        if ($user->hasRole('student') || $user->hasRole('parent')) {
+            return redirect()->route('adab.index');
+        }
 
         $year = $request->integer('year', (int) now()->format('Y'));
         $month = $request->integer('month', (int) now()->format('n'));

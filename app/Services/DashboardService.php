@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
 use App\Models\Program;
+use App\Models\Setting;
 use App\Models\Student;
+use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -272,6 +275,8 @@ class DashboardService
         }
 
         $today = now()->toDateString();
+        $year = (int) date('Y');
+        $month = (int) date('n');
 
         $children = $parent->students()
             ->with([
@@ -284,10 +289,73 @@ class DashboardService
 
         $studentIds = $children->pluck('id');
 
+        $childrenProfiles = $children->map(function (Student $student) use ($year, $month, $today) {
+            $progress = $this->studentProgressService->calculate($student);
+            $progressWithAliases = $this->progressAliases($student, $progress);
+
+            // Adab summary
+            $adabScoreData = Setting::calculateAdabScore($student->id, $year, $month);
+            $todayAdabRecord = AdabRecord::where('student_id', $student->id)
+                ->where('assessment_date', $today)
+                ->first();
+
+            // Tanse / Poin Kedisiplinan & Prestasi
+            $violationPoints = (int) StudentPoint::where('student_id', $student->id)
+                ->whereIn('type', ['violation', 'lateness', 'attribute'])
+                ->sum('points');
+            $rewardPoints = (int) StudentPoint::where('student_id', $student->id)
+                ->where('type', 'reward')
+                ->sum('points');
+            $recentPoints = StudentPoint::where('student_id', $student->id)
+                ->latest('date')
+                ->take(5)
+                ->get();
+
+            // Recent Hafalan & Murajaah for this student specifically
+            $recentHafalan = HafalanRecord::with('surah')
+                ->where('student_id', $student->id)
+                ->latest('submitted_at')
+                ->take(5)
+                ->get();
+
+            $recentMurajaah = MurajaahRecord::with('surah')
+                ->where('student_id', $student->id)
+                ->latest('reviewed_at')
+                ->take(5)
+                ->get();
+
+            $recentTargets = HafalanTarget::with('surah')
+                ->where('student_id', $student->id)
+                ->orderByRaw("CASE WHEN status IN ('active', 'planned', 'in_progress') THEN 0 ELSE 1 END")
+                ->orderBy('target_date')
+                ->take(5)
+                ->get();
+
+            return array_merge($progressWithAliases, [
+                'adab' => [
+                    'attendance_rate' => $adabScoreData['attendance_rate'],
+                    'mentor_score' => $adabScoreData['mentor_score'],
+                    'final_score' => $adabScoreData['final_score'],
+                    'grade' => $adabScoreData['grade'],
+                    'grade_label' => $adabScoreData['grade_label'],
+                    'today_record' => $todayAdabRecord,
+                ],
+                'tanse' => [
+                    'violation_points' => $violationPoints,
+                    'reward_points' => $rewardPoints,
+                    'net_points' => $rewardPoints - $violationPoints,
+                    'recent_points' => $recentPoints,
+                ],
+                'student_hafalan' => $recentHafalan,
+                'student_murajaah' => $recentMurajaah,
+                'student_targets' => $recentTargets,
+            ]);
+        });
+
         return [
             'parent' => $parent,
             'children' => $children,
-            'children_progress' => $this->studentsProgress($children),
+            'children_progress' => $childrenProfiles,
             'children_motivation' => $this->studentsMotivation($children),
             'total_children' => $children->count(),
 

@@ -299,7 +299,7 @@
             </a>
         @endif
 
-        @if ($canViewAdab && $hasRoute('adab.chart'))
+        @if ($canViewAdab && $hasRoute('adab.chart') && ! $isParent && ! $isStudent)
             <a href="{{ route('adab.chart') }}" class="{{ $getLinkClasses($routeIs('adab.chart')) }}">
                 <svg class="{{ $getIconClasses($routeIs('adab.chart')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
@@ -346,7 +346,7 @@
             </a>
         @endif
 
-        @if ($hasRoute('student-points.chart'))
+        @if ($hasRoute('student-points.chart') && ! $isParent && ! $isStudent)
             <a href="{{ route('student-points.chart') }}" class="{{ $getLinkClasses($routeIs('student-points.chart')) }}">
                 <svg class="{{ $getIconClasses($routeIs('student-points.chart')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />

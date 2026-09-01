@@ -87,5 +87,38 @@ class StudentParentWebAccessTest extends TestCase
 
         $responseReports = $this->actingAs($parentUser)->get('/reports');
         $responseReports->assertRedirect('/reports/student/'.$student->id);
+
+        $responseAdab = $this->actingAs($parentUser)->get('/adab');
+        $responseAdab->assertRedirect('/adab/student/'.$student->id);
+    }
+
+    public function test_parent_and_student_cannot_view_cross_school_adab_chart(): void
+    {
+        $parentUser = User::where('username', 'orangtua')->first();
+        $studentUser = User::where('username', 'santri')->first();
+
+        $this->actingAs($parentUser)->get('/adab/chart')->assertRedirect('/adab');
+        $this->actingAs($studentUser)->get('/adab/chart')->assertRedirect('/adab');
+    }
+
+    public function test_parent_and_student_cannot_view_cross_school_student_points_chart(): void
+    {
+        $parentUser = User::where('username', 'orangtua')->first();
+        $studentUser = User::where('username', 'santri')->first();
+
+        $this->actingAs($parentUser)->get('/student-points/chart')->assertRedirect('/student-points');
+        $this->actingAs($studentUser)->get('/student-points/chart')->assertRedirect('/student-points');
+    }
+
+    public function test_parent_dashboard_renders_360_degree_monitoring_hub(): void
+    {
+        $parentUser = User::where('username', 'orangtua')->first();
+        $response = $this->actingAs($parentUser)->get('/parent/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('Portal Khusus Wali Santri');
+        $response->assertSee('Tahfizh Al-Qur\'an');
+        $response->assertSee('Karakter &amp; Adab', false);
+        $response->assertSee('Kedisiplinan &amp; Prestasi', false);
     }
 }

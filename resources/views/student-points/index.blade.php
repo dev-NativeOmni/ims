@@ -78,23 +78,25 @@
                 </div>
             </div>
 
-            <!-- Tab Controls -->
-            <div class="flex border-b border-gray-200 dark:border-zinc-800 gap-6 no-print">
-                <button 
-                    @click="tab = 'list'"
-                    :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
-                >
-                    Riwayat Catatan
-                </button>
-                <button 
-                    @click="tab = 'dashboard'"
-                    :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
-                >
-                    Dashboard Analitis
-                </button>
-            </div>
+            <!-- Tab Controls (Only for Staff/Teachers) -->
+            @if(!auth()->user()->hasAnyRole(['parent', 'student']))
+                <div class="flex border-b border-gray-200 dark:border-zinc-800 gap-6 no-print">
+                    <button 
+                        @click="tab = 'list'"
+                        :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
+                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                    >
+                        Riwayat Catatan
+                    </button>
+                    <button 
+                        @click="tab = 'dashboard'"
+                        :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
+                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                    >
+                        Dashboard Analitis
+                    </button>
+                </div>
+            @endif
 
             <!-- List Tab Content -->
             <div x-show="tab === 'list'" x-transition class="space-y-6">

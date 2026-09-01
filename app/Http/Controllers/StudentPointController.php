@@ -230,9 +230,14 @@ class StudentPointController extends Controller
             ->with('success', 'Catatan poin kedisiplinan berhasil diperbarui.');
     }
 
-    public function chart(Request $request): View
+    public function chart(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = Auth::user();
+
+        if ($user->hasRole('student') || $user->hasRole('parent')) {
+            return redirect()->route('student-points.index');
+        }
+
         $year = (int) $request->input('year', date('Y'));
         $month = (int) $request->input('month', date('n'));
         $classRoomId = $request->input('class_room_id');
