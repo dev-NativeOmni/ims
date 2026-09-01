@@ -887,6 +887,17 @@ class ReportController extends Controller
         ];
 
         $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+        $selectedClassName = $selectedClass?->name ?? '';
+        $selectedClassLevel = $selectedClass?->level ?? '';
+
+        $isGrade10 = (bool) (
+            (preg_match('/\bX\b/i', $selectedClassName) && !preg_match('/\b(XI|XII)\b/i', $selectedClassName))
+            || preg_match('/\b10\b/i', $selectedClassName)
+            || preg_match('/^X[-_\s]?E/i', $selectedClassName)
+            || preg_match('/kelas\s*(X|10)/i', $selectedClassName)
+            || (preg_match('/\bX\b/i', $selectedClassLevel) && !preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
+            || preg_match('/\b10\b/i', $selectedClassLevel)
+        ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
         // Detailed student list
         $studentReports = [];
@@ -1066,18 +1077,6 @@ class ReportController extends Controller
             $hLabel = $report['halaqah_label'];
             $groupedReports[$tName][$hLabel][] = $report;
         }
-
-        $selectedClassName = $selectedClass?->name ?? '';
-        $selectedClassLevel = $selectedClass?->level ?? '';
-
-        $isGrade10 = (bool) (
-            (preg_match('/\bX\b/i', $selectedClassName) && !preg_match('/\b(XI|XII)\b/i', $selectedClassName))
-            || preg_match('/\b10\b/i', $selectedClassName)
-            || preg_match('/^X[-_\s]?E/i', $selectedClassName)
-            || preg_match('/kelas\s*(X|10)/i', $selectedClassName)
-            || (preg_match('/\bX\b/i', $selectedClassLevel) && !preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
-            || preg_match('/\b10\b/i', $selectedClassLevel)
-        ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
         return [
             'classRooms' => $classRooms,
