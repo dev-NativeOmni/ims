@@ -130,6 +130,22 @@ class StudentProgressService
             $targetQuery = HafalanTarget::query()
                 ->where('student_id', $student->id);
 
+            $classRoomName = $student->classRoom?->name ?? '';
+            $classRoomLevel = $student->classRoom?->level ?? '';
+            $tahfizhLevel = $student->tahfizh_level ?? 'reguler';
+
+            $isGrade10 = (bool) (
+                (preg_match('/\bX\b/i', $classRoomName) && !preg_match('/\b(XI|XII)\b/i', $classRoomName))
+                || preg_match('/\b10\b/i', $classRoomName)
+                || preg_match('/^X[-_\s]?E/i', $classRoomName)
+                || preg_match('/kelas\s*(X|10)/i', $classRoomName)
+                || (preg_match('/\bX\b/i', $classRoomLevel) && !preg_match('/\b(XI|XII)\b/i', $classRoomLevel))
+                || preg_match('/\b10\b/i', $classRoomLevel)
+            ) && !preg_match('/\b(XI|XII|11|12)\b/i', $classRoomName);
+
+            $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
+            $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';
+
             $latestHafalan = (clone $hafalanRecordsQuery)
                 ->with('surah')
                 ->latest('submitted_at')
@@ -158,22 +174,6 @@ class StudentProgressService
 
             $activeTargetStatuses = ['active', 'planned', 'in_progress'];
             $juzStats = $this->getJuzStats($student);
-
-            $classRoomName = $student->classRoom?->name ?? '';
-            $classRoomLevel = $student->classRoom?->level ?? '';
-            $tahfizhLevel = $student->tahfizh_level ?? 'reguler';
-
-            $isGrade10 = (bool) (
-                (preg_match('/\bX\b/i', $classRoomName) && !preg_match('/\b(XI|XII)\b/i', $classRoomName))
-                || preg_match('/\b10\b/i', $classRoomName)
-                || preg_match('/^X[-_\s]?E/i', $classRoomName)
-                || preg_match('/kelas\s*(X|10)/i', $classRoomName)
-                || (preg_match('/\bX\b/i', $classRoomLevel) && !preg_match('/\b(XI|XII)\b/i', $classRoomLevel))
-                || preg_match('/\b10\b/i', $classRoomLevel)
-            ) && !preg_match('/\b(XI|XII|11|12)\b/i', $classRoomName);
-
-            $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
-            $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';
 
             // ─── Determine Grade & Program Key for Target Settings ───
             if ($isGrade10) {

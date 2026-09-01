@@ -70,7 +70,7 @@
                         <x-heroicon-o-plus-circle class="w-7 h-7 mb-1 text-emerald-600 dark:text-emerald-400" />
                         <span class="text-xs font-bold text-emerald-900 dark:text-emerald-300">Input Setoran</span>
                     </a>
-                    <a href="{{ route('murajaah-records.create') }}" class="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl hover:bg-blue-100 transition text-center group shadow-xs flex flex-col items-center">
+                    <a href="{{ route('murajaah-records.fast-input') }}" class="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl hover:bg-blue-100 transition text-center group shadow-xs flex flex-col items-center">
                         <x-heroicon-o-arrow-path class="w-7 h-7 mb-1 text-blue-600 dark:text-blue-400" />
                         <span class="text-xs font-bold text-blue-900 dark:text-blue-300">Input Muraja'ah</span>
                     </a>

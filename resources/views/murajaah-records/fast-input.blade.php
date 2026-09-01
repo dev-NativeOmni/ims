@@ -66,12 +66,13 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                         <thead>
                             <tr class="bg-gray-50/80 dark:bg-zinc-800/50 text-left text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                                <th class="px-4 py-3 min-w-[200px]">Santri</th>
-                                <th class="px-4 py-3 min-w-[170px]">Riwayat Terakhir</th>
-                                <th class="px-4 py-3 min-w-[180px]">Surah Baru</th>
-                                <th class="px-4 py-3 min-w-[150px]">Ayat (Awal - Akhir)</th>
-                                <th class="px-4 py-3 min-w-[260px]">Penilaian Cepat</th>
-                                <th class="px-4 py-3 min-w-[140px]">Catatan</th>
+                                <th class="px-3.5 py-3 min-w-[180px]">Santri</th>
+                                <th class="px-3.5 py-3 min-w-[150px]">Riwayat Terakhir</th>
+                                <th class="px-3.5 py-3 min-w-[160px]">Surah Awal</th>
+                                <th class="px-3.5 py-3 min-w-[160px]">Surah Akhir</th>
+                                <th class="px-3.5 py-3 min-w-[140px]">Ayat (Awal - Akhir)</th>
+                                <th class="px-3.5 py-3 min-w-[250px]">Penilaian Cepat</th>
+                                <th class="px-3.5 py-3 min-w-[140px]">Catatan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-zinc-800/80 text-xs">
@@ -79,7 +80,7 @@
                                 <tr :class="row.score ? 'bg-indigo-50/30 dark:bg-indigo-950/20' : 'hover:bg-gray-50/60 dark:hover:bg-zinc-800/40'" class="transition-colors">
                                     
                                     <!-- Student Column -->
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold flex items-center justify-center text-xs flex-shrink-0" x-text="row.student_name.substring(0, 2).toUpperCase()"></div>
                                             <div>
@@ -90,7 +91,7 @@
                                     </td>
 
                                     <!-- Last History Badge -->
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 whitespace-nowrap">
                                         <template x-if="row.last_history">
                                             <div class="inline-flex flex-col px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700/60">
                                                 <span class="font-bold text-gray-800 dark:text-zinc-200 text-[11px]" x-text="row.last_history.surah_name + ' (' + row.last_history.ayah_start + '-' + row.last_history.ayah_end + ')'"></span>
@@ -102,14 +103,28 @@
                                         </template>
                                     </td>
 
-                                    <!-- Surah Selection -->
-                                    <td class="px-4 py-3">
+                                    <!-- Surah Awal Selection -->
+                                    <td class="px-3.5 py-3">
                                         <select
                                             x-model="row.surah_id"
-                                            @change="onSurahChange(row)"
+                                            @change="onSurahStartChange(row)"
                                             class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold py-1.5 focus:ring-indigo-500"
                                         >
-                                            <option value="">-- Pilih Surah --</option>
+                                            <option value="">-- Surah Awal --</option>
+                                            <template x-for="surah in surahs" :key="surah.id">
+                                                <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' (' + surah.total_ayah + ')'"></option>
+                                            </template>
+                                        </select>
+                                    </td>
+
+                                    <!-- Surah Akhir Selection -->
+                                    <td class="px-3.5 py-3">
+                                        <select
+                                            x-model="row.surah_end_id"
+                                            @change="onSurahEndChange(row)"
+                                            class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold py-1.5 focus:ring-indigo-500"
+                                        >
+                                            <option value="">-- Surah Akhir --</option>
                                             <template x-for="surah in surahs" :key="surah.id">
                                                 <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' (' + surah.total_ayah + ')'"></option>
                                             </template>
@@ -117,7 +132,7 @@
                                     </td>
 
                                     <!-- Ayah Range Inputs -->
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-1.5">
                                             <input
                                                 type="number"
@@ -138,7 +153,7 @@
                                     </td>
 
                                     <!-- Quick Score Pills -->
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-1.5">
                                             <!-- 90 Score -->
                                             <button
@@ -187,7 +202,7 @@
                                     </td>
 
                                     <!-- Notes Column -->
-                                    <td class="px-4 py-3">
+                                    <td class="px-3.5 py-3">
                                         <input
                                             type="text"
                                             x-model="row.notes"
@@ -201,7 +216,7 @@
 
                             <template x-if="rows.length === 0">
                                 <tr>
-                                    <td colspan="6" class="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
+                                    <td colspan="7" class="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
                                         Belum ada data santri aktif pada kelas ini.
                                     </td>
                                 </tr>
@@ -234,12 +249,40 @@
                 window.location.href = '{{ route('murajaah-records.fast-input') }}?class_room_id=' + this.selectedClassId;
             },
 
-            onSurahChange(row) {
-                if (!row.surah_id) return;
-                const surah = this.surahMap[row.surah_id];
-                if (surah) {
-                    row.ayah_start = 1;
-                    row.ayah_end = surah.total_ayah;
+            onSurahStartChange(row) {
+                if (!row.surah_id) {
+                    row.surah_end_id = '';
+                    return;
+                }
+                const surahStart = this.surahMap[row.surah_id];
+                const surahEnd = this.surahMap[row.surah_end_id];
+
+                if (!row.surah_end_id || (surahEnd && surahEnd.number < surahStart.number)) {
+                    row.surah_end_id = row.surah_id;
+                }
+
+                const currentEndSurah = this.surahMap[row.surah_end_id] || surahStart;
+                row.ayah_start = 1;
+                row.ayah_end = currentEndSurah ? currentEndSurah.total_ayah : 1;
+            },
+
+            onSurahEndChange(row) {
+                if (!row.surah_end_id) {
+                    if (row.surah_id) {
+                        row.surah_end_id = row.surah_id;
+                    }
+                }
+                const surahStart = this.surahMap[row.surah_id];
+                const surahEnd = this.surahMap[row.surah_end_id];
+
+                if (surahStart && surahEnd && surahEnd.number < surahStart.number) {
+                    alert('Surah akhir tidak boleh mendahului surah awal.');
+                    row.surah_end_id = row.surah_id;
+                }
+
+                const currentEndSurah = this.surahMap[row.surah_end_id];
+                if (currentEndSurah) {
+                    row.ayah_end = currentEndSurah.total_ayah;
                 }
             },
 
@@ -247,11 +290,15 @@
                 if (!row.surah_id) {
                     if (row.default_surah_id) {
                         row.surah_id = row.default_surah_id;
-                        this.onSurahChange(row);
+                        row.surah_end_id = row.default_surah_id;
+                        this.onSurahStartChange(row);
                     } else {
                         alert('Silakan pilih Surah terlebih dahulu untuk santri ' + row.student_name + '.');
                         return;
                     }
+                }
+                if (!row.surah_end_id) {
+                    row.surah_end_id = row.surah_id;
                 }
                 row.score = val;
             },
@@ -263,9 +310,24 @@
                     return;
                 }
 
+                const invalidSequenceRow = this.rows.find(r => {
+                    if (r.surah_id && r.surah_end_id && r.score) {
+                        const s1 = this.surahMap[r.surah_id];
+                        const s2 = this.surahMap[r.surah_end_id];
+                        return s1 && s2 && s2.number < s1.number;
+                    }
+                    return false;
+                });
+
+                if (invalidSequenceRow) {
+                    alert('Surah akhir tidak boleh mendahului Surah awal untuk santri "' + invalidSequenceRow.student_name + '".');
+                    return;
+                }
+
                 const filledEntries = this.rows.filter(r => r.surah_id && r.score).map(r => ({
                     student_id: r.student_id,
                     surah_id: parseInt(r.surah_id),
+                    surah_end_id: parseInt(r.surah_end_id || r.surah_id),
                     ayah_start: parseInt(r.ayah_start) || 1,
                     ayah_end: parseInt(r.ayah_end) || 1,
                     score: parseFloat(r.score),
@@ -357,10 +419,11 @@
                     return {
                         student_id: student.id,
                         student_name: student.name,
-                        class_name: student.class_room ? student.class_room.name : '',
+                        class_name: student.class_room ? student.class_room.name : (student.classRoom ? student.classRoom.name : ''),
                         last_history: lastHistoryInfo,
                         default_surah_id: defaultSurahId,
                         surah_id: defaultSurahId,
+                        surah_end_id: defaultSurahId,
                         ayah_start: defaultAyahStart,
                         ayah_end: defaultAyahEnd,
                         score: '',

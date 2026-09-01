@@ -290,4 +290,87 @@ class MurajaahRecordTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    #[Test]
+    public function teacher_can_fast_store_single_surah(): void
+    {
+        $response = $this->actingAs($this->teacherUser)->postJson(route('murajaah-records.fast-store'), [
+            'reviewed_at' => now()->toDateString(),
+            'entries' => [
+                [
+                    'student_id' => $this->student->id,
+                    'surah_id' => $this->surah->id,
+                    'surah_end_id' => $this->surah->id,
+                    'ayah_start' => 1,
+                    'ayah_end' => 7,
+                    'score' => 90,
+                    'notes' => 'Lancar sekali',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('murajaah_records', [
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'overall_score' => 90,
+            'status' => 'passed',
+            'notes' => 'Lancar sekali',
+        ]);
+    }
+
+    #[Test]
+    public function fast_store_splits_cross_surah_murajaah(): void
+    {
+        $surah2 = \App\Models\Surah::create([
+            'number' => 2,
+            'name_arabic' => 'البقرة',
+            'name_latin' => 'Al-Baqarah',
+            'total_ayah' => 286,
+            'revelation_type' => 'medinan',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->postJson(route('murajaah-records.fast-store'), [
+            'reviewed_at' => now()->toDateString(),
+            'entries' => [
+                [
+                    'student_id' => $this->student->id,
+                    'surah_id' => $this->surah->id, // Surah 1 (7 ayat)
+                    'surah_end_id' => $surah2->id,   // Surah 2
+                    'ayah_start' => 3,
+                    'ayah_end' => 25,
+                    'score' => 85,
+                    'notes' => 'Cross surah murajaah test',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        // Should create 2 records:
+        // Record 1: Surah 1, Ayah 3-7
+        // Record 2: Surah 2, Ayah 1-25
+        $this->assertDatabaseHas('murajaah_records', [
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 3,
+            'ayah_end' => 7,
+            'overall_score' => 85,
+            'status' => 'passed',
+        ]);
+
+        $this->assertDatabaseHas('murajaah_records', [
+            'student_id' => $this->student->id,
+            'surah_id' => $surah2->id,
+            'ayah_start' => 1,
+            'ayah_end' => 25,
+            'overall_score' => 85,
+            'status' => 'passed',
+        ]);
+    }
 }

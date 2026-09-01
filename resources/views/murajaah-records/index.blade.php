@@ -7,12 +7,8 @@
 
             <div class="flex items-center gap-2">
                 <a href="{{ route('murajaah-records.fast-input') }}"
-                   class="inline-flex items-center justify-center px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
+                   class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
                     ⚡ Input Murajaah Cepat
-                </a>
-                <a href="{{ route('murajaah-records.create') }}"
-                   class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
-                    + Tambah Single
                 </a>
             </div>
         </div>
@@ -32,18 +28,6 @@
                     {{ session('error') }}
                 </div>
             @endif
-
-            <!-- Murajaah Category Tabs -->
-            <div class="flex overflow-x-auto items-center gap-2 sm:gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-3 scrollbar-none">
-                <a href="{{ route('murajaah-records.index', array_merge(request()->query(), ['category' => 'reguler'])) }}"
-                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                    🔄 Muraja'ah Reguler
-                </a>
-                <a href="{{ route('murajaah-records.index', array_merge(request()->query(), ['category' => 'ummi'])) }}"
-                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                    🌱 Muraja'ah Metode Ummi
-                </a>
-            </div>
 
             <!-- Filter Section -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">

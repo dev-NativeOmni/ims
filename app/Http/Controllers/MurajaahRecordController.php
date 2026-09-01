@@ -109,6 +109,7 @@ class MurajaahRecordController extends Controller
             'entries' => 'required|array',
             'entries.*.student_id' => 'required|exists:students,id',
             'entries.*.surah_id' => 'required|exists:surahs,id',
+            'entries.*.surah_end_id' => 'nullable|exists:surahs,id',
             'entries.*.ayah_start' => 'required|integer|min:1',
             'entries.*.ayah_end' => 'required|integer|min:1',
             'entries.*.score' => 'required|numeric|min:0|max:100',
@@ -122,7 +123,7 @@ class MurajaahRecordController extends Controller
 
         DB::transaction(function () use ($request, $userTeacherId, $fallbackTeacherId, $reviewedAt, &$savedCount) {
             foreach ($request->input('entries', []) as $entry) {
-                if (empty($entry['student_id']) || empty($entry['surah_id']) || empty($entry['score'])) {
+                if (empty($entry['student_id']) || empty($entry['surah_id']) || ! isset($entry['score']) || $entry['score'] === '') {
                     continue;
                 }
 
@@ -136,20 +137,65 @@ class MurajaahRecordController extends Controller
                 $score = (float) $entry['score'];
                 $status = $score >= 80 ? 'passed' : ($score >= 70 ? 'needs_improvement' : 'repeat');
 
-                MurajaahRecord::create([
-                    'student_id' => $entry['student_id'],
-                    'teacher_id' => $teacherId,
-                    'surah_id' => $entry['surah_id'],
-                    'ayah_start' => $entry['ayah_start'],
-                    'ayah_end' => $entry['ayah_end'],
-                    'overall_score' => $score,
-                    'fluency_score' => $score,
-                    'status' => $status,
-                    'reviewed_at' => $reviewedAt,
-                    'notes' => $entry['notes'] ?? null,
-                ]);
+                $surahStartId = (int) $entry['surah_id'];
+                $surahEndId = (int) ($entry['surah_end_id'] ?? $surahStartId);
 
-                $savedCount++;
+                if ($surahStartId === $surahEndId) {
+                    MurajaahRecord::create([
+                        'student_id' => $entry['student_id'],
+                        'teacher_id' => $teacherId,
+                        'surah_id' => $surahStartId,
+                        'ayah_start' => (int) $entry['ayah_start'],
+                        'ayah_end' => (int) $entry['ayah_end'],
+                        'overall_score' => $score,
+                        'fluency_score' => $score,
+                        'status' => $status,
+                        'reviewed_at' => $reviewedAt,
+                        'notes' => $entry['notes'] ?? null,
+                    ]);
+                    $savedCount++;
+                } else {
+                    $surahStart = Surah::find($surahStartId);
+                    $surahEnd = Surah::find($surahEndId);
+
+                    if (! $surahStart || ! $surahEnd) {
+                        continue;
+                    }
+
+                    $minNumber = min($surahStart->number, $surahEnd->number);
+                    $maxNumber = max($surahStart->number, $surahEnd->number);
+
+                    $surahs = Surah::whereBetween('number', [$minNumber, $maxNumber])
+                        ->orderBy('number')
+                        ->get();
+
+                    foreach ($surahs as $surah) {
+                        if ($surah->id === $surahStart->id) {
+                            $ayahStart = (int) $entry['ayah_start'];
+                            $ayahEnd = $surah->total_ayah;
+                        } elseif ($surah->id === $surahEnd->id) {
+                            $ayahStart = 1;
+                            $ayahEnd = (int) $entry['ayah_end'];
+                        } else {
+                            $ayahStart = 1;
+                            $ayahEnd = $surah->total_ayah;
+                        }
+
+                        MurajaahRecord::create([
+                            'student_id' => $entry['student_id'],
+                            'teacher_id' => $teacherId,
+                            'surah_id' => $surah->id,
+                            'ayah_start' => $ayahStart,
+                            'ayah_end' => min($ayahEnd, $surah->total_ayah),
+                            'overall_score' => $score,
+                            'fluency_score' => $score,
+                            'status' => $status,
+                            'reviewed_at' => $reviewedAt,
+                            'notes' => $entry['notes'] ?? null,
+                        ]);
+                        $savedCount++;
+                    }
+                }
             }
         });
 

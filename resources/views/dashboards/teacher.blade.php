@@ -66,7 +66,7 @@
                     </div>
                 </a>
 
-                <a href="{{ url('/murajaah-records/create') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
+                <a href="{{ route('murajaah-records.fast-input') }}" class="bg-white dark:bg-zinc-900 shadow-md rounded-2xl p-5 hover:shadow-lg hover:scale-[1.01] transition-all duration-200 flex items-center gap-4 group">
                     <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.656 48.656 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.092-1.209.138-2.43.138-3.662Z" />
