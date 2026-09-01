@@ -443,22 +443,29 @@
 
                                     <td class="px-6 py-4">
                                         @php
-                                            $roleColor = 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200';
-                                            if ($u->role?->name === 'super_admin') {
-                                                $roleColor = 'bg-purple-50 text-purple-700 dark:bg-purple-950/20 dark:text-purple-400 border border-purple-100 dark:border-purple-900/30';
-                                            } elseif ($u->role?->name === 'admin') {
-                                                $roleColor = 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30';
-                                            } elseif ($u->role?->name === 'supervisor') {
-                                                $roleColor = 'bg-teal-50 text-teal-700 dark:bg-teal-950/20 dark:text-teal-400 border border-teal-100 dark:border-teal-900/30';
-                                            } elseif ($u->role?->name === 'teacher') {
-                                                $roleColor = 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30';
-                                            } elseif ($u->role?->name === 'student') {
-                                                $roleColor = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30';
-                                            }
+                                            $getRoleBadge = function($rName, $dName, $isPrimary = true) {
+                                                $cls = match($rName) {
+                                                    'super_admin' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800',
+                                                    'admin' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800',
+                                                    'coordinator_tahfizh' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800',
+                                                    'pendamping_adab', 'supervisor' => 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800',
+                                                    'teacher' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800',
+                                                    'student' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800',
+                                                    'tanse' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800',
+                                                    default => 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700'
+                                                };
+                                                return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold ' . $cls . '">' . e($dName) . '</span>';
+                                            };
+                                            $allAssigned = $u->assignedRoles();
                                         @endphp
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold {{ $roleColor }}">
-                                            {{ $u->role?->display_name ?: 'Tidak ada role' }}
-                                        </span>
+                                        <div class="flex flex-wrap gap-1 items-center">
+                                            @if ($u->role)
+                                                {!! $getRoleBadge($u->role->name, $u->role->display_name, true) !!}
+                                            @endif
+                                            @foreach ($allAssigned->where('id', '!=', $u->role_id) as $extraRole)
+                                                {!! $getRoleBadge($extraRole->name, '+ ' . $extraRole->display_name, false) !!}
+                                            @endforeach
+                                        </div>
                                     </td>
 
                                     <td class="px-6 py-4">

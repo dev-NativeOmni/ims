@@ -28,6 +28,7 @@ use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImpersonateController;
+use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\SpreadsheetInputController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,14 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Role Switcher Route
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/role/switch', [RoleSwitchController::class, 'switch'])->name('role.switch');
+    Route::get('/role/switch/{role}', [RoleSwitchController::class, 'switch'])->name('role.switch.get');
+
     /*
     |--------------------------------------------------------------------------
     | Session Keep-Alive Route

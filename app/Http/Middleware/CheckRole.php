@@ -12,7 +12,7 @@ class CheckRole
     {
         $user = $request->user();
 
-        if (! $user || ! $user->role) {
+        if (! $user || ! $user->currentRole()) {
             abort(403, 'Akses ditolak. Role akun tidak valid.');
         }
 
@@ -32,7 +32,7 @@ class CheckRole
                 ]);
         }
 
-        if (! in_array($user->role->name, $roles, true)) {
+        if (! in_array($user->currentRole()->name, $roles, true)) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk halaman ini.');
         }
 

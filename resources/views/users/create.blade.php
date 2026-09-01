@@ -57,11 +57,11 @@
                         @enderror
                     </div>
 
-                    <!-- Peran (Role) -->
+                    <!-- Peran Utama (Role Utama) -->
                     <div>
-                        <label for="role_id" class="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">Peran (Role)</label>
+                        <label for="role_id" class="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">Peran Utama (Default Role)</label>
                         <select name="role_id" id="role_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white" required>
-                            <option value="">-- Pilih Peran --</option>
+                            <option value="">-- Pilih Peran Utama --</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" @selected(old('role_id') == $role->id) class="dark:bg-zinc-900">
                                     {{ $role->display_name }} ({{ 
@@ -73,9 +73,38 @@
                                 </option>
                             @endforeach
                         </select>
+                        <p class="text-[11px] text-zinc-400 mt-1">Peran utama saat pertama kali login atau default sistem.</p>
                         @error('role_id')
                             <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Peran Tambahan / Rangkap (Additional Roles) -->
+                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="block text-sm font-bold text-zinc-800 dark:text-zinc-200">Peran Tambahan / Rangkap Tugas</label>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Centang peran tambahan jika user ini merangkap tugas. User dapat beralih peran via role switcher.</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Multi-Role</span>
+                        </div>
+
+                        @php
+                            $assignedRoleIds = old('additional_role_ids', []);
+                        @endphp
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            @foreach ($roles as $role)
+                                <label class="flex items-center gap-2.5 p-2.5 rounded-lg bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition">
+                                    <input type="checkbox" 
+                                           name="additional_role_ids[]" 
+                                           value="{{ $role->id }}"
+                                           @checked(in_array($role->id, $assignedRoleIds))
+                                           class="rounded border-zinc-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500">
+                                    <span class="truncate">{{ $role->display_name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
 
                     <!-- Status -->

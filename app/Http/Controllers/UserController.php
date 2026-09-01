@@ -21,6 +21,7 @@ class UserController extends Controller
 
         $query = User::query()->with([
             'role',
+            'roles',
             'studentProfile.classRoom',
             'studentProfile.parents.user',
             'parentProfile.students.classRoom',
@@ -141,6 +142,7 @@ class UserController extends Controller
         $this->authorizeSuperAdmin();
 
         $roles = Role::orderBy('display_name')->get();
+        $user->loadMissing('roles');
 
         return view('users.edit', compact('user', 'roles'));
     }
@@ -153,6 +155,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'role_id' => 'required|exists:roles,id',
+            'additional_role_ids' => 'nullable|array',
+            'additional_role_ids.*' => 'exists:roles,id',
             'password' => 'nullable|string|min:6',
             'status' => 'required|in:active,inactive',
         ], [
@@ -175,19 +179,30 @@ class UserController extends Controller
 
             $user->update($userData);
 
-            $role = Role::find($validated['role_id']);
-            if ($role) {
-                if ($role->name === 'teacher' && ! $user->teacherProfile()->exists()) {
-                    TeacherProfile::create(['user_id' => $user->id]);
-                } elseif ($role->name === 'parent' && ! $user->parentProfile()->exists()) {
-                    ParentProfile::create(['user_id' => $user->id]);
-                } elseif ($role->name === 'student' && ! $user->studentProfile()->exists()) {
-                    Student::create([
-                        'user_id' => $user->id,
-                        'name' => $user->name,
-                        'status' => 'active',
-                    ]);
-                }
+            $allAssignedRoleIds = collect([$validated['role_id']])
+                ->merge($validated['additional_role_ids'] ?? [])
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $user->roles()->sync($allAssignedRoleIds);
+
+            $assignedRoles = Role::whereIn('id', $allAssignedRoleIds)->get();
+            $assignedRoleNames = $assignedRoles->pluck('name')->all();
+
+            if (in_array('teacher', $assignedRoleNames, true) && ! $user->teacherProfile()->exists()) {
+                TeacherProfile::create(['user_id' => $user->id]);
+            }
+            if (in_array('parent', $assignedRoleNames, true) && ! $user->parentProfile()->exists()) {
+                ParentProfile::create(['user_id' => $user->id]);
+            }
+            if (in_array('student', $assignedRoleNames, true) && ! $user->studentProfile()->exists()) {
+                Student::create([
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'status' => 'active',
+                ]);
             }
         });
 
@@ -213,6 +228,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
             'role_id' => 'required|exists:roles,id',
+            'additional_role_ids' => 'nullable|array',
+            'additional_role_ids.*' => 'exists:roles,id',
             'password' => 'required|string|min:6',
             'status' => 'required|in:active,inactive',
         ], [
@@ -230,19 +247,30 @@ class UserController extends Controller
                 'status' => $validated['status'],
             ]);
 
-            $role = Role::find($validated['role_id']);
-            if ($role) {
-                if ($role->name === 'teacher') {
-                    TeacherProfile::create(['user_id' => $user->id]);
-                } elseif ($role->name === 'parent') {
-                    ParentProfile::create(['user_id' => $user->id]);
-                } elseif ($role->name === 'student') {
-                    Student::create([
-                        'user_id' => $user->id,
-                        'name' => $user->name,
-                        'status' => 'active',
-                    ]);
-                }
+            $allAssignedRoleIds = collect([$validated['role_id']])
+                ->merge($validated['additional_role_ids'] ?? [])
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            $user->roles()->sync($allAssignedRoleIds);
+
+            $assignedRoles = Role::whereIn('id', $allAssignedRoleIds)->get();
+            $assignedRoleNames = $assignedRoles->pluck('name')->all();
+
+            if (in_array('teacher', $assignedRoleNames, true)) {
+                TeacherProfile::create(['user_id' => $user->id]);
+            }
+            if (in_array('parent', $assignedRoleNames, true)) {
+                ParentProfile::create(['user_id' => $user->id]);
+            }
+            if (in_array('student', $assignedRoleNames, true)) {
+                Student::create([
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'status' => 'active',
+                ]);
             }
         });
 

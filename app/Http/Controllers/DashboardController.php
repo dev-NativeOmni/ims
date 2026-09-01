@@ -40,7 +40,9 @@ class DashboardController extends Controller
                 ]);
         }
 
-        return match ($user->role?->name) {
+        $activeRoleName = $user->currentRole()?->name ?? $user->role?->name;
+
+        return match ($activeRoleName) {
             'super_admin' => redirect()->route('super-admin.dashboard'),
             'admin' => redirect()->route('admin.dashboard'),
             'teacher' => redirect()->route('teacher.dashboard'),
