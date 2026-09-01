@@ -368,9 +368,9 @@
                                                                     <!-- Surah select -->
                                                                     <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, date)" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                         <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                                        <template x-for="s in surahs" :key="s.id">
-                                                                            <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                                        </template>
+                                                                        @foreach ($surahs as $s)
+                                                                            <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                        @endforeach
                                                                     </select>
                                                                     <!-- Ayat range -->
                                                                     <div class="grid grid-cols-2 gap-1">
@@ -447,9 +447,9 @@
                                                                             <div class="p-1.5 bg-gray-50/50 dark:bg-zinc-850 border border-gray-200 dark:border-zinc-800 rounded relative space-y-1">
                                                                                 <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-1 py-0.5 dark:text-white">
                                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                                                    <template x-for="s in surahs" :key="s.id">
-                                                                                        <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                                                    </template>
+                                                                                    @foreach ($surahs as $s)
+                                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                                    @endforeach
                                                                                 </select>
                                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Cth: 1-5" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
                                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
@@ -474,9 +474,9 @@
                                                                             <!-- Surah select -->
                                                                             <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                                 <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                                                <template x-for="s in surahs" :key="s.id">
-                                                                                    <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                                                </template>
+                                                                                @foreach ($surahs as $s)
+                                                                                    <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                                @endforeach
                                                                             </select>
                                                                             <!-- Ayat range -->
                                                                             <div class="grid grid-cols-2 gap-1">
@@ -564,9 +564,9 @@
                                                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Surah</label>
                                                         <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, selectedMobileDate)" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                             <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                            <template x-for="s in surahs" :key="s.id">
-                                                                <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                            </template>
+                                                            @foreach ($surahs as $s)
+                                                                <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                            @endforeach
                                                         </select>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">
@@ -663,9 +663,9 @@
                                                             <div class="bg-gray-50/50 dark:bg-zinc-855 p-3 rounded-lg border border-gray-200 dark:border-zinc-800 relative space-y-2">
                                                                 <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                                    <template x-for="s in surahs" :key="s.id">
-                                                                        <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                                    </template>
+                                                                    @foreach ($surahs as $s)
+                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                    @endforeach
                                                                 </select>
                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Ayat (cth: 1-5)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
@@ -691,9 +691,9 @@
                                                                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Surah</label>
                                                                 <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
-                                                                    <template x-for="s in surahs" :key="s.id">
-                                                                        <option :value="s.id" class="dark:bg-zinc-900" x-text="s.number + '. ' + s.name_latin"></option>
-                                                                    </template>
+                                                                    @foreach ($surahs as $s)
+                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                    @endforeach
                                                                 </select>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-2">

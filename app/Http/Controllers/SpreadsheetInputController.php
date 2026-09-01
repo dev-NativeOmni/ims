@@ -206,12 +206,13 @@ class SpreadsheetInputController extends Controller
                         $dateStr = $weekNumToRepDate[$weekNum];
                     }
                 }
+                $scoreFormatted = $record->score !== null ? (string) (int) round((float) $record->score) : '';
                 $hafalanRecordsMap[$record->student_id][$dateStr][] = [
                     'id' => $record->id,
-                    'surah_id' => $record->surah_id,
+                    'surah_id' => $record->surah_id ? (string) $record->surah_id : '',
                     'ayah_start' => $record->ayah_start,
                     'ayah_end' => $record->ayah_end,
-                    'score' => $record->score,
+                    'score' => $scoreFormatted,
                     'status' => $record->status,
                     'submission_type' => $record->submission_type,
                 ];
@@ -248,7 +249,7 @@ class SpreadsheetInputController extends Controller
                 if ($record->hafalan_surah_id) {
                     $ummiRecordsMap[$record->student_id][$dateStr]['hafalans'][] = [
                         'id' => $record->id,
-                        'surah_id' => $record->hafalan_surah_id,
+                        'surah_id' => (string) $record->hafalan_surah_id,
                         'ayah' => $record->hafalan_ayah,
                     ];
                 }
