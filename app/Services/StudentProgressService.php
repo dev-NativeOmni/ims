@@ -136,6 +136,20 @@ class StudentProgressService
                 ->latest()
                 ->first();
 
+            if ($isUmmiProgram) {
+                $passedJuz30 = (clone $hafalanRecordsQuery)
+                    ->with('surah')
+                    ->where('status', 'passed')
+                    ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114]))
+                    ->get()
+                    ->sortBy(fn ($r) => $r->surah?->number ?? 114)
+                    ->first();
+
+                if ($passedJuz30) {
+                    $latestHafalan = $passedJuz30;
+                }
+            }
+
             $latestMurajaah = (clone $murajaahRecordsQuery)
                 ->with('surah')
                 ->latest('reviewed_at')

@@ -286,12 +286,25 @@ class StudentReportController extends Controller
                 $latestCapaianText = 'Belum ada catatan UMMI.';
             }
         } else {
-            $latestHafalan = HafalanRecord::with('surah')
+            $hafalanQuery = HafalanRecord::with('surah')
                 ->where('student_id', $student->id)
-                ->where('status', 'passed')
-                ->latest('submitted_at')
-                ->latest()
-                ->first();
+                ->where('status', 'passed');
+
+            $latestHafalan = null;
+            if ($isUmmiProgram) {
+                $latestHafalan = (clone $hafalanQuery)
+                    ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114]))
+                    ->get()
+                    ->sortBy(fn ($r) => $r->surah?->number ?? 114)
+                    ->first();
+            }
+
+            if (! $latestHafalan) {
+                $latestHafalan = (clone $hafalanQuery)
+                    ->latest('submitted_at')
+                    ->latest()
+                    ->first();
+            }
 
             if ($latestHafalan) {
                 $latestCapaianText = 'QS. '.$latestHafalan->surah?->name_latin.' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';

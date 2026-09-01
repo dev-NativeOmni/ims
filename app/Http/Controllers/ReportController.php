@@ -996,7 +996,8 @@ class ReportController extends Controller
             $targetAyat = $latestTarget?->ayah_end ?? '-';
 
             // Capaian Surah and Ayat (latest passed setoran submitted_at <= $endDate)
-            $latestHafalanPassed = $allPassedHafalan->get($student->id, collect())->first();
+            $studentPassedRecords = $allPassedHafalan->get($student->id, collect());
+            $latestHafalanPassed = $this->getFurthestHafalanRecord($studentPassedRecords, $isGrade10 || $student->tahfizh_level === 'ummi');
 
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
@@ -1403,5 +1404,37 @@ class ReportController extends Controller
             'classUmmiHafalanSurah' => $classUmmiHafalanSurah,
             'musyrifName' => $musyrifName,
         ]);
+    }
+
+    private function getFurthestHafalanRecord(Collection $records, bool $isGrade10Ummi = false): mixed
+    {
+        if ($records->isEmpty()) {
+            return null;
+        }
+
+        if ($isGrade10Ummi) {
+            // Khusus Kelas 10 / Metode Ummi di Juz 30 (Surah 78 An-Naba' s/d 114 An-Naas):
+            // Perjalanan dari Surah 114 (An-Naas) menuju 78 (An-Naba').
+            // Capaian tertinggi/terjauh di Juz 30 adalah rekor dengan nomor surah paling kecil (mendekati 78).
+            $juz30Records = $records->filter(function ($r) {
+                $num = $r->surah?->number;
+                return $num >= 78 && $num <= 114;
+            });
+
+            if ($juz30Records->isNotEmpty()) {
+                return $juz30Records->sort(function ($a, $b) {
+                    $numA = $a->surah?->number ?? 114;
+                    $numB = $b->surah?->number ?? 114;
+                    if ($numA !== $numB) {
+                        return $numA <=> $numB; // Nomor surah lebih kecil = lebih dekat ke 78 An-Naba'
+                    }
+                    $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
+                    $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
+                    return $dateB <=> $dateA;
+                })->first();
+            }
+        }
+
+        return $records->sortByDesc(fn ($r) => $r->submitted_at ? Carbon::parse($r->submitted_at)->timestamp : 0)->first();
     }
 }
