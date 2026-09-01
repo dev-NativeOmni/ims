@@ -51,7 +51,7 @@
 
 <!-- UTAMA Group -->
 <div class="space-y-1">
-    <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+    <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
         Utama
     </span>
     <a href="{{ route('dashboard') }}" class="{{ $getLinkClasses($routeIs('dashboard') || $routeIs('*.dashboard')) }}">
@@ -65,7 +65,7 @@
 <!-- DATA MASTER Group -->
 @if ($isAdmin)
     <div class="mt-6 space-y-1">
-        <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+        <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
             Data Master
         </span>
 
@@ -145,7 +145,7 @@
 <!-- AKADEMIK & TAHFIZH Group -->
 @if ($canViewTahfizhGroup && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
     <div class="mt-6 space-y-1">
-        <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+        <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
             Tahfizh
         </span>
 
@@ -286,7 +286,7 @@
 <!-- KEAGAMAAN Group -->
 @if (($canViewAdabGroup && $canViewAdab && $hasRoute('adab.index')) || ($canViewAdabMaterials && $hasRoute('adab-materials.index')))
     <div class="mt-6 space-y-1">
-        <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+        <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
             Keagamaan
         </span>
 
@@ -333,7 +333,7 @@
 <!-- KETAHANAN SEKOLAH Group -->
 @if ($canViewTanseGroup && ($canViewStudentPoints && $hasRoute('student-points.index')))
     <div class="mt-6 space-y-1">
-        <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+        <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
             Ketahanan Sekolah
         </span>
 
@@ -360,7 +360,7 @@
 
 <!-- SISTEM Group -->
 <div class="mt-6 space-y-1">
-    <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
+    <span class="px-3 text-[11px] font-extrabold text-slate-700 dark:text-teal-300 uppercase tracking-wider block mb-1">
         Sistem
     </span>
 

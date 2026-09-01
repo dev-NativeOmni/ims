@@ -75,7 +75,7 @@
             <div class="flex-grow flex flex-col min-h-screen">
                 <!-- Page Heading -->
                 @isset($header)
-                    <div class="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 mb-4">
+                    <div class="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 mt-4 mb-4">
                         <div class="glass-panel py-3.5 px-5 sm:px-6 rounded-2xl transition-all duration-200">
                             {{ $header }}
                         </div>
@@ -83,7 +83,7 @@
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 px-3 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto w-full">
+                <main class="flex-1 px-3 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto w-full @empty($header) mt-4 @endempty">
                     {{ $slot }}
                 </main>
             </div>
