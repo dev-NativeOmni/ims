@@ -491,12 +491,19 @@ class StudentController extends Controller
                 }
 
                 $student = null;
-                if (! empty($studentNumber)) {
+                // 1. Prioritize matching by user_id (via Username Murid) so reordering/changing student_number works seamlessly
+                if (! empty($studentUserId)) {
+                    $student = Student::query()->where('user_id', $studentUserId)->first();
+                }
+
+                // 2. Fallback matching by student_number
+                if (! $student && ! empty($studentNumber)) {
                     $student = Student::query()->where('student_number', $studentNumber)->first();
                 }
 
-                if (! $student && ! empty($studentUserId)) {
-                    $student = Student::query()->where('user_id', $studentUserId)->first();
+                // 3. Fallback matching by exact Student Name
+                if (! $student && ! empty($name)) {
+                    $student = Student::query()->where('name', $name)->first();
                 }
 
                 $tahfizhLevel = null;
