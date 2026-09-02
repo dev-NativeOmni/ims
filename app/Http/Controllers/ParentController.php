@@ -399,38 +399,38 @@ class ParentController extends Controller
                     $imported++;
                 }
 
-                // Auto-link connected students if username_santri column is populated
+                // Auto-link connected students if Daftar Nama Anak / Username Santri column is populated
                 if ($profile && $map['username_santri'] !== null) {
                     $studentUsernamesStr = trim((string) ($row[$map['username_santri']] ?? ''));
-                    if (! empty($studentUsernamesStr)) {
-                        $studentTokens = preg_split('/[;,]/', $studentUsernamesStr);
-                        $studentIdsToSync = [];
+                    $studentTokens = preg_split('/[;,]/', $studentUsernamesStr);
+                    $studentIdsToSync = [];
 
-                        foreach ($studentTokens as $token) {
-                            $token = trim((string) $token);
-                            if (str_contains($token, '@')) {
-                                $token = explode('@', $token)[0];
-                            }
-                            if (empty($token)) {
-                                continue;
-                            }
-
-                            // Match by student user username or student_number (NIS)
-                            $foundStudent = Student::query()
-                                ->where('student_number', $token)
-                                ->orWhereHas('user', function ($q) use ($token) {
-                                    $q->where('username', $token);
-                                })
-                                ->first();
-
-                            if ($foundStudent) {
-                                $studentIdsToSync[] = $foundStudent->id;
-                            }
+                    foreach ($studentTokens as $token) {
+                        $token = trim((string) $token);
+                        if (str_contains($token, '@')) {
+                            $token = explode('@', $token)[0];
+                        }
+                        if (empty($token)) {
+                            continue;
                         }
 
-                        if (! empty($studentIdsToSync)) {
-                            $profile->students()->syncWithoutDetaching($studentIdsToSync);
+                        // Match by exact name, partial name, NIS (student_number), or student username
+                        $foundStudent = Student::query()
+                            ->where('name', $token)
+                            ->orWhere('name', 'like', "%{$token}%")
+                            ->orWhere('student_number', $token)
+                            ->orWhereHas('user', function ($q) use ($token) {
+                                $q->where('username', $token);
+                            })
+                            ->first();
+
+                        if ($foundStudent) {
+                            $studentIdsToSync[] = $foundStudent->id;
                         }
+                    }
+
+                    if (! empty($studentIdsToSync)) {
+                        $profile->students()->sync(array_unique($studentIdsToSync));
                     }
                 }
             }
