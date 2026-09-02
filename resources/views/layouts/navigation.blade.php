@@ -60,7 +60,7 @@
 @endphp
 
 <!-- Global Sidebar (Drawer Overlay) -->
-<div x-show="sidebarOpen" class="fixed inset-0 flex z-40" role="dialog" aria-modal="true" style="display: none;">
+<div x-show="sidebarOpen" class="fixed inset-0 flex z-50" role="dialog" aria-modal="true" style="display: none;">
     <!-- Backdrop Overlay -->
     <div x-show="sidebarOpen" 
          x-transition:enter="transition-opacity ease-linear duration-300"
@@ -80,7 +80,7 @@
          x-transition:leave="transition ease-in-out duration-300 transform"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="-translate-x-full"
-         class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-r border-zinc-200 dark:border-white/5 shadow-xl transition-colors duration-200">
+         class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-[max(env(safe-area-inset-bottom),16px)] bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-r border-zinc-200 dark:border-white/5 shadow-2xl transition-colors duration-200">
          
          <!-- Close Button -->
          <div class="absolute top-0 right-0 -mr-12 pt-2">

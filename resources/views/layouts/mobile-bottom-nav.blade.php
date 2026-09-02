@@ -244,7 +244,14 @@
 @endphp
 
 <!-- Bottom Floating Navigation Bar for Mobile Phones -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)] transition-all duration-200 pb-[max(env(safe-area-inset-bottom),8px)]" aria-label="Navigasi Bawah">
+<nav x-show="!sidebarOpen"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="translate-y-full opacity-0"
+     x-transition:enter-end="translate-y-0 opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="translate-y-0 opacity-100"
+     x-transition:leave-end="translate-y-full opacity-0"
+     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)] transition-all duration-200 pb-[max(env(safe-area-inset-bottom),8px)]" aria-label="Navigasi Bawah">
     <div class="flex items-center justify-around h-14 sm:h-16 px-1 max-w-lg mx-auto">
         @foreach ($navItems as $item)
             @if (\Illuminate\Support\Facades\Route::has($item['route']))
