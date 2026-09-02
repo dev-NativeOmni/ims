@@ -81,10 +81,13 @@
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 py-4 px-3 sm:px-6 lg:px-8">
+                <main class="flex-1 py-4 px-3 sm:px-6 lg:px-8 pb-24 md:pb-6">
                     {{ $slot }}
                 </main>
             </div>
+
+            <!-- Mobile Bottom Quick Navigation -->
+            @include('layouts.mobile-bottom-nav')
         </div>
 
         <!-- Global Network Connection Toast -->
