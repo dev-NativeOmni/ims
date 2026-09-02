@@ -73,7 +73,7 @@
             <div class="flex-grow flex flex-col min-h-screen">
                 <!-- Page Heading -->
                 @isset($header)
-                    <header class="bg-white/80 dark:bg-[#09090b]/50 backdrop-blur-lg border-b border-zinc-200/50 dark:border-white/5 sticky top-0 z-10 transition-colors duration-200">
+                    <header class="bg-white/90 dark:bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-200/60 dark:border-white/5 transition-colors duration-200">
                         <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
