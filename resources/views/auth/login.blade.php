@@ -1,7 +1,7 @@
 @php
-    $logo = Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
-    $namaInstansi = Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
-    $loginBg = Schema::hasTable('settings') ? \App\Models\Setting::get('login_bg') : null;
+    $logo = \App\Models\Setting::get('logo');
+    $namaInstansi = \App\Models\Setting::get('nama_instansi');
+    $loginBg = \App\Models\Setting::get('login_bg');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

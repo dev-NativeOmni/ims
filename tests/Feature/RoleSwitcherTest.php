@@ -111,6 +111,7 @@ class RoleSwitcherTest extends TestCase
 
         // Multiple roles -> switcher card displayed
         $teacher->roles()->sync([$teacherRole->id, $coordinatorRole->id]);
+        $teacher->unsetRelation('roles');
         $response2 = $this->actingAs($teacher)->get(route('profile.edit'));
         $response2->assertSee('Ganti Peran Aktif (Role Switcher)');
         $response2->assertSee('Koordinator Tahfizh');

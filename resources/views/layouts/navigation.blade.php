@@ -25,9 +25,10 @@
     $isPendampingAdab = $hasRole('pendamping_adab');
 
     $isAdmin = $isSuperAdmin || $isAdminUser;
+    $isLoggedIn = (bool) $user;
 
-    $logo = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('logo') : null;
-    $namaInstansi = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::get('nama_instansi') : null;
+    $logo = \App\Models\Setting::get('logo');
+    $namaInstansi = \App\Models\Setting::get('nama_instansi');
 
     $isPureTahfizhCoordinator = $isCoordinatorTahfizh && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
     $isPureAdabCoordinator = $isPendampingAdab && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;

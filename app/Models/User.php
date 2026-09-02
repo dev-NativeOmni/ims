@@ -55,19 +55,17 @@ class User extends Authenticatable
      */
     public function assignedRoles(): Collection
     {
-        if ($this->relationLoaded('roles') && $this->roles->isNotEmpty()) {
-            $roles = $this->roles;
-        } else {
-            $roles = $this->roles()->get();
-        }
+        $roles = $this->relationLoaded('roles') ? $this->roles : $this->roles()->get();
 
         if ($roles->isEmpty() && $this->role) {
-            return collect([$this->role]);
+            $roles = collect([$this->role]);
+        } elseif ($this->role && ! $roles->contains('id', $this->role->id)) {
+            $roles = $roles->prepend($this->role);
         }
 
-        // Ensure primary role is included if not in pivot
-        if ($this->role && ! $roles->contains('id', $this->role->id)) {
-            $roles->prepend($this->role);
+        // Cache on Eloquent relation so subsequent checks in the same request are 0ms in-memory
+        if (! $this->relationLoaded('roles')) {
+            $this->setRelation('roles', $roles);
         }
 
         return $roles;
@@ -80,10 +78,10 @@ class User extends Authenticatable
      */
     public function currentRole(): ?Role
     {
-        $activeRoleId = session('active_role_id');
+        $activeRoleId = (int) (session('active_role_id') ?: 0);
 
-        if ($activeRoleId) {
-            $matched = $this->assignedRoles()->firstWhere('id', (int) $activeRoleId);
+        if ($activeRoleId > 0) {
+            $matched = $this->assignedRoles()->firstWhere('id', $activeRoleId);
             if ($matched) {
                 return $matched;
             }
