@@ -212,7 +212,7 @@
             break;
     }
 
-    $isDashboardActive = $routeIs('dashboard') || $routeIs('*.dashboard');
+    $isDashboardActive = $routeIs('dashboard') || $routeIs('*.dashboard') || request()->is('*/dashboard*') || request()->is('dashboard');
 @endphp
 
 <!-- Bottom Floating Navigation Bar with Elevated Center Dashboard Button -->
@@ -287,14 +287,17 @@
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (PROMINENT & LARGER) -->
+        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (VIBRANT GLOWING SQUIRCLE) -->
         <a href="{{ route('dashboard') }}"
            class="flex flex-col items-center justify-center select-none group relative -top-3.5 z-10">
-            <!-- Floating Squircle Button -->
-            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-active:scale-95 ring-4 ring-white dark:ring-[#09090b] {{ $isDashboardActive ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-indigo-500/40' : 'bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white shadow-indigo-500/30 group-hover:from-indigo-600 group-hover:to-indigo-700' }}">
-                <!-- 4-Square Grid Dashboard Icon (like SAPA SMAIA 7 style) -->
-                <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            <!-- Vibrant Glowing Floating Squircle Button -->
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-active:scale-95 ring-4 ring-white dark:ring-[#09090b] shadow-[0_8px_20px_rgba(79,70,229,0.45)] dark:shadow-[0_8px_25px_rgba(99,102,241,0.5)] bg-gradient-to-tr from-indigo-600 via-indigo-600 to-indigo-500 text-white {{ $isDashboardActive ? 'scale-105 ring-indigo-200 dark:ring-indigo-900 shadow-[0_10px_25px_rgba(79,70,229,0.6)]' : 'hover:scale-105' }}">
+                <!-- Solid 4-Square Grid Dashboard Icon (Sharp, Vibrant, High Visibility) -->
+                <svg class="w-7 h-7 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+                    <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+                    <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
+                    <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
                 </svg>
             </div>
             <span class="text-[10.5px] font-extrabold tracking-tight leading-none mt-1 {{ $isDashboardActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-300' }}">
