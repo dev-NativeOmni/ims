@@ -103,7 +103,7 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-y-0 opacity-100"
              x-transition:leave-end="translate-y-8 opacity-0"
-             class="fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border"
+             class="fixed bottom-20 md:bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border"
              :class="isOnline ? 'bg-emerald-800 text-emerald-100 border-emerald-600' : 'bg-red-800 text-red-100 border-red-600'"
              style="display: none;">
             <template x-if="isOnline">

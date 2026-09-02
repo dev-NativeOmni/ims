@@ -756,7 +756,7 @@
                  x-transition:leave="transition ease-in duration-200 transform"
                  x-transition:leave-start="translate-y-0 opacity-100 scale-100"
                  x-transition:leave-end="translate-y-12 opacity-0 scale-95"
-                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/95 text-white dark:bg-white/95 dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-zinc-700/80 dark:border-zinc-300 flex items-center gap-4 text-xs font-bold"
+                 class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/95 text-white dark:bg-white/95 dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-zinc-700/80 dark:border-zinc-300 flex items-center gap-4 text-xs font-bold"
                  style="display: none;">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
