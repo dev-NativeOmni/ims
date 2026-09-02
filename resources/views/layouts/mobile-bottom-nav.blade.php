@@ -215,7 +215,7 @@
     $isDashboardActive = $routeIs('dashboard') || $routeIs('*.dashboard') || request()->is('*/dashboard*') || request()->is('dashboard');
 @endphp
 
-<!-- Bottom Floating Navigation Bar with Elevated Center Dashboard Button -->
+<!-- Bottom Floating Navigation Bar in SAPA SMAIA 7 Style -->
 <nav x-show="!sidebarOpen"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="translate-y-full opacity-0"
@@ -223,14 +223,15 @@
      x-transition:leave="transition ease-in duration-150"
      x-transition:leave-start="translate-y-0 opacity-100"
      x-transition:leave-end="translate-y-full opacity-0"
-     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.5)] transition-all duration-200 pb-[max(env(safe-area-inset-bottom),6px)]" aria-label="Navigasi Bawah">
+     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[env(safe-area-inset-bottom)]"
+     aria-label="Navigasi Bawah">
     
-    <div class="grid grid-cols-5 h-16 max-w-md mx-auto items-end px-1 relative">
+    <div class="flex items-center justify-around h-16 max-w-md mx-auto px-1 relative">
 
         <!-- 1. LEFT ITEM 1 -->
         @if (isset($leftItems[0]) && \Illuminate\Support\Facades\Route::has($leftItems[0]['route']))
             <a href="{{ route($leftItems[0]['route']) }}"
-               class="flex flex-col items-center justify-center pb-2 select-none group transition-colors duration-150 {{ $leftItems[0]['active'] ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[0]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $leftItems[0]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($leftItems[0]['icon'] === 'book')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,14 +256,14 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] tracking-tight leading-none mt-0.5 truncate max-w-full px-0.5">{{ $leftItems[0]['label'] }}</span>
+                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[0]['label'] }}</span>
             </a>
         @endif
 
         <!-- 2. LEFT ITEM 2 -->
         @if (isset($leftItems[1]) && \Illuminate\Support\Facades\Route::has($leftItems[1]['route']))
             <a href="{{ route($leftItems[1]['route']) }}"
-               class="flex flex-col items-center justify-center pb-2 select-none group transition-colors duration-150 {{ $leftItems[1]['active'] ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[1]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $leftItems[1]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($leftItems[1]['icon'] === 'table')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -283,24 +284,25 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] tracking-tight leading-none mt-0.5 truncate max-w-full px-0.5">{{ $leftItems[1]['label'] }}</span>
+                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[1]['label'] }}</span>
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (VIBRANT GLOWING SQUIRCLE) -->
+        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (VIBRANT SAPA SKY-BLUE SQUIRCLE) -->
         <a href="{{ route('dashboard') }}"
-           class="flex flex-col items-center justify-center select-none group relative -top-3.5 z-10">
-            <!-- Vibrant Glowing Floating Squircle Button -->
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-active:scale-95 ring-4 ring-white dark:ring-[#09090b] shadow-[0_8px_20px_rgba(79,70,229,0.45)] dark:shadow-[0_8px_25px_rgba(99,102,241,0.5)] bg-gradient-to-tr from-indigo-600 via-indigo-600 to-indigo-500 text-white {{ $isDashboardActive ? 'scale-105 ring-indigo-200 dark:ring-indigo-900 shadow-[0_10px_25px_rgba(79,70,229,0.6)]' : 'hover:scale-105' }}">
-                <!-- Solid 4-Square Grid Dashboard Icon (Sharp, Vibrant, High Visibility) -->
-                <svg class="w-7 h-7 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="currentColor">
+           class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-10 select-none group">
+            <!-- Vibrant Glowing Floating Squircle Button with Bulletproof Gradient & Shadow -->
+            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 8px 20px -2px rgba(2, 132, 199, 0.55);"
+                 class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white transition-all duration-200 group-active:scale-95 border-2 border-white dark:border-[#09090b]">
+                <!-- Solid 4-Square Grid Dashboard Icon (Sharp, Filled White, 100% High Visibility) -->
+                <svg style="color: #ffffff; width: 26px; height: 26px;" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
                     <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
                     <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
                     <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
                 </svg>
             </div>
-            <span class="text-[10.5px] font-extrabold tracking-tight leading-none mt-1 {{ $isDashboardActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-300' }}">
+            <span style="color: #0284c7;" class="text-[10px] font-bold tracking-tight mt-1 leading-none">
                 Dashboard
             </span>
         </a>
@@ -308,7 +310,7 @@
         <!-- 4. RIGHT ITEM 1 -->
         @if (isset($rightItems[0]) && \Illuminate\Support\Facades\Route::has($rightItems[0]['route']))
             <a href="{{ route($rightItems[0]['route']) }}"
-               class="flex flex-col items-center justify-center pb-2 select-none group transition-colors duration-150 {{ $rightItems[0]['active'] ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $rightItems[0]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $rightItems[0]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($rightItems[0]['icon'] === 'shield')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,20 +339,20 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] tracking-tight leading-none mt-0.5 truncate max-w-full px-0.5">{{ $rightItems[0]['label'] }}</span>
+                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $rightItems[0]['label'] }}</span>
             </a>
         @endif
 
         <!-- 5. RIGHT ITEM 2: "Menu Lainnya" Drawer Trigger -->
         <button type="button"
                 @click="sidebarOpen = true"
-                class="flex flex-col items-center justify-center pb-2 select-none group transition-colors duration-150 text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium cursor-pointer">
+                class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 text-zinc-500 dark:text-zinc-400 hover:text-sky-600 dark:hover:text-sky-400 font-medium cursor-pointer">
             <div class="p-1 rounded-xl transition-all duration-200 group-active:scale-95">
-                <svg class="w-5 h-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-5 h-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-sky-600 dark:group-hover:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </div>
-            <span class="text-[10px] tracking-tight leading-none mt-0.5">Lainnya</span>
+            <span class="text-[10px] mt-0.5 tracking-tight leading-none">Lainnya</span>
         </button>
 
     </div>
