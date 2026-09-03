@@ -116,4 +116,33 @@ class RoleSwitcherTest extends TestCase
         $response2->assertSee('Ganti Peran Aktif (Role Switcher)');
         $response2->assertSee('Koordinator Tahfizh');
     }
+
+    public function test_teacher_with_pendamping_adab_side_role_can_be_assigned_to_class_and_access_dashboard(): void
+    {
+        $superAdmin = User::where('username', 'superadmin')->first();
+        $teacher = User::where('username', 'guru')->first();
+        $pendampingRole = Role::where('name', 'pendamping_adab')->first();
+        $teacherRole = Role::where('name', 'teacher')->first();
+
+        // Assign pendamping_adab as side role
+        $teacher->roles()->sync([$teacherRole->id, $pendampingRole->id]);
+
+        // Superadmin creates or edits a class and sees teacher in pendampingList
+        $response = $this->actingAs($superAdmin)->get(route('class-rooms.create'));
+        $response->assertStatus(200);
+        $response->assertSee($teacher->name);
+
+        // Assign teacher as pendamping_adab for class
+        $classRoom = \App\Models\ClassRoom::first();
+        $classRoom->update(['pendamping_adab_id' => $teacher->id]);
+
+        // Teacher switches to pendamping_adab role
+        $this->actingAs($teacher)->post(route('role.switch'), [
+            'role_id' => $pendampingRole->id,
+        ])->assertRedirect(route('dashboard'));
+
+        // Visiting dashboard directs to pendamping-adab dashboard
+        $dashResponse = $this->actingAs($teacher)->get(route('pendamping-adab.dashboard'));
+        $dashResponse->assertStatus(200);
+    }
 }

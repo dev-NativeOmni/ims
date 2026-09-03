@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -187,20 +188,41 @@ class DashboardController extends Controller
 
     public function pendampingAdab(Request $request): View
     {
+        $user = Auth::user();
         $today = now()->toDateString();
         $year = (int) date('Y');
         $month = (int) date('n');
 
-        $totalStudents = Student::where('status', 'active')->count();
-        $filledToday = AdabRecord::where('assessment_date', $today)->count();
+        $isPrivileged = $user && $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
+
+        $assignedClassIds = ($user && ! $isPrivileged)
+            ? ClassRoom::where('pendamping_adab_id', $user->id)->pluck('id')
+            : null;
+
+        $studentQuery = Student::where('status', 'active');
+        if ($assignedClassIds !== null) {
+            $studentQuery->whereIn('class_room_id', $assignedClassIds);
+        }
+
+        $totalStudents = (clone $studentQuery)->count();
+        $assignedStudentIds = (clone $studentQuery)->pluck('id');
+
+        $filledToday = AdabRecord::where('assessment_date', $today)
+            ->whereIn('student_id', $assignedStudentIds)
+            ->count();
         $fillPercentage = $totalStudents > 0 ? round(($filledToday / $totalStudents) * 100, 1) : 0;
 
-        $students = Student::where('status', 'active')->get();
+        $students = $studentQuery->get();
         $monthlyScores = $students->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
         $avgScoreMonth = $monthlyScores->isNotEmpty() ? round($monthlyScores->avg(), 1) : 0;
         $adabGradeMonth = Setting::getAdabGrade($avgScoreMonth);
 
-        $classRankings = ClassRoom::with('students')
+        $classRoomQuery = ClassRoom::with('students');
+        if ($assignedClassIds !== null) {
+            $classRoomQuery->whereIn('id', $assignedClassIds);
+        }
+
+        $classRankings = $classRoomQuery
             ->get()
             ->map(function ($classRoom) use ($year, $month) {
                 $st = $classRoom->students->where('status', 'active');

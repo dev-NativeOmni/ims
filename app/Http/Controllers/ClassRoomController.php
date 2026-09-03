@@ -44,7 +44,10 @@ class ClassRoomController extends Controller
             ->get();
 
         $pendampingList = User::query()
-            ->whereHas('role', fn ($q) => $q->where('name', 'pendamping_adab'))
+            ->where(function ($q) {
+                $q->whereHas('role', fn ($sub) => $sub->where('name', 'pendamping_adab'))
+                    ->orWhereHas('roles', fn ($sub) => $sub->where('name', 'pendamping_adab'));
+            })
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
@@ -261,7 +264,10 @@ class ClassRoomController extends Controller
             ->get();
 
         $pendampingList = User::query()
-            ->whereHas('role', fn ($q) => $q->where('name', 'pendamping_adab'))
+            ->where(function ($q) {
+                $q->whereHas('role', fn ($sub) => $sub->where('name', 'pendamping_adab'))
+                    ->orWhereHas('roles', fn ($sub) => $sub->where('name', 'pendamping_adab'));
+            })
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
