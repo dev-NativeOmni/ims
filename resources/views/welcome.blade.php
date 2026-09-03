@@ -52,36 +52,39 @@
         <!-- Root Scroll Container with Alpine ScrollLayout -->
         <div x-data="scrollLayout" class="relative z-10 flex flex-col min-h-screen">
             
-            <!-- Sticky Glowing Header Navbar -->
-            <header :class="isScrolled ? 'bg-black/85 border-b border-white/5 shadow-xl shadow-black/40 py-3' : 'bg-transparent py-6'"
+            <!-- Sticky Floating Navbar (Glassmorphism Pill Navigation) -->
+            <header :class="isScrolled ? 'bg-black/90 border-b border-white/10 shadow-2xl py-3' : 'bg-transparent py-5'"
                     class="fixed top-0 inset-x-0 z-50 transition-all duration-300 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-teal-500/10">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-black/40 border border-white/20">
                             <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
                         </div>
-                        <span class="font-extrabold text-xl tracking-tight text-white uppercase">Al Azhar <span class="text-amber-500">7</span></span>
+                        <div class="flex flex-col">
+                            <span class="font-extrabold text-base tracking-wider text-white uppercase leading-none">Al Azhar <span class="text-amber-400">7</span></span>
+                            <span class="text-[10px] text-zinc-400 font-medium tracking-widest uppercase">Islamic Management System</span>
+                        </div>
                     </div>
 
-                    <!-- Desktop Nav Menu -->
-                    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-                        <a href="#fitur" class="hover:text-white transition-colors duration-150">Fitur Utama</a>
-                        <a href="#keunggulan" class="hover:text-white transition-colors duration-150">Keunggulan</a>
-                        <a href="#sebaran" class="hover:text-white transition-colors duration-150">Konektivitas</a>
-                        <a href="#simulator" class="hover:text-white transition-colors duration-150">Demo Interaktif</a>
-                        <a href="#faq" class="hover:text-white transition-colors duration-150">Tanya Jawab</a>
+                    <!-- Desktop Pill Menu Navigation -->
+                    <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl shadow-inner text-xs font-semibold text-zinc-300">
+                        <a href="#fitur" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                        <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                        <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                        <a href="#simulator" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                        <a href="#faq" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                     </nav>
 
                     <!-- Auth Actions -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         @if (Route::has('login'))
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="bg-teal-600 hover:bg-teal-500 border border-teal-400/30 text-white px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-teal-600/10 hover:scale-[1.02]">
+                                <a href="{{ url('/dashboard') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-lg shadow-white/10 hover:scale-105 active:scale-95">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="bg-teal-600 hover:bg-teal-500 border border-teal-400/30 text-white px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-teal-600/10 hover:scale-[1.02]">
+                                <a href="{{ route('login') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-6 py-2.5 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-lg shadow-white/15 hover:scale-105 active:scale-95">
                                     Masuk
                                 </a>
                             @endauth
@@ -90,122 +93,137 @@
                 </div>
             </header>
 
-            <!-- SECTION 1: HERO (Dark, Orbiting Circuit, Ambient Halo Rings) -->
-            <section class="relative min-h-screen bg-[#09090b] bg-grid-pattern text-zinc-100 flex flex-col justify-center pt-24 overflow-hidden">
-                <!-- Background Ambient Lights -->
-                <div class="absolute inset-0 pointer-events-none z-0">
-                    <div class="glow-blob bg-teal-600 w-[600px] h-[600px] -top-80 -left-60 opacity-20"></div>
-                    <div class="glow-blob bg-amber-600 w-[550px] h-[550px] top-[20%] -right-40 opacity-15"></div>
-                    <!-- Big Centered Halo Ring -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] halo-ring animate-pulse-slow"></div>
+            <!-- ========================================================================= -->
+            <!-- SECTION 1: CINEMATIC LAYERED HERO (TEXT BEHIND BUILDING "SMAIA7")        -->
+            <!-- ========================================================================= -->
+            <section class="relative min-h-[96vh] lg:min-h-screen bg-[#09090b] text-white flex flex-col justify-between pt-28 pb-10 overflow-hidden select-none">
+                
+                <!-- Layer 1: Dramatic Sunset Sky Background -->
+                <div class="absolute inset-0 z-0 pointer-events-none">
+                    <img src="{{ asset('images/hero_bg_sky.jpg') }}" 
+                         alt="Langit Senja Kampus SMAIA 7" 
+                         class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000 ease-out">
+                    <!-- Vignette Gradients for High Contrast Readability -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/30 to-[#09090b]/75"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#09090b]/80 via-transparent to-[#09090b]/60"></div>
                 </div>
 
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[calc(100vh-140px)]">
-                    <!-- Left: Hero Heading & Context -->
-                    <div class="lg:col-span-6 flex flex-col items-start gap-6 text-left">
-                        <!-- Orbiting Pulse Indicator Badge -->
-                        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-white/10 backdrop-blur-md shadow-inner text-xs font-semibold text-teal-400">
-                            <span class="flex h-2.5 w-2.5 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
+                <!-- Layer 2: Massive 3D Text "SMAIA7" Layered Behind Building -->
+                <div class="absolute inset-x-0 top-[12%] sm:top-[11%] lg:top-[9%] z-10 flex justify-center items-center pointer-events-none px-2">
+                    <span class="font-black tracking-tight text-[21vw] sm:text-[19vw] lg:text-[17.5vw] leading-none text-white/35 uppercase drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)] select-none font-sans filter blur-[0.2px]">
+                        SMAIA7
+                    </span>
+                </div>
+
+                <!-- Layer 3: Foreground Isolated Building Cutout (Sits on top of the SMAIA7 text) -->
+                <div class="absolute inset-0 z-20 pointer-events-none flex items-end justify-center">
+                    <img src="{{ asset('images/hero_building_foreground.png') }}" 
+                         alt="Gedung Kampus SMA Islam Al Azhar 7" 
+                         class="w-full h-full object-cover object-center transform scale-105">
+                </div>
+
+                <!-- Bottom Fade Gradient into Light/Dark Next Sections -->
+                <div class="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent z-25 pointer-events-none"></div>
+
+                <!-- Layer 4: Foreground Interactive Content & UI Overlays (Z-30) -->
+                <div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-grow">
+                    
+                    <!-- Top Pill Badge Row -->
+                    <div class="flex items-center justify-between pt-2 sm:pt-4">
+                        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-xl shadow-2xl text-xs font-semibold text-amber-400">
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                             </span>
-                            Tahfidz & Murajaah Tracker 2.0
+                            Islamic Management System • Al Azhar 7
                         </div>
 
-                        <!-- Hero Main Title -->
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
-                            Platform Tahfidz<br>
-                            <span class="font-serif italic text-gradient-purple-blue font-normal leading-normal">Modern & Terarah</span>
-                        </h1>
-
-                        <!-- Hero Subtitle description -->
-                        <p class="text-base text-zinc-400 leading-relaxed max-w-lg">
-                            Sistem terintegrasi pelacakan setoran hafalan baru, murajaah harian, adab murid, dan kedisiplinan poin secara real-time. Membantu mencetak generasi Qur'ani yang terstruktur.
-                        </p>
-
-                        <!-- CTA Actions -->
-                        <div class="flex flex-row items-center gap-4 mt-2 w-full sm:w-auto">
-                            @auth
-                                <a href="{{ url('/dashboard') }}" class="px-6 py-3.5 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-xl shadow-teal-600/10 transition-all duration-200 hover:-translate-y-0.5">
-                                    Masuk ke Dasbor
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="px-6 py-3.5 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-xl shadow-teal-600/10 transition-all duration-200 hover:-translate-y-0.5">
-                                    Masuk Aplikasi
-                                </a>
-                                <a href="#fitur" class="bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white px-6 py-3.5 text-sm font-semibold rounded-xl transition-all duration-150 hover:-translate-y-0.5">
-                                    Pelajari Fitur
-                                </a>
-                            @endauth
+                        <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-zinc-300/80 bg-black/50 border border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full">
+                            <span>🕌 Kampus Unggulan & Berkarakter Adab</span>
                         </div>
                     </div>
 
-                    <!-- Right: Rotating Circuit Graphics / Connected Elements -->
-                    <div class="lg:col-span-6 w-full flex justify-center relative">
-                        <div class="relative w-full max-w-[500px] aspect-square flex items-center justify-center animate-float">
-                            <!-- Inner Rotating Ring -->
-                            <div class="absolute inset-0 rounded-full border border-white/5 border-dashed animate-spin-slow"></div>
+                    <!-- Bottom Bar: Key Metrics + CTA + Floating Preview Card -->
+                    <div class="mt-auto pt-20 sm:pt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+                        
+                        <!-- Left Column: Metrics & Main CTA (as in reference) -->
+                        <div class="lg:col-span-8 flex flex-col gap-6">
                             
-                            <!-- Central Core Node -->
-                            <div class="flex flex-col items-center gap-2 z-20">
-                                <div class="w-28 h-28 rounded-full bg-zinc-900 border border-teal-500/45 flex items-center justify-center shadow-[0_0_40px_rgba(13,148,136,0.3)]">
-                                    <svg class="w-12 h-12 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <ellipse cx="12" cy="5" rx="9" ry="3" />
-                                        <path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                                        <path d="M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6" />
-                                    </svg>
+                            <!-- 3 Key Metric Columns -->
+                            <div class="grid grid-cols-3 gap-3 sm:gap-6 max-w-lg">
+                                <div class="flex flex-col">
+                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">30+</span>
+                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Juz Mutqin Standar</span>
                                 </div>
-                                <span class="text-[10px] text-teal-400 font-extrabold tracking-widest uppercase">Database</span>
+                                <div class="flex flex-col">
+                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">100%</span>
+                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Monitoring Terpadu</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">12+</span>
+                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Indikator Adab</span>
+                                </div>
                             </div>
 
-                            <!-- Orbit Nodes (Ustadz, Murid, Orang Tua, Rapor) -->
-                            <!-- Node 1: Murid -->
-                            <div class="absolute top-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-20">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-black/50">
-                                    <svg class="w-6 h-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                                    </svg>
-                                </div>
-                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Murid</span>
-                            </div>
+                            <!-- CTA Button + Description -->
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+                                @auth
+                                    <a href="{{ url('/dashboard') }}" 
+                                       class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-[0_10px_30px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition duration-200">
+                                        <span>Buka Dashboard</span>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" 
+                                       class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-[0_10px_30px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition duration-200">
+                                        <span>Akses Portal</span>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                        </svg>
+                                    </a>
+                                @endauth
 
-                            <!-- Node 2: Ustadz -->
-                            <div class="absolute bottom-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-20">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-black/50">
-                                    <svg class="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Ustadz</span>
+                                <p class="text-xs sm:text-sm text-zinc-300/85 leading-relaxed max-w-sm">
+                                    Platform digital terpadu pelacakan capaian hafalan Al-Qur'an, murajaah harian, dan pembiasaan karakter adab murid SMA Islam Al Azhar 7.
+                                </p>
                             </div>
+                        </div>
 
-                            <!-- Node 3: Orang Tua -->
-                            <div class="absolute left-[10%] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-20">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-black/50">
-                                    <svg class="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
+                        <!-- Right Column: Interactive Glassmorphism Preview Card (as in reference) -->
+                        <div class="lg:col-span-4 flex justify-start lg:justify-end">
+                            <div class="w-full max-w-sm rounded-2xl bg-black/60 border border-white/20 p-4 backdrop-blur-xl shadow-2xl space-y-3 transform hover:-translate-y-1 transition duration-300">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                        <span class="font-bold text-white uppercase tracking-wider text-[11px]">Capaian Terkini</span>
+                                    </div>
+                                    <span class="text-zinc-400 text-[10px]">Tahun Ajaran 2026/2027</span>
                                 </div>
-                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Orang Tua</span>
-                            </div>
 
-                            <!-- Node 4: Rapor -->
-                            <div class="absolute right-[10%] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-20">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-black/50">
-                                    <svg class="w-6 h-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
+                                <div class="rounded-xl overflow-hidden relative aspect-video bg-zinc-900 border border-white/10 group">
+                                    <img src="{{ asset('images/hero_composite_preview.jpg') }}" 
+                                         alt="Preview Kampus SMAIA 7" 
+                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-3">
+                                        <div class="text-left">
+                                            <p class="text-xs font-bold text-white">Program Tahfizh & Kelas Khusus</p>
+                                            <p class="text-[10px] text-amber-300">Target Mutqin per Semester Terpantau</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Rapor</span>
-                            </div>
 
-                            <!-- Connecting Glowing Lines (Background Vector Representation) -->
-                            <svg class="absolute inset-0 w-full h-full text-zinc-800" fill="none" viewBox="0 0 100 100">
-                                <line x1="50" y1="20" x2="50" y2="80" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2,2"/>
-                                <line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" stroke-width="0.3" stroke-dasharray="2,2"/>
-                            </svg>
+                                <div class="flex items-center justify-between pt-1 text-[11px] text-zinc-400">
+                                    <span>SMA Islam Al Azhar 7 Solo Baru</span>
+                                    <a href="#fitur" class="text-amber-400 hover:text-amber-300 font-semibold hover:underline flex items-center gap-1">
+                                        Eksplorasi &darr;
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </section>
 
