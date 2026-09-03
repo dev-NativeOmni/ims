@@ -100,140 +100,431 @@
             </header>
 
             <!-- ========================================================================= -->
-            <!-- SECTION 1: HERO CONTAINER (EXACT MATCH TO WINZY REFERENCE CARD)          -->
+            <!-- SECTION 1: MONOLITH SOFT-GLASSMORPHISM CLAY DASHBOARD SHOWCASE           -->
             <!-- ========================================================================= -->
-            <section class="w-full bg-zinc-50 dark:bg-zinc-950 pt-4 sm:pt-6 pb-6 sm:pb-10">
-                <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <section class="w-full relative min-h-screen py-6 sm:py-10 px-3 sm:px-6 lg:px-8 flex flex-col justify-center">
+                
+                <!-- Fluid Ambient Pastel Mesh Background Glows -->
+                <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div class="absolute -top-40 -left-40 w-[650px] h-[650px] bg-emerald-300/35 dark:bg-emerald-600/15 rounded-full blur-[150px]"></div>
+                    <div class="absolute top-1/4 -right-40 w-[650px] h-[650px] bg-cyan-300/35 dark:bg-cyan-600/15 rounded-full blur-[150px]"></div>
+                    <div class="absolute -bottom-40 right-1/4 w-[700px] h-[700px] bg-amber-300/35 dark:bg-amber-600/15 rounded-full blur-[160px]"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/60 via-teal-50/40 to-amber-50/40 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 backdrop-blur-[2px]"></div>
+                </div>
+
+                <div class="max-w-[1400px] mx-auto w-full relative z-10">
                     
-                    <!-- Rounded Hero Frame Card -->
-                    <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] rounded-3xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl border border-zinc-200/80 dark:border-white/10 flex flex-col justify-between p-5 sm:p-8 lg:p-10 select-none">
+                    <!-- Main Grid: Monolith Frosted Glass Shell -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         
-                        <!-- Background Image: Full Campus View with "SMAIA7" in Sky Behind School -->
-                        <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
-                             alt="SMA Islam Al Azhar 7" 
-                             class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none">
-                        
-                        <!-- Subtle Ambient Vignette & Bottom Contrast Gradients -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/30 pointer-events-none"></div>
-
-                        <!-- Top Navbar Inside Hero Card (Matches Winzy reference) -->
-                        <div class="relative z-20 flex items-center justify-between w-full">
-                            <!-- Left: Brand Logo + Text -->
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-white/30 overflow-hidden shrink-0" style="width: 40px; height: 40px;">
-                                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain" style="width: 100%; height: 100%;">
-                                </div>
-                                <span class="font-extrabold text-base sm:text-lg text-white tracking-wide drop-shadow-md">
-                                    Al Azhar <span class="text-amber-400">7</span>
-                                </span>
-                            </div>
-
-                            <!-- Center: Floating Pill Navigation Menu -->
-                            <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-black/40 border border-white/20 backdrop-blur-xl shadow-inner text-xs font-semibold text-zinc-200">
-                                <a href="#fitur" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Fitur Utama</a>
-                                <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Keunggulan</a>
-                                <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Konektivitas</a>
-                                <a href="#simulator" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Demo Interaktif</a>
-                                <a href="#faq" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Tanya Jawab</a>
-                            </nav>
-
-                            <!-- Right: Pill Auth Actions -->
-                            <div class="flex items-center gap-2 sm:gap-3">
-                                @if (Route::has('login'))
-                                    @auth
-                                        <a href="{{ url('/dashboard') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full transition-all duration-200 shadow-xl hover:scale-105 active:scale-95">
-                                            Dashboard
-                                        </a>
-                                    @else
-                                        <a href="{{ route('login') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full transition-all duration-200 shadow-xl hover:scale-105 active:scale-95">
-                                            Masuk
-                                        </a>
-                                    @endauth
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Center Empty Area so Building and "SMAIA7" Text are 100% Unobstructed -->
-                        <div class="flex-grow"></div>
-
-                        <!-- Bottom Controls Overlay (Matches Winzy reference stats + CTA + preview card) -->
-                        <div class="relative z-20 flex flex-col lg:flex-row lg:items-end justify-between gap-6 w-full pt-4">
+                        <!-- Left Sidebar: Frosted Glass Panel (Col 3) -->
+                        <aside class="lg:col-span-3 bg-white/45 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[640px] lg:min-h-[760px] select-none">
                             
-                            <!-- Left Block: 3 Big Stats + CTA Button with short description -->
-                            <div class="flex flex-col gap-4 sm:gap-5 max-w-2xl">
+                            <!-- Top: Brand Header -->
+                            <div class="space-y-8">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-11 h-11 min-w-[44px] min-h-[44px] max-w-[44px] max-h-[44px] rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-md border border-white/60 overflow-hidden shrink-0" style="width: 44px; height: 44px;">
+                                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain" style="width: 100%; height: 100%;">
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-extrabold text-base tracking-tight text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
+                                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-1">Management Hub</span>
+                                    </div>
+                                </div>
+
+                                <!-- Navigation Menu Pills -->
+                                <nav class="space-y-2">
+                                    <a href="#fitur" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-white font-bold text-xs shadow-sm border border-white/80 dark:border-white/10 transition-all duration-200 hover:scale-[1.02]">
+                                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                                            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                                            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                                            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                                        </svg>
+                                        <span>Dashboard Utama</span>
+                                    </a>
+
+                                    <a href="#fitur" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        </svg>
+                                        <span>Pelacakan Tahfizh</span>
+                                    </a>
+
+                                    <a href="#keunggulan" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                        <span>Indikator Adab</span>
+                                    </a>
+
+                                    <a href="#sebaran" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        <span>Statistik & Rapor</span>
+                                    </a>
+
+                                    <a href="#faq" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        <span>Profil Sekolah</span>
+                                    </a>
+                                </nav>
+                            </div>
+
+                            <!-- Bottom: School Avatar & Login Action Box -->
+                            <div class="pt-6 border-t border-white/60 dark:border-white/10 space-y-3">
+                                <div class="flex items-center gap-3 bg-white/60 dark:bg-zinc-800/60 p-2.5 rounded-2xl border border-white/80 dark:border-white/10 shadow-sm">
+                                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
+                                        7
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-zinc-900 dark:text-white">SMA Islam Al Azhar 7</span>
+                                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400">Solo Baru • Sukoharjo</span>
+                                    </div>
+                                </div>
+
+                                @auth
+                                    <a href="{{ url('/dashboard') }}" 
+                                       class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-[1.02] active:scale-98 transition duration-200">
+                                        <span>Buka Dashboard</span>
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" 
+                                       class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-[1.02] active:scale-98 transition duration-200">
+                                        <span>Akses Portal Masuk</span>
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                        </svg>
+                                    </a>
+                                @endauth
+                            </div>
+                        </aside>
+
+                        <!-- Right Main Content Canvas (Col 9) -->
+                        <main class="lg:col-span-9 space-y-6">
+                            
+                            <!-- Top Bar: Frosted Glass Navigation Pill (Matches Monolith Top Bar) -->
+                            <div class="w-full bg-white/45 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
                                 
-                                <!-- 3 Key Metric Columns in Clean White Typography -->
-                                <div class="flex items-center gap-6 sm:gap-12">
-                                    <div class="flex flex-col">
-                                        <span class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-none drop-shadow-md">30+</span>
-                                        <span class="text-xs sm:text-sm font-medium text-zinc-300 mt-1 drop-shadow">Juz Mutqin</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-none drop-shadow-md">100%</span>
-                                        <span class="text-xs sm:text-sm font-medium text-zinc-300 mt-1 drop-shadow">Monitoring</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-none drop-shadow-md">12+</span>
-                                        <span class="text-xs sm:text-sm font-medium text-zinc-300 mt-1 drop-shadow">Indikator Adab</span>
-                                    </div>
+                                <!-- Search Pill Input -->
+                                <div class="relative w-full sm:w-64">
+                                    <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input type="text" 
+                                           placeholder="Cari setoran, surah, murid..." 
+                                           class="w-full pl-10 pr-4 py-2 text-xs rounded-full bg-white/70 dark:bg-zinc-800/70 border border-white/80 dark:border-white/10 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner">
                                 </div>
 
-                                <!-- CTA Pill Button & Description Side by Side -->
-                                <div class="flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-5 pt-1">
-                                    @auth
-                                        <a href="{{ url('/dashboard') }}" 
-                                           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs sm:text-sm shadow-2xl hover:scale-105 active:scale-95 transition duration-200 shrink-0">
-                                            <span>Buka Dashboard</span>
-                                            <svg class="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                                            </svg>
-                                        </a>
-                                    @else
-                                        <a href="{{ route('login') }}" 
-                                           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs sm:text-sm shadow-2xl hover:scale-105 active:scale-95 transition duration-200 shrink-0">
-                                            <span>Akses Portal</span>
-                                            <svg class="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                                            </svg>
-                                        </a>
-                                    @endauth
+                                <!-- Center Navigation Tabs -->
+                                <div class="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-white/60 dark:bg-zinc-800/60 border border-white/80 dark:border-white/10 text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                    <a href="#fitur" class="px-4 py-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm transition">Overview Capaian</a>
+                                    <a href="#fitur" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Laporan Tahfizh</a>
+                                    <a href="#keunggulan" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Pembiasaan Adab</a>
+                                    <a href="#sebaran" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Aktivitas</a>
+                                </div>
 
-                                    <p class="text-xs sm:text-sm text-zinc-200/90 leading-relaxed max-w-sm drop-shadow">
-                                        Platform terpadu pelacakan capaian hafalan Qur'an, murajaah, dan pembiasaan adab murid SMA Islam Al Azhar 7.
-                                    </p>
+                                <!-- Right Quick Actions -->
+                                <div class="flex items-center gap-2.5">
+                                    <a href="#simulator" class="p-2 rounded-full bg-white/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 shadow-sm border border-white/80 dark:border-white/10 text-xs font-semibold flex items-center gap-1">
+                                        <span>Demo Live</span>
+                                    </a>
+                                    @if (Route::has('login'))
+                                        @auth
+                                            <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
+                                                Dashboard
+                                            </a>
+                                        @else
+                                            <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
+                                                Masuk
+                                            </a>
+                                        @endauth
+                                    @endif
                                 </div>
                             </div>
 
-                            <!-- Right Block: Compact Glass Floating Preview Card (01/03) -->
-                            <div class="hidden sm:flex justify-end shrink-0">
-                                <div class="w-64 rounded-2xl bg-black/40 border border-white/20 p-3 backdrop-blur-xl shadow-2xl space-y-2 transform hover:-translate-y-1 transition duration-300">
-                                    <div class="rounded-xl overflow-hidden relative aspect-video bg-zinc-900 border border-white/10 group">
-                                        <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
-                                             alt="Preview Kampus" 
-                                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
-                                            <p class="text-[10px] font-bold text-white">Program Tahfizh & Kelas Khusus</p>
-                                        </div>
+                            <!-- Row 1: 4 Key Metric Cards (Matches Monolith top cards) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 select-none">
+                                
+                                <!-- Card 1: Total Target Mutqin -->
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">+100% Standar</span>
                                     </div>
-
-                                    <div class="flex items-center justify-between text-[10px] font-bold text-zinc-300 px-1">
-                                        <span>01/03</span>
-                                        <div class="w-24 h-1 rounded-full bg-white/20 overflow-hidden">
-                                            <div class="w-1/3 h-full bg-white rounded-full"></div>
-                                        </div>
-                                        <a href="#fitur" class="text-amber-400 hover:underline">Info &darr;</a>
+                                    <div class="mt-4">
+                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Mutqin</span>
+                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">30 Juz</div>
                                     </div>
                                 </div>
+
+                                <!-- Card 2: Monitoring Terpadu -->
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <span class="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300 font-bold text-[10px]">+4.2% Aktif</span>
+                                    </div>
+                                    <div class="mt-4">
+                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Monitoring Terpadu</span>
+                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">100% Real-time</div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Indikator Karakter Adab -->
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <span class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100/80 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold text-[10px]">98.5% Disiplin</span>
+                                    </div>
+                                    <div class="mt-4">
+                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Indikator Karakter</span>
+                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">12+ Poin Adab</div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 4: Sleek Dark Obsidian Platinum Card -->
+                                <div class="bg-zinc-950 text-white rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.15)] flex flex-col justify-between border border-white/10 relative overflow-hidden group">
+                                    <div class="absolute -right-8 -bottom-8 w-28 h-28 bg-amber-500/20 rounded-full blur-2xl group-hover:scale-125 transition duration-500"></div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">SMAIA 7 PLATINUM</span>
+                                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <span class="text-[10px] text-zinc-400 uppercase font-semibold">Tahun Ajaran 2026/2027</span>
+                                        <div class="text-xl font-black text-amber-400 tracking-tight mt-0.5">Generasi Qur'ani</div>
+                                        <span class="text-[10px] text-zinc-400">Solo Baru • Sukoharjo</span>
+                                    </div>
+                                </div>
+
                             </div>
 
-                        </div>
+                            <!-- Row 2: Bento Growth Chart + Recent Activity (Matches Monolith Chart & Activity) -->
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 select-none">
+                                
+                                <!-- Left Chart Card (Col 8) -->
+                                <div class="lg:col-span-8 bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                                    
+                                    <!-- Chart Header -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                        <div>
+                                            <h3 class="text-base sm:text-lg font-black text-zinc-900 dark:text-white tracking-tight">
+                                                Grafik Pertumbuhan Hafalan & Murajaah
+                                            </h3>
+                                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                                Progres setoran kumulatif seluruh kelas reguler & khusus
+                                            </p>
+                                        </div>
+
+                                        <!-- Month/Year Pill Switch -->
+                                        <div class="inline-flex p-1 rounded-full bg-white/80 dark:bg-zinc-800/80 border border-white/80 dark:border-white/10 text-xs font-bold shadow-sm">
+                                            <button class="px-4 py-1 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm transition">Bulan</button>
+                                            <button class="px-4 py-1 rounded-full text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 transition">Tahun</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3D Soft Rounded Vertical Bar Chart (Jan - Sep) -->
+                                    <div class="pt-4 pb-2">
+                                        <div class="flex items-end justify-between gap-2 sm:gap-4 h-48 sm:h-56 px-2">
+                                            
+                                            <!-- Jan -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-200/60 dark:bg-emerald-950 rounded-2xl h-24 group-hover:bg-emerald-300 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">6 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">JAN</span>
+                                            </div>
+
+                                            <!-- Feb -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-300/70 dark:bg-emerald-900 rounded-2xl h-32 group-hover:bg-emerald-400 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">10 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">FEB</span>
+                                            </div>
+
+                                            <!-- Mar -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-400/80 dark:bg-emerald-800 rounded-2xl h-28 group-hover:bg-emerald-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">14 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">MAR</span>
+                                            </div>
+
+                                            <!-- Apr -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-teal-400/80 dark:bg-teal-800 rounded-2xl h-40 group-hover:bg-teal-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">18 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">APR</span>
+                                            </div>
+
+                                            <!-- May -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-teal-500/90 dark:bg-teal-700 rounded-2xl h-36 group-hover:bg-teal-600 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">21 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">MEI</span>
+                                            </div>
+
+                                            <!-- Jun -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-cyan-400/80 dark:bg-cyan-800 rounded-2xl h-48 group-hover:bg-cyan-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">24 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">JUN</span>
+                                            </div>
+
+                                            <!-- Jul -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-cyan-500/90 dark:bg-cyan-700 rounded-2xl h-44 group-hover:bg-cyan-600 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">26 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">JUL</span>
+                                            </div>
+
+                                            <!-- Aug -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-amber-400/80 dark:bg-amber-800 rounded-2xl h-40 group-hover:bg-amber-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-amber-800 dark:text-amber-300 transition">28 Juz</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-zinc-400">AGS</span>
+                                            </div>
+
+                                            <!-- Sep (Target Peak) -->
+                                            <div class="flex flex-col items-center gap-2 flex-1 group">
+                                                <div class="w-full bg-gradient-to-t from-emerald-500 to-teal-400 rounded-2xl h-52 sm:h-56 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="absolute -top-7 px-2 py-0.5 rounded-full bg-zinc-900 text-white font-black text-[9px]">30 JUZ</span>
+                                                </div>
+                                                <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">SEP</span>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Activity Card (Col 4) -->
+                                <div class="lg:col-span-4 bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                                    
+                                    <div>
+                                        <div class="flex items-center justify-between pb-4 border-b border-white/80 dark:border-white/10">
+                                            <h4 class="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">Aktivitas Terkini</h4>
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                                        </div>
+
+                                        <!-- Recent Activity Items (Clay Pills) -->
+                                        <div class="space-y-3 mt-4">
+                                            
+                                            <div class="p-3 bg-white/70 dark:bg-zinc-800/70 rounded-2xl border border-white/80 dark:border-white/10 shadow-sm flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                                                        📖
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">QS. Al-Kahfi: 1-10</div>
+                                                        <div class="text-[10px] text-emerald-600 font-semibold">Hafalan Baru • Mumtaz</div>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[10px] text-zinc-400 font-medium">2m lalu</span>
+                                            </div>
+
+                                            <div class="p-3 bg-white/70 dark:bg-zinc-800/70 rounded-2xl border border-white/80 dark:border-white/10 shadow-sm flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center font-bold text-xs">
+                                                        🔄
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">QS. Maryam: 1-30</div>
+                                                        <div class="text-[10px] text-cyan-600 font-semibold">Murajaah • Terulang</div>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[10px] text-zinc-400 font-medium">1j lalu</span>
+                                            </div>
+
+                                            <div class="p-3 bg-white/70 dark:bg-zinc-800/70 rounded-2xl border border-white/80 dark:border-white/10 shadow-sm flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center font-bold text-xs">
+                                                        ⭐
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">Sholat Dhuha & Adab</div>
+                                                        <div class="text-[10px] text-amber-600 font-semibold">+10 Poin Karakter</div>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[10px] text-zinc-400 font-medium">Hari ini</span>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 text-center">
+                                        <a href="#fitur" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center justify-center gap-1">
+                                            <span>Lihat Seluruh Log Data</span>
+                                            <span>&rarr;</span>
+                                        </a>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- Row 3: Quick Program Badges (Matches bottom pills) -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 select-none">
+                                
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center text-xs font-bold">1</span>
+                                    <div>
+                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">Tahfizh Reguler</div>
+                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400">Target 3 Juz/Tahun</div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center text-xs font-bold">2</span>
+                                    <div>
+                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">Kelas Khusus</div>
+                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400">Target 30 Juz Mutqin</div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center text-xs font-bold">3</span>
+                                    <div>
+                                        <div class="text-xs font-bold text-zinc-900 dark:text-white">Metode Ummi</div>
+                                        <div class="text-[10px] text-zinc-500 dark:text-zinc-400">Standar Tartil Al Azhar</div>
+                                    </div>
+                                </div>
+
+                                <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl p-3.5 shadow-md flex items-center justify-between group transition duration-200">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-amber-400 font-bold text-xs">🚀</span>
+                                        <span class="text-xs font-bold">Akses Portal</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-amber-400 group-hover:translate-x-1 transition duration-200">&rarr;</span>
+                                </a>
+
+                            </div>
+
+                        </main>
 
                     </div>
+
                 </div>
             </section>
 
             <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Smooth Light Background Transition) -->
-            <section id="fitur" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-b border-zinc-200/60 py-24 sm:py-28 relative overflow-hidden">
+            <section id="fitur" class="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl text-zinc-800 dark:text-zinc-200 border-t border-white/60 dark:border-white/10 py-24 sm:py-28 relative overflow-hidden">
                 <!-- Soft Light Glows -->
                 <div class="absolute inset-0 pointer-events-none z-0">
                     <div class="absolute w-[400px] h-[400px] -top-40 -right-20 bg-teal-100 rounded-full blur-[100px] opacity-60"></div>
