@@ -72,81 +72,83 @@
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <form method="GET" action="{{ route('system-notifications.index') }}"
-                      class="grid grid-cols-1 gap-4 md:grid-cols-5">
-                    @if ($canManage)
+            @if (auth()->user()->hasRole('super_admin'))
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <form method="GET" action="{{ route('system-notifications.index') }}"
+                          class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                        @if ($canManage)
+                            <div>
+                                <label class="mb-1 block text-sm font-semibold text-gray-700">
+                                    Scope
+                                </label>
+
+                                <select name="scope"
+                                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    <option value="inbox" @selected($scope === 'inbox')>Inbox Saya</option>
+                                    <option value="all" @selected($scope === 'all')>Semua Notifikasi</option>
+                                </select>
+                            </div>
+                        @endif
+
                         <div>
                             <label class="mb-1 block text-sm font-semibold text-gray-700">
-                                Scope
+                                Status
                             </label>
 
-                            <select name="scope"
+                            <select name="status"
                                     class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                                <option value="inbox" @selected($scope === 'inbox')>Inbox Saya</option>
-                                <option value="all" @selected($scope === 'all')>Semua Notifikasi</option>
+                                <option value="">Semua</option>
+                                <option value="unread" @selected(request('status') === 'unread')>Belum Dibaca</option>
+                                <option value="read" @selected(request('status') === 'read')>Sudah Dibaca</option>
                             </select>
                         </div>
-                    @endif
 
-                    <div>
-                        <label class="mb-1 block text-sm font-semibold text-gray-700">
-                            Status
-                        </label>
+                        <div>
+                            <label class="mb-1 block text-sm font-semibold text-gray-700">
+                                Tipe
+                            </label>
 
-                        <select name="status"
-                                class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Semua</option>
-                            <option value="unread" @selected(request('status') === 'unread')>Belum Dibaca</option>
-                            <option value="read" @selected(request('status') === 'read')>Sudah Dibaca</option>
-                        </select>
-                    </div>
+                            <select name="type"
+                                    class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua</option>
+                                @foreach ($availableTypes as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('type') === $value)>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-sm font-semibold text-gray-700">
-                            Tipe
-                        </label>
+                        <div>
+                            <label class="mb-1 block text-sm font-semibold text-gray-700">
+                                Role Target
+                            </label>
 
-                        <select name="type"
-                                class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Semua</option>
-                            @foreach ($availableTypes as $value => $label)
-                                <option value="{{ $value }}" @selected(request('type') === $value)>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                            <select name="target_role"
+                                    class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua</option>
+                                @foreach ($availableRoles as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('target_role') === $value)>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-sm font-semibold text-gray-700">
-                            Role Target
-                        </label>
+                        <div class="flex items-end gap-2">
+                            <button type="submit"
+                                    class="inline-flex w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
+                                Filter
+                            </button>
 
-                        <select name="target_role"
-                                class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">Semua</option>
-                            @foreach ($availableRoles as $value => $label)
-                                <option value="{{ $value }}" @selected(request('target_role') === $value)>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="flex items-end gap-2">
-                        <button type="submit"
-                                class="inline-flex w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
-                            Filter
-                        </button>
-
-                        <a href="{{ route('system-notifications.index') }}"
-                           class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-            </div>
+                            <a href="{{ route('system-notifications.index') }}"
+                               class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            @endif
 
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 @forelse ($notifications as $notification)

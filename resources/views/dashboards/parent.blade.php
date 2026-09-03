@@ -31,7 +31,7 @@
                     </p>
                 </div>
             @else
-                {{-- 🌟 APPRECIATION & HIGHLIGHTS BANNER 🌟 --}}
+                {{-- 🌟 APPRECIATION & HIGHLIGHTS BANNER (SCENE 1 & 2) 🌟 --}}
                 <div class="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-7 shadow-sm relative overflow-hidden">
                     <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
                         <div class="space-y-2">
@@ -42,7 +42,7 @@
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
                             </h3>
                             <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed font-medium">
-                                Pantau dan dukung terus ikhtiar Ananda dalam menghafal Al-Qur'an, menumbuhkan adab islami, dan mengukir prestasi terbaiknya di sekolah.
+                                Ruang sinergi antara sekolah dan orang tua untuk memantau setiap jejak langkah ananda dalam menghafal Al-Qur'an, menumbuhkan adab islami, dan mengukir prestasi terbaiknya.
                             </p>
                         </div>
 
@@ -55,7 +55,7 @@
                     </div>
                 </div>
 
-                {{-- ═══════════════ MULTI-CHILD MONITORING HUB ═══════════════ --}}
+                {{-- ═══════════════ MULTI-CHILD MONITORING HUB (SCENE 2) ═══════════════ --}}
                 <div x-data="{ activeChild: 0 }" class="space-y-6">
 
                     @if ($childrenProgress->count() > 1)
@@ -67,7 +67,7 @@
                             @foreach ($childrenProgress as $idx => $row)
                                 <button @click="activeChild = {{ $idx }}"
                                         :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-md font-extrabold' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-semibold'"
-                                        class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm transition-all duration-150 shrink-0">
+                                        class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm transition-all duration-150 shrink-0 cursor-pointer">
                                     <x-heroicon-o-user class="w-4 h-4" />
                                     <span>{{ data_get($row, 'student_name', 'Ananda '.($idx+1)) }}</span>
                                     <span class="text-[11px] opacity-80">({{ data_get($row, 'class_room_name', '-') }})</span>
@@ -123,7 +123,7 @@
                                             </div>
                                             <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">
                                                 NIS: <strong class="text-zinc-700 dark:text-zinc-300">{{ data_get($row, 'student_number', '-') }}</strong> · 
-                                                Program: <span class="font-semibold">{{ $isUmmi ? 'Metode Ummi & Tahsin (Kelas 10)' : 'Reguler Tahfizh Al-Qur\'an' }}</span>
+                                                Program: <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $isUmmi ? 'Metode Ummi & Tahsin (Kelas 10)' : 'Reguler Tahfizh Al-Qur\'an' }}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -132,8 +132,11 @@
                                         <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                             <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                         </span>
+                                        <a href="{{ route('quran.mushaf') }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-xs transition border border-zinc-200 dark:border-zinc-700">
+                                            <span>📖 Mushaf Digital</span>
+                                        </a>
                                         <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm">
-                                            <span>Arsip Rapor Lengkap</span> →
+                                            <span>📊 Arsip Rapor Lengkap</span> →
                                         </a>
                                     </div>
                                 </div>
@@ -143,7 +146,7 @@
                                     {{-- Tahfizh Pill --}}
                                     <div class="rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 p-3.5 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 Tahfizh Al-Qur'an</p>
+                                            <p class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 Pilar 1: Tahfizh Al-Qur'an</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz Lengkap' }}
                                             </p>
@@ -156,7 +159,7 @@
                                     {{-- Adab Pill --}}
                                     <div class="rounded-xl bg-teal-50/60 dark:bg-teal-950/30 p-3.5 border border-teal-100 dark:border-teal-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400">🕌 Karakter &amp; Adab</p>
+                                            <p class="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400">🕌 Pilar 2: Karakter &amp; Adab</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 Nilai: {{ data_get($adabData, 'final_score', '-') }} (Grade {{ data_get($adabData, 'grade', '-') }})
                                             </p>
@@ -169,7 +172,7 @@
                                     {{-- Tanse / Poin Pill --}}
                                     <div class="rounded-xl bg-purple-50/60 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-purple-700 dark:text-purple-400">⭐ Kedisiplinan &amp; Prestasi</p>
+                                            <p class="text-[10px] font-black uppercase text-purple-700 dark:text-purple-400">⭐ Pilar 3: Kedisiplinan &amp; Prestasi</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 {{ data_get($tanseData, 'reward_points', 0) }} Poin Reward
                                             </p>
@@ -181,22 +184,22 @@
                                 </div>
                             </div>
 
-                            {{-- Navigation Sub-Tabs per Child --}}
+                            {{-- Navigation Sub-Tabs per Child (Pilar 1, Pilar 2, Pilar 3) --}}
                             <div class="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-1">
                                 <button @click="childTab = 'tahfizh'"
                                         :class="childTab === 'tahfizh' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
-                                        class="px-4 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5">
-                                    <span>📖</span> Tahfizh &amp; Target
+                                        class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
+                                    <span>📖</span> Pilar 1: Tahfizh &amp; Target
                                 </button>
                                 <button @click="childTab = 'adab'"
                                         :class="childTab === 'adab' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
-                                        class="px-4 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5">
-                                    <span>🕌</span> Catatan Adab
+                                        class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
+                                    <span>🕌</span> Pilar 2: Catatan Adab
                                 </button>
                                 <button @click="childTab = 'tanse'"
                                         :class="childTab === 'tanse' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
-                                        class="px-4 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5">
-                                    <span>⭐</span> Kedisiplinan &amp; Prestasi
+                                        class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
+                                    <span>⭐</span> Pilar 3: Kedisiplinan &amp; Prestasi
                                 </button>
                             </div>
 
@@ -476,6 +479,41 @@
                                                 Alhamdulillah, belum ada catatan pelanggaran tata tertib ananda.
                                             </p>
                                         @endforelse
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ═══════════════ SCENE 6: FITUR PENDUKUNG (MUSHAF & RAPOR DIGITAL) ═══════════════ --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200/80 dark:border-emerald-800/50 rounded-2xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-extrabold text-sm">
+                                            <span>📖</span> Mushaf Al-Qur'an Digital
+                                        </div>
+                                        <p class="text-xs text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed">
+                                            Buka mushaf Al-Qur'an digital interaktif kapan saja untuk mendampingi dan menyimak muraja'ah Ananda di rumah dengan nyaman.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('quran.mushaf') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+                                            <span>Buka Mushaf Online</span> →
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/20 border border-indigo-200/80 dark:border-indigo-800/50 rounded-2xl p-5 shadow-sm flex flex-col justify-between gap-4">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 font-extrabold text-sm">
+                                            <span>📊</span> Rekapitulasi Rapor Digital
+                                        </div>
+                                        <p class="text-xs text-indigo-900/80 dark:text-indigo-200/80 leading-relaxed">
+                                            Akses rekapitulasi capaian hafalan Al-Qur'an, riwayat ujian tahfizh, dan rapor perkembangan berkala Ananda secara lengkap.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+                                            <span>Buka Arsip Rapor Lengkap</span> →
+                                        </a>
                                     </div>
                                 </div>
                             </div>

@@ -41,78 +41,80 @@
             </div>
         @endif
 
-        <!-- Filter Panel -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
-            <form method="GET" action="{{ route('tahfizh-exams.index') }}" class="flex flex-wrap items-end gap-3">
-                <!-- Kelas -->
-                <div class="flex-1 min-w-[140px]">
-                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelas</label>
-                    <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">Semua Kelas</option>
-                        @foreach ($classRooms as $class)
-                            <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
-                                {{ $class->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        @if(!auth()->user()->hasAnyRole(['parent', 'student']))
+            <!-- Filter Panel -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
+                <form method="GET" action="{{ route('tahfizh-exams.index') }}" class="flex flex-wrap items-end gap-3">
+                    <!-- Kelas -->
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelas</label>
+                        <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">Semua Kelas</option>
+                            @foreach ($classRooms as $class)
+                                <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
+                                    {{ $class->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <!-- Murid -->
-                <div class="flex-1 min-w-[140px]">
-                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Murid</label>
-                    <select name="student_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">Semua Murid</option>
-                        @foreach ($students as $student)
-                            <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
-                                {{ $student->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <!-- Murid -->
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Murid</label>
+                        <select name="student_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">Semua Murid</option>
+                            @foreach ($students as $student)
+                                <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
+                                    {{ $student->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <!-- Juz -->
-                <div class="flex-1 min-w-[110px]">
-                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Juz</label>
-                    <select name="juz" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">Semua Juz</option>
-                        @for ($j = 1; $j <= 30; $j++)
-                            <option value="{{ $j }}" @selected((string) request('juz') === (string) $j)>
-                                Juz {{ $j }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
+                    <!-- Juz -->
+                    <div class="flex-1 min-w-[110px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Juz</label>
+                        <select name="juz" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">Semua Juz</option>
+                            @for ($j = 1; $j <= 30; $j++)
+                                <option value="{{ $j }}" @selected((string) request('juz') === (string) $j)>
+                                    Juz {{ $j }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
 
-                <!-- Surah -->
-                <div class="flex-1 min-w-[140px]">
-                    <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Surah</label>
-                    <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">Semua Surah</option>
-                        @foreach ($surahs as $surah)
-                            <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
-                                {{ $surah->number }}. {{ $surah->name_latin }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <!-- Surah -->
+                    <div class="flex-1 min-w-[140px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Surah</label>
+                        <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">Semua Surah</option>
+                            @foreach ($surahs as $surah)
+                                <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
+                                    {{ $surah->number }}. {{ $surah->name_latin }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <!-- Action Buttons -->
-                <div class="flex gap-2 shrink-0">
-                    <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-semibold text-white uppercase tracking-wider shadow-sm transition-all duration-150">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        Filter
-                    </button>
-                    <a href="{{ route('tahfizh-exams.index') }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider border border-zinc-200 dark:border-zinc-700 transition-all duration-150">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
-                        </svg>
-                        Reset
-                    </a>
-                </div>
-            </form>
-        </div>
+                    <!-- Action Buttons -->
+                    <div class="flex gap-2 shrink-0">
+                        <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-semibold text-white uppercase tracking-wider shadow-sm transition-all duration-150">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            Filter
+                        </button>
+                        <a href="{{ route('tahfizh-exams.index') }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider border border-zinc-200 dark:border-zinc-700 transition-all duration-150">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                            </svg>
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        @endif
 
         <!-- List Table -->
         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden">

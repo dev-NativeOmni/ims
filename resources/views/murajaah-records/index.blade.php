@@ -29,65 +29,67 @@
                 </div>
             @endif
 
-            <!-- Filter Section -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-3">
-                    <div>
-                        <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Kelas</label>
-                        <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                            <option value="">Semua Kelas</option>
-                            @foreach ($classRooms as $class)
-                                <option value="{{ $class->id }}" @selected(request('class_room_id') == $class->id)>
-                                    {{ $class->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+            @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                <!-- Filter Section -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
+                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-3">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Kelas</label>
+                            <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                                <option value="">Semua Kelas</option>
+                                @foreach ($classRooms as $class)
+                                    <option value="{{ $class->id }}" @selected(request('class_room_id') == $class->id)>
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Cari</label>
-                        <input type="text"
-                               name="search"
-                               value="{{ request('search') }}"
-                               placeholder="Nama murid / surah..."
-                               class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm">
-                    </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Cari</label>
+                            <input type="text"
+                                   name="search"
+                                   value="{{ request('search') }}"
+                                   placeholder="Nama murid / surah..."
+                                   class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm">
+                        </div>
 
-                    <div>
-                        <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Surah</label>
-                        <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                            <option value="">Semua Surah</option>
-                            @foreach ($surahs as $surah)
-                                <option value="{{ $surah->id }}" @selected(request('surah_id') == $surah->id)>
-                                    {{ $surah->number }}. {{ $surah->name_latin }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Surah</label>
+                            <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                                <option value="">Semua Surah</option>
+                                @foreach ($surahs as $surah)
+                                    <option value="{{ $surah->id }}" @selected(request('surah_id') == $surah->id)>
+                                        {{ $surah->number }}. {{ $surah->name_latin }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Status</label>
-                        <select name="status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                            <option value="">Semua Status</option>
-                            <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
-                            <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
-                            <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Status</label>
+                            <select name="status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                                <option value="">Semua Status</option>
+                                <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
+                                <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
+                                <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
+                            </select>
+                        </div>
 
-                    <div class="flex items-end gap-2 col-span-1 sm:col-span-2 md:col-span-1">
-                        <button type="submit"
-                                class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
-                            Filter
-                        </button>
+                        <div class="flex items-end gap-2 col-span-1 sm:col-span-2 md:col-span-1">
+                            <button type="submit"
+                                    class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
+                                Filter
+                            </button>
 
-                        <a href="{{ route('murajaah-records.index') }}"
-                           class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
-                            Reset
-                        </a>
-                    </div>
-                </form>
-            </div>
+                            <a href="{{ route('murajaah-records.index') }}"
+                               class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            @endif
 
             <!-- Mobile View: Card Stack (< md) -->
             <div class="block md:hidden space-y-3">

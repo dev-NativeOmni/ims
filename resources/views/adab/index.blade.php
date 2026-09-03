@@ -48,44 +48,46 @@
 
             <!-- List Tab Content -->
             <div x-show="tab === 'list'" x-transition class="space-y-6">
-                <!-- Filter -->
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
-                    <form method="GET" action="{{ route('adab.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari Murid</label>
-                            <input
-                                type="text"
-                                name="search"
-                                id="search"
-                                value="{{ request('search') }}"
-                                placeholder="Cari nama..."
-                                class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
-                            >
-                        </div>
+                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                    <!-- Filter -->
+                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
+                        <form method="GET" action="{{ route('adab.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari Murid</label>
+                                <input
+                                    type="text"
+                                    name="search"
+                                    id="search"
+                                    value="{{ request('search') }}"
+                                    placeholder="Cari nama..."
+                                    class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
+                                >
+                            </div>
 
-                        <div>
-                            <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas</label>
-                            <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
-                                <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
-                                @foreach ($classRooms as $classRoom)
-                                    <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id) class="dark:bg-zinc-900">
-                                        {{ $classRoom->program?->name ? $classRoom->program->name . ' - ' : '' }}{{ $classRoom->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                            <div>
+                                <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas</label>
+                                <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                                    <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
+                                    @foreach ($classRooms as $classRoom)
+                                        <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id) class="dark:bg-zinc-900">
+                                            {{ $classRoom->program?->name ? $classRoom->program->name . ' - ' : '' }}{{ $classRoom->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div class="md:col-span-2 flex items-end gap-3">
-                            <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
-                                Filter Data
-                            </button>
+                            <div class="md:col-span-2 flex items-end gap-3">
+                                <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
+                                    Filter Data
+                                </button>
 
-                            <a href="{{ route('adab.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150">
-                                Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
+                                <a href="{{ route('adab.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150">
+                                    Reset
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                @endif
 
                 <!-- Student List Table -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl overflow-hidden">

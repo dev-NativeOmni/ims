@@ -75,101 +75,103 @@
                 </a>
             </div>
 
-            <!-- Quick Class Filter Buttons (Tombol Filter Kelas) -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3 sm:p-4 space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                        🏫 Filter Kelas Fast-Access:
-                    </span>
-                    @if(request('class_room_id'))
-                        <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}" class="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline">
-                            ✕ Hapus Filter Kelas
-                        </a>
-                    @endif
-                </div>
-
-                <div class="flex overflow-x-auto items-center gap-1.5 sm:gap-2 pb-1 no-scrollbar -mx-1 px-1">
-                    <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}"
-                       class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ !request('class_room_id') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                        Semua Kelas
-                    </a>
-                    @foreach ($classRooms as $class)
-                        @php
-                            $isSelected = (string) request('class_room_id') === (string) $class->id;
-                        @endphp
-                        <a href="{{ route('hafalan-records.index', array_merge(request()->except('page'), ['class_room_id' => $class->id])) }}"
-                           class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ $isSelected ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                            {{ $class->name }}
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Filter Section -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-6' }} gap-2.5 sm:gap-3">
-                    <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
-
-                    <select name="class_room_id" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                        <option value="">Semua Kelas</option>
-                        @foreach ($classRooms as $class)
-                            <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
-                                {{ $class->name }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="Cari murid / surah..."
-                        class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
-                    >
-
-                    <input
-                        type="date"
-                        name="date"
-                        value="{{ request('date') }}"
-                        class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
-                    >
-
-                    <select name="surah_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                        <option value="">Semua Surah</option>
-                        @foreach ($surahs as $surah)
-                            <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
-                                {{ $surah->number }}. {{ $surah->name_latin }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    @if (request('category') !== 'ummi')
-                    <select name="submission_type" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                        <option value="">Semua Jenis</option>
-                        <option value="new" @selected(request('submission_type') === 'new')>Baru</option>
-                        <option value="continuation" @selected(request('submission_type') === 'continuation')>Lanjutan</option>
-                        <option value="revision" @selected(request('submission_type') === 'revision')>Perbaikan</option>
-                    </select>
-
-                    <select name="status" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                        <option value="">Semua Status</option>
-                        <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
-                        <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
-                        <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
-                    </select>
-                    @endif
-
-                    <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
-                            Filter
-                        </button>
-
-                        <a href="{{ route('hafalan-records.index', ['category' => request('category', 'reguler')]) }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
-                            Reset
-                        </a>
+            @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                <!-- Quick Class Filter Pills -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3 sm:p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                            🏫 Filter Kelas Fast-Access:
+                        </span>
+                        @if(request('class_room_id'))
+                            <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}" class="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline">
+                                ✕ Hapus Filter Kelas
+                            </a>
+                        @endif
                     </div>
-                </form>
-            </div>
+
+                    <div class="flex overflow-x-auto items-center gap-1.5 sm:gap-2 pb-1 no-scrollbar -mx-1 px-1">
+                        <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}"
+                           class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ !request('class_room_id') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
+                            Semua Kelas
+                        </a>
+                        @foreach ($classRooms as $class)
+                            @php
+                                $isSelected = (string) request('class_room_id') === (string) $class->id;
+                            @endphp
+                            <a href="{{ route('hafalan-records.index', array_merge(request()->except('page'), ['class_room_id' => $class->id])) }}"
+                               class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ $isSelected ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
+                                {{ $class->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
+                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-6' }} gap-2.5 sm:gap-3">
+                        <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
+
+                        <select name="class_room_id" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                            <option value="">Semua Kelas</option>
+                            @foreach ($classRooms as $class)
+                                <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
+                                    {{ $class->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari murid / surah..."
+                            class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
+                        >
+
+                        <input
+                            type="date"
+                            name="date"
+                            value="{{ request('date') }}"
+                            class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
+                        >
+
+                        <select name="surah_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                            <option value="">Semua Surah</option>
+                            @foreach ($surahs as $surah)
+                                <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
+                                    {{ $surah->number }}. {{ $surah->name_latin }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @if (request('category') !== 'ummi')
+                        <select name="submission_type" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                            <option value="">Semua Jenis</option>
+                            <option value="new" @selected(request('submission_type') === 'new')>Baru</option>
+                            <option value="continuation" @selected(request('submission_type') === 'continuation')>Lanjutan</option>
+                            <option value="revision" @selected(request('submission_type') === 'revision')>Perbaikan</option>
+                        </select>
+
+                        <select name="status" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                            <option value="">Semua Status</option>
+                            <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
+                            <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
+                            <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
+                        </select>
+                        @endif
+
+                        <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
+                            <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
+                                Filter
+                            </button>
+
+                            <a href="{{ route('hafalan-records.index', ['category' => request('category', 'reguler')]) }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            @endif
 
             <!-- Mobile View: Card Stack (< md) -->
             <div class="block md:hidden space-y-3">

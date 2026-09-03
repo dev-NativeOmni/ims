@@ -100,56 +100,58 @@
 
             <!-- List Tab Content -->
             <div x-show="tab === 'list'" x-transition class="space-y-6">
-                <!-- Filter & Search (no-print) -->
-                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm transition-colors duration-200">
-                    <form method="GET" action="{{ route('student-points.index') }}" class="flex flex-wrap items-end gap-4">
-                        <div class="flex-1 min-w-[200px]">
-                            <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Cari Murid</label>
-                            <input
-                                type="text"
-                                name="search"
-                                id="search"
-                                value="{{ request('search') }}"
-                                placeholder="Cari nama atau NIS murid..."
-                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                            />
-                        </div>
+                @if(!auth()->user()->hasAnyRole(['parent', 'student']))
+                    <!-- Filter & Search (no-print) -->
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm transition-colors duration-200">
+                        <form method="GET" action="{{ route('student-points.index') }}" class="flex flex-wrap items-end gap-4">
+                            <div class="flex-1 min-w-[200px]">
+                                <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Cari Murid</label>
+                                <input
+                                    type="text"
+                                    name="search"
+                                    id="search"
+                                    value="{{ request('search') }}"
+                                    placeholder="Cari nama atau NIS murid..."
+                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                />
+                            </div>
 
-                        @if ($classRooms->isNotEmpty())
+                            @if ($classRooms->isNotEmpty())
+                                <div class="w-full sm:w-48">
+                                    <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas</label>
+                                    <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                        <option value="">Semua Kelas</option>
+                                        @foreach ($classRooms as $class)
+                                            <option value="{{ $class->id }}" {{ request('class_room_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+
                             <div class="w-full sm:w-48">
-                                <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas</label>
-                                <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                    <option value="">Semua Kelas</option>
-                                    @foreach ($classRooms as $class)
-                                        <option value="{{ $class->id }}" {{ request('class_room_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
-                                    @endforeach
+                                <label for="type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tipe Poin</label>
+                                <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                    <option value="">Semua Tipe</option>
+                                    <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
+                                    <option value="lateness" {{ request('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
+                                    <option value="attribute" {{ request('type') === 'attribute' ? 'selected' : '' }}>Pelanggaran Atribut/Seragam</option>
+                                    <option value="reward" {{ request('type') === 'reward' ? 'selected' : '' }}>Prestasi / Penghargaan</option>
                                 </select>
                             </div>
-                        @endif
 
-                        <div class="w-full sm:w-48">
-                            <label for="type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tipe Poin</label>
-                            <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="">Semua Tipe</option>
-                                <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
-                                <option value="lateness" {{ request('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
-                                <option value="attribute" {{ request('type') === 'attribute' ? 'selected' : '' }}>Pelanggaran Atribut/Seragam</option>
-                                <option value="reward" {{ request('type') === 'reward' ? 'selected' : '' }}>Prestasi / Penghargaan</option>
-                            </select>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors min-h-[42px]">
-                                Filter
-                            </button>
-                            @if (request()->anyFilled(['search', 'type', 'class_room_id']))
-                                <a href="{{ route('student-points.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors min-h-[42px]">
-                                    Reset
-                                </a>
-                            @endif
-                        </div>
-                    </form>
-                </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors min-h-[42px]">
+                                    Filter
+                                </button>
+                                @if (request()->anyFilled(['search', 'type', 'class_room_id']))
+                                    <a href="{{ route('student-points.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors min-h-[42px]">
+                                        Reset
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                @endif
 
                 <!-- List Table -->
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors duration-200">
