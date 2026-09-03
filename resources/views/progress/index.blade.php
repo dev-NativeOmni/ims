@@ -510,7 +510,7 @@
                 const ctx = tempCanvas.getContext('2d');
 
                 const titleText = "Diagram Progres Hafalan Murid";
-                const subTitleText = "IMS HafizPlus — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                const subTitleText = "IMS (Integrated Management System) — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
                 const bannerHeight = 80;
                 tempCanvas.width = originalCanvas.width;

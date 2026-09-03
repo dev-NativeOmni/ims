@@ -155,7 +155,7 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="font-extrabold text-sm tracking-wider text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
-                            <span class="text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Islamic Management System</span>
+                            <span class="text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Integrated Management System</span>
                         </div>
                     </div>
 
@@ -208,7 +208,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span class="font-extrabold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
-                                <span class="text-[8px] sm:text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Management Hub</span>
+                                <span class="text-[8px] sm:text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Integrated Management System</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -243,7 +243,7 @@
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="font-extrabold text-base tracking-tight text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
-                                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-1">Management Hub</span>
+                                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-1">Integrated Management System</span>
                                     </div>
                                 </div>
 
@@ -668,7 +668,7 @@
                                     <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
                                     <span class="w-3 h-3 rounded-full bg-green-400"></span>
                                 </div>
-                                <span class="text-xs font-semibold text-zinc-400">HafizPlus Mushaf Tracker</span>
+                                <span class="text-xs font-semibold text-zinc-400">IMS Mushaf Tracker</span>
                                 <div class="w-10"></div>
                             </div>
 
@@ -752,7 +752,7 @@
                     <!-- Heading -->
                     <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-20">
                         <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
-                            Mengapa Memilih HafizPlus Tracker?
+                            Mengapa Memilih IMS Tracker?
                         </h2>
                         <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
                             Fitur-fitur tangguh yang dirancang spesifik untuk menyederhanakan manajemen tahfidz di sekolah, pondok pesantren, dan rumah tahfidz.
@@ -1146,7 +1146,7 @@
             <footer class="w-full bg-black border-t border-white/5 py-10 text-center relative z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p class="text-xs text-zinc-500">
-                        &copy; 2026 HafizPlus IMS (Integrated Management System). Dibuat dengan cinta untuk generasi Qur'ani masa depan.
+                        &copy; 2026 IMS (Integrated Management System). Dibuat dengan cinta untuk generasi Qur'ani masa depan.
                     </p>
                     <div class="flex items-center gap-6 text-xs text-zinc-500">
                         <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>
