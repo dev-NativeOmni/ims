@@ -18,52 +18,51 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <style>
-            /* Bulletproof Monolith Layout Fallbacks */
+            /* Bulletproof Monolith Layout & Mobile First Architecture */
             .monolith-shell {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1.25rem;
                 align-items: start;
                 width: 100%;
             }
             @media (min-width: 1024px) {
                 .monolith-shell {
                     grid-template-columns: 290px minmax(0, 1fr);
+                    gap: 1.5rem;
                 }
             }
             .monolith-top-cards {
                 display: grid;
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-                gap: 1rem;
-            }
-            @media (min-width: 640px) {
-                .monolith-top-cards {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
             }
             @media (min-width: 1280px) {
                 .monolith-top-cards {
                     grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 1rem;
                 }
             }
             .monolith-bento-split {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1.25rem;
             }
             @media (min-width: 1024px) {
                 .monolith-bento-split {
                     grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+                    gap: 1.5rem;
                 }
             }
             .monolith-bottom-badges {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1rem;
+                gap: 0.75rem;
             }
             @media (min-width: 640px) {
                 .monolith-bottom-badges {
                     grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 1rem;
                 }
             }
             .monolith-glass-panel {
@@ -71,8 +70,13 @@
                 backdrop-filter: blur(24px);
                 -webkit-backdrop-filter: blur(24px);
                 border: 1px solid rgba(255, 255, 255, 0.75);
-                border-radius: 2rem;
+                border-radius: 1.75rem;
                 box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            }
+            @media (min-width: 640px) {
+                .monolith-glass-panel {
+                    border-radius: 2rem;
+                }
             }
             .dark .monolith-glass-panel {
                 background: rgba(24, 24, 27, 0.65);
@@ -83,9 +87,15 @@
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
                 border: 1px solid rgba(255, 255, 255, 0.85);
-                border-radius: 1.5rem;
-                padding: 1.25rem;
+                border-radius: 1.25rem;
+                padding: 1rem;
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            }
+            @media (min-width: 640px) {
+                .monolith-card-sm {
+                    border-radius: 1.5rem;
+                    padding: 1.25rem;
+                }
             }
             .dark .monolith-card-sm {
                 background: rgba(24, 24, 27, 0.65);
@@ -190,11 +200,40 @@
 
                 <div class="max-w-[1400px] mx-auto w-full relative z-10">
                     
+                    <!-- Mobile Top Brand Bar (Visible only on < lg screens) -->
+                    <div class="lg:hidden flex items-center justify-between p-3.5 bg-white/65 dark:bg-zinc-900/65 backdrop-blur-2xl rounded-2xl border border-white/80 dark:border-white/10 shadow-sm mb-4 select-none">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-xl bg-white flex items-center justify-center p-1 shadow-sm border border-white/60 overflow-hidden shrink-0" style="width: 32px; height: 32px;">
+                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain" style="width: 100%; height: 100%;">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-extrabold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
+                                <span class="text-[8px] sm:text-[9px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Management Hub</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="#fitur" class="px-3 py-1.5 rounded-xl bg-white/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[10px] border border-white/60 shadow-xs">
+                                Fitur
+                            </a>
+                            @if (Route::has('login'))
+                                @auth
+                                    <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-3.5 py-1.5 text-[10px] uppercase tracking-wider rounded-xl shadow-sm">
+                                        Dashboard
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-3.5 py-1.5 text-[10px] uppercase tracking-wider rounded-xl shadow-sm">
+                                        Masuk
+                                    </a>
+                                @endauth
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Main Grid: Monolith Frosted Glass Shell -->
                     <div class="monolith-shell">
                         
-                        <!-- Left Sidebar: Frosted Glass Panel (Col 3) -->
-                        <aside class="monolith-glass-panel p-6 flex flex-col justify-between min-h-[640px] lg:min-h-[760px] select-none">
+                        <!-- Left Sidebar: Frosted Glass Panel (Visible on Desktop lg+) -->
+                        <aside class="hidden lg:flex monolith-glass-panel p-6 flex-col justify-between min-h-[640px] lg:min-h-[760px] select-none">
                             
                             <!-- Top: Brand Header -->
                             <div class="space-y-8">
@@ -283,13 +322,13 @@
                         </aside>
 
                         <!-- Right Main Content Canvas (Col 9) -->
-                        <main class="space-y-6 w-full min-w-0">
+                        <main class="space-y-4 sm:space-y-6 w-full min-w-0">
                             
-                            <!-- Top Bar: Frosted Glass Navigation Pill (Matches Monolith Top Bar) -->
-                            <div class="monolith-glass-panel p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+                            <!-- Top Bar: Frosted Glass Navigation Pill (Desktop/Tablet) -->
+                            <div class="monolith-glass-panel p-3 sm:p-4 hidden sm:flex flex-row items-center justify-between gap-4 select-none">
                                 
                                 <!-- Search Pill Input -->
-                                <div class="relative w-full sm:w-64">
+                                <div class="relative w-64">
                                     <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
@@ -299,7 +338,7 @@
                                 </div>
 
                                 <!-- Center Navigation Tabs -->
-                                <div class="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-white/60 dark:bg-zinc-800/60 border border-white/80 dark:border-white/10 text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                <div class="flex items-center gap-1.5 p-1 rounded-full bg-white/60 dark:bg-zinc-800/60 border border-white/80 dark:border-white/10 text-xs font-bold text-zinc-600 dark:text-zinc-300">
                                     <a href="#fitur" class="px-4 py-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm transition">Overview Capaian</a>
                                     <a href="#fitur" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Laporan Tahfizh</a>
                                     <a href="#keunggulan" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Pembiasaan Adab</a>
@@ -325,62 +364,61 @@
                                 </div>
                             </div>
 
-                            <!-- Row 1: 4 Key Metric Cards (Matches Monolith top cards) -->
+                            <!-- Row 1: 4 Key Metric Cards (2x2 on Mobile, 4-col on Desktop) -->
                             <div class="monolith-top-cards select-none">
                                 
                                 <!-- Card 1: Total Target Mutqin -->
                                 <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
-                                        <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                                         </span>
-                                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">+100% Standar</span>
+                                        <span class="px-2 py-0.5 rounded-full bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold text-[9px] sm:text-[10px]">+100%</span>
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Mutqin</span>
-                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">30 Juz</div>
+                                    <div class="mt-2.5 sm:mt-4">
+                                        <span class="text-[9px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Target Mutqin</span>
+                                        <div class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">30 Juz</div>
                                     </div>
                                 </div>
 
                                 <!-- Card 2: Monitoring Terpadu -->
                                 <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
-                                        <span class="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                                         </span>
-                                        <span class="px-2.5 py-0.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300 font-bold text-[10px]">+4.2% Aktif</span>
+                                        <span class="px-2 py-0.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300 font-bold text-[9px] sm:text-[10px]">+4.2%</span>
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Monitoring Terpadu</span>
-                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">100% Real-time</div>
+                                    <div class="mt-2.5 sm:mt-4">
+                                        <span class="text-[9px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Monitoring</span>
+                                        <div class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">100% Live</div>
                                     </div>
                                 </div>
 
                                 <!-- Card 3: Indikator Karakter Adab -->
                                 <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
-                                        <span class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center">
+                                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                         </span>
-                                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100/80 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold text-[10px]">98.5% Disiplin</span>
+                                        <span class="px-2 py-0.5 rounded-full bg-amber-100/80 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold text-[9px] sm:text-[10px]">98.5%</span>
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Indikator Karakter</span>
-                                        <div class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">12+ Poin Adab</div>
+                                    <div class="mt-2.5 sm:mt-4">
+                                        <span class="text-[9px] sm:text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Indikator Adab</span>
+                                        <div class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">12+ Poin</div>
                                     </div>
                                 </div>
 
                                 <!-- Card 4: Sleek Dark Obsidian Platinum Card -->
-                                <div class="bg-zinc-950 text-white rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.15)] flex flex-col justify-between border border-white/10 relative overflow-hidden group">
+                                <div class="bg-zinc-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_15px_35px_rgba(0,0,0,0.15)] flex flex-col justify-between border border-white/10 relative overflow-hidden group">
                                     <div class="absolute -right-8 -bottom-8 w-28 h-28 bg-amber-500/20 rounded-full blur-2xl group-hover:scale-125 transition duration-500"></div>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">SMAIA 7 PLATINUM</span>
+                                        <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-zinc-400">SMAIA 7</span>
                                         <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="text-[10px] text-zinc-400 uppercase font-semibold">Tahun Ajaran 2026/2027</span>
-                                        <div class="text-xl font-black text-amber-400 tracking-tight mt-0.5">Generasi Qur'ani</div>
-                                        <span class="text-[10px] text-zinc-400">Solo Baru • Sukoharjo</span>
+                                    <div class="mt-2.5 sm:mt-4">
+                                        <span class="text-[9px] sm:text-[10px] text-zinc-400 uppercase font-semibold">TA. 2026/2027</span>
+                                        <div class="text-base sm:text-xl font-black text-amber-400 tracking-tight mt-0.5">Generasi Qur'ani</div>
                                     </div>
                                 </div>
 
@@ -390,7 +428,7 @@
                             <div class="monolith-bento-split select-none">
                                 
                                 <!-- Left Chart Card -->
-                                <div class="monolith-glass-panel p-6 sm:p-7 flex flex-col justify-between min-w-0">
+                                <div class="monolith-glass-panel p-4 sm:p-7 flex flex-col justify-between min-w-0">
                                     
                                     <!-- Chart Header -->
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -411,79 +449,79 @@
                                     </div>
 
                                     <!-- 3D Soft Rounded Vertical Bar Chart (Jan - Sep) -->
-                                    <div class="pt-4 pb-2">
-                                        <div class="flex items-end justify-between gap-2 sm:gap-4 h-48 sm:h-56 px-2">
+                                    <div class="overflow-x-auto no-scrollbar pt-4 pb-2">
+                                        <div class="min-w-[320px] sm:min-w-0 flex items-end justify-between gap-1.5 sm:gap-4 h-44 sm:h-56 px-1">
                                             
                                             <!-- Jan -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-emerald-200/60 dark:bg-emerald-950 rounded-2xl h-24 group-hover:bg-emerald-300 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">6 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-200/60 dark:bg-emerald-950 rounded-xl sm:rounded-2xl h-20 sm:h-24 group-hover:bg-emerald-300 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">6 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">JAN</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">JAN</span>
                                             </div>
 
                                             <!-- Feb -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-emerald-300/70 dark:bg-emerald-900 rounded-2xl h-32 group-hover:bg-emerald-400 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">10 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-300/70 dark:bg-emerald-900 rounded-xl sm:rounded-2xl h-28 sm:h-32 group-hover:bg-emerald-400 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">10 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">FEB</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">FEB</span>
                                             </div>
 
                                             <!-- Mar -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-emerald-400/80 dark:bg-emerald-800 rounded-2xl h-28 group-hover:bg-emerald-500 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">14 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-emerald-400/80 dark:bg-emerald-800 rounded-xl sm:rounded-2xl h-24 sm:h-28 group-hover:bg-emerald-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-300 transition">14 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">MAR</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">MAR</span>
                                             </div>
 
                                             <!-- Apr -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-teal-400/80 dark:bg-teal-800 rounded-2xl h-40 group-hover:bg-teal-500 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">18 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-teal-400/80 dark:bg-teal-800 rounded-xl sm:rounded-2xl h-32 sm:h-40 group-hover:bg-teal-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">18 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">APR</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">APR</span>
                                             </div>
 
                                             <!-- May -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-teal-500/90 dark:bg-teal-700 rounded-2xl h-36 group-hover:bg-teal-600 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">21 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-teal-500/90 dark:bg-teal-700 rounded-xl sm:rounded-2xl h-30 sm:h-36 group-hover:bg-teal-600 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-teal-800 dark:text-teal-300 transition">21 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">MEI</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">MEI</span>
                                             </div>
 
                                             <!-- Jun -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-cyan-400/80 dark:bg-cyan-800 rounded-2xl h-48 group-hover:bg-cyan-500 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">24 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-cyan-400/80 dark:bg-cyan-800 rounded-xl sm:rounded-2xl h-36 sm:h-48 group-hover:bg-cyan-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">24 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">JUN</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">JUN</span>
                                             </div>
 
                                             <!-- Jul -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-cyan-500/90 dark:bg-cyan-700 rounded-2xl h-44 group-hover:bg-cyan-600 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">26 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-cyan-500/90 dark:bg-cyan-700 rounded-xl sm:rounded-2xl h-34 sm:h-44 group-hover:bg-cyan-600 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-cyan-800 dark:text-cyan-300 transition">26 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">JUL</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">JUL</span>
                                             </div>
 
                                             <!-- Aug -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-amber-400/80 dark:bg-amber-800 rounded-2xl h-40 group-hover:bg-amber-500 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-6 text-[10px] font-bold text-amber-800 dark:text-amber-300 transition">28 Juz</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-amber-400/80 dark:bg-amber-800 rounded-xl sm:rounded-2xl h-32 sm:h-40 group-hover:bg-amber-500 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-5 sm:-top-6 text-[9px] sm:text-[10px] font-bold text-amber-800 dark:text-amber-300 transition">28 Juz</span>
                                                 </div>
-                                                <span class="text-[10px] font-bold text-zinc-400">AGS</span>
+                                                <span class="text-[9px] sm:text-[10px] font-bold text-zinc-400">AGS</span>
                                             </div>
 
                                             <!-- Sep (Target Peak) -->
-                                            <div class="flex flex-col items-center gap-2 flex-1 group">
-                                                <div class="w-full bg-gradient-to-t from-emerald-500 to-teal-400 rounded-2xl h-52 sm:h-56 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition duration-200 flex items-center justify-center relative">
-                                                    <span class="absolute -top-7 px-2 py-0.5 rounded-full bg-zinc-900 text-white font-black text-[9px]">30 JUZ</span>
+                                            <div class="flex flex-col items-center gap-1.5 sm:gap-2 flex-1 group">
+                                                <div class="w-full bg-gradient-to-t from-emerald-500 to-teal-400 rounded-xl sm:rounded-2xl h-40 sm:h-52 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition duration-200 flex items-center justify-center relative">
+                                                    <span class="absolute -top-6 sm:-top-7 px-1.5 sm:px-2 py-0.5 rounded-full bg-zinc-900 text-white font-black text-[8px] sm:text-[9px]">30 JUZ</span>
                                                 </div>
-                                                <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">SEP</span>
+                                                <span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">SEP</span>
                                             </div>
 
                                         </div>
