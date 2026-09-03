@@ -256,35 +256,36 @@
                                             <rect x="14" y="14" width="7" height="7" rx="1.5" />
                                             <rect x="3" y="14" width="7" height="7" rx="1.5" />
                                         </svg>
-                                        <span>Dashboard Utama</span>
-                                    </a>
-
-                                    <a href="#fitur" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                        </svg>
-                                        <span>Pelacakan Tahfizh</span>
+                                        <span>Fitur Utama</span>
                                     </a>
 
                                     <a href="#keunggulan" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                         </svg>
-                                        <span>Indikator Adab</span>
+                                        <span>Keunggulan</span>
                                     </a>
 
                                     <a href="#sebaran" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                         </svg>
-                                        <span>Statistik & Rapor</span>
+                                        <span>Konektivitas</span>
+                                    </a>
+
+                                    <a href="#simulator" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>Demo Interaktif</span>
                                     </a>
 
                                     <a href="#faq" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 font-semibold text-xs transition-all duration-150">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
-                                        <span>Profil Sekolah</span>
+                                        <span>Tanya Jawab</span>
                                     </a>
                                 </nav>
                             </div>
@@ -325,38 +326,26 @@
                         <main class="space-y-4 sm:space-y-6 w-full min-w-0">
                             
                             <!-- Top Bar: Frosted Glass Navigation Pill (Desktop/Tablet) -->
-                            <div class="monolith-glass-panel p-3 sm:p-4 hidden sm:flex flex-row items-center justify-between gap-4 select-none">
+                            <div class="monolith-glass-panel p-2.5 sm:p-3.5 hidden sm:flex flex-row items-center justify-between gap-4 select-none">
                                 
-                                <!-- Search Pill Input -->
-                                <div class="relative w-64">
-                                    <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    <input type="text" 
-                                           placeholder="Cari setoran, surah, murid..." 
-                                           class="w-full pl-10 pr-4 py-2 text-xs rounded-full bg-white/70 dark:bg-zinc-800/70 border border-white/80 dark:border-white/10 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner">
-                                </div>
-
-                                <!-- Center Navigation Tabs -->
-                                <div class="flex items-center gap-1.5 p-1 rounded-full bg-white/60 dark:bg-zinc-800/60 border border-white/80 dark:border-white/10 text-xs font-bold text-zinc-600 dark:text-zinc-300">
-                                    <a href="#fitur" class="px-4 py-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm transition">Overview Capaian</a>
-                                    <a href="#fitur" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Laporan Tahfizh</a>
-                                    <a href="#keunggulan" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Pembiasaan Adab</a>
-                                    <a href="#sebaran" class="px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Aktivitas</a>
+                                <!-- Center Navigation Tabs (Fitur Utama, Keunggulan, Konektivitas, Demo Interaktif, Tanya Jawab) -->
+                                <div class="flex items-center gap-1 sm:gap-1.5 p-1 rounded-full bg-white/70 dark:bg-zinc-800/70 border border-white/80 dark:border-white/10 text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                    <a href="#fitur" class="px-3.5 sm:px-4 py-1.5 rounded-full bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm transition hover:scale-105">Fitur Utama</a>
+                                    <a href="#keunggulan" class="px-3.5 sm:px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Keunggulan</a>
+                                    <a href="#sebaran" class="px-3.5 sm:px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Konektivitas</a>
+                                    <a href="#simulator" class="px-3.5 sm:px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Demo Interaktif</a>
+                                    <a href="#faq" class="px-3.5 sm:px-4 py-1.5 rounded-full hover:text-zinc-900 dark:hover:text-white transition">Tanya Jawab</a>
                                 </div>
 
                                 <!-- Right Quick Actions -->
                                 <div class="flex items-center gap-2.5">
-                                    <a href="#simulator" class="p-2 rounded-full bg-white/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 shadow-sm border border-white/80 dark:border-white/10 text-xs font-semibold flex items-center gap-1">
-                                        <span>Demo Live</span>
-                                    </a>
                                     @if (Route::has('login'))
                                         @auth
-                                            <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
+                                            <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-6 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
                                                 Dashboard
                                             </a>
                                         @else
-                                            <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
+                                            <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-6 py-2 text-xs uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition duration-200">
                                                 Masuk
                                             </a>
                                         @endauth
@@ -1136,7 +1125,7 @@
                             </a>
                         @endif
                         <a href="https://wa.me/628989789085" target="_blank" class="bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white px-8 py-4 text-sm font-semibold rounded-xl transition-all duration-150 hover:-translate-y-0.5 flex items-center gap-2">
-                            Hubungi Ustadz Pembimbing
+                            Hubungi Pengembang
                         </a>
                     </div>
                 </div>
