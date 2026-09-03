@@ -261,4 +261,67 @@ class AdabTest extends TestCase
         $this->assertEquals('🕋 Adab Kepada Allah MODIFIED', $updatedQuestions[0]['title']);
         $this->assertEquals('Apakah Anda melaksanakan shalat fardhu tepat waktu hari ini? MODIFIED', $updatedQuestions[0]['questions'][0]);
     }
+
+    public function test_authorized_user_can_fetch_class_data_for_fast_mentor_input(): void
+    {
+        $admin = User::where('username', 'superadmin')->first();
+        $classRoom = \App\Models\ClassRoom::first();
+
+        $response = $this->actingAs($admin)->getJson(route('adab.mentor-class-data', [
+            'class_room_id' => $classRoom->id,
+            'year' => 2026,
+            'month' => 9,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'class_room_name',
+            'year',
+            'month',
+            'students',
+        ]);
+    }
+
+    public function test_authorized_user_can_batch_store_mentor_scores(): void
+    {
+        $admin = User::where('username', 'superadmin')->first();
+        $classRoom = \App\Models\ClassRoom::first();
+        
+        $students = [
+            Student::create(['name' => 'Murid Test 1', 'student_number' => 'M1', 'class_room_id' => $classRoom->id]),
+            Student::create(['name' => 'Murid Test 2', 'student_number' => 'M2', 'class_room_id' => $classRoom->id]),
+            Student::create(['name' => 'Murid Test 3', 'student_number' => 'M3', 'class_room_id' => $classRoom->id]),
+        ];
+
+        $entries = [];
+        foreach ($students as $idx => $student) {
+            $entries[] = [
+                'student_id' => $student->id,
+                'mentor_score' => 95 - ($idx * 5),
+                'notes' => 'Catatan test '.$idx,
+            ];
+        }
+
+        $response = $this->actingAs($admin)->postJson(route('adab.batch-mentor-score'), [
+            'year' => 2026,
+            'month' => 9,
+            'entries' => $entries,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'saved_count' => 3,
+        ]);
+
+        foreach ($students as $idx => $student) {
+            $this->assertDatabaseHas('adab_mentor_assessments', [
+                'student_id' => $student->id,
+                'year' => 2026,
+                'month' => 9,
+                'mentor_score' => 95 - ($idx * 5),
+                'notes' => 'Catatan test '.$idx,
+            ]);
+        }
+    }
 }

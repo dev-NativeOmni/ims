@@ -10,6 +10,7 @@ use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdabController extends Controller
@@ -149,8 +150,10 @@ class AdabController extends Controller
             $classRankings = collect();
         }
 
+        $canEvaluateMentor = ! $user->hasAnyRole(['student', 'parent']);
+
         return view('adab.index', compact(
-            'students', 'classRooms', 'isAdmin', 'isSupervisor',
+            'students', 'classRooms', 'isAdmin', 'isSupervisor', 'canEvaluateMentor',
             'today', 'year', 'month', 'catStats', 'categories', 'classRankings'
         ));
     }
@@ -585,5 +588,160 @@ class AdabController extends Controller
 
         return redirect()->route('adab.show', $student)
             ->with('success', "Nilai pendamping untuk periode {$periodLabel} berhasil disimpan: {$validated['mentor_score']}/100.");
+    }
+
+    /* -----------------------------------------------------------------------
+     | BATCH / FAST STORE MENTOR SCORES — per class per month
+     * -------------------------------------------------------------------- */
+    public function batchStoreMentorScores(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        $user = Auth::user();
+        if ($user->hasRole('student') || $user->hasRole('parent')) {
+            abort(403, 'Akses tidak diizinkan.');
+        }
+
+        $validated = $request->validate([
+            'year' => 'required|integer|min:2020|max:2099',
+            'month' => 'required|integer|min:1|max:12',
+            'class_room_id' => 'nullable|integer',
+            'entries' => 'required|array',
+            'entries.*.student_id' => 'required|exists:students,id',
+            'entries.*.mentor_score' => 'nullable|numeric|min:0|max:100',
+            'entries.*.notes' => 'nullable|string|max:1000',
+        ]);
+
+        $year = (int) $validated['year'];
+        $month = (int) $validated['month'];
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+            10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+        $periodLabel = ($months[$month] ?? '-').' '.$year;
+
+        $savedCount = 0;
+
+        DB::transaction(function () use ($validated, $user, $year, $month, $periodLabel, &$savedCount) {
+            foreach ($validated['entries'] as $entry) {
+                if (! isset($entry['mentor_score']) || $entry['mentor_score'] === '' || $entry['mentor_score'] === null) {
+                    continue;
+                }
+
+                $student = Student::with('classRoom')->find($entry['student_id']);
+                if (! $student) {
+                    continue;
+                }
+
+                $isAuthorized = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
+                    || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null))
+                    || ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id);
+
+                if (! $isAuthorized) {
+                    continue;
+                }
+
+                AdabMentorAssessment::updateOrCreate(
+                    [
+                        'student_id' => $student->id,
+                        'year' => $year,
+                        'month' => $month,
+                    ],
+                    [
+                        'mentor_id' => $user->id,
+                        'mentor_score' => (int) $entry['mentor_score'],
+                        'period_label' => $periodLabel,
+                        'notes' => $entry['notes'] ?? null,
+                    ]
+                );
+
+                $savedCount++;
+            }
+        });
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Alhamdulillah, berhasil menyimpan {$savedCount} penilaian adab untuk periode {$periodLabel}.",
+                'saved_count' => $savedCount,
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', "Alhamdulillah, berhasil menyimpan {$savedCount} penilaian adab untuk periode {$periodLabel}.");
+    }
+
+    /* -----------------------------------------------------------------------
+     | GET MENTOR CLASS DATA (AJAX for fast input)
+     * -------------------------------------------------------------------- */
+    public function getMentorClassData(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = Auth::user();
+        if ($user->hasRole('student') || $user->hasRole('parent')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $classRoomId = $request->integer('class_room_id');
+        $year = $request->integer('year', (int) now()->format('Y'));
+        $month = $request->integer('month', (int) now()->format('n'));
+
+        $classRoom = ClassRoom::find($classRoomId);
+        if (! $classRoom) {
+            return response()->json(['students' => []]);
+        }
+
+        $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
+            || ($user->hasRole('pendamping_adab') && ($classRoom->pendamping_adab_id === $user->id || $classRoom->pendamping_adab_id === null))
+            || $user->hasRole('teacher');
+
+        if (! $isMentor) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $students = Student::query()
+            ->where('class_room_id', $classRoomId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $studentIds = $students->pluck('id');
+
+        $currentAssessments = AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->get()
+            ->keyBy('student_id');
+
+        // Previous month calculation
+        $prevDate = \Carbon\Carbon::createFromDate($year, $month, 1)->subMonth();
+        $prevAssessments = AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->where('year', $prevDate->year)
+            ->where('month', $prevDate->month)
+            ->get()
+            ->keyBy('student_id');
+
+        $data = $students->map(function ($student) use ($currentAssessments, $prevAssessments) {
+            $curr = $currentAssessments->get($student->id);
+            $prev = $prevAssessments->get($student->id);
+
+            return [
+                'student_id' => $student->id,
+                'student_name' => $student->name,
+                'student_number' => $student->student_number ?? '-',
+                'gender' => $student->gender,
+                'mentor_score' => $curr?->mentor_score !== null ? (int) $curr->mentor_score : '',
+                'notes' => $curr?->notes ?? '',
+                'previous_score' => $prev?->mentor_score !== null ? (int) $prev->mentor_score : null,
+                'is_already_saved' => $curr !== null,
+                'updated_at' => $curr?->updated_at?->format('d M Y H:i'),
+            ];
+        });
+
+        return response()->json([
+            'class_room_name' => $classRoom->name,
+            'year' => $year,
+            'month' => $month,
+            'students' => $data,
+        ]);
     }
 }

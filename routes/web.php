@@ -406,6 +406,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
         Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
         Route::post('/adab/student/{student}/mentor-score', [AdabController::class, 'storeMentorScore'])->name('adab.store-mentor-score');
+        Route::post('/adab/batch-mentor-score', [AdabController::class, 'batchStoreMentorScores'])->name('adab.batch-mentor-score');
+        Route::get('/adab/mentor-class-data', [AdabController::class, 'getMentorClassData'])->name('adab.mentor-class-data');
 
         Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
             Route::delete('/adab/{adabRecord}', [AdabController::class, 'destroy'])->name('adab.destroy');

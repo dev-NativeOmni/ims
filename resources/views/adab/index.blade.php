@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="{ tab: 'list' }">
+    <div class="py-12" x-data="{ tab: '{{ request('tab', 'list') }}' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('success'))
                 <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-800 dark:text-emerald-300 text-sm">
@@ -29,18 +29,27 @@
             </div>
 
             <!-- Tab Controls -->
-            <div class="flex border-b border-zinc-200 dark:border-zinc-800 gap-6 no-print">
+            <div class="flex border-b border-zinc-200 dark:border-zinc-800 gap-6 no-print overflow-x-auto scrollbar-none">
                 <button 
                     @click="tab = 'list'"
-                    :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                    :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
+                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                 >
                     Daftar Evaluasi Murid
                 </button>
+                @if ($canEvaluateMentor)
+                    <button 
+                        @click="tab = 'monthly_mentor'"
+                        :class="tab === 'monthly_mentor' ? 'border-teal-600 text-teal-600 dark:text-teal-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
+                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                        <span>⚡</span> Penilaian Bulanan Pendamping
+                    </button>
+                @endif
                 <button 
                     @click="tab = 'dashboard'"
-                    :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                    :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
+                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                 >
                     Dashboard Kepatuhan Adab
                 </button>
@@ -192,6 +201,272 @@
                 </div>
             </div>
 
+            @if ($canEvaluateMentor)
+                <!-- ═══════════════ PENILAIAN BULANAN PENDAMPING TAB ═══════════════ -->
+                <div x-show="tab === 'monthly_mentor'" x-transition class="space-y-6" x-data="monthlyMentorManager()" x-init="init()">
+                    
+                    <!-- Notification Banner for AJAX Save -->
+                    <template x-if="alertMessage">
+                        <div :class="alertType === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'"
+                             class="p-4 border rounded-2xl text-sm font-semibold flex items-center justify-between shadow-sm transition-all">
+                            <div class="flex items-center gap-2">
+                                <span x-text="alertType === 'success' ? '✓' : '⚠️'"></span>
+                                <span x-text="alertMessage"></span>
+                            </div>
+                            <button type="button" @click="alertMessage = ''" class="text-xs opacity-70 hover:opacity-100 font-bold px-2 py-1">✕</button>
+                        </div>
+                    </template>
+
+                    <!-- Filter Bar & Bulk Actions Header -->
+                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <!-- Filters -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                        Pilih Kelas
+                                    </label>
+                                    <select x-model="selectedClassId" @change="fetchClassData()" 
+                                            class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-teal-500 focus:ring-teal-500">
+                                        @foreach ($classRooms as $class)
+                                            <option value="{{ $class->id }}">
+                                                {{ $class->program?->name ? $class->program->name . ' - ' : '' }}{{ $class->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                        Bulan Penilaian
+                                    </label>
+                                    <select x-model="selectedMonth" @change="fetchClassData()"
+                                            class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-teal-500 focus:ring-teal-500">
+                                        @php
+                                            $allMonths = [
+                                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                                                4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                                7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                                                10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                            ];
+                                        @endphp
+                                        @foreach ($allMonths as $mNum => $mName)
+                                            <option value="{{ $mNum }}" @selected($mNum == (int) now()->format('n'))>
+                                                {{ $mName }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                        Tahun
+                                    </label>
+                                    <select x-model="selectedYear" @change="fetchClassData()"
+                                            class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-teal-500 focus:ring-teal-500">
+                                        @for ($y = (int) now()->format('Y') + 1; $y >= 2024; $y--)
+                                            <option value="{{ $y }}" @selected($y == (int) now()->format('Y'))>
+                                                {{ $y }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right Stats & Save Button -->
+                            <div class="flex items-center gap-3 justify-between lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-zinc-100 dark:border-zinc-800">
+                                <div class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                                    <span>Terisi: </span>
+                                    <strong class="text-teal-600 dark:text-teal-400 text-sm font-black" x-text="filledCount">0</strong>
+                                    <span> / </span>
+                                    <span class="font-bold text-zinc-800 dark:text-zinc-200" x-text="rows.length">0</span> Murid
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="submitAll()"
+                                    :disabled="isSubmitting || filledCount === 0 || isLoading"
+                                    :class="filledCount > 0 && !isLoading ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md cursor-pointer' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'"
+                                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all"
+                                >
+                                    <span x-show="!isSubmitting && !isLoading">💾 Simpan Semua (<span x-text="filledCount">0</span>)</span>
+                                    <span x-show="isSubmitting" x-cloak class="flex items-center gap-1.5">
+                                        <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                                        Menyimpan...
+                                    </span>
+                                    <span x-show="isLoading" x-cloak>Memuat...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Shortcut Bar: Set Cepat Semua Murid -->
+                        <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mr-1">
+                                    Set Nilai Cepat Semua:
+                                </span>
+                                <template x-for="val in [100, 95, 90, 85, 80, 75]" :key="val">
+                                    <button type="button" @click="setAllScores(val)"
+                                            class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-teal-600 hover:text-white dark:hover:bg-teal-600 dark:hover:text-white text-zinc-700 dark:text-zinc-300 font-bold text-xs transition cursor-pointer">
+                                        <span x-text="val"></span>
+                                    </button>
+                                </template>
+                                <button type="button" @click="clearAllScores()"
+                                        class="px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 text-[11px] font-semibold transition cursor-pointer ml-1">
+                                    Kosongkan
+                                </button>
+                            </div>
+
+                            <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                💡 <em>Klik tombol angka untuk memilih nilai secara cepat dengan kelipatan 5 atau ketik langsung di kolom nilai.</em>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Fast Grading Table -->
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden relative">
+                        
+                        <!-- Loading Overlay -->
+                        <div x-show="isLoading" x-cloak class="absolute inset-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs flex items-center justify-center z-20">
+                            <div class="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-bold text-sm">
+                                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                                Memuat data murid...
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+                                <thead>
+                                    <tr class="bg-zinc-50/80 dark:bg-zinc-800/50 text-left text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                        <th class="px-4 py-3.5 text-center w-12">No</th>
+                                        <th class="px-4 py-3.5 min-w-[200px]">Murid</th>
+                                        <th class="px-4 py-3.5 text-center min-w-[120px]">Bulan Lalu</th>
+                                        <th class="px-4 py-3.5 min-w-[360px]">Nilai Pendamping (0 - 100)</th>
+                                        <th class="px-4 py-3.5 min-w-[220px]">Catatan / Evaluasi</th>
+                                        <th class="px-4 py-3.5 text-center min-w-[110px]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-xs">
+                                    <template x-for="(row, index) in rows" :key="row.student_id">
+                                        <tr :class="row.mentor_score !== '' && row.mentor_score !== null ? 'bg-teal-50/20 dark:bg-teal-950/10' : 'hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30'" 
+                                            class="transition-colors">
+                                            
+                                            <!-- No -->
+                                            <td class="px-4 py-3 text-center text-zinc-400 font-bold" x-text="index + 1"></td>
+
+                                            <!-- Nama Murid -->
+                                            <td class="px-4 py-3">
+                                                <div class="font-bold text-zinc-900 dark:text-white" x-text="row.student_name"></div>
+                                                <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                                    NIS: <span x-text="row.student_number || '-'"></span> · 
+                                                    <span x-text="row.gender === 'male' ? 'Laki-laki' : 'Perempuan'"></span>
+                                                </div>
+                                            </td>
+
+                                            <!-- Nilai Bulan Lalu -->
+                                            <td class="px-4 py-3 text-center">
+                                                <template x-if="row.previous_score !== null && row.previous_score !== undefined">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                        <span x-text="row.previous_score"></span> / 100
+                                                    </span>
+                                                </template>
+                                                <template x-if="row.previous_score === null || row.previous_score === undefined">
+                                                    <span class="text-zinc-400 text-xs italic">-</span>
+                                                </template>
+                                            </td>
+
+                                            <!-- Nilai Pendamping & Penilaian Cepat -->
+                                            <td class="px-4 py-3">
+                                                <div class="space-y-2">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="relative w-24 shrink-0">
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                step="1"
+                                                                x-model="row.mentor_score"
+                                                                @input="row.is_touched = true"
+                                                                placeholder="0-100"
+                                                                class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-black text-center px-2.5 py-1.5 focus:ring-teal-500 focus:border-teal-500"
+                                                                :class="getScoreBorderClass(row.mentor_score)"
+                                                            >
+                                                        </div>
+                                                        <span class="text-[11px] font-bold text-zinc-400">/ 100</span>
+
+                                                        <template x-if="row.mentor_score !== '' && row.mentor_score !== null">
+                                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider"
+                                                                  :class="getScoreBadgeClass(row.mentor_score)"
+                                                                  x-text="getScoreGradeLabel(row.mentor_score)">
+                                                            </span>
+                                                        </template>
+                                                    </div>
+
+                                                    <!-- Quick Score Pills (100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50) -->
+                                                    <div class="flex flex-wrap items-center gap-1">
+                                                        <template x-for="qVal in [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50]" :key="qVal">
+                                                            <button
+                                                                type="button"
+                                                                @click="setScore(row, qVal)"
+                                                                :class="Number(row.mentor_score) === qVal ? 'bg-teal-600 text-white font-black shadow-xs scale-105' : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold'"
+                                                                class="px-2 py-1 rounded-md text-[11px] transition-all cursor-pointer select-none"
+                                                            >
+                                                                <span x-text="qVal"></span>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- Catatan Pembiasaan -->
+                                            <td class="px-4 py-3">
+                                                <input
+                                                    type="text"
+                                                    x-model="row.notes"
+                                                    @input="row.is_touched = true"
+                                                    placeholder="Catatan perkembangan pembiasaan..."
+                                                    class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs px-3 py-1.5 focus:ring-teal-500 focus:border-teal-500 placeholder-zinc-400 dark:placeholder-zinc-600"
+                                                >
+                                            </td>
+
+                                            <!-- Status -->
+                                            <td class="px-4 py-3 text-center">
+                                                <template x-if="row.is_touched">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                        ✎ Belum Disimpan
+                                                    </span>
+                                                </template>
+                                                <template x-if="!row.is_touched && row.is_already_saved">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                        ✓ Tersimpan
+                                                    </span>
+                                                </template>
+                                                <template x-if="!row.is_touched && !row.is_already_saved">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                                        Belum Dinilai
+                                                    </span>
+                                                </template>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+
+                                    <!-- Empty State -->
+                                    <template x-if="rows.length === 0 && !isLoading">
+                                        <tr>
+                                            <td colspan="6" class="px-6 py-12 text-center text-zinc-400 dark:text-zinc-500">
+                                                Tidak ada data murid aktif pada kelas ini.
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            @endif
+
             <!-- Dashboard Visual Tab Content -->
             <div x-show="tab === 'dashboard'" x-transition class="space-y-6">
                 <!-- Compliance per Aspect -->
@@ -270,4 +545,176 @@
             </div>
         </div>
     </div>
+
+    @if ($canEvaluateMentor)
+        <script>
+        function monthlyMentorManager() {
+            return {
+                selectedClassId: {{ $classRooms->first()?->id ?? 0 }},
+                selectedMonth: {{ (int) now()->format('n') }},
+                selectedYear: {{ (int) now()->format('Y') }},
+                rows: [],
+                isLoading: false,
+                isSubmitting: false,
+                alertMessage: '',
+                alertType: 'success',
+
+                get filledCount() {
+                    return this.rows.filter(r => r.mentor_score !== '' && r.mentor_score !== null && !isNaN(r.mentor_score)).length;
+                },
+
+                init() {
+                    if (this.selectedClassId) {
+                        this.fetchClassData();
+                    }
+                },
+
+                async fetchClassData() {
+                    if (!this.selectedClassId) return;
+
+                    this.isLoading = true;
+                    this.alertMessage = '';
+
+                    try {
+                        const url = '{{ route('adab.mentor-class-data') }}?class_room_id=' + this.selectedClassId + 
+                                    '&year=' + this.selectedYear + 
+                                    '&month=' + this.selectedMonth;
+
+                        const response = await fetch(url, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat data kelas.');
+                        }
+
+                        const result = await response.json();
+                        this.rows = (result.students || []).map(s => ({
+                            ...s,
+                            is_touched: false
+                        }));
+                    } catch (error) {
+                        console.error('Error fetching class data:', error);
+                        this.alertType = 'error';
+                        this.alertMessage = 'Terjadi kesalahan saat memuat data kelas: ' + error.message;
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                setScore(row, val) {
+                    row.mentor_score = val;
+                    row.is_touched = true;
+                },
+
+                setAllScores(val) {
+                    this.rows.forEach(r => {
+                        r.mentor_score = val;
+                        r.is_touched = true;
+                    });
+                },
+
+                clearAllScores() {
+                    this.rows.forEach(r => {
+                        r.mentor_score = '';
+                        r.is_touched = true;
+                    });
+                },
+
+                getScoreBorderClass(score) {
+                    if (score === '' || score === null) return '';
+                    const s = Number(score);
+                    if (s >= 85) return 'border-emerald-500 text-emerald-700 dark:text-emerald-300';
+                    if (s >= 75) return 'border-teal-500 text-teal-700 dark:text-teal-300';
+                    if (s >= 65) return 'border-amber-500 text-amber-700 dark:text-amber-300';
+                    return 'border-rose-500 text-rose-700 dark:text-rose-300';
+                },
+
+                getScoreBadgeClass(score) {
+                    if (score === '' || score === null) return '';
+                    const s = Number(score);
+                    if (s >= 85) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300';
+                    if (s >= 75) return 'bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300';
+                    if (s >= 65) return 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300';
+                    return 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300';
+                },
+
+                getScoreGradeLabel(score) {
+                    if (score === '' || score === null) return '';
+                    const s = Number(score);
+                    if (s >= 90) return 'Mumtaz (A)';
+                    if (s >= 80) return 'Jayyid Jiddan (B)';
+                    if (s >= 70) return 'Jayyid (C)';
+                    if (s >= 60) return 'Maqbūl (D)';
+                    return 'Perlu Pembinaan (E)';
+                },
+
+                async submitAll() {
+                    const filledEntries = this.rows
+                        .filter(r => r.mentor_score !== '' && r.mentor_score !== null)
+                        .map(r => ({
+                            student_id: r.student_id,
+                            mentor_score: parseFloat(r.mentor_score),
+                            notes: r.notes || ''
+                        }));
+
+                    if (filledEntries.length === 0) {
+                        this.alertType = 'error';
+                        this.alertMessage = 'Harap isi nilai minimal untuk 1 murid sebelum menyimpan.';
+                        return;
+                    }
+
+                    this.isSubmitting = true;
+                    this.alertMessage = '';
+
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    try {
+                        const response = await fetch('{{ route('adab.batch-mentor-score') }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrf,
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                class_room_id: this.selectedClassId,
+                                year: this.selectedYear,
+                                month: this.selectedMonth,
+                                entries: filledEntries
+                            })
+                        });
+
+                        const res = await response.json();
+
+                        if (response.ok && res.success) {
+                            this.alertType = 'success';
+                            this.alertMessage = res.message || 'Penilaian bulanan berhasil disimpan!';
+                            
+                            // Mark touched rows as saved
+                            this.rows.forEach(r => {
+                                if (r.mentor_score !== '' && r.mentor_score !== null) {
+                                    r.is_already_saved = true;
+                                    r.is_touched = false;
+                                }
+                            });
+                        } else {
+                            throw new Error(res.message || 'Gagal menyimpan penilaian.');
+                        }
+                    } catch (err) {
+                        console.error('Save error:', err);
+                        this.alertType = 'error';
+                        this.alertMessage = 'Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan pada server.');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            };
+        }
+        </script>
+    @endif
 </x-app-layout>
