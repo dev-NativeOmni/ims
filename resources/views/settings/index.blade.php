@@ -58,7 +58,7 @@
                             Kuisioner Adab
                         </h4>
                         <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
-                            Kelola pertanyaan adab santri
+                            Kelola pertanyaan adab murid
                         </p>
                     </div>
                 </a>

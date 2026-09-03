@@ -124,7 +124,7 @@
                             </div>
 
                             <p class="mt-1 text-sm text-gray-600">
-                                Progress dihitung dari setoran hafalan berstatus lulus yang sesuai dengan target kurikulum program santri.
+                                Progress dihitung dari setoran hafalan berstatus lulus yang sesuai dengan target kurikulum program murid.
                             </p>
                         </div>
 

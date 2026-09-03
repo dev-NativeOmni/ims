@@ -173,7 +173,7 @@
                         <thead>
                             <tr class="bg-gray-50/80 dark:bg-zinc-800/50 text-left text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                                 <th class="px-4 py-3 text-center w-16">Peringkat</th>
-                                <th class="px-4 py-3">Nama Santri / NIS</th>
+                                <th class="px-4 py-3">Nama Murid / NIS</th>
                                 <th class="px-4 py-3">Kelas / Halaqah</th>
                                 <th class="px-4 py-3 text-center">Total Kasus</th>
                                 <th class="px-4 py-3 text-center">Total Poin</th>

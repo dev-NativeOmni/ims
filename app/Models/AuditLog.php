@@ -84,7 +84,7 @@ class AuditLog extends Model
             HafalanRecord::class => 'Setoran Hafalan',
             MurajaahRecord::class => 'Murajaah',
             HafalanTarget::class => 'Target Hafalan',
-            Student::class => 'Santri',
+            Student::class => 'Murid',
             Program::class => 'Program',
             ClassRoom::class => 'Kelas',
             TeacherProfile::class => 'Guru',

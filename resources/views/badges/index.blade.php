@@ -7,7 +7,7 @@
                         <span>🏆 Kelola Badge & Gamifikasi Hafalan</span>
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-zinc-400">
-                        Atur badge penghargaan, kriteria kelulusan, serta pencapaian hafalan santri.
+                        Atur badge penghargaan, kriteria kelulusan, serta pencapaian hafalan murid.
                     </p>
                 </div>
                 <div>

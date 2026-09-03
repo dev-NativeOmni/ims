@@ -138,7 +138,7 @@ class SystemNotification extends Model
             'admin' => 'Admin',
             'teacher' => 'Guru',
             'parent' => 'Orangtua',
-            'student' => 'Santri',
+            'student' => 'Murid',
             null, '' => 'Pengguna tertentu',
             default => ucfirst(str_replace('_', ' ', (string) $this->target_role)),
         };

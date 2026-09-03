@@ -40,7 +40,7 @@ class InternalNotificationSyncService
             ->orderBy('target_date')
             ->chunkById(100, function ($targets) use (&$count) {
                 foreach ($targets as $target) {
-                    $studentName = $target->student?->name ?? 'Santri';
+                    $studentName = $target->student?->name ?? 'Murid';
                     $surahName = $target->surah?->name_latin ?? 'Surah';
                     $ayahRange = $target->ayah_range ?? ($target->ayah_start.' - '.$target->ayah_end);
                     $targetDate = $target->target_date?->format('d M Y') ?? '-';
@@ -83,7 +83,7 @@ class InternalNotificationSyncService
             ->orderByDesc('submitted_at')
             ->chunkById(100, function ($records) use (&$count) {
                 foreach ($records as $record) {
-                    $studentName = $record->student?->name ?? 'Santri';
+                    $studentName = $record->student?->name ?? 'Murid';
                     $surahName = $record->surah?->name_latin ?? 'Surah';
                     $ayahRange = $record->ayah_range ?? ($record->ayah_start.' - '.$record->ayah_end);
                     $statusLabel = $record->status_label ?? $this->statusLabel($record->status);
@@ -126,7 +126,7 @@ class InternalNotificationSyncService
             ->orderByDesc('reviewed_at')
             ->chunkById(100, function ($records) use (&$count) {
                 foreach ($records as $record) {
-                    $studentName = $record->student?->name ?? 'Santri';
+                    $studentName = $record->student?->name ?? 'Murid';
                     $surahName = $record->surah?->name_latin ?? 'Surah';
                     $ayahRange = $record->ayah_range ?? ($record->ayah_start.' - '.$record->ayah_end);
                     $statusLabel = $record->status_label ?? $this->statusLabel($record->status);

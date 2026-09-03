@@ -116,7 +116,7 @@ class StudentParentWebAccessTest extends TestCase
         $response = $this->actingAs($parentUser)->get('/parent/dashboard');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal Khusus Wali Santri');
+        $response->assertSee('Portal Khusus Wali Murid');
         $response->assertSee('Tahfizh Al-Qur\'an');
         $response->assertSee('Karakter &amp; Adab', false);
         $response->assertSee('Kedisiplinan &amp; Prestasi', false);

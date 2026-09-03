@@ -6,7 +6,7 @@
                     <span>⚡ Input Murajaah Cepat per-Halaqah</span>
                 </h2>
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-400">
-                    Input data murajaah harian santri secara efisien dalam 1 layar per-kelas.
+                    Input data murajaah harian murid secara efisien dalam 1 layar per-kelas.
                 </p>
             </div>
 
@@ -44,7 +44,7 @@
 
                 <div class="flex items-center gap-3 justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 dark:border-zinc-800">
                     <div class="text-xs font-semibold text-gray-600 dark:text-zinc-400">
-                        Terisi: <strong class="text-indigo-600 dark:text-indigo-400 text-sm" x-text="filledCount">0</strong> / <span x-text="rows.length">0</span> Santri
+                        Terisi: <strong class="text-indigo-600 dark:text-indigo-400 text-sm" x-text="filledCount">0</strong> / <span x-text="rows.length">0</span> Murid
                     </div>
 
                     <button
@@ -66,7 +66,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                         <thead>
                             <tr class="bg-gray-50/80 dark:bg-zinc-800/50 text-left text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                                <th class="px-3.5 py-3 min-w-[180px]">Santri</th>
+                                <th class="px-3.5 py-3 min-w-[180px]">Murid</th>
                                 <th class="px-3.5 py-3 min-w-[150px]">Riwayat Terakhir</th>
                                 <th class="px-3.5 py-3 min-w-[160px]">Surah Awal</th>
                                 <th class="px-3.5 py-3 min-w-[160px]">Surah Akhir</th>
@@ -217,7 +217,7 @@
                             <template x-if="rows.length === 0">
                                 <tr>
                                     <td colspan="7" class="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
-                                        Belum ada data santri aktif pada kelas ini.
+                                        Belum ada data murid aktif pada kelas ini.
                                     </td>
                                 </tr>
                             </template>
@@ -293,7 +293,7 @@
                         row.surah_end_id = row.default_surah_id;
                         this.onSurahStartChange(row);
                     } else {
-                        alert('Silakan pilih Surah terlebih dahulu untuk santri ' + row.student_name + '.');
+                        alert('Silakan pilih Surah terlebih dahulu untuk murid ' + row.student_name + '.');
                         return;
                     }
                 }
@@ -306,7 +306,7 @@
             submitAll() {
                 const invalidRow = this.rows.find(r => r.score && !r.surah_id);
                 if (invalidRow) {
-                    alert('Harap pilih Surah terlebih dahulu untuk santri "' + invalidRow.student_name + '".');
+                    alert('Harap pilih Surah terlebih dahulu untuk murid "' + invalidRow.student_name + '".');
                     return;
                 }
 
@@ -320,7 +320,7 @@
                 });
 
                 if (invalidSequenceRow) {
-                    alert('Surah akhir tidak boleh mendahului Surah awal untuk santri "' + invalidSequenceRow.student_name + '".');
+                    alert('Surah akhir tidak boleh mendahului Surah awal untuk murid "' + invalidSequenceRow.student_name + '".');
                     return;
                 }
 
@@ -335,7 +335,7 @@
                 }));
 
                 if (filledEntries.length === 0) {
-                    alert('Belum ada data murajaah yang terisi. Pilih Surah dan Nilai untuk minimal 1 santri.');
+                    alert('Belum ada data murajaah yang terisi. Pilih Surah dan Nilai untuk minimal 1 murid.');
                     return;
                 }
 

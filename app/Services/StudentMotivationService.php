@@ -284,7 +284,7 @@ class StudentMotivationService
         if ($completedTargets < 3) {
             $actions[] = [
                 'title' => 'Kejar 3 target selesai',
-                'description' => 'Tiga target selesai cukup untuk membaca pola disiplin awal santri.',
+                'description' => 'Tiga target selesai cukup untuk membaca pola disiplin awal murid.',
                 'priority' => 'low',
             ];
         }
@@ -292,7 +292,7 @@ class StudentMotivationService
         if (empty($actions)) {
             $actions[] = [
                 'title' => 'Pertahankan ritme',
-                'description' => 'Data santri cukup sehat. Fokus berikutnya adalah konsistensi dan kualitas murajaah.',
+                'description' => 'Data murid cukup sehat. Fokus berikutnya adalah konsistensi dan kualitas murajaah.',
                 'priority' => 'low',
             ];
         }

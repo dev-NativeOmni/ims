@@ -66,7 +66,7 @@ class InternalNotificationService
             ->orderBy('target_date')
             ->get()
             ->each(function (HafalanTarget $target) use ($user, &$created) {
-                $studentName = $target->student?->name ?? 'Santri';
+                $studentName = $target->student?->name ?? 'Murid';
                 $surahName = $target->surah?->name_latin ?? 'Surah';
 
                 $created += $this->createUniqueNotification(
@@ -103,7 +103,7 @@ class InternalNotificationService
             ->limit(100)
             ->get()
             ->each(function (HafalanRecord $record) use ($user, &$created) {
-                $studentName = $record->student?->name ?? 'Santri';
+                $studentName = $record->student?->name ?? 'Murid';
                 $surahName = $record->surah?->name_latin ?? 'Surah';
 
                 $created += $this->createUniqueNotification(
@@ -140,7 +140,7 @@ class InternalNotificationService
             ->limit(100)
             ->get()
             ->each(function (MurajaahRecord $record) use ($user, &$created) {
-                $studentName = $record->student?->name ?? 'Santri';
+                $studentName = $record->student?->name ?? 'Murid';
                 $surahName = $record->surah?->name_latin ?? 'Surah';
 
                 $created += $this->createUniqueNotification(

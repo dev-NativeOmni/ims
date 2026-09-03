@@ -88,7 +88,7 @@ class HafalanRecordObserver
         $hafalanRecord->loadMissing(['student', 'surah']);
 
         $studentName = $hafalanRecord->student?->name
-            ?? 'Santri ID '.$hafalanRecord->student_id;
+            ?? 'Murid ID '.$hafalanRecord->student_id;
 
         $surahName = $hafalanRecord->surah?->name_latin
             ?? $hafalanRecord->surah?->name

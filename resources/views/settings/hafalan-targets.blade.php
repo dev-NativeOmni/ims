@@ -94,7 +94,7 @@
                                         <h3 class="text-base font-bold text-gray-900 dark:text-white" x-text="getGradeLabel(gradeKey) + ' - Program Tahfizh'"></h3>
                                     </div>
                                     <p class="mt-0.5 text-xs text-gray-500 dark:text-zinc-400">
-                                        Pengaturan target hafalan untuk rombel/santri peminatan program Tahfizh intensif.
+                                        Pengaturan target hafalan untuk rombel/murid peminatan program Tahfizh intensif.
                                     </p>
                                 </div>
 
@@ -119,7 +119,7 @@
                                                    x-model.number="targets[gradeKey].tahfizh.target_juz_count"
                                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-850 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm font-bold px-3 py-2"
                                                    required />
-                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-xs font-bold text-gray-400">
+                                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-xs font-bold text-gray-400">
                                                 Juz
                                             </div>
                                         </div>
@@ -175,7 +175,7 @@
                                     </div>
 
                                     <p class="text-xs text-gray-500 dark:text-zinc-400">
-                                        * Santri akan dihitung persentase progresnya khusus dari capaian hafalan pada juz yang dipilih di atas.
+                                        * Murid akan dihitung persentase progresnya khusus dari capaian hafalan pada juz yang dipilih di atas.
                                     </p>
                                 </div>
                             </div>
@@ -192,7 +192,7 @@
                                         <h3 class="text-base font-bold text-gray-900 dark:text-white" x-text="getGradeLabel(gradeKey) + ' - Program Reguler'"></h3>
                                     </div>
                                     <p class="mt-0.5 text-xs text-gray-500 dark:text-zinc-400">
-                                        Pengaturan target hafalan untuk kelas/santri program reguler standar.
+                                        Pengaturan target hafalan untuk kelas/murid program reguler standar.
                                     </p>
                                 </div>
 
@@ -273,7 +273,7 @@
                                     </div>
 
                                     <p class="text-xs text-gray-500 dark:text-zinc-400">
-                                        * Santri akan dihitung persentase progresnya khusus dari capaian hafalan pada juz yang dipilih di atas.
+                                        * Murid akan dihitung persentase progresnya khusus dari capaian hafalan pada juz yang dipilih di atas.
                                     </p>
                                 </div>
                             </div>

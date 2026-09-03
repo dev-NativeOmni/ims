@@ -158,7 +158,7 @@ class AuditLogService
             ClassRoom::class => 'Kelas',
             TeacherProfile::class => 'Guru',
             ParentProfile::class => 'Orangtua',
-            Student::class => 'Santri',
+            Student::class => 'Murid',
             HafalanRecord::class => 'Setoran Hafalan',
             MurajaahRecord::class => 'Murajaah',
             HafalanTarget::class => 'Target Hafalan',

@@ -27,7 +27,7 @@
             @elseif ($childrenProgress->isEmpty())
                 <div class="rounded-2xl bg-white dark:bg-zinc-900 p-8 text-center border border-zinc-200 dark:border-zinc-800 shadow-sm">
                     <p class="text-zinc-500 dark:text-zinc-400 font-medium text-sm">
-                        Belum ada data santri yang ditautkan ke akun Anda.
+                        Belum ada data murid yang ditautkan ke akun Anda.
                     </p>
                 </div>
             @else
@@ -36,7 +36,7 @@
                     <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
                         <div class="space-y-2">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
-                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> Portal Khusus Wali Santri
+                                <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> Portal Khusus Wali Murid
                             </span>
                             <h3 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
@@ -49,7 +49,7 @@
                         <div class="flex items-center gap-3 shrink-0">
                             <div class="rounded-xl bg-emerald-50 dark:bg-zinc-800/80 px-4 py-3 border border-emerald-100 dark:border-zinc-700/60 text-center">
                                 <p class="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 tracking-wider">Total Ananda</p>
-                                <p class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">{{ $childrenProgress->count() }} Santri</p>
+                                <p class="text-2xl font-black text-zinc-900 dark:text-white mt-0.5">{{ $childrenProgress->count() }} Murid</p>
                             </div>
                         </div>
                     </div>
