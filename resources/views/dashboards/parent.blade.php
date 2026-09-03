@@ -141,12 +141,12 @@
                                     </div>
                                 </div>
 
-                                {{-- Quick 3-Pillar Status Row --}}
+                                {{-- Quick 3-Category Status Row --}}
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {{-- Tahfizh Pill --}}
                                     <div class="rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 p-3.5 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 Pilar 1: Tahfizh Al-Qur'an</p>
+                                            <p class="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 Tahfizh Al-Qur'an</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz Lengkap' }}
                                             </p>
@@ -159,7 +159,7 @@
                                     {{-- Adab Pill --}}
                                     <div class="rounded-xl bg-teal-50/60 dark:bg-teal-950/30 p-3.5 border border-teal-100 dark:border-teal-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400">🕌 Pilar 2: Karakter &amp; Adab</p>
+                                            <p class="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400">🕌 Karakter &amp; Adab</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 Nilai: {{ data_get($adabData, 'final_score', '-') }} (Grade {{ data_get($adabData, 'grade', '-') }})
                                             </p>
@@ -172,7 +172,7 @@
                                     {{-- Tanse / Poin Pill --}}
                                     <div class="rounded-xl bg-purple-50/60 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-purple-700 dark:text-purple-400">⭐ Pilar 3: Kedisiplinan &amp; Prestasi</p>
+                                            <p class="text-[10px] font-black uppercase text-purple-700 dark:text-purple-400">⭐ Kedisiplinan &amp; Prestasi</p>
                                             <p class="text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 {{ data_get($tanseData, 'reward_points', 0) }} Poin Reward
                                             </p>
@@ -184,22 +184,22 @@
                                 </div>
                             </div>
 
-                            {{-- Navigation Sub-Tabs per Child (Pilar 1, Pilar 2, Pilar 3) --}}
+                            {{-- Navigation Sub-Tabs per Child --}}
                             <div class="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-1">
                                 <button @click="childTab = 'tahfizh'"
                                         :class="childTab === 'tahfizh' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
                                         class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
-                                    <span>📖</span> Pilar 1: Tahfizh &amp; Target
+                                    <span>📖</span> Tahfizh &amp; Target
                                 </button>
                                 <button @click="childTab = 'adab'"
                                         :class="childTab === 'adab' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
                                         class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
-                                    <span>🕌</span> Pilar 2: Catatan Adab
+                                    <span>🕌</span> Catatan Adab
                                 </button>
                                 <button @click="childTab = 'tanse'"
                                         :class="childTab === 'tanse' ? 'bg-emerald-600 text-white font-black shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold'"
                                         class="px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
-                                    <span>⭐</span> Pilar 3: Kedisiplinan &amp; Prestasi
+                                    <span>⭐</span> Kedisiplinan &amp; Prestasi
                                 </button>
                             </div>
 
