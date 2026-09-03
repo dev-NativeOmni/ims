@@ -52,39 +52,39 @@
         <!-- Root Scroll Container with Alpine ScrollLayout -->
         <div x-data="scrollLayout" class="relative z-10 flex flex-col min-h-screen">
             
-            <!-- Sticky Floating Navbar (Glassmorphism Pill Navigation) -->
-            <header :class="isScrolled ? 'bg-black/90 border-b border-white/10 shadow-2xl py-3' : 'bg-transparent py-5'"
+            <!-- Sticky Floating Header Navbar (Glassmorphism Pill Navigation) -->
+            <header :class="isScrolled ? 'bg-white/90 dark:bg-zinc-900/90 border-b border-zinc-200/80 dark:border-white/10 shadow-lg py-3' : 'bg-transparent py-5'"
                     class="fixed top-0 inset-x-0 z-50 transition-all duration-300 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-lg shadow-black/40 border border-white/20">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-zinc-200/80">
                             <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-extrabold text-base tracking-wider text-white uppercase leading-none">Al Azhar <span class="text-amber-400">7</span></span>
-                            <span class="text-[10px] text-zinc-400 font-medium tracking-widest uppercase">Islamic Management System</span>
+                            <span class="font-extrabold text-sm sm:text-base tracking-wider text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
+                            <span class="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Islamic Management System</span>
                         </div>
                     </div>
 
                     <!-- Desktop Pill Menu Navigation -->
-                    <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-black/50 border border-white/10 backdrop-blur-xl shadow-inner text-xs font-semibold text-zinc-300">
-                        <a href="#fitur" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                        <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                        <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                        <a href="#simulator" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                        <a href="#faq" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                    <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-white/70 dark:bg-black/40 border border-zinc-200/80 dark:border-white/10 backdrop-blur-xl shadow-sm text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <a href="#fitur" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                        <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                        <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                        <a href="#simulator" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                        <a href="#faq" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                     </nav>
 
                     <!-- Auth Actions -->
                     <div class="flex items-center gap-3">
                         @if (Route::has('login'))
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-lg shadow-white/10 hover:scale-105 active:scale-95">
+                                <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md hover:scale-105 active:scale-95">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="bg-white hover:bg-zinc-100 text-zinc-950 font-bold px-6 py-2.5 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-lg shadow-white/15 hover:scale-105 active:scale-95">
+                                <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-6 py-2.5 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md hover:scale-105 active:scale-95">
                                     Masuk
                                 </a>
                             @endauth
@@ -94,134 +94,132 @@
             </header>
 
             <!-- ========================================================================= -->
-            <!-- SECTION 1: CINEMATIC LAYERED HERO (TEXT BEHIND BUILDING "SMAIA7")        -->
+            <!-- SECTION 1: BRIGHT CINEMATIC LAYERED HERO ("SMAIA7" BEHIND SCHOOL)       -->
             <!-- ========================================================================= -->
-            <section class="relative min-h-[96vh] lg:min-h-screen bg-[#09090b] text-white flex flex-col justify-between pt-28 pb-10 overflow-hidden select-none">
+            <section class="relative min-h-[92vh] lg:min-h-screen bg-sky-100/60 dark:bg-zinc-950 text-zinc-900 dark:text-white flex flex-col justify-between pt-24 sm:pt-28 pb-0 overflow-hidden select-none">
                 
-                <!-- Layer 1: Dramatic Sunset Sky Background -->
+                <!-- Layer 1: Original High-Resolution Daylight Sky & School Background -->
                 <div class="absolute inset-0 z-0 pointer-events-none">
-                    <img src="{{ asset('images/hero_bg_sky.jpg') }}" 
-                         alt="Langit Senja Kampus SMAIA 7" 
-                         class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000 ease-out">
-                    <!-- Vignette Gradients for High Contrast Readability -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/30 to-[#09090b]/75"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#09090b]/80 via-transparent to-[#09090b]/60"></div>
+                    <img src="{{ asset('images/gedung_smaia7_bg.jpg') }}" 
+                         alt="Gedung Kampus SMA Islam Al Azhar 7" 
+                         class="w-full h-full object-cover object-center transform scale-100 sm:scale-105 transition-transform duration-1000 ease-out">
+                    
+                    <!-- Soft Top & Bottom Ambient Contrast Gradients -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-50 via-transparent to-sky-900/10 dark:from-[#09090b] dark:via-black/20 dark:to-black/40"></div>
                 </div>
 
-                <!-- Layer 2: Massive 3D Text "SMAIA7" Layered Behind Building -->
-                <div class="absolute inset-x-0 top-[12%] sm:top-[11%] lg:top-[9%] z-10 flex justify-center items-center pointer-events-none px-2">
-                    <span class="font-black tracking-tight text-[21vw] sm:text-[19vw] lg:text-[17.5vw] leading-none text-white/35 uppercase drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)] select-none font-sans filter blur-[0.2px]">
+                <!-- Layer 2: Massive 3D Text "SMAIA7" Layered Behind Building Roof -->
+                <div class="absolute inset-x-0 top-[13%] sm:top-[12%] lg:top-[10%] z-10 flex justify-center items-center pointer-events-none px-2 overflow-hidden">
+                    <span class="font-black tracking-tight text-[22vw] sm:text-[20vw] lg:text-[18vw] leading-none text-white/90 dark:text-white/80 uppercase drop-shadow-[0_10px_25px_rgba(15,23,42,0.18)] select-none font-sans filter blur-[0.1px]">
                         SMAIA7
                     </span>
                 </div>
 
                 <!-- Layer 3: Foreground Isolated Building Cutout (Sits on top of the SMAIA7 text) -->
                 <div class="absolute inset-0 z-20 pointer-events-none flex items-end justify-center">
-                    <img src="{{ asset('images/hero_building_foreground.png') }}" 
+                    <img src="{{ asset('images/gedung_smaia7_fg.png') }}" 
                          alt="Gedung Kampus SMA Islam Al Azhar 7" 
-                         class="w-full h-full object-cover object-center transform scale-105">
+                         class="w-full h-full object-cover object-center transform scale-100 sm:scale-105">
                 </div>
 
-                <!-- Bottom Fade Gradient into Light/Dark Next Sections -->
-                <div class="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent z-25 pointer-events-none"></div>
+                <!-- Layer 3.5: Seamless Bottom Gradient Transition into Section 2 (No hard cuts) -->
+                <div class="absolute inset-x-0 bottom-0 h-32 sm:h-48 bg-gradient-to-t from-zinc-50 via-zinc-50/80 to-transparent dark:from-[#09090b] dark:via-[#09090b]/80 dark:to-transparent z-25 pointer-events-none"></div>
 
                 <!-- Layer 4: Foreground Interactive Content & UI Overlays (Z-30) -->
-                <div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-grow">
+                <div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-grow pb-12 sm:pb-16">
                     
-                    <!-- Top Pill Badge Row -->
-                    <div class="flex items-center justify-between pt-2 sm:pt-4">
-                        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-xl shadow-2xl text-xs font-semibold text-amber-400">
+                    <!-- Top Subtitle Badge -->
+                    <div class="flex items-center justify-between pt-2">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-black/60 border border-zinc-200/80 dark:border-white/15 backdrop-blur-xl shadow-md text-xs font-bold text-teal-700 dark:text-teal-300">
                             <span class="flex h-2 w-2 relative">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-600"></span>
                             </span>
                             Islamic Management System • Al Azhar 7
                         </div>
 
-                        <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-zinc-300/80 bg-black/50 border border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full">
+                        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white/80 dark:bg-black/50 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm">
                             <span>🕌 Kampus Unggulan & Berkarakter Adab</span>
                         </div>
                     </div>
 
-                    <!-- Bottom Bar: Key Metrics + CTA + Floating Preview Card -->
-                    <div class="mt-auto pt-20 sm:pt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+                    <!-- Bottom Bar: Spacious Key Metrics + CTA + Compact Preview Card -->
+                    <div class="mt-auto pt-24 sm:pt-40 flex flex-col lg:flex-row lg:items-end justify-between gap-6 lg:gap-8">
                         
-                        <!-- Left Column: Metrics & Main CTA (as in reference) -->
-                        <div class="lg:col-span-8 flex flex-col gap-6">
+                        <!-- Left Block: Metrics Row & CTA -->
+                        <div class="flex flex-col gap-5 max-w-2xl">
                             
-                            <!-- 3 Key Metric Columns -->
-                            <div class="grid grid-cols-3 gap-3 sm:gap-6 max-w-lg">
+                            <!-- 3 Key Metric Columns in Clean Horizontal Row -->
+                            <div class="grid grid-cols-3 gap-4 sm:gap-8 max-w-md bg-white/80 dark:bg-black/60 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-lg">
                                 <div class="flex flex-col">
-                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">30+</span>
-                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Juz Mutqin Standar</span>
+                                    <span class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">30+</span>
+                                    <span class="text-[11px] sm:text-xs font-semibold text-zinc-600 dark:text-zinc-400 mt-1">Juz Mutqin</span>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">100%</span>
-                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Monitoring Terpadu</span>
+                                <div class="flex flex-col border-l border-zinc-200 dark:border-zinc-700/60 pl-3 sm:pl-4">
+                                    <span class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">100%</span>
+                                    <span class="text-[11px] sm:text-xs font-semibold text-zinc-600 dark:text-zinc-400 mt-1">Monitoring</span>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-2xl sm:text-4xl font-black text-white tracking-tight">12+</span>
-                                    <span class="text-xs sm:text-sm font-medium text-zinc-300/90 mt-0.5">Indikator Adab</span>
+                                <div class="flex flex-col border-l border-zinc-200 dark:border-zinc-700/60 pl-3 sm:pl-4">
+                                    <span class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">12+</span>
+                                    <span class="text-[11px] sm:text-xs font-semibold text-zinc-600 dark:text-zinc-400 mt-1">Indikator Adab</span>
                                 </div>
                             </div>
 
-                            <!-- CTA Button + Description -->
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+                            <!-- CTA Button + Brief Description (Side by Side) -->
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3.5">
                                 @auth
                                     <a href="{{ url('/dashboard') }}" 
-                                       class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-[0_10px_30px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition duration-200">
+                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition duration-200 shrink-0">
                                         <span>Buka Dashboard</span>
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                                         </svg>
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" 
-                                       class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-[0_10px_30px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition duration-200">
+                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition duration-200 shrink-0">
                                         <span>Akses Portal</span>
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                                         </svg>
                                     </a>
                                 @endauth
 
-                                <p class="text-xs sm:text-sm text-zinc-300/85 leading-relaxed max-w-sm">
-                                    Platform digital terpadu pelacakan capaian hafalan Al-Qur'an, murajaah harian, dan pembiasaan karakter adab murid SMA Islam Al Azhar 7.
+                                <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-black/50 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md p-2.5 sm:p-3 rounded-xl shadow-sm leading-relaxed max-w-md">
+                                    Platform digital pelacakan hafalan Al-Qur'an, murajaah harian, dan pembiasaan karakter adab murid SMA Islam Al Azhar 7.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Right Column: Interactive Glassmorphism Preview Card (as in reference) -->
-                        <div class="lg:col-span-4 flex justify-start lg:justify-end">
-                            <div class="w-full max-w-sm rounded-2xl bg-black/60 border border-white/20 p-4 backdrop-blur-xl shadow-2xl space-y-3 transform hover:-translate-y-1 transition duration-300">
+                        <!-- Right Block: Compact Glassmorphism Preview Card -->
+                        <div class="hidden sm:flex justify-end shrink-0">
+                            <div class="w-72 rounded-2xl bg-white/85 dark:bg-black/60 border border-zinc-200/80 dark:border-white/15 p-3.5 backdrop-blur-xl shadow-xl space-y-2.5 transform hover:-translate-y-1 transition duration-300">
                                 <div class="flex items-center justify-between text-xs">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                                        <span class="font-bold text-white uppercase tracking-wider text-[11px]">Capaian Terkini</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider text-[10px]">Capaian Terkini</span>
                                     </div>
-                                    <span class="text-zinc-400 text-[10px]">Tahun Ajaran 2026/2027</span>
+                                    <span class="text-zinc-500 dark:text-zinc-400 text-[10px] font-medium">T.A. 2026/2027</span>
                                 </div>
 
-                                <div class="rounded-xl overflow-hidden relative aspect-video bg-zinc-900 border border-white/10 group">
-                                    <img src="{{ asset('images/hero_composite_preview.jpg') }}" 
+                                <div class="rounded-xl overflow-hidden relative aspect-video bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 group">
+                                    <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
                                          alt="Preview Kampus SMAIA 7" 
-                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-3">
-                                        <div class="text-left">
-                                            <p class="text-xs font-bold text-white">Program Tahfizh & Kelas Khusus</p>
-                                            <p class="text-[10px] text-amber-300">Target Mutqin per Semester Terpantau</p>
-                                        </div>
+                                         class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2.5">
+                                        <p class="text-[11px] font-bold text-white">Program Tahfizh & Kelas Khusus</p>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between pt-1 text-[11px] text-zinc-400">
-                                    <span>SMA Islam Al Azhar 7 Solo Baru</span>
-                                    <a href="#fitur" class="text-amber-400 hover:text-amber-300 font-semibold hover:underline flex items-center gap-1">
-                                        Eksplorasi &darr;
+                                <div class="flex items-center justify-between pt-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                                    <span>SMA Islam Al Azhar 7</span>
+                                    <a href="#fitur" class="text-teal-600 dark:text-teal-400 hover:underline font-bold flex items-center gap-0.5">
+                                        Lihat Fitur &darr;
                                     </a>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
