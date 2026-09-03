@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassRoom;
 use App\Models\ParentProfile;
 use App\Models\Role;
 use App\Models\Student;

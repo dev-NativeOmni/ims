@@ -96,12 +96,49 @@ class UserManagementTest extends TestCase
         $this->assertTrue(Hash::check('newawesomepassword123', $studentUser->password));
     }
 
+    public function test_super_admin_can_access_user_edit_page_with_class_assignments(): void
+    {
+        $superAdmin = User::where('username', 'superadmin')->first();
+        $teacher = User::where('username', 'guru')->first();
+
+        $response = $this->actingAs($superAdmin)->get(route('users.edit', $teacher));
+        $response->assertStatus(200);
+        $response->assertSee('Penugasan Kelas Pendamping Adab');
+    }
+
+    public function test_super_admin_can_update_user_with_pendamping_classes(): void
+    {
+        $superAdmin = User::where('username', 'superadmin')->first();
+        $teacher = User::where('username', 'guru')->first();
+        $teacherRole = Role::where('name', 'teacher')->first();
+        $pendampingRole = Role::where('name', 'pendamping_adab')->first();
+
+        $program = \App\Models\Program::create(['name' => 'Program Test', 'status' => 'active']);
+        $classRoom = \App\Models\ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas Test Pendamping',
+        ]);
+
+        $response = $this->actingAs($superAdmin)->patch(route('users.update', $teacher), [
+            'name' => 'Guru Pendamping',
+            'username' => 'guru',
+            'role_id' => $teacherRole->id,
+            'additional_role_ids' => [$pendampingRole->id],
+            'pendamping_class_ids' => [$classRoom->id],
+            'status' => 'active',
+        ]);
+
+        $response->assertRedirect(route('users.index'));
+
+        $this->assertTrue($teacher->isAssignedPendampingForClass($classRoom->id));
+    }
+
     public function test_super_admin_can_create_new_user(): void
     {
         $superAdminRole = Role::where('name', 'super_admin')->first();
         $superAdmin = User::factory()->create([
             'role_id' => $superAdminRole->id,
-            'username' => 'testsuperadmin',
+            'username' => 'testsuperadmin2',
             'status' => 'active',
         ]);
 
