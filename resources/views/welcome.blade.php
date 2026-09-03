@@ -60,12 +60,12 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 -translate-y-4"
-                    class="fixed top-0 inset-x-0 z-50 bg-white/90 dark:bg-zinc-900/90 border-b border-zinc-200/80 dark:border-white/10 shadow-lg py-3 backdrop-blur-md">
+                    class="fixed top-0 inset-x-0 z-50 bg-white/95 dark:bg-zinc-900/95 border-b border-zinc-200 dark:border-white/10 shadow-md py-2.5 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo -->
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-zinc-200/80">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
+                        <div class="w-9 h-9 min-w-[36px] min-h-[36px] max-w-[36px] max-h-[36px] rounded-full bg-white flex items-center justify-center p-1 shadow-sm border border-zinc-200 overflow-hidden shrink-0" style="width: 36px; height: 36px;">
+                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain" style="width: 100%; height: 100%;">
                         </div>
                         <div class="flex flex-col">
                             <span class="font-extrabold text-sm tracking-wider text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
@@ -86,11 +86,11 @@
                     <div class="flex items-center gap-3">
                         @if (Route::has('login'))
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md hover:scale-105 active:scale-95">
+                                <a href="{{ url('/dashboard') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-sm hover:scale-105 active:scale-95">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md hover:scale-105 active:scale-95">
+                                <a href="{{ route('login') }}" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-sm hover:scale-105 active:scale-95">
                                     Masuk
                                 </a>
                             @endauth
@@ -102,11 +102,11 @@
             <!-- ========================================================================= -->
             <!-- SECTION 1: HERO CONTAINER (EXACT MATCH TO WINZY REFERENCE CARD)          -->
             <!-- ========================================================================= -->
-            <section class="w-full bg-zinc-50 dark:bg-zinc-950 pt-3 sm:pt-6 pb-6 sm:pb-10">
+            <section class="w-full bg-zinc-50 dark:bg-zinc-950 pt-4 sm:pt-6 pb-6 sm:pb-10">
                 <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                     
                     <!-- Rounded Hero Frame Card -->
-                    <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] min-h-[540px] sm:min-h-[620px] lg:min-h-[680px] rounded-3xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl border border-zinc-200/80 dark:border-white/10 flex flex-col justify-between p-5 sm:p-8 lg:p-10 select-none">
+                    <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] rounded-3xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl border border-zinc-200/80 dark:border-white/10 flex flex-col justify-between p-5 sm:p-8 lg:p-10 select-none">
                         
                         <!-- Background Image: Full Campus View with "SMAIA7" in Sky Behind School -->
                         <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
@@ -114,14 +114,14 @@
                              class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none">
                         
                         <!-- Subtle Ambient Vignette & Bottom Contrast Gradients -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/35 pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/30 pointer-events-none"></div>
 
                         <!-- Top Navbar Inside Hero Card (Matches Winzy reference) -->
                         <div class="relative z-20 flex items-center justify-between w-full">
                             <!-- Left: Brand Logo + Text -->
-                            <div class="flex items-center gap-2.5 sm:gap-3">
-                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-white/20">
-                                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-white/30 overflow-hidden shrink-0" style="width: 40px; height: 40px;">
+                                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain" style="width: 100%; height: 100%;">
                                 </div>
                                 <span class="font-extrabold text-base sm:text-lg text-white tracking-wide drop-shadow-md">
                                     Al Azhar <span class="text-amber-400">7</span>
@@ -129,7 +129,7 @@
                             </div>
 
                             <!-- Center: Floating Pill Navigation Menu -->
-                            <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-black/40 border border-white/15 backdrop-blur-xl shadow-inner text-xs font-semibold text-zinc-200">
+                            <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-black/40 border border-white/20 backdrop-blur-xl shadow-inner text-xs font-semibold text-zinc-200">
                                 <a href="#fitur" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Fitur Utama</a>
                                 <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Keunggulan</a>
                                 <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-white hover:bg-white/15 transition-all duration-150">Konektivitas</a>
