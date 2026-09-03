@@ -196,7 +196,10 @@ class DashboardController extends Controller
         $isPrivileged = $user && $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
 
         $assignedClassIds = ($user && ! $isPrivileged)
-            ? ClassRoom::where('pendamping_adab_id', $user->id)->pluck('id')
+            ? ClassRoom::where(function ($q) use ($user) {
+                $q->where('pendamping_adab_id', $user->id)
+                    ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+            })->pluck('id')
             : null;
 
         $studentQuery = Student::where('status', 'active');

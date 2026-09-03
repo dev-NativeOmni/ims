@@ -54,6 +54,11 @@ class ClassRoom extends Model
         return $this->belongsTo(User::class, 'pendamping_adab_id');
     }
 
+    public function pendampingAdabList(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'class_room_pendamping_adab', 'class_room_id', 'user_id')->withTimestamps();
+    }
+
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);

@@ -99,10 +99,19 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">
-                                        @if($classRoom->pendampingAdab)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
-                                                {{ $classRoom->pendampingAdab->name }}
-                                            </span>
+                                        @php
+                                            $allPendamping = $classRoom->pendampingAdabList->isNotEmpty() 
+                                                ? $classRoom->pendampingAdabList 
+                                                : ($classRoom->pendampingAdab ? collect([$classRoom->pendampingAdab]) : collect());
+                                        @endphp
+                                        @if($allPendamping->isNotEmpty())
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach($allPendamping as $pItem)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                        {{ $pItem->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
                                         @else
                                             <span class="text-gray-400 italic text-xs">Belum diatur</span>
                                         @endif

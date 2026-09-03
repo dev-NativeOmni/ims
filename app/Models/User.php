@@ -127,6 +127,17 @@ class User extends Authenticatable
         return $this->hasMany(AdabMaterial::class, 'created_by');
     }
 
+    public function pendampingClasses(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(ClassRoom::class, 'class_room_pendamping_adab', 'user_id', 'class_room_id')->withTimestamps();
+    }
+
+    public function isAssignedPendampingForClass(int $classRoomId): bool
+    {
+        return $this->pendampingClasses()->where('class_rooms.id', $classRoomId)->exists()
+            || ClassRoom::where('id', $classRoomId)->where('pendamping_adab_id', $this->id)->exists();
+    }
+
     /**
      * Check if the currently active role matches the given role name.
      */

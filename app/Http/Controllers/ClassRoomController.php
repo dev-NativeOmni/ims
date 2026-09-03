@@ -24,7 +24,7 @@ class ClassRoomController extends Controller
             ->get();
 
         $classRooms = ClassRoom::query()
-            ->with(['program', 'pendampingAdab'])
+            ->with(['program', 'pendampingAdab', 'pendampingAdabList'])
             ->withCount('students')
             ->when($request->filled('program_id'), function ($query) use ($request) {
                 $query->where('program_id', $request->integer('program_id'));
@@ -57,7 +57,22 @@ class ClassRoomController extends Controller
 
     public function store(StoreClassRoomRequest $request): RedirectResponse
     {
-        ClassRoom::create($request->validated());
+        $validated = $request->validated();
+        $pendampingIds = collect($request->input('pendamping_adab_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($pendampingIds) && ! empty($validated['pendamping_adab_id'])) {
+            $pendampingIds = [(int) $validated['pendamping_adab_id']];
+        }
+
+        $validated['pendamping_adab_id'] = $pendampingIds[0] ?? null;
+
+        $classRoom = ClassRoom::create($validated);
+        $classRoom->pendampingAdabList()->sync($pendampingIds);
 
         return redirect()
             ->route('class-rooms.index')
@@ -277,7 +292,22 @@ class ClassRoomController extends Controller
 
     public function update(UpdateClassRoomRequest $request, ClassRoom $classRoom): RedirectResponse
     {
-        $classRoom->update($request->validated());
+        $validated = $request->validated();
+        $pendampingIds = collect($request->input('pendamping_adab_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($pendampingIds) && ! empty($validated['pendamping_adab_id'])) {
+            $pendampingIds = [(int) $validated['pendamping_adab_id']];
+        }
+
+        $validated['pendamping_adab_id'] = $pendampingIds[0] ?? null;
+
+        $classRoom->update($validated);
+        $classRoom->pendampingAdabList()->sync($pendampingIds);
 
         return redirect()
             ->route('class-rooms.index')

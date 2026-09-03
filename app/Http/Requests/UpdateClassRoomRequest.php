@@ -26,6 +26,14 @@ class UpdateClassRoomRequest extends FormRequest
                 'integer',
                 Rule::exists('users', 'id'),
             ],
+            'pendamping_adab_ids' => [
+                'nullable',
+                'array',
+            ],
+            'pendamping_adab_ids.*' => [
+                'integer',
+                Rule::exists('users', 'id'),
+            ],
             'name' => [
                 'required',
                 'string',

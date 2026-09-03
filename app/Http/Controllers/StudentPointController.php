@@ -247,7 +247,10 @@ class StudentPointController extends Controller
         }])->orderBy('name');
 
         if ($user->hasRole('pendamping_adab') && ! $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
-            $classRoomsQuery->where('pendamping_adab_id', $user->id);
+            $classRoomsQuery->where(function ($q) use ($user) {
+                $q->where('pendamping_adab_id', $user->id)
+                    ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+            });
         }
 
         $classRooms = $classRoomsQuery->get();

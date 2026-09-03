@@ -142,9 +142,10 @@ class UserController extends Controller
         $this->authorizeSuperAdmin();
 
         $roles = Role::orderBy('display_name')->get();
-        $user->loadMissing('roles');
+        $allClassRooms = ClassRoom::with('program')->orderBy('name')->get();
+        $user->loadMissing(['roles', 'pendampingClasses']);
 
-        return view('users.edit', compact('user', 'roles'));
+        return view('users.edit', compact('user', 'roles', 'allClassRooms'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -157,6 +158,8 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'additional_role_ids' => 'nullable|array',
             'additional_role_ids.*' => 'exists:roles,id',
+            'pendamping_class_ids' => 'nullable|array',
+            'pendamping_class_ids.*' => 'exists:class_rooms,id',
             'password' => 'nullable|string|min:6',
             'status' => 'required|in:active,inactive',
         ], [
@@ -164,7 +167,7 @@ class UserController extends Controller
             'username.required' => 'Username tidak boleh kosong.',
         ]);
 
-        DB::transaction(function () use ($validated, $user) {
+        DB::transaction(function () use ($validated, $user, $request) {
             $userData = [
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -203,6 +206,14 @@ class UserController extends Controller
                     'name' => $user->name,
                     'status' => 'active',
                 ]);
+            }
+
+            // Sync assigned pendamping classes if user has pendamping_adab role
+            if (in_array('pendamping_adab', $assignedRoleNames, true)) {
+                $classIds = collect($request->input('pendamping_class_ids', []))->map(fn ($id) => (int) $id)->unique()->values()->all();
+                $user->pendampingClasses()->sync($classIds);
+            } else {
+                $user->pendampingClasses()->detach();
             }
         });
 

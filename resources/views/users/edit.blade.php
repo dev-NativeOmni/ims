@@ -105,6 +105,45 @@
                         </div>
                     </div>
 
+                    <!-- Penugasan Kelas Pendamping Adab -->
+                    <div class="rounded-xl border border-teal-200 dark:border-teal-900/60 p-4 bg-teal-50/30 dark:bg-teal-950/20 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="block text-sm font-bold text-teal-900 dark:text-teal-200">Penugasan Kelas Pendamping Adab</label>
+                                <p class="text-[11px] text-teal-700 dark:text-teal-400 mt-0.5">Tentukan kelas mana saja yang diampu oleh user ini saat berperan sebagai Pendamping Adab (Bisa pilih lebih dari 1 kelas).</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300">Kelas Diampu</span>
+                        </div>
+
+                        @php
+                            $userAssignedClassIds = old('pendamping_class_ids', $user->pendampingClasses->pluck('id')->all());
+                            if (empty($userAssignedClassIds)) {
+                                $legacyClassIds = \App\Models\ClassRoom::where('pendamping_adab_id', $user->id)->pluck('id')->all();
+                                $userAssignedClassIds = $legacyClassIds;
+                            }
+                        @endphp
+
+                        @if ($allClassRooms->isEmpty())
+                            <p class="text-xs text-zinc-400 italic">Belum ada data kelas.</p>
+                        @else
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1 max-h-48 overflow-y-auto pr-1">
+                                @foreach ($allClassRooms as $class)
+                                    <label class="flex items-center gap-2.5 p-2 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 transition shadow-2xs">
+                                        <input type="checkbox" 
+                                               name="pendamping_class_ids[]" 
+                                               value="{{ $class->id }}"
+                                               @checked(in_array($class->id, $userAssignedClassIds))
+                                               class="rounded border-zinc-300 dark:border-zinc-600 text-teal-600 focus:ring-teal-500">
+                                        <div class="truncate">
+                                            <span class="font-bold text-zinc-900 dark:text-white">{{ $class->name }}</span>
+                                            <span class="text-[10px] text-zinc-400 block">{{ $class->program?->name ?: 'Reguler' }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Status -->
                     <div>
                         <label for="status" class="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">Status Akun</label>

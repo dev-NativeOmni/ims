@@ -7,6 +7,7 @@ use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,10 @@ class AdabController extends Controller
         $studentQuery = Student::query()->with(['classRoom']);
 
         if ($isPendampingAdab && ! $isAdmin && ! $isSupervisor) {
-            $assignedClassIds = ClassRoom::where('pendamping_adab_id', $user->id)->pluck('id');
+            $assignedClassIds = ClassRoom::where(function ($q) use ($user) {
+                $q->where('pendamping_adab_id', $user->id)
+                    ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+            })->pluck('id');
             $studentQuery->whereIn('class_room_id', $assignedClassIds);
             $classRoomsQuery->whereIn('id', $assignedClassIds);
         } elseif ($isTeacher) {
@@ -177,7 +181,10 @@ class AdabController extends Controller
         }])->orderBy('name');
 
         if ($user->hasRole('pendamping_adab') && ! $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
-            $classRoomsQuery->where('pendamping_adab_id', $user->id);
+            $classRoomsQuery->where(function ($q) use ($user) {
+                $q->where('pendamping_adab_id', $user->id)
+                    ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+            });
         }
 
         $classRooms = $classRoomsQuery->get();
@@ -370,7 +377,7 @@ class AdabController extends Controller
 
         $isOwn = $user->hasRole('student') && ((int) $student->user_id === (int) $user->id || $student->id === $user->studentProfile?->id);
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
-        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
+        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist()));
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
         abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher, 403);
@@ -389,7 +396,7 @@ class AdabController extends Controller
 
         $isOwn = $user->hasRole('student') && ((int) $student->user_id === (int) $user->id || $student->id === $user->studentProfile?->id);
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
-        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null);
+        $isPendampingAdab = $user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist()));
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
 
         if (! ($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher)) {
@@ -513,7 +520,7 @@ class AdabController extends Controller
             ->exists();
 
         $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
-            || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null));
+            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())));
 
         return view('adab.show', compact(
             'student', 'adabRecords', 'mentorAssessments',
@@ -550,7 +557,7 @@ class AdabController extends Controller
         $user = Auth::user();
 
         $isAuthorizedMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
-            || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null));
+            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())));
 
         abort_unless(
             $isAuthorizedMentor,
@@ -634,7 +641,7 @@ class AdabController extends Controller
                 }
 
                 $isAuthorized = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
-                    || ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null))
+                    || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())))
                     || ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id);
 
                 if (! $isAuthorized) {
@@ -691,7 +698,7 @@ class AdabController extends Controller
         }
 
         $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
-            || ($user->hasRole('pendamping_adab') && ($classRoom->pendamping_adab_id === $user->id || $classRoom->pendamping_adab_id === null))
+            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $classRoom) || ($classRoom->pendamping_adab_id === null && $classRoom->pendampingAdabList()->doesntExist())))
             || $user->hasRole('teacher');
 
         if (! $isMentor) {
@@ -743,5 +750,15 @@ class AdabController extends Controller
             'month' => $month,
             'students' => $data,
         ]);
+    }
+
+    private function isUserAssignedPendamping(User $user, ?ClassRoom $classRoom): bool
+    {
+        if (! $classRoom) {
+            return true;
+        }
+
+        return $classRoom->pendamping_adab_id === $user->id
+            || $classRoom->pendampingAdabList()->where('users.id', $user->id)->exists();
     }
 }

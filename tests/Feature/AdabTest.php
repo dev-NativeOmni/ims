@@ -324,4 +324,48 @@ class AdabTest extends TestCase
             ]);
         }
     }
+
+    public function test_multiple_pendamping_adab_can_be_assigned_to_class_and_evaluate_students(): void
+    {
+        $mentorRole = Role::where('name', 'pendamping_adab')->first();
+        $mentor1 = User::factory()->create(['role_id' => $mentorRole->id, 'status' => 'active']);
+        $mentor2 = User::factory()->create(['role_id' => $mentorRole->id, 'status' => 'active']);
+
+        $classRoom = \App\Models\ClassRoom::first();
+        $classRoom->pendampingAdabList()->sync([$mentor1->id, $mentor2->id]);
+
+        $student = Student::create([
+            'name' => 'Murid Kelas Multi',
+            'student_number' => 'KM1',
+            'class_room_id' => $classRoom->id,
+        ]);
+
+        // Both mentors can fetch class data
+        $this->actingAs($mentor1)->getJson(route('adab.mentor-class-data', [
+            'class_room_id' => $classRoom->id,
+            'year' => 2026,
+            'month' => 9,
+        ]))->assertStatus(200);
+
+        $this->actingAs($mentor2)->getJson(route('adab.mentor-class-data', [
+            'class_room_id' => $classRoom->id,
+            'year' => 2026,
+            'month' => 9,
+        ]))->assertStatus(200);
+
+        // Mentor 2 can grade student
+        $response = $this->actingAs($mentor2)->post(route('adab.store-mentor-score', $student), [
+            'mentor_score' => 90,
+            'year' => 2026,
+            'month' => 9,
+            'notes' => 'Dinilai oleh pendamping kedua',
+        ]);
+        $response->assertRedirect(route('adab.show', $student));
+
+        $this->assertDatabaseHas('adab_mentor_assessments', [
+            'student_id' => $student->id,
+            'mentor_id' => $mentor2->id,
+            'mentor_score' => 90,
+        ]);
+    }
 }
