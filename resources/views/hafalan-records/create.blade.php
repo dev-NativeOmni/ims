@@ -198,6 +198,25 @@
                 if (s.classId != this.selectedClass) return false;
                 return this.attendances[s.id] === 'hadir';
             });
+        },
+        isDirty: false,
+        isSaving: false,
+        submitCurrentForm() {
+            if (this.isSaving) return;
+            this.isSaving = true;
+            this.isDirty = false;
+            const formId = this.method === 'ummi' ? 'form-ummi' : 'form-reguler';
+            const form = document.getElementById(formId);
+            if (form) {
+                if (form.reportValidity && !form.reportValidity()) {
+                    this.isSaving = false;
+                    this.isDirty = true;
+                    return;
+                }
+                form.submit();
+            } else {
+                this.isSaving = false;
+            }
         }
     }" x-init="
         const cachedPageMapping = localStorage.getItem('quran_page_mapping');
@@ -284,6 +303,20 @@
         if (selectedClass) {
             fetchAttendances();
         }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (this.isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        this.$nextTick(() => {
+            let isReady = true;
+            this.$watch('selectedStudent', () => { if (isReady && this.selectedStudent) this.isDirty = true; });
+            this.$watch('hafalans', () => { if (isReady) this.isDirty = true; }, { deep: true });
+            this.$watch('ummiHafalans', () => { if (isReady) this.isDirty = true; }, { deep: true });
+        });
     ">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
@@ -411,7 +444,7 @@
                     </span>
                 </div>
 
-                <form method="POST" action="{{ route('hafalan-records.store') }}" class="space-y-6">
+                <form id="form-reguler" method="POST" action="{{ route('hafalan-records.store') }}" @input="isDirty = true" @change="isDirty = true" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="reguler">
 
@@ -663,7 +696,7 @@
                     </span>
                 </div>
 
-                <form method="POST" action="{{ route('ummi-records.store') }}" class="space-y-6">
+                <form id="form-ummi" method="POST" action="{{ route('ummi-records.store') }}" @input="isDirty = true" @change="isDirty = true" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="ummi">
                     <input type="hidden" name="redirect_to" value="hafalan">
@@ -1005,6 +1038,37 @@
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Floating Unsaved Changes Save Bar -->
+            <div x-show="isDirty"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-12 opacity-0 scale-95"
+                 x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200 transform"
+                 x-transition:leave-start="translate-y-0 opacity-100 scale-100"
+                 x-transition:leave-end="translate-y-12 opacity-0 scale-95"
+                 class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-zinc-900/95 text-white dark:bg-white/95 dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-zinc-700/80 dark:border-zinc-300 flex items-center gap-4 text-xs font-bold"
+                 style="display: none;">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                    <span>Ada data setoran hafalan yang belum disimpan!</span>
+                </div>
+                <button type="button" @click="submitCurrentForm()" :disabled="isSaving" :class="method === 'ummi' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'" class="disabled:bg-gray-400 text-white px-4 py-2 rounded-xl font-bold transition shadow-lg cursor-pointer flex items-center gap-1.5">
+                    <template x-if="!isSaving">
+                        <span class="inline-flex items-center gap-1.5">
+                            💾 Simpan Sekarang
+                        </span>
+                    </template>
+                    <template x-if="isSaving">
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg> Menyimpan...
+                        </span>
+                    </template>
+                </button>
             </div>
 
         </div>
