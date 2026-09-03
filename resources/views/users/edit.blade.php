@@ -19,8 +19,27 @@
             </div>
 
             <!-- Form Edit User -->
+            @php
+                $pendampingRole = $roles->firstWhere('name', 'pendamping_adab');
+                $pendampingRoleId = (string) ($pendampingRole?->id ?? '');
+                $rawAssignedRoleIds = old('additional_role_ids', $user->roles->pluck('id')->all());
+                $assignedRoleIds = array_map('strval', is_array($rawAssignedRoleIds) ? $rawAssignedRoleIds : []);
+                $primaryRoleId = (string) old('role_id', $user->role_id);
+                $hasPendampingInitially = in_array($pendampingRoleId, $assignedRoleIds, true) || $primaryRoleId === $pendampingRoleId;
+            @endphp
+
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-6">
-                <form method="POST" action="{{ route('users.update', $user) }}" class="space-y-6">
+                <form method="POST" 
+                      action="{{ route('users.update', $user) }}" 
+                      class="space-y-6"
+                      x-data="{
+                          primaryRole: '{{ $primaryRoleId }}',
+                          additionalRoles: {{ json_encode($assignedRoleIds) }},
+                          pendampingRoleId: '{{ $pendampingRoleId }}',
+                          get isPendampingAdab() {
+                              return this.primaryRole === this.pendampingRoleId || this.additionalRoles.includes(this.pendampingRoleId);
+                          }
+                      }">
                     @csrf
                     @method('PATCH')
 
@@ -59,7 +78,11 @@
                     <!-- Peran Utama (Role Utama) -->
                     <div>
                         <label for="role_id" class="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">Peran Utama (Default Role)</label>
-                        <select name="role_id" id="role_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white" required>
+                        <select name="role_id" 
+                                id="role_id" 
+                                x-model="primaryRole"
+                                class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white" 
+                                required>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" @selected(old('role_id', $user->role_id) == $role->id) class="dark:bg-zinc-900">
                                     {{ $role->display_name }} ({{ 
@@ -87,17 +110,14 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Multi-Role</span>
                         </div>
 
-                        @php
-                            $assignedRoleIds = old('additional_role_ids', $user->roles->pluck('id')->all());
-                        @endphp
-
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                             @foreach ($roles as $role)
                                 <label class="flex items-center gap-2.5 p-2.5 rounded-lg bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-xs font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition">
                                     <input type="checkbox" 
                                            name="additional_role_ids[]" 
                                            value="{{ $role->id }}"
-                                           @checked(in_array($role->id, $assignedRoleIds) || old('role_id', $user->role_id) == $role->id)
+                                           x-model="additionalRoles"
+                                           @checked(in_array((string) $role->id, $assignedRoleIds, true))
                                            class="rounded border-zinc-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500">
                                     <span class="truncate">{{ $role->display_name }}</span>
                                 </label>
@@ -105,8 +125,17 @@
                         </div>
                     </div>
 
-                    <!-- Penugasan Kelas Pendamping Adab -->
-                    <div class="rounded-xl border border-teal-200 dark:border-teal-900/60 p-4 bg-teal-50/30 dark:bg-teal-950/20 space-y-3">
+                    <!-- Penugasan Kelas Pendamping Adab (Hanya muncul jika peran Pendamping Adab aktif/tercentang) -->
+                    <div x-show="isPendampingAdab"
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 -translate-y-2"
+                         class="rounded-xl border border-teal-200 dark:border-teal-900/60 p-4 bg-teal-50/30 dark:bg-teal-950/20 space-y-3"
+                         style="{{ $hasPendampingInitially ? '' : 'display: none;' }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <label class="block text-sm font-bold text-teal-900 dark:text-teal-200">Penugasan Kelas Pendamping Adab</label>
