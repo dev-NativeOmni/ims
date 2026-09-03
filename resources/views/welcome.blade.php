@@ -16,6 +16,82 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            /* Bulletproof Monolith Layout Fallbacks */
+            .monolith-shell {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                align-items: start;
+                width: 100%;
+            }
+            @media (min-width: 1024px) {
+                .monolith-shell {
+                    grid-template-columns: 290px minmax(0, 1fr);
+                }
+            }
+            .monolith-top-cards {
+                display: grid;
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+                gap: 1rem;
+            }
+            @media (min-width: 640px) {
+                .monolith-top-cards {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (min-width: 1280px) {
+                .monolith-top-cards {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+            }
+            .monolith-bento-split {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            @media (min-width: 1024px) {
+                .monolith-bento-split {
+                    grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+                }
+            }
+            .monolith-bottom-badges {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+            @media (min-width: 640px) {
+                .monolith-bottom-badges {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+            }
+            .monolith-glass-panel {
+                background: rgba(255, 255, 255, 0.45);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid rgba(255, 255, 255, 0.75);
+                border-radius: 2rem;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            }
+            .dark .monolith-glass-panel {
+                background: rgba(24, 24, 27, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .monolith-card-sm {
+                background: rgba(255, 255, 255, 0.55);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.85);
+                border-radius: 1.5rem;
+                padding: 1.25rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            }
+            .dark .monolith-card-sm {
+                background: rgba(24, 24, 27, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        </style>
     </head>
     <body class="bg-[#09090b] text-zinc-100 font-sans antialiased selection:bg-teal-500 selection:text-white relative overflow-x-hidden min-h-screen transition-colors duration-500">
 
@@ -115,10 +191,10 @@
                 <div class="max-w-[1400px] mx-auto w-full relative z-10">
                     
                     <!-- Main Grid: Monolith Frosted Glass Shell -->
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="monolith-shell">
                         
                         <!-- Left Sidebar: Frosted Glass Panel (Col 3) -->
-                        <aside class="lg:col-span-3 bg-white/45 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[640px] lg:min-h-[760px] select-none">
+                        <aside class="monolith-glass-panel p-6 flex flex-col justify-between min-h-[640px] lg:min-h-[760px] select-none">
                             
                             <!-- Top: Brand Header -->
                             <div class="space-y-8">
@@ -207,10 +283,10 @@
                         </aside>
 
                         <!-- Right Main Content Canvas (Col 9) -->
-                        <main class="lg:col-span-9 space-y-6">
+                        <main class="space-y-6 w-full min-w-0">
                             
                             <!-- Top Bar: Frosted Glass Navigation Pill (Matches Monolith Top Bar) -->
-                            <div class="w-full bg-white/45 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+                            <div class="monolith-glass-panel p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
                                 
                                 <!-- Search Pill Input -->
                                 <div class="relative w-full sm:w-64">
@@ -250,10 +326,10 @@
                             </div>
 
                             <!-- Row 1: 4 Key Metric Cards (Matches Monolith top cards) -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 select-none">
+                            <div class="monolith-top-cards select-none">
                                 
                                 <!-- Card 1: Total Target Mutqin -->
-                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
                                         <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
@@ -267,7 +343,7 @@
                                 </div>
 
                                 <!-- Card 2: Monitoring Terpadu -->
-                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
                                         <span class="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 flex items-center justify-center">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -281,7 +357,7 @@
                                 </div>
 
                                 <!-- Card 3: Indikator Karakter Adab -->
-                                <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-3xl p-5 shadow-[0_15px_35px_rgba(0,0,0,0.03)] flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
+                                <div class="monolith-card-sm flex flex-col justify-between transform hover:-translate-y-1 transition duration-200">
                                     <div class="flex items-center justify-between">
                                         <span class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -311,10 +387,10 @@
                             </div>
 
                             <!-- Row 2: Bento Growth Chart + Recent Activity (Matches Monolith Chart & Activity) -->
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 select-none">
+                            <div class="monolith-bento-split select-none">
                                 
-                                <!-- Left Chart Card (Col 8) -->
-                                <div class="lg:col-span-8 bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                                <!-- Left Chart Card -->
+                                <div class="monolith-glass-panel p-6 sm:p-7 flex flex-col justify-between min-w-0">
                                     
                                     <!-- Chart Header -->
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -414,8 +490,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Right Activity Card (Col 4) -->
-                                <div class="lg:col-span-4 bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                                <!-- Right Activity Card -->
+                                <div class="monolith-glass-panel p-6 flex flex-col justify-between min-w-0">
                                     
                                     <div>
                                         <div class="flex items-center justify-between pb-4 border-b border-white/80 dark:border-white/10">
@@ -480,7 +556,7 @@
                             </div>
 
                             <!-- Row 3: Quick Program Badges (Matches bottom pills) -->
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 select-none">
+                            <div class="monolith-bottom-badges select-none">
                                 
                                 <div class="bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
                                     <span class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center text-xs font-bold">1</span>

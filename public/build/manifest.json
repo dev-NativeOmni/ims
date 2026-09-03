@@ -1,0 +1,29 @@
+{
+  "_vendor-alpine-DLuZkmyn.js": {
+    "file": "assets/vendor-alpine-DLuZkmyn.js",
+    "name": "vendor-alpine"
+  },
+  "_vendor-axios-DcNlVx-A.js": {
+    "file": "assets/vendor-axios-DcNlVx-A.js",
+    "name": "vendor-axios"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DRjjTlzs.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DztT0zwp.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor-axios-DcNlVx-A.js",
+      "_vendor-alpine-DLuZkmyn.js"
+    ]
+  }
+}
