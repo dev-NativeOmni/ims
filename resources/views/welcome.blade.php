@@ -1135,7 +1135,7 @@
             <footer class="w-full bg-black border-t border-white/5 py-10 text-center relative z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p class="text-xs text-zinc-500">
-                        &copy; 2026 IMS (Integrated Management System). Dibuat dengan cinta untuk generasi Qur'ani masa depan.
+                        &copy; 2026 IMS (Integrated Management System). Made by Native Omni.
                     </p>
                     <div class="flex items-center gap-6 text-xs text-zinc-500">
                         <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>
