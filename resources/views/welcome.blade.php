@@ -53,7 +53,7 @@
         <div x-data="scrollLayout" class="relative z-10 flex flex-col min-h-screen">
             
             <!-- Sticky Floating Header Navbar (Glassmorphism Pill Navigation) -->
-            <header :class="isScrolled ? 'bg-white/90 dark:bg-zinc-900/90 border-b border-zinc-200/80 dark:border-white/10 shadow-lg py-3' : 'bg-transparent py-5'"
+            <header :class="isScrolled ? 'bg-white/95 dark:bg-zinc-900/95 border-b border-zinc-200/80 dark:border-white/10 shadow-lg py-3' : 'bg-transparent py-4 sm:py-5'"
                     class="fixed top-0 inset-x-0 z-50 transition-all duration-300 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo -->
@@ -63,12 +63,12 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="font-extrabold text-sm sm:text-base tracking-wider text-zinc-900 dark:text-white uppercase leading-none">Al Azhar <span class="text-amber-500">7</span></span>
-                            <span class="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Islamic Management System</span>
+                            <span class="text-[9px] sm:text-[10px] text-zinc-600 dark:text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Islamic Management System</span>
                         </div>
                     </div>
 
                     <!-- Desktop Pill Menu Navigation -->
-                    <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-white/70 dark:bg-black/40 border border-zinc-200/80 dark:border-white/10 backdrop-blur-xl shadow-sm text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <nav class="hidden md:flex items-center gap-1 p-1.5 rounded-full bg-white/80 dark:bg-black/50 border border-zinc-200/80 dark:border-white/10 backdrop-blur-xl shadow-sm text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                         <a href="#fitur" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
                         <a href="#keunggulan" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
                         <a href="#sebaran" class="px-4 py-2 rounded-full hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
@@ -96,41 +96,27 @@
             <!-- ========================================================================= -->
             <!-- SECTION 1: BRIGHT CINEMATIC LAYERED HERO ("SMAIA7" BEHIND SCHOOL)       -->
             <!-- ========================================================================= -->
-            <section class="relative min-h-[92vh] lg:min-h-screen bg-sky-100/60 dark:bg-zinc-950 text-zinc-900 dark:text-white flex flex-col justify-between pt-24 sm:pt-28 pb-0 overflow-hidden select-none">
+            <section class="relative min-h-[640px] sm:min-h-[720px] lg:min-h-[820px] bg-sky-100/50 dark:bg-zinc-950 text-zinc-900 dark:text-white flex flex-col justify-between pt-24 sm:pt-28 pb-0 overflow-hidden select-none">
                 
-                <!-- Layer 1: Original High-Resolution Daylight Sky & School Background -->
+                <!-- Layer 1: High-Resolution Campus Composite with "SMAIA7" Behind School -->
                 <div class="absolute inset-0 z-0 pointer-events-none">
-                    <img src="{{ asset('images/gedung_smaia7_bg.jpg') }}" 
-                         alt="Gedung Kampus SMA Islam Al Azhar 7" 
-                         class="w-full h-full object-cover object-center transform scale-100 sm:scale-105 transition-transform duration-1000 ease-out">
+                    <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
+                         alt="Kampus SMA Islam Al Azhar 7" 
+                         class="w-full h-full object-cover object-[center_35%] sm:object-[center_25%] lg:object-center transform scale-100 transition-transform duration-700">
                     
                     <!-- Soft Top & Bottom Ambient Contrast Gradients -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-50 via-transparent to-sky-900/10 dark:from-[#09090b] dark:via-black/20 dark:to-black/40"></div>
+                    <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-sky-950/20 to-transparent pointer-events-none"></div>
                 </div>
 
-                <!-- Layer 2: Massive 3D Text "SMAIA7" Layered Behind Building Roof -->
-                <div class="absolute inset-x-0 top-[13%] sm:top-[12%] lg:top-[10%] z-10 flex justify-center items-center pointer-events-none px-2 overflow-hidden">
-                    <span class="font-black tracking-tight text-[22vw] sm:text-[20vw] lg:text-[18vw] leading-none text-white/90 dark:text-white/80 uppercase drop-shadow-[0_10px_25px_rgba(15,23,42,0.18)] select-none font-sans filter blur-[0.1px]">
-                        SMAIA7
-                    </span>
-                </div>
+                <!-- Layer 2: Seamless Bottom Gradient Transition into Section 2 (NO hard cuts / NO dividing lines) -->
+                <div class="absolute inset-x-0 bottom-0 h-44 sm:h-64 bg-gradient-to-t from-zinc-50 via-zinc-50/80 to-transparent dark:from-[#09090b] dark:via-[#09090b]/80 dark:to-transparent z-10 pointer-events-none"></div>
 
-                <!-- Layer 3: Foreground Isolated Building Cutout (Sits on top of the SMAIA7 text) -->
-                <div class="absolute inset-0 z-20 pointer-events-none flex items-end justify-center">
-                    <img src="{{ asset('images/gedung_smaia7_fg.png') }}" 
-                         alt="Gedung Kampus SMA Islam Al Azhar 7" 
-                         class="w-full h-full object-cover object-center transform scale-100 sm:scale-105">
-                </div>
-
-                <!-- Layer 3.5: Seamless Bottom Gradient Transition into Section 2 (No hard cuts) -->
-                <div class="absolute inset-x-0 bottom-0 h-32 sm:h-48 bg-gradient-to-t from-zinc-50 via-zinc-50/80 to-transparent dark:from-[#09090b] dark:via-[#09090b]/80 dark:to-transparent z-25 pointer-events-none"></div>
-
-                <!-- Layer 4: Foreground Interactive Content & UI Overlays (Z-30) -->
-                <div class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-grow pb-12 sm:pb-16">
+                <!-- Layer 3: Foreground Interactive Content & UI Overlays (Z-20) -->
+                <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-grow pb-10 sm:pb-14">
                     
                     <!-- Top Subtitle Badge -->
-                    <div class="flex items-center justify-between pt-2">
-                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-black/60 border border-zinc-200/80 dark:border-white/15 backdrop-blur-xl shadow-md text-xs font-bold text-teal-700 dark:text-teal-300">
+                    <div class="flex items-center justify-between pt-1 sm:pt-3">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-black/70 border border-zinc-200/80 dark:border-white/15 backdrop-blur-xl shadow-md text-xs font-bold text-teal-800 dark:text-teal-300">
                             <span class="flex h-2 w-2 relative">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-600"></span>
@@ -138,19 +124,19 @@
                             Islamic Management System • Al Azhar 7
                         </div>
 
-                        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white/80 dark:bg-black/50 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm">
+                        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white/90 dark:bg-black/60 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md">
                             <span>🕌 Kampus Unggulan & Berkarakter Adab</span>
                         </div>
                     </div>
 
-                    <!-- Bottom Bar: Spacious Key Metrics + CTA + Compact Preview Card -->
-                    <div class="mt-auto pt-24 sm:pt-40 flex flex-col lg:flex-row lg:items-end justify-between gap-6 lg:gap-8">
+                    <!-- Bottom Bar: Clean Key Metrics + CTA + Compact Preview Card -->
+                    <div class="mt-auto pt-32 sm:pt-48 flex flex-col lg:flex-row lg:items-end justify-between gap-6 lg:gap-8">
                         
                         <!-- Left Block: Metrics Row & CTA -->
-                        <div class="flex flex-col gap-5 max-w-2xl">
+                        <div class="flex flex-col gap-4 max-w-2xl">
                             
                             <!-- 3 Key Metric Columns in Clean Horizontal Row -->
-                            <div class="grid grid-cols-3 gap-4 sm:gap-8 max-w-md bg-white/80 dark:bg-black/60 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-lg">
+                            <div class="grid grid-cols-3 gap-3 sm:gap-8 max-w-md bg-white/90 dark:bg-black/70 border border-zinc-200/80 dark:border-white/15 backdrop-blur-md p-3 sm:p-4 rounded-2xl shadow-xl">
                                 <div class="flex flex-col">
                                     <span class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">30+</span>
                                     <span class="text-[11px] sm:text-xs font-semibold text-zinc-600 dark:text-zinc-400 mt-1">Juz Mutqin</span>
@@ -166,10 +152,10 @@
                             </div>
 
                             <!-- CTA Button + Brief Description (Side by Side) -->
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-3.5">
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                                 @auth
                                     <a href="{{ url('/dashboard') }}" 
-                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition duration-200 shrink-0">
+                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-xl hover:scale-105 active:scale-95 transition duration-200 shrink-0">
                                         <span>Buka Dashboard</span>
                                         <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
@@ -177,7 +163,7 @@
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" 
-                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition duration-200 shrink-0">
+                                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider shadow-xl hover:scale-105 active:scale-95 transition duration-200 shrink-0">
                                         <span>Akses Portal</span>
                                         <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
@@ -185,7 +171,7 @@
                                     </a>
                                 @endauth
 
-                                <p class="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white/70 dark:bg-black/50 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md p-2.5 sm:p-3 rounded-xl shadow-sm leading-relaxed max-w-md">
+                                <p class="text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 bg-white/80 dark:bg-black/60 border border-zinc-200/80 dark:border-white/10 backdrop-blur-md p-2.5 sm:p-3 rounded-xl shadow-md leading-relaxed max-w-md">
                                     Platform digital pelacakan hafalan Al-Qur'an, murajaah harian, dan pembiasaan karakter adab murid SMA Islam Al Azhar 7.
                                 </p>
                             </div>
@@ -193,7 +179,7 @@
 
                         <!-- Right Block: Compact Glassmorphism Preview Card -->
                         <div class="hidden sm:flex justify-end shrink-0">
-                            <div class="w-72 rounded-2xl bg-white/85 dark:bg-black/60 border border-zinc-200/80 dark:border-white/15 p-3.5 backdrop-blur-xl shadow-xl space-y-2.5 transform hover:-translate-y-1 transition duration-300">
+                            <div class="w-64 rounded-2xl bg-white/90 dark:bg-black/70 border border-zinc-200/80 dark:border-white/15 p-3 backdrop-blur-xl shadow-xl space-y-2 transform hover:-translate-y-1 transition duration-300">
                                 <div class="flex items-center justify-between text-xs">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -206,14 +192,14 @@
                                     <img src="{{ asset('images/hero_bright_composite.jpg') }}" 
                                          alt="Preview Kampus SMAIA 7" 
                                          class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2.5">
-                                        <p class="text-[11px] font-bold text-white">Program Tahfizh & Kelas Khusus</p>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2">
+                                        <p class="text-[10px] font-bold text-white">Program Tahfizh & Kelas Khusus</p>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between pt-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                                <div class="flex items-center justify-between pt-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
                                     <span>SMA Islam Al Azhar 7</span>
-                                    <a href="#fitur" class="text-teal-600 dark:text-teal-400 hover:underline font-bold flex items-center gap-0.5">
+                                    <a href="#fitur" class="text-teal-700 dark:text-teal-400 hover:underline font-bold flex items-center gap-0.5">
                                         Lihat Fitur &darr;
                                     </a>
                                 </div>
@@ -225,8 +211,8 @@
                 </div>
             </section>
 
-            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Light Background Transition) -->
-            <section id="fitur" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-y border-zinc-200/60 py-28 relative overflow-hidden">
+            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Smooth Light Background Transition) -->
+            <section id="fitur" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-b border-zinc-200/60 py-24 sm:py-28 relative overflow-hidden">
                 <!-- Soft Light Glows -->
                 <div class="absolute inset-0 pointer-events-none z-0">
                     <div class="absolute w-[400px] h-[400px] -top-40 -right-20 bg-teal-100 rounded-full blur-[100px] opacity-60"></div>
