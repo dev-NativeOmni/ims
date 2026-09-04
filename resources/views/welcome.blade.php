@@ -148,10 +148,10 @@
                     x-transition:leave-end="opacity-0 -translate-y-4"
                     class="fixed top-0 inset-x-0 z-50 bg-white/95 dark:bg-zinc-900/95 border-b border-zinc-200 dark:border-white/10 shadow-md py-2.5 backdrop-blur-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                    <!-- Brand Logo: Pure School Logo & Gemilang Banner Logo -->
-                    <div class="flex items-center gap-2.5 sm:gap-3">
+                    <!-- Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
+                    <div class="flex items-center gap-3">
                         <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0">
-                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-7 sm:h-8 max-w-[150px] sm:max-w-[180px] object-contain">
+                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-8 sm:h-9 max-w-[170px] sm:max-w-[220px] object-contain">
                     </div>
 
                     <!-- Desktop Pill Menu Navigation -->
@@ -201,12 +201,10 @@
                 <header class="max-w-6xl mx-auto w-full relative z-20">
                     <div class="p-2 sm:p-2.5 rounded-full bg-black/40 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between gap-3">
                         
-                        <!-- Left Brand Logo: Pure School Logo & Gemilang Banner Logo -->
-                        <div class="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
+                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
+                        <div class="flex items-center gap-3 pl-1 sm:pl-2">
                             <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0 drop-shadow-md">
-                            <div class="bg-white/95 backdrop-blur-md rounded-xl px-2.5 py-1 shadow-sm flex items-center justify-center">
-                                <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-6 max-w-[140px] sm:max-w-[170px] object-contain">
-                            </div>
+                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-8 sm:h-9 max-w-[170px] sm:max-w-[220px] object-contain drop-shadow-md brightness-110">
                         </div>
 
                         <!-- Center Navigation Links (Hidden on Mobile) -->
