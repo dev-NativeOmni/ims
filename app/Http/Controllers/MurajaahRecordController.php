@@ -162,11 +162,12 @@ class MurajaahRecordController extends Controller
                         continue;
                     }
 
+                    $isAscending = $surahStart->number <= $surahEnd->number;
                     $minNumber = min($surahStart->number, $surahEnd->number);
                     $maxNumber = max($surahStart->number, $surahEnd->number);
 
                     $surahs = Surah::whereBetween('number', [$minNumber, $maxNumber])
-                        ->orderBy('number')
+                        ->orderBy('number', $isAscending ? 'asc' : 'desc')
                         ->get();
 
                     foreach ($surahs as $surah) {
@@ -233,8 +234,12 @@ class MurajaahRecordController extends Controller
             $surahStart = Surah::findOrFail($surahStartId);
             $surahEnd = Surah::findOrFail($surahEndId);
 
-            $surahs = Surah::whereBetween('number', [$surahStart->number, $surahEnd->number])
-                ->orderBy('number')
+            $isAscending = $surahStart->number <= $surahEnd->number;
+            $minNumber = min($surahStart->number, $surahEnd->number);
+            $maxNumber = max($surahStart->number, $surahEnd->number);
+
+            $surahs = Surah::whereBetween('number', [$minNumber, $maxNumber])
+                ->orderBy('number', $isAscending ? 'asc' : 'desc')
                 ->get();
 
             DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated) {

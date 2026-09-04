@@ -1344,21 +1344,24 @@ class ReportController extends Controller
                 if ($rec->surah) {
                     $lines = $rec->lines_count;
                     $totalLines += $lines;
-                    $progressParts[] = "{$rec->surah->name_latin} // {$rec->ayah_start}-{$rec->ayah_end} ({$lines} Baris)";
+                    $progressParts[] = "{$rec->surah->name_latin} ({$rec->ayah_start}-{$rec->ayah_end}) ({$lines} Baris)";
                 }
             }
 
-            // Murojaah
-            foreach ($mRecs as $rec) {
+            // Murojaah - Rangkum seluruh surat yang dimuroja'ah di hari itu
+            $murojaahParts = [];
+            $sortedMRecs = $mRecs->sortBy(function ($r) {
+                return $r->surah?->number ?? 999;
+            });
+
+            foreach ($sortedMRecs as $rec) {
                 if ($rec->surah) {
-                    $lines = self::calculateLines(
-                        $rec->surah->number,
-                        $rec->ayah_start,
-                        $rec->ayah_end,
-                        $rec->surah->total_ayah
-                    );
-                    $progressParts[] = "murojaah {$rec->surah->name_latin} // {$rec->ayah_start}-{$rec->ayah_end} ({$lines} Baris)";
+                    $murojaahParts[] = "{$rec->surah->name_latin} ({$rec->ayah_start}-{$rec->ayah_end})";
                 }
+            }
+
+            if (!empty($murojaahParts)) {
+                $progressParts[] = "murojaah " . implode(', ', $murojaahParts);
             }
 
             // Ummi progress
