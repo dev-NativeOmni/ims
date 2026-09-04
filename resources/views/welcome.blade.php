@@ -202,123 +202,142 @@
                     <div class="absolute -bottom-24 left-1/3 w-[600px] h-[350px] bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent"></div>
                 </div>
 
-                <!-- Top Navbar: Clean Horizontal Glass Bar Header (Matching Mockup) -->
-                <header class="max-w-7xl mx-auto w-full relative z-20 flex items-center justify-between py-2">
-                    
-                    <!-- Left Brand Logo -->
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-white/80 overflow-hidden shrink-0">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
+                <!-- Top Navbar: Frosted Glass Pill Header -->
+                <header class="max-w-6xl mx-auto w-full relative z-20">
+                    <div class="p-2 sm:p-2.5 rounded-full bg-black/40 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between gap-3">
+                        
+                        <!-- Left Brand Logo -->
+                        <div class="flex items-center gap-3 pl-2 sm:pl-3">
+                            <div class="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white flex items-center justify-center p-1 shadow-md border border-white/60 overflow-hidden shrink-0">
+                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-contain">
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-extrabold text-xs sm:text-sm tracking-tight text-white uppercase leading-none">
+                                    Al Azhar <span class="text-amber-400">7</span>
+                                </span>
+                                <span class="text-[8px] sm:text-[9px] text-zinc-300 font-semibold tracking-wider uppercase mt-0.5">
+                                    Integrated Management System
+                                </span>
+                            </div>
                         </div>
-                        <div class="flex flex-col">
-                            <span class="font-extrabold text-sm sm:text-base tracking-tight text-white uppercase leading-none drop-shadow-md">
-                                SMA Islam <br class="sm:hidden">Al Azhar <span class="text-amber-400">7</span>
-                            </span>
+
+                        <!-- Center Navigation Links (Hidden on Mobile) -->
+                        <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-zinc-200">
+                            <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                            <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                            <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                            <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                            <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                        </nav>
+
+                        <!-- Right Auth Action Button -->
+                        <div class="pr-1 sm:pr-1.5">
+                            @if (Route::has('login'))
+                                @auth
+                                    <a href="{{ url('/dashboard') }}" 
+                                       class="inline-flex items-center gap-2 px-5 sm:px-6 py-2 rounded-full text-white font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                        <span>Dashboard</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" 
+                                       class="inline-flex items-center gap-2 px-5 sm:px-6 py-2 rounded-full text-white font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                        <span>Masuk</span>
+                                    </a>
+                                @endauth
+                            @endif
                         </div>
-                    </div>
-
-                    <!-- Center Navigation Links (Hidden on Mobile) -->
-                    <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-white/90 drop-shadow">
-                        <a href="#fitur" class="hover:text-amber-300 transition-colors duration-200">Fitur Utama</a>
-                        <a href="#keunggulan" class="hover:text-amber-300 transition-colors duration-200">Keunggulan</a>
-                        <a href="#sebaran" class="hover:text-amber-300 transition-colors duration-200">Konektivitas</a>
-                        <a href="#faq" class="hover:text-amber-300 transition-colors duration-200">Tanya Jawab</a>
-                    </nav>
-
-                    <!-- Right Auth Action Button (Amber Sunset Glass Capsule) -->
-                    <div>
-                        @if (Route::has('login'))
-                            @auth
-                                <a href="{{ url('/dashboard') }}" 
-                                   class="inline-flex items-center justify-center px-7 py-2.5 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-600 backdrop-blur-md border border-white/35 shadow-[0_4px_20px_rgba(245,158,11,0.4)] hover:scale-105 active:scale-95 transition-all duration-200">
-                                    <span>Dashboard</span>
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" 
-                                   class="inline-flex items-center justify-center px-7 py-2.5 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-600 backdrop-blur-md border border-white/35 shadow-[0_4px_20px_rgba(245,158,11,0.4)] hover:scale-105 active:scale-95 transition-all duration-200">
-                                    <span>Masuk</span>
-                                </a>
-                            @endauth
-                        @endif
                     </div>
                 </header>
 
                 <!-- Center Hero Stage: Minimalist & Clean Typography -->
-                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-10 sm:py-16">
+                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-12 sm:py-16">
                     
-                    <!-- Pill Badge: Generasi Mulia Islami Cemerlang (Frosted Glass Capsule) -->
-                    <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-xs font-bold text-amber-300 uppercase tracking-wider mb-6">
-                        <svg class="w-3.5 h-3.5 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm text-xs font-bold text-amber-300 uppercase tracking-wider mb-6 animate-pulse">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
                         </svg>
                         <span>Generasi Mulia Islami Cemerlang</span>
                     </div>
 
                     <!-- Main Hero Title -->
-                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
                         Integrated Management System
                     </h1>
 
                     <!-- Hero Subtitle in Indonesian -->
-                    <p class="mt-4 text-sm sm:text-base lg:text-lg text-zinc-100 max-w-2xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-                        Platform Digital Terpadu <strong class="text-white font-semibold">SMA Islam Al Azhar 7 Sukoharjo</strong><br class="hidden sm:inline"> untuk Pemantauan Tahfizh & Karakter Adab
+                    <p class="mt-5 text-sm sm:text-base lg:text-lg text-zinc-200 max-w-2xl mx-auto leading-relaxed font-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                        Platform Digital Terpadu <strong class="text-white font-semibold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
                     </p>
 
-                    <!-- Dual Action CTA Buttons (Matching Glassmorphic Mockup) -->
-                    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+                    <!-- Dual Action CTA Buttons -->
+                    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto">
                         @auth
                             <a href="{{ url('/dashboard') }}" 
-                               class="w-full sm:w-auto px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wide bg-gradient-to-r from-orange-600/80 to-amber-600/80 backdrop-blur-xl border border-white/40 shadow-[0_0_35px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center">
+                               class="w-full sm:w-auto px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-[0_0_35px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
                                 <span>Buka Dashboard</span>
+                                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
                             </a>
                         @else
                             <a href="{{ route('login') }}" 
-                               class="w-full sm:w-auto px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wide bg-gradient-to-r from-orange-600/80 to-amber-600/80 backdrop-blur-xl border border-white/40 shadow-[0_0_35px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center">
-                                <span>Buka Dashboard</span>
+                               class="w-full sm:w-auto px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-[0_0_35px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                <span>Akses Portal Masuk</span>
+                                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
                             </a>
                         @endauth
 
                         <a href="#fitur" 
-                           class="w-full sm:w-auto px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wide bg-black/35 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:bg-white/10 hover:border-white/40 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center">
+                           class="w-full sm:w-auto px-8 py-3.5 rounded-full text-zinc-200 hover:text-white font-bold text-sm tracking-wide bg-black/40 hover:bg-white/10 backdrop-blur-md border border-white/20 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
                             <span>Jelajahi Fitur</span>
+                            <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
                         </a>
                     </div>
                 </div>
 
-                <!-- Bottom Floating Metric Dock: Unified Monolith Glass Container (Matching Mockup) -->
-                <div class="max-w-3xl mx-auto w-full relative z-10 pb-4">
-                    <div class="rounded-3xl bg-black/30 backdrop-blur-2xl border border-white/25 shadow-[0_20px_50px_rgba(0,0,0,0.45)] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/15 p-4 sm:p-5">
+                <!-- Bottom Floating Metric Dock: 3 Core Highlights (Glassmorphism) -->
+                <div class="max-w-4xl mx-auto w-full relative z-10 pb-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 p-3 sm:p-4 rounded-3xl bg-black/50 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                         
                         <!-- Metric 1: Tahfizh 30 Juz -->
-                        <div class="flex items-center justify-center gap-3.5 py-3 sm:py-0 px-2 sm:px-4">
-                            <svg class="w-6 h-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            <div class="flex flex-col text-left">
-                                <div class="text-xl font-black text-white leading-tight">30 Juz</div>
-                                <div class="text-xs text-zinc-300 font-medium">Target Tahfizh</div>
+                        <div class="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition duration-200">
+                            <div class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="text-base sm:text-lg font-black text-white">30 Juz</div>
+                                <div class="text-[11px] text-zinc-300 font-medium">Target Tahfizh Mutqin</div>
                             </div>
                         </div>
 
                         <!-- Metric 2: 100% Real-Time Monitoring -->
-                        <div class="flex items-center justify-center gap-3.5 py-3 sm:py-0 px-2 sm:px-4">
-                            <svg class="w-6 h-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div class="flex flex-col text-left">
-                                <div class="text-xl font-black text-white leading-tight">100%</div>
-                                <div class="text-xs text-zinc-300 font-medium">Real-time Monitoring</div>
+                        <div class="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition duration-200">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                             </div>
-                        </div>
-
-                        <!-- Metric 3: 12+ Poin Pembiasaan Adab -->
-                        <div class="flex items-center justify-center gap-3.5 py-3 sm:py-0 px-2 sm:px-4">
-                            <svg class="w-6 h-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <div class="flex flex-col text-left">
-                                <div class="text-xl font-black text-white leading-tight">12+ Poin</div>
-                                <div class="text-xs text-zinc-300 font-medium">Pembiasaan Adab</div>
+                            <div class="flex flex-col">
+                                <div class="text-base sm:text-lg font-black text-white">100% Live</div>
+                                <div class="text-[11px] text-zinc-300 font-medium">Monitoring Terpadu</div>
+                            </div>
+                        </div>                        <!-- Metric 3: 12+ Poin Pembiasaan Adab -->
+                        <div class="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition duration-200">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="text-base sm:text-lg font-black text-white">12+ Poin</div>
+                                <div class="text-[11px] text-zinc-300 font-medium">Pembiasaan Adab Santri</div>
                             </div>
                         </div>
 
