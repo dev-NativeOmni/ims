@@ -3,8 +3,11 @@ export default () => ({
     scrollY: 0,
     activeDashboardTab: 'siswa', // for the simulator: 'siswa', 'guru', 'wali'
     isScrolled: false, // for sticky navbar contrast adjustments
+    isDark: document.documentElement.classList.contains('dark'),
     
     init() {
+        this.isDark = document.documentElement.classList.contains('dark');
+        
         window.addEventListener('scroll', () => {
             this.scrollY = window.scrollY;
             this.isScrolled = window.scrollY > 20;
@@ -14,7 +17,18 @@ export default () => ({
             this.scrollProgress = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
         });
         
-        console.log('IMS ScrollLayout component loaded!');
+        console.log('IMS ScrollLayout component loaded with Theme Switcher support!');
+    },
+
+    toggleTheme() {
+        this.isDark = !this.isDark;
+        if (this.isDark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
     },
     
     trackMouse(event) {
