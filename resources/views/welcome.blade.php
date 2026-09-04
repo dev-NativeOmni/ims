@@ -96,28 +96,28 @@
                     border-radius: 1.5rem;
                     padding: 1.25rem;
                 }
-                        /* Premium Liquid Glassmorphism & Adaptive Depth */
+            /* Premium Frosted Glassmorphism with Anti-Glare Optics */
             .glass-liquid-card {
-                background: rgba(255, 255, 255, 0.55);
-                backdrop-filter: blur(28px) saturate(190%);
-                -webkit-backdrop-filter: blur(28px) saturate(190%);
-                border: 1px solid rgba(255, 255, 255, 0.75);
-                box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.07), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.42);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.65);
+                box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
             }
             .dark .glass-liquid-card {
-                background: rgba(24, 24, 27, 0.75);
-                backdrop-filter: blur(28px) saturate(190%);
-                -webkit-backdrop-filter: blur(28px) saturate(190%);
+                background: rgba(24, 24, 27, 0.72);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
             }
 
             .glass-liquid-inner {
-                background: rgba(241, 245, 249, 0.65);
+                background: rgba(255, 255, 255, 0.48);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
-                border: 1px solid rgba(255, 255, 255, 0.65);
-                box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
             }
             .dark .glass-liquid-inner {
                 background: rgba(0, 0, 0, 0.4);
@@ -176,7 +176,7 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 -translate-y-4"
-                    class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/80 dark:bg-zinc-900/90 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2.5 backdrop-blur-2xl transition-colors duration-300">
+                    class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/70 dark:bg-zinc-900/80 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2.5 backdrop-blur-2xl transition-colors duration-300">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <!-- Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
                     <div class="flex items-center gap-3">
@@ -185,12 +185,12 @@
                     </div>
 
                     <!-- Desktop Pill Menu Navigation -->
-                    <nav class="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/60 dark:bg-black/50 border border-white/70 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm">
-                        <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                        <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                        <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                        <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                        <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                    <nav class="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm">
+                        <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                        <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                        <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                        <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                        <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                     </nav>
 
                     <!-- Auth Actions & Theme Switcher -->
@@ -199,7 +199,7 @@
                         <button @click="toggleTheme()" 
                                 type="button"
                                 aria-label="Toggle Theme"
-                                class="p-2 sm:p-2.5 rounded-full bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/80 dark:border-white/15 text-zinc-700 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
+                                class="p-2 sm:p-2.5 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/15 text-zinc-700 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
                             <!-- Sun icon (shown in dark mode to switch to light) -->
                             <svg x-show="isDark" class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
@@ -226,25 +226,25 @@
             </header>
 
             <!-- ========================================================================= -->
-            <!-- SECTION 1: CLEAN MINIMALIST HERO (SUNSET SCHOOL & GLASSMORPHIC VIGNETTE)  -->
+            <!-- SECTION 1: CLEAN MINIMALIST HERO (CRYSTAL FROSTED GLASS & NATURAL SUNSET) -->
             <!-- ========================================================================= -->
-            <section class="w-full relative min-h-screen flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8 overflow-hidden bg-cover bg-center bg-no-repeat"
+            <section class="w-full relative min-h-screen flex flex-col justify-between py-6 sm:py-8 px-4 sm:px-6 lg:px-8 overflow-hidden bg-cover bg-center bg-no-repeat"
                      style="background-image: url('{{ asset('images/school_sunset_bg.jpg') }}');">
                 
-                <!-- Layer 1: Glassmorphic Vignette & Duotone Gemilang Ambient Glow -->
+                <!-- Layer 1: Elegant Glassmorphic Ambient Tone (No Blinding White Wash) -->
                 <div class="absolute inset-0 pointer-events-none z-0">
-                    <!-- Radial Dark/Light Vignette (Soft soothing warm tone in Light Mode) -->
-                    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(241,245,249,0.32)_0%,rgba(241,245,249,0.72)_48%,#f1f5f9_100%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(9,9,11,0.22)_0%,rgba(9,9,11,0.58)_45%,rgba(9,9,11,0.95)_100%)]"></div>
+                    <!-- Subtle Contrast Gradient Overlay (Preserves Natural Photo & Depth) -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-[#f1f5f9] dark:from-black/50 dark:via-black/40 dark:to-[#09090b]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(15,23,42,0.18)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.65)_100%)]"></div>
                     
-                    <!-- Duotone Gemilang Ambient Glows (Sunset Tangerine Orange & Royal Cobalt Blue) -->
-                    <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-orange-500/18 dark:bg-orange-500/18 rounded-full blur-[140px]"></div>
-                    <div class="absolute top-1/3 -right-32 w-[550px] h-[550px] bg-blue-500/12 dark:bg-blue-600/22 rounded-full blur-[150px]"></div>
-                    <div class="absolute -bottom-24 left-1/3 w-[600px] h-[350px] bg-gradient-to-t from-[#f1f5f9] via-[#f1f5f9]/80 to-transparent dark:from-[#09090b] dark:via-[#09090b]/80 dark:to-transparent"></div>
+                    <!-- Duotone Gemilang Ambient Glows -->
+                    <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-orange-500/15 dark:bg-orange-500/18 rounded-full blur-[140px]"></div>
+                    <div class="absolute top-1/3 -right-32 w-[550px] h-[550px] bg-blue-500/10 dark:bg-blue-600/20 rounded-full blur-[150px]"></div>
                 </div>
 
                 <!-- Top Navbar: Frosted Glass Pill Header -->
                 <header class="max-w-6xl mx-auto w-full relative z-20">
-                    <div class="p-2 sm:p-2.5 rounded-full bg-white/55 dark:bg-zinc-900/50 backdrop-blur-2xl border border-white/70 dark:border-white/15 shadow-xl shadow-slate-900/5 flex items-center justify-between gap-2 sm:gap-3 transition-colors duration-300">
+                    <div class="p-2 sm:p-2.5 rounded-full bg-white/35 dark:bg-zinc-900/50 backdrop-blur-2xl border border-white/60 dark:border-white/15 shadow-xl shadow-black/5 flex items-center justify-between gap-2 sm:gap-3 transition-colors duration-300">
                         
                         <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Original Size) -->
                         <div class="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
@@ -253,12 +253,12 @@
                         </div>
 
                         <!-- Center Navigation Links (Hidden on Mobile) -->
-                        <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-200">
-                            <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                            <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                            <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                            <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                            <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                        <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                            <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                            <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                            <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                            <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                            <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                         </nav>
 
                         <!-- Right Actions & Theme Switcher -->
@@ -267,7 +267,7 @@
                             <button @click="toggleTheme()" 
                                     type="button"
                                     aria-label="Toggle Theme"
-                                    class="p-1.5 sm:p-2 rounded-full bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/80 dark:border-white/20 text-zinc-800 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
+                                    class="p-1.5 sm:p-2 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/20 text-zinc-800 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
                                 <!-- Sun icon -->
                                 <svg x-show="isDark" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
@@ -295,54 +295,56 @@
                     </div>
                 </header>
 
-                <!-- Center Hero Stage: Sleek & Balanced Typography -->
-                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-8 sm:py-14">
-                    
-                    <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
-                    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/10 dark:bg-white/10 backdrop-blur-md border border-orange-500/30 dark:border-white/20 shadow-sm text-[10px] sm:text-xs font-bold text-orange-700 dark:text-amber-300 uppercase tracking-wider mb-4 sm:mb-6 animate-pulse">
-                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
-                        </svg>
-                        <span>Generasi Mulia Islami Cemerlang</span>
-                    </div>
-
-                    <!-- Main Hero Title -->
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-sm dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] px-2">
-                        Integrated Management System
-                    </h1>
-
-                    <!-- Hero Subtitle in Indonesian -->
-                    <p class="mt-3 sm:mt-5 text-xs sm:text-base lg:text-lg text-zinc-700 dark:text-zinc-200 max-w-2xl mx-auto leading-relaxed font-normal px-2">
-                        Platform Digital Terpadu <strong class="text-zinc-900 dark:text-white font-semibold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
-                    </p>
-
-                    <!-- Dual Action CTA Buttons (Proportionate on Mobile) -->
-                    <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
-                        @auth
-                            <a href="{{ url('/dashboard') }}" 
-                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                                <span>Buka Dashboard</span>
-                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                </svg>
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" 
-                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                                <span>Akses Portal Masuk</span>
-                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                </svg>
-                            </a>
-                        @endauth
-
-                        <a href="#fitur" 
-                           class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-zinc-800 dark:text-zinc-200 hover:text-orange-600 dark:hover:text-white font-bold text-xs sm:text-sm tracking-wide bg-white/60 dark:bg-black/40 hover:bg-white/90 dark:hover:bg-white/10 backdrop-blur-xl border border-white/80 dark:border-white/20 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                            <span>Jelajahi Fitur</span>
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                <!-- Center Hero Stage: Apple-Style Frosted Glass Pod Island -->
+                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-6 sm:py-10">
+                    <div class="w-full p-6 sm:p-10 rounded-3xl sm:rounded-[2.5rem] bg-white/30 dark:bg-black/45 backdrop-blur-2xl border border-white/55 dark:border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] flex flex-col items-center justify-center">
+                        
+                        <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
+                        <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/15 dark:bg-white/10 backdrop-blur-md border border-orange-500/35 dark:border-white/20 shadow-sm text-[10px] sm:text-xs font-bold text-orange-800 dark:text-amber-300 uppercase tracking-wider mb-4 sm:mb-5">
+                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
                             </svg>
-                        </a>
+                            <span>Generasi Mulia Islami Cemerlang</span>
+                        </div>
+
+                        <!-- Main Hero Title -->
+                        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-sm dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] px-2">
+                            Integrated Management System
+                        </h1>
+
+                        <!-- Hero Subtitle in Indonesian -->
+                        <p class="mt-3 sm:mt-4 text-xs sm:text-base lg:text-lg text-zinc-800 dark:text-zinc-200 max-w-2xl mx-auto leading-relaxed font-normal px-2">
+                            Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
+                        </p>
+
+                        <!-- Dual Action CTA Buttons (Proportionate on Mobile) -->
+                        <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
+                            @auth
+                                <a href="{{ url('/dashboard') }}" 
+                                   class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <span>Buka Dashboard</span>
+                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" 
+                                   class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <span>Akses Portal Masuk</span>
+                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </a>
+                            @endauth
+
+                            <a href="#fitur" 
+                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-zinc-800 dark:text-zinc-200 hover:text-orange-600 dark:hover:text-white font-bold text-xs sm:text-sm tracking-wide bg-white/40 dark:bg-black/40 hover:bg-white/70 dark:hover:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/20 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                <span>Jelajahi Fitur</span>
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
