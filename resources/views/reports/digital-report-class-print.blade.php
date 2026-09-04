@@ -333,6 +333,7 @@
                 <!-- Row 1 -->
                 <div class="grid grid-cols-2 gap-8 text-center">
                     <div>
+                        <p class="invisible select-none">Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                         <p class="font-semibold">Koordinator Tahfidz</p>
                         <div class="h-16 print:h-12"></div>
                         <p class="font-bold underline text-black">Zainal Arifin, S.Pd</p>
@@ -357,7 +358,7 @@
                         <p class="text-[10px] text-gray-650">NIK. 08.04.0160</p>
                     </div>
                     <div>
-                        <p class="invisible">Spacer</p>
+                        <p class="invisible select-none">Mengetahui,</p>
                         <p class="font-semibold">Koordinator Tanse</p>
                         <div class="h-16 print:h-12"></div>
                         <p class="font-bold underline text-black">Yatim Hermawan, S.E., S.Kom</p>
