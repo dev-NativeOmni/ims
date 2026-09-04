@@ -197,14 +197,14 @@
                     <div class="absolute -bottom-24 left-1/3 w-[600px] h-[350px] bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent"></div>
                 </div>
 
-                <!-- Top Navbar: Frosted Glass Pill Header (Optimized for all screen sizes) -->
+                <!-- Top Navbar: Frosted Glass Pill Header -->
                 <header class="max-w-6xl mx-auto w-full relative z-20">
-                    <div class="p-1.5 sm:p-2.5 rounded-full bg-black/40 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between gap-2 sm:gap-3">
+                    <div class="p-2 sm:p-2.5 rounded-full bg-black/40 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/15 shadow-xl flex items-center justify-between gap-2 sm:gap-3">
                         
-                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
-                        <div class="flex items-center gap-2 sm:gap-3 pl-1.5 sm:pl-2 min-w-0">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 sm:h-10 sm:w-10 object-contain shrink-0 drop-shadow-md">
-                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-8 max-w-[110px] sm:max-w-[200px] object-contain drop-shadow-md brightness-110 shrink">
+                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Original Size) -->
+                        <div class="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
+                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-9 w-9 sm:h-11 sm:w-11 object-contain shrink-0 drop-shadow-md">
+                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-7 sm:h-9 max-w-[160px] sm:max-w-[220px] object-contain drop-shadow-md brightness-110 shrink-0">
                         </div>
 
                         <!-- Center Navigation Links (Hidden on Mobile) -->
@@ -216,17 +216,17 @@
                             <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                         </nav>
 
-                        <!-- Right Auth Action Button (No-offset compact on mobile) -->
-                        <div class="pr-0.5 sm:pr-1.5 shrink-0">
+                        <!-- Right Auth Action Button (Compact text on mobile) -->
+                        <div class="pr-1 sm:pr-1.5 shrink-0">
                             @if (Route::has('login'))
                                 @auth
                                     <a href="{{ url('/dashboard') }}" 
-                                       class="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-extrabold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                       class="inline-flex items-center justify-center px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
                                         <span>Dashboard</span>
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" 
-                                       class="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-extrabold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                       class="inline-flex items-center justify-center px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
                                         <span>Masuk</span>
                                     </a>
                                 @endauth
