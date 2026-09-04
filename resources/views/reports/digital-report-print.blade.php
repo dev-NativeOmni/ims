@@ -70,6 +70,25 @@
         </div>
     </div>
 
+    @php
+        $reportMainTitle = \App\Models\Setting::get('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE');
+        $reportSchoolName = \App\Models\Setting::get('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO');
+        $reportCity = \App\Models\Setting::get('report_city', 'Sukoharjo');
+
+        $coordTahfizhName = \App\Models\Setting::get('report_coord_tahfizh_name', 'Zainal Arifin, S.Pd');
+        $coordTahfizhNik = \App\Models\Setting::get('report_coord_tahfizh_nik', '15.06.0393');
+
+        $coordKeagamaanName = \App\Models\Setting::get('report_coord_keagamaan_name', 'Rifqi Ihsan, S.Pd., Gr.');
+        $coordKeagamaanNik = \App\Models\Setting::get('report_coord_keagamaan_nik', '15.06.0393');
+
+        $headmasterTitle = \App\Models\Setting::get('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo');
+        $headmasterName = \App\Models\Setting::get('report_headmaster_name', 'Moh Pandoyo, S.Si., M.Pd., Gr.');
+        $headmasterNik = \App\Models\Setting::get('report_headmaster_nik', '08.04.0160');
+
+        $coordTanseName = \App\Models\Setting::get('report_coord_tanse_name', 'Yatim Hermawan, S.E., S.Kom');
+        $coordTanseNik = \App\Models\Setting::get('report_coord_tanse_nik', '15.06.0393');
+    @endphp
+
     <!-- Official Report Card Layout -->
     <div class="print-container max-w-4xl mx-auto bg-white p-8 sm:p-12 border shadow-sm rounded-none min-h-[330mm]" style="font-family: 'Times New Roman', serif;">
         
@@ -83,8 +102,8 @@
             <!-- Title & Basmalah -->
             <div class="flex-1 flex flex-col items-center px-2">
                 <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
-                <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">LAPORAN TAHFIDZ, ADAB DAN TANSE</h1>
-                <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">SMA ISLAM AL AZHAR 7 SUKOHARJO</h2>
+                <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">{{ $reportMainTitle }}</h1>
+                <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">{{ $reportSchoolName }}</h2>
                 
                 <!-- Semester Box -->
                 <div class="border border-black px-4 py-0.5 mt-2 bg-gray-50 text-[9px] font-bold text-black uppercase">
@@ -303,18 +322,18 @@
             <!-- Row 1 -->
             <div class="grid grid-cols-2 gap-8 text-center">
                 <div>
-                    <p class="invisible select-none">Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                    <p class="invisible select-none">{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                     <p class="font-semibold">Koordinator Tahfidz</p>
                     <div class="h-16 print:h-12"></div>
-                    <p class="font-bold underline text-black">Zainal Arifin, S.Pd</p>
-                    <p class="text-[10px] text-gray-600">NIK. 15.06.0393</p>
+                    <p class="font-bold underline text-black">{{ $coordTahfizhName }}</p>
+                    <p class="text-[10px] text-gray-600">NIK. {{ $coordTahfizhNik }}</p>
                 </div>
                 <div>
-                    <p>Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                    <p>{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                     <p class="font-semibold">Koordinator Keagamaan</p>
                     <div class="h-16 print:h-12"></div>
-                    <p class="font-bold underline text-black">Rifqi Ihsan, S.Pd., Gr.</p>
-                    <p class="text-[10px] text-gray-600">NIK. 15.06.0393</p>
+                    <p class="font-bold underline text-black">{{ $coordKeagamaanName }}</p>
+                    <p class="text-[10px] text-gray-600">NIK. {{ $coordKeagamaanNik }}</p>
                 </div>
             </div>
             
@@ -322,17 +341,17 @@
             <div class="grid grid-cols-2 gap-8 text-center mt-6">
                 <div>
                     <p>Mengetahui,</p>
-                    <p class="font-semibold">Kepala SMA Islam Al Azhar 7 Sukoharjo</p>
+                    <p class="font-semibold">{{ $headmasterTitle }}</p>
                     <div class="h-16 print:h-12"></div>
-                    <p class="font-bold underline text-black">Moh Pandoyo, S.Si., M.Pd., Gr.</p>
-                    <p class="text-[10px] text-gray-600">NIK. 08.04.0160</p>
+                    <p class="font-bold underline text-black">{{ $headmasterName }}</p>
+                    <p class="text-[10px] text-gray-600">NIK. {{ $headmasterNik }}</p>
                 </div>
                 <div>
                     <p class="invisible select-none">Mengetahui,</p>
                     <p class="font-semibold">Koordinator Tanse</p>
                     <div class="h-16 print:h-12"></div>
-                    <p class="font-bold underline text-black">Yatim Hermawan, S.E., S.Kom</p>
-                    <p class="text-[10px] text-gray-600">NIK. 15.06.0393</p>
+                    <p class="font-bold underline text-black">{{ $coordTanseName }}</p>
+                    <p class="text-[10px] text-gray-600">NIK. {{ $coordTanseNik }}</p>
                 </div>
             </div>
         </div>

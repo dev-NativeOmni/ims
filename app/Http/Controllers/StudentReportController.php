@@ -433,8 +433,31 @@ class StudentReportController extends Controller
         $showAdab = Setting::get('report_show_adab', '1') === '1';
         $showTanse = Setting::get('report_show_tanse', '1') === '1';
 
+        // Template Settings
+        $reportMainTitle = Setting::get('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE');
+        $reportSchoolName = Setting::get('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO');
+        $reportCity = Setting::get('report_city', 'Sukoharjo');
+
+        $coordTahfizhName = Setting::get('report_coord_tahfizh_name', 'Zainal Arifin, S.Pd');
+        $coordTahfizhNik = Setting::get('report_coord_tahfizh_nik', '15.06.0393');
+
+        $coordKeagamaanName = Setting::get('report_coord_keagamaan_name', 'Rifqi Ihsan, S.Pd., Gr.');
+        $coordKeagamaanNik = Setting::get('report_coord_keagamaan_nik', '15.06.0393');
+
+        $headmasterTitle = Setting::get('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo');
+        $headmasterName = Setting::get('report_headmaster_name', 'Moh Pandoyo, S.Si., M.Pd., Gr.');
+        $headmasterNik = Setting::get('report_headmaster_nik', '08.04.0160');
+
+        $coordTanseName = Setting::get('report_coord_tanse_name', 'Yatim Hermawan, S.E., S.Kom');
+        $coordTanseNik = Setting::get('report_coord_tanse_nik', '15.06.0393');
+
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse'
+            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse',
+            'reportMainTitle', 'reportSchoolName', 'reportCity',
+            'coordTahfizhName', 'coordTahfizhNik',
+            'coordKeagamaanName', 'coordKeagamaanNik',
+            'headmasterTitle', 'headmasterName', 'headmasterNik',
+            'coordTanseName', 'coordTanseNik'
         ));
     }
 
@@ -446,6 +469,24 @@ class StudentReportController extends Controller
         Setting::set('report_show_adab', $request->has('report_show_adab') ? '1' : '0');
         Setting::set('report_show_tanse', $request->has('report_show_tanse') ? '1' : '0');
 
-        return redirect()->back()->with('success', 'Pengaturan Rapor Digital berhasil disimpan.');
+        // Template Settings
+        Setting::set('report_main_title', $request->input('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE'));
+        Setting::set('report_school_name', $request->input('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO'));
+        Setting::set('report_city', $request->input('report_city', 'Sukoharjo'));
+
+        Setting::set('report_coord_tahfizh_name', $request->input('report_coord_tahfizh_name', 'Zainal Arifin, S.Pd'));
+        Setting::set('report_coord_tahfizh_nik', $request->input('report_coord_tahfizh_nik', '15.06.0393'));
+
+        Setting::set('report_coord_keagamaan_name', $request->input('report_coord_keagamaan_name', 'Rifqi Ihsan, S.Pd., Gr.'));
+        Setting::set('report_coord_keagamaan_nik', $request->input('report_coord_keagamaan_nik', '15.06.0393'));
+
+        Setting::set('report_headmaster_title', $request->input('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo'));
+        Setting::set('report_headmaster_name', $request->input('report_headmaster_name', 'Moh Pandoyo, S.Si., M.Pd., Gr.'));
+        Setting::set('report_headmaster_nik', $request->input('report_headmaster_nik', '08.04.0160'));
+
+        Setting::set('report_coord_tanse_name', $request->input('report_coord_tanse_name', 'Yatim Hermawan, S.E., S.Kom'));
+        Setting::set('report_coord_tanse_nik', $request->input('report_coord_tanse_nik', '15.06.0393'));
+
+        return redirect()->back()->with('success', 'Pengaturan Rapor Digital & Template Cetak berhasil disimpan.');
     }
 }
