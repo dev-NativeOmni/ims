@@ -947,15 +947,26 @@
                 </div>
             </section>
 
-            <!-- SECTION 6: FAQ ACCORDION (Dark Background) -->
-            <section id="faq" class="bg-[#09090b] text-zinc-100 py-28 relative overflow-hidden border-b border-white/5">
+            <!-- SECTION 6: FAQ ACCORDION (Sunset Dark Glassmorphism) -->
+            <section id="faq" class="bg-[#09090b] text-zinc-100 py-24 sm:py-28 relative overflow-hidden border-b border-white/10">
+                <!-- Ambient Sunset Glows -->
+                <div class="absolute inset-0 pointer-events-none z-0">
+                    <div class="absolute w-[500px] h-[500px] -top-32 -left-32 bg-orange-500/10 rounded-full blur-[150px]"></div>
+                    <div class="absolute w-[500px] h-[500px] -bottom-32 -right-32 bg-blue-600/10 rounded-full blur-[150px]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                </div>
+
                 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     
-                    <div class="text-center flex flex-col gap-4 mx-auto mb-16 max-w-2xl">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+                    <div class="text-center flex flex-col items-center gap-4 mx-auto mb-16 max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                            Tanya Jawab
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
                             Pertanyaan yang Sering Diajukan
                         </h2>
-                        <p class="text-zinc-400 text-sm leading-relaxed">
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
                             Butuh bantuan lebih lanjut? Berikut jawaban untuk beberapa pertanyaan umum mengenai penggunaan sistem kami.
                         </p>
                     </div>
@@ -964,40 +975,55 @@
                     <div class="space-y-4">
                         
                         <!-- Item 1 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Bagaimana ustadz menginput data setoran?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
+                        <div x-data="{ open: false }" class="p-5 sm:p-6 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-white/10 hover:border-orange-500/30 transition-all duration-200 shadow-lg">
+                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white gap-4">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-2 h-2 rounded-full bg-orange-400 shrink-0"></span>
+                                    Bagaimana ustadz menginput data setoran?
+                                </span>
+                                <div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                    <svg :class="open ? 'rotate-180 text-orange-400' : 'text-zinc-400'" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
+                            <div x-show="open" x-transition class="mt-4 pt-4 border-t border-white/10 text-xs sm:text-sm text-zinc-400 leading-relaxed pl-5">
                                 Ustadz dapat menginput data langsung melalui form "Quick Input" di dasbor mereka, cukup memilih nama siswa, surah, ayat awal/akhir, dan nilai kelancaran. Semua proses memakan waktu kurang dari 10 detik.
                             </div>
                         </div>
 
                         <!-- Item 2 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Apakah data kemajuan murid aman dari kehilangan?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
+                        <div x-data="{ open: false }" class="p-5 sm:p-6 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-white/10 hover:border-amber-500/30 transition-all duration-200 shadow-lg">
+                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white gap-4">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                                    Apakah data kemajuan murid aman dari kehilangan?
+                                </span>
+                                <div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                    <svg :class="open ? 'rotate-180 text-amber-400' : 'text-zinc-400'" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
+                            <div x-show="open" x-transition class="mt-4 pt-4 border-t border-white/10 text-xs sm:text-sm text-zinc-400 leading-relaxed pl-5">
                                 Ya. Kami menggunakan basis data terenkripsi dan sistem cadangan (database backups) otomatis yang terhubung ke penyimpanan awan. Anda juga dapat mengunduh berkas cadangan secara manual kapan saja dari dasbor Super Admin.
                             </div>
                         </div>
 
                         <!-- Item 3 -->
-                        <div x-data="{ open: false }" class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-white/10 transition-all duration-150">
-                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white">
-                                <span>Bagaimana wali murid memantau perkembangan putra-putrinya?</span>
-                                <svg :class="open ? 'rotate-180 text-teal-400' : 'text-zinc-500'" class="w-5 h-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
+                        <div x-data="{ open: false }" class="p-5 sm:p-6 rounded-3xl bg-zinc-900/70 backdrop-blur-xl border border-white/10 hover:border-emerald-500/30 transition-all duration-200 shadow-lg">
+                            <button @click="open = !open" class="flex items-center justify-between w-full text-left font-bold text-sm sm:text-base text-white gap-4">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                                    Bagaimana wali murid memantau perkembangan putra-putrinya?
+                                </span>
+                                <div class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                    <svg :class="open ? 'rotate-180 text-emerald-400' : 'text-zinc-400'" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </button>
-                            <div x-show="open" x-transition class="mt-4 text-sm text-zinc-400 leading-relaxed">
+                            <div x-show="open" x-transition class="mt-4 pt-4 border-t border-white/10 text-xs sm:text-sm text-zinc-400 leading-relaxed pl-5">
                                 Setiap wali murid akan diberikan akun akses khusus. Begitu masuk, mereka akan diarahkan langsung ke dasbor berisi riwayat setoran, persentase target hafalan yang tercapai, serta skor perilaku (adab) harian.
                             </div>
                         </div>
@@ -1006,33 +1032,50 @@
                 </div>
             </section>
 
-            <!-- SECTION 7: SUNSET HORIZON CTA (Dark Background, Huge Ambient Lighting Sunset Glow) -->
-            <section class="relative bg-black text-zinc-100 py-36 overflow-hidden flex flex-col items-center justify-center text-center">
-                <!-- Massive Bottom Horizon Glow (Sunset) -->
+            <!-- SECTION 7: SUNSET HORIZON CTA (Sunset Horizon Glow & Gradient Actions) -->
+            <section class="relative bg-black text-zinc-100 py-32 sm:py-36 overflow-hidden flex flex-col items-center justify-center text-center border-t border-white/10">
+                <!-- Massive Bottom Horizon Glow (Sunset Tangerine & Amber Core) -->
                 <div class="glow-horizon"></div>
                 <div class="glow-horizon-core"></div>
 
                 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center gap-6">
-                    <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
+                        </svg>
+                        Mulai Langkah Digitalisasi
+                    </div>
+
+                    <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
                         Siap Mewujudkan Generasi Rabbani Rapi & Terstruktur?
                     </h2>
-                    <p class="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-                        Mulai langkah digitalisasi tahfidz Anda sekarang bersama ratusan lembaga lainnya di Indonesia. Cepat, aman, dan mudah digunakan.
+                    
+                    <p class="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+                        Mulai langkah digitalisasi tahfizh Anda sekarang bersama berbagai lembaga lainnya di Indonesia. Cepat, aman, dan mudah digunakan.
                     </p>
 
                     <!-- CTA Action stack -->
-                    <div class="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                        @auth
-                            <a href="{{ url('/dashboard') }}" class="px-8 py-4 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-2xl shadow-teal-500/20 transition-all duration-200 hover:-translate-y-0.5">
-                                Masuk Dasbor Aplikasi
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" class="px-8 py-4 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-500 hover:to-teal-600 border border-teal-500/20 shadow-2xl shadow-teal-500/20 transition-all duration-200 hover:-translate-y-0.5">
-                                Masuk Aplikasi
-                            </a>
+                    <div class="flex flex-col sm:flex-row items-center gap-4 mt-4">
+                        @if (Route::has('login'))
+                            @auth
+                                <a href="{{ url('/dashboard') }}" 
+                                   class="px-8 py-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 transition-all duration-200 hover:scale-105 active:scale-95">
+                                    Masuk Dasbor Aplikasi
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" 
+                                   class="px-8 py-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 transition-all duration-200 hover:scale-105 active:scale-95">
+                                    Masuk Aplikasi
+                                </a>
+                            @endauth
                         @endif
-                        <a href="https://wa.me/628989789085" target="_blank" class="bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white px-8 py-4 text-sm font-semibold rounded-xl transition-all duration-150 hover:-translate-y-0.5 flex items-center gap-2">
-                            Hubungi Pengembang
+
+                        <a href="https://wa.me/628989789085" target="_blank" 
+                           class="bg-white/10 hover:bg-white/15 border border-white/20 text-zinc-200 hover:text-white px-8 py-3.5 text-xs sm:text-sm font-bold rounded-full transition-all duration-150 hover:scale-105 active:scale-95 flex items-center gap-2.5 backdrop-blur-md shadow-lg">
+                            <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                            </svg>
+                            Hubungi Pengembang (WhatsApp)
                         </a>
                     </div>
                 </div>
