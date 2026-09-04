@@ -333,101 +333,176 @@
                 </div>
             </section>
 
-            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Smooth Light Background Transition) -->
-            <section id="fitur" class="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl text-zinc-800 dark:text-zinc-200 border-t border-white/60 dark:border-white/10 py-24 sm:py-28 relative overflow-hidden">
-                <!-- Soft Light Glows -->
+            <!-- SECTION 2: STATS & MUSHAF INTERACTIVE SHOWCASE (Sunset Glassmorphic Showcase) -->
+            <section id="fitur" class="bg-[#09090b] text-zinc-100 py-24 sm:py-28 relative overflow-hidden border-t border-b border-white/10">
+                <!-- Ambient Sunset & Cobalt Glows -->
                 <div class="absolute inset-0 pointer-events-none z-0">
-                    <div class="absolute w-[400px] h-[400px] -top-40 -right-20 bg-teal-100 rounded-full blur-[100px] opacity-60"></div>
-                    <div class="absolute w-[400px] h-[400px] -bottom-40 -left-20 bg-amber-100 rounded-full blur-[100px] opacity-60"></div>
+                    <div class="absolute w-[500px] h-[500px] -top-32 -left-32 bg-orange-500/15 rounded-full blur-[140px]"></div>
+                    <div class="absolute w-[500px] h-[500px] -bottom-32 -right-32 bg-blue-600/15 rounded-full blur-[140px]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px]"></div>
                 </div>
 
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <!-- Heading -->
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-20">
-                        <h2 class="text-3xl sm:text-4xl font-bold text-zinc-900 tracking-tight leading-tight">
-                            Satu Platform, Semua Kebutuhan Pelacakan Hafalan Murid
+                    <div class="text-center flex flex-col items-center gap-4 max-w-2xl mx-auto mb-16 sm:mb-20">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                            Fitur Unggulan IMS
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                            Satu Platform, Semua Kebutuhan Pelacakan Tahfidz
                         </h2>
-                        <p class="text-zinc-500 text-sm sm:text-base leading-relaxed">
-                            Dilengkapi integrasi digital mutakhir untuk mencatat capaian tahfidz secara komprehensif, cepat, dan transparan.
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Pencatatan hafalan harian, murajaah multi-surat cerdas, input spreadsheet secepat kilat, dan laporan WhatsApp otomatis dalam satu sentuhan.
                         </p>
                     </div>
 
-                    <!-- Split Columns: Mockup Mushaf & Stats Card -->
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <!-- Split Columns: Glassmorphic Mockup Dashboard & Stats -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                         
-                        <!-- Left Mockup: Mushaf Tracker & Targets -->
-                        <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-float">
-                            <!-- Mockup Title Bar -->
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-100 mb-5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-3 h-3 rounded-full bg-red-400"></span>
-                                    <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-                                    <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                        <!-- Left Mockup: Glassmorphic Tahfidz Tracker Hub -->
+                        <div class="lg:col-span-7 bg-zinc-900/80 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 border border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] relative group">
+                            <!-- Subtle Mockup Glow Accent -->
+                            <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <!-- Mockup Window Header -->
+                            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                                    <span class="text-xs font-bold text-zinc-400 ml-2 hidden sm:inline">IMS Tahfidz Hub • Dashboard Live</span>
                                 </div>
-                                <span class="text-xs font-semibold text-zinc-400">IMS Mushaf Tracker</span>
-                                <div class="w-10"></div>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                        Sesi Aktif
+                                    </span>
+                                </div>
                             </div>
 
-                            <!-- Mockup Body (Surah & Setoran Log UI) -->
-                            <div class="space-y-4">
-                                <div class="bg-zinc-50 rounded-2xl p-4 border border-zinc-150 flex items-center justify-between">
-                                    <div>
-                                        <div class="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Hafalan Baru</div>
-                                        <div class="text-lg font-extrabold text-zinc-900 mt-1">QS. Al-Kahfi: 1-10</div>
-                                        <div class="text-[10px] text-teal-600 font-bold mt-1">Status: Lancar (Mumtaz)</div>
+                            <!-- Mockup Body (Hafalan Baru, Murojaah Cerdas, Mushaf Preview) -->
+                            <div class="space-y-3.5">
+                                
+                                <!-- Card 1: Hafalan Baru -->
+                                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-orange-500/30 transition-all duration-200">
+                                    <div class="flex items-center gap-3.5">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] text-zinc-400 font-bold uppercase tracking-wider">Hafalan Baru (Ziyadah)</div>
+                                            <div class="text-base sm:text-lg font-bold text-white">QS. Al-Kahfi : 1 – 10</div>
+                                            <div class="text-[11px] text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+                                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                Mumtaz • 15 Baris
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <div class="text-xs text-zinc-400 font-bold">Ustadz Penguji</div>
-                                        <div class="text-sm font-semibold text-zinc-800 mt-1">Ahmad Rabbani</div>
+                                    <div class="sm:text-right flex sm:flex-col justify-between items-center sm:items-end border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                                        <div class="text-[10px] text-zinc-400 font-semibold uppercase">Ustadz Penguji</div>
+                                        <div class="text-xs sm:text-sm font-semibold text-zinc-200">Ust. Ahmad Rabbani</div>
                                     </div>
                                 </div>
 
-                                <div class="bg-zinc-50 rounded-2xl p-4 border border-zinc-150 flex items-center justify-between">
-                                    <div>
-                                        <div class="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Murajaah Hari Ini</div>
-                                        <div class="text-lg font-extrabold text-zinc-900 mt-1">QS. Maryam: 1-30</div>
-                                        <div class="text-[10px] text-amber-600 font-bold mt-1">Status: Terulang (Maqbul)</div>
+                                <!-- Card 2: Murajaah Multi-Surat Cerdas -->
+                                <div class="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-amber-500/30 transition-all duration-200">
+                                    <div class="flex items-center gap-3.5">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] text-zinc-400 font-bold uppercase tracking-wider">Murajaah Multi-Surah</div>
+                                            <div class="text-base sm:text-lg font-bold text-white">QS. An-Naba' – 'Abasa</div>
+                                            <div class="text-[11px] text-amber-400 font-medium flex items-center gap-1 mt-0.5">
+                                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                Penanda Terakhir: QS. 'Abasa
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <div class="text-xs text-zinc-400 font-bold">Target Harian</div>
-                                        <div class="text-sm font-semibold text-zinc-800 mt-1">1 Halaman</div>
+                                    <div class="sm:text-right flex sm:flex-col justify-between items-center sm:items-end border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                                        <div class="text-[10px] text-zinc-400 font-semibold uppercase">Status Kelancaran</div>
+                                        <div class="text-xs sm:text-sm font-semibold text-emerald-400">Mutqin (Lancar)</div>
                                     </div>
                                 </div>
 
-                                <!-- Mini Mushaf Text Simulation -->
-                                <div class="p-4 bg-teal-50/50 rounded-2xl border border-teal-100 flex flex-col gap-2.5">
-                                    <div class="flex items-center justify-between text-xs text-teal-800 font-bold">
-                                        <span>Tinjauan Ayat</span>
-                                        <span class="font-serif font-normal">سُورَةُ الكَهْفِ</span>
+                                <!-- Card 3: Interactive Mushaf Typography Preview -->
+                                <div class="p-4 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent rounded-2xl border border-orange-500/20 flex flex-col gap-2">
+                                    <div class="flex items-center justify-between text-xs text-orange-300 font-bold">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                                            Tinjauan Mushaf Madinah
+                                        </span>
+                                        <span class="font-serif text-sm font-normal text-amber-200">سُورَةُ الكَهْفِ</span>
                                     </div>
-                                    <p class="text-right font-serif text-lg text-zinc-800 leading-loose py-2">
+                                    <p class="text-right font-serif text-base sm:text-xl text-zinc-100 leading-loose pt-1">
                                         ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجَا ۜ ﴿١﴾
                                     </p>
+                                    <div class="flex items-center justify-between text-[11px] text-zinc-400 border-t border-white/10 pt-2 mt-1">
+                                        <span>Target Juz 15</span>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-24 sm:w-32 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                                <div class="w-4/5 h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full"></div>
+                                            </div>
+                                            <span class="font-bold text-orange-300">80%</span>
+                                        </div>
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
 
-                        <!-- Right Card: Stats & Global Achievements -->
+                        <!-- Right Column: Glassmorphic Feature Highlights & Metrics -->
                         <div class="lg:col-span-5 flex flex-col gap-6">
-                            <h3 class="text-2xl font-bold text-zinc-900 leading-snug">
-                                Pantau Progres Capaian Murid dengan Data Akurat
-                            </h3>
-                            <p class="text-zinc-500 text-sm leading-relaxed">
-                                Dilengkapi indikator pencapaian target harian, mingguan, hingga bulanan. Membantu ustadz dan wali murid mengetahui tingkat kelancaran tanpa hambatan koordinasi.
-                            </p>
+                            <div class="space-y-3">
+                                <h3 class="text-2xl sm:text-3xl font-bold text-white leading-snug">
+                                    Pantau Capaian Tahfidz dengan Akurasi Real-Time
+                                </h3>
+                                <p class="text-zinc-400 text-sm leading-relaxed">
+                                    Sistem pelacakan terpadu yang memadukan input cerdas, grafik analitik target kurikulum, evaluasi adab santri, dan transmisi otomatis ke orang tua.
+                                </p>
+                            </div>
 
-                            <!-- Metric Stack -->
-                            <div class="grid grid-cols-2 gap-4 pt-4">
-                                <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col">
-                                    <span class="text-xs text-zinc-400 font-bold uppercase">Hafalan Rata-Rata</span>
-                                    <span class="text-3xl font-extrabold text-teal-600 mt-2">28 Juz</span>
-                                    <span class="text-[10px] text-teal-600 font-semibold mt-1">↑ +2 Halaman/Minggu</span>
+                            <!-- Feature Points with Sunset Icons -->
+                            <div class="space-y-3.5">
+                                <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-orange-500/20">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Input Spreadsheet & Cepat</h4>
+                                        <p class="text-xs text-zinc-400 mt-0.5">Input puluhan santri per halaqah hanya dalam 30 detik tanpa reload halaman.</p>
+                                    </div>
                                 </div>
 
-                                <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col">
-                                    <span class="text-xs text-zinc-400 font-bold uppercase">Poin Kehadiran</span>
-                                    <span class="text-3xl font-extrabold text-amber-600 mt-2">98.5%</span>
-                                    <span class="text-[10px] text-zinc-400 font-semibold mt-1">Tingkat Disiplin Tinggi</span>
+                                <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-500/20">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Laporan Harian WhatsApp Terpadu</h4>
+                                        <p class="text-xs text-zinc-400 mt-0.5">Generator pesan otomatis mencakup ziyadah, seluruh surat murajaah, dan adab santri.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-500/20">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-white">Portal Wali Murid 360°</h4>
+                                        <p class="text-xs text-zinc-400 mt-0.5">Transparansi penuh rekam jejak hafalan, riwayat murajaah, dan evaluasi bulanan.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
