@@ -511,107 +511,99 @@
                 </div>
             </section>
 
-            <!-- SECTION 3: KEY ADVANTAGES (Dark background, Spotlight Glow Cards) -->
-            <section id="keunggulan" class="bg-[#09090b] bg-grid-pattern text-zinc-100 py-28 relative overflow-hidden border-b border-white/5">
-                <!-- Glow Blobs -->
+            <!-- SECTION 3: KEY ADVANTAGES (Sunset Glassmorphic Spotlight Cards) -->
+            <section id="keunggulan" class="bg-[#09090b] text-zinc-100 py-24 sm:py-28 relative overflow-hidden border-b border-white/10">
+                <!-- Ambient Sunset & Cobalt Glows -->
                 <div class="absolute inset-0 pointer-events-none z-0">
-                    <div class="absolute w-[500px] h-[500px] top-[20%] left-[-200px] bg-teal-900 rounded-full blur-[120px] opacity-25"></div>
-                    <div class="absolute w-[500px] h-[500px] bottom-[-200px] right-[-200px] bg-amber-900 rounded-full blur-[120px] opacity-20"></div>
+                    <div class="absolute w-[500px] h-[500px] top-[15%] left-[-150px] bg-orange-500/10 rounded-full blur-[140px]"></div>
+                    <div class="absolute w-[500px] h-[500px] bottom-[-150px] right-[-150px] bg-blue-600/10 rounded-full blur-[140px]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px]"></div>
                 </div>
 
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <!-- Heading -->
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-20">
-                        <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
-                            Mengapa Memilih IMS Tracker?
+                    <div class="text-center flex flex-col items-center gap-4 max-w-3xl mx-auto mb-16 sm:mb-20">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                            Keunggulan Sistem
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                            Mengapa Memilih IMS ?
                         </h2>
                         <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
-                            Fitur-fitur tangguh yang dirancang spesifik untuk menyederhanakan manajemen tahfidz di sekolah, pondok pesantren, dan rumah tahfidz.
+                            Fitur-fitur tangguh yang dirancang spesifik untuk menyederhanakan manajemen Tahfizh di sekolah, Pondok Pesantren, dan Rumah Tahfizh.
                         </p>
                     </div>
 
-                    <!-- Spotlight Cards Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 5 Spotlight Cards Grid (Balanced Glassmorphic Layout) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         
-                        <!-- Card 1: Input Setoran Cepat (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
+                        <!-- Card 1: Input Setoran (Sunset Orange Glow) -->
+                        <div class="spotlight-border-card p-7 sm:p-8 flex flex-col gap-4 bg-zinc-900/60 backdrop-blur-xl rounded-3xl border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:-translate-y-1 group"
                              @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+                            <div class="w-12 h-12 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-white">Input Setoran Kilat</h3>
+                            <h3 class="text-lg font-bold text-white group-hover:text-orange-300 transition-colors">Input Setoran</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
                                 Form input teroptimasi memudahkan ustadz merekam hasil setoran hafalan baru maupun murajaah murid dalam hitungan detik.
                             </p>
                         </div>
 
-                        <!-- Card 2: Portal Orang Tua (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
+                        <!-- Card 2: Akses Transparan Wali (Warm Amber Glow) -->
+                        <div class="spotlight-border-card-amber p-7 sm:p-8 flex flex-col gap-4 bg-zinc-900/60 backdrop-blur-xl rounded-3xl border border-white/10 hover:border-amber-500/40 transition-all duration-300 hover:-translate-y-1 group"
                              @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-white">Akses Transparan Wali</h3>
+                            <h3 class="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Akses Transparan Wali</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
                                 Orang tua dapat masuk langsung untuk melihat log setoran, perkembangan hafalan, adab, dan catatan ustadz pembimbing dari rumah.
                             </p>
                         </div>
 
-                        <!-- Card 3: Rapor PDF & CSV (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
+                        <!-- Card 3: Poin Kedisiplinan & Prestasi (Emerald / Tanse Glow) -->
+                        <div class="spotlight-border-card p-7 sm:p-8 flex flex-col gap-4 bg-zinc-900/60 backdrop-blur-xl rounded-3xl border border-white/10 hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1 group"
                              @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-white">Ekspor Rapor Digital</h3>
-                            <p class="text-sm text-zinc-400 leading-relaxed">
-                                Cetak hasil rapor terpadu (Hafalan, Adab, Disiplin) dengan satu klik. Dapat diekspor langsung ke berkas CSV atau PDF berstandar rapi.
-                            </p>
-                        </div>
-
-                        <!-- Card 4: Poin Disiplin / Tanse (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
-                             @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-white">Poin Kedisiplinan & Prestasi</h3>
+                            <h3 class="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">Poin Kedisiplinan & Prestasi</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
                                 Catat poin pelanggaran disiplin (Tanse) serta apresiasi poin prestasi secara real-time demi membentuk karakter murid yang tangguh.
                             </p>
                         </div>
 
-                        <!-- Card 5: Mushaf & Tafsir (Teal Glow) -->
-                        <div class="spotlight-border-card p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
+                        <!-- Card 4: Mushaf Qur'an Terpadu (Cobalt / Teal Glow) -->
+                        <div class="spotlight-border-card p-7 sm:p-8 flex flex-col gap-4 bg-zinc-900/60 backdrop-blur-xl rounded-3xl border border-white/10 hover:border-teal-500/40 transition-all duration-300 hover:-translate-y-1 group md:col-span-1 lg:col-span-1"
                              @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+                            <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-white">Mushaf Qur'an Terpadu</h3>
+                            <h3 class="text-lg font-bold text-white group-hover:text-teal-300 transition-colors">Mushaf Qur'an Terpadu</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
                                 Membaca Mushaf dan melihat tafsir secara langsung dalam sistem dengan pilihan tema kustom untuk kenyamanan mata.
                             </p>
                         </div>
 
-                        <!-- Card 6: Keamanan Data & Cadangan (Amber Glow) -->
-                        <div class="spotlight-border-card-amber p-8 flex flex-col gap-5 border border-white/5 transition-all duration-300 hover:scale-[1.01]"
+                        <!-- Card 5: Cadangan & Keamanan Tinggi (Royal Blue Glow) -->
+                        <div class="spotlight-border-card-amber p-7 sm:p-8 flex flex-col gap-4 bg-zinc-900/60 backdrop-blur-xl rounded-3xl border border-white/10 hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-1 group md:col-span-1 lg:col-span-2"
                              @mousemove="trackMouse">
-                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-bold text-white">Cadangan & Keamanan Tinggi</h3>
+                            <h3 class="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">Cadangan & Keamanan Tinggi</h3>
                             <p class="text-sm text-zinc-400 leading-relaxed">
                                 Database terlindungi dengan enkripsi terbaik, lengkap dengan fitur ekspor dan unduhan cadangan berkala guna menjamin keamanan data.
                             </p>
