@@ -763,149 +763,182 @@
                 </div>
             </section>
 
-            <!-- SECTION 5: INTERACTIVE DASHBOARD SIMULATOR PLAYGROUND (Light Background) -->
-            <section id="simulator" class="bg-zinc-50 text-zinc-800 bg-grid-pattern-light border-y border-zinc-200/60 py-28 relative overflow-hidden">
+            <!-- SECTION 5: INTERACTIVE DASHBOARD SIMULATOR PLAYGROUND (Sunset Dark Glassmorphism) -->
+            <section id="simulator" class="bg-[#09090b] text-zinc-100 py-24 sm:py-28 relative overflow-hidden border-b border-white/10">
+                <!-- Ambient Sunset Glows -->
+                <div class="absolute inset-0 pointer-events-none z-0">
+                    <div class="absolute w-[500px] h-[500px] -top-32 -right-32 bg-orange-500/15 rounded-full blur-[150px]"></div>
+                    <div class="absolute w-[500px] h-[500px] -bottom-32 -left-32 bg-blue-600/15 rounded-full blur-[150px]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                </div>
+
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     
                     <!-- Head -->
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-14">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 leading-tight">
+                    <div class="text-center flex flex-col items-center gap-4 max-w-3xl mx-auto mb-14 sm:mb-16">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                            Demo Interaktif
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
                             Simulasi Dasbor Interaktif Kami
                         </h2>
-                        <p class="text-zinc-500 text-sm leading-relaxed">
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
                             Coba dasbor interaktif sekarang. Pilih peran Anda untuk melihat visualisasi alur setoran dan kemudahan antarmuka aplikasi.
                         </p>
                     </div>
 
                     <!-- Role Tab buttons switcher -->
-                    <div class="flex items-center justify-center gap-2 max-w-md mx-auto mb-10 p-1.5 bg-zinc-200/80 rounded-2xl border border-zinc-300/40">
+                    <div class="flex items-center justify-center gap-2 max-w-md mx-auto mb-10 p-1.5 bg-zinc-900/90 backdrop-blur-xl rounded-full border border-white/15 shadow-xl">
                         <button @click="activeDashboardTab = 'siswa'" 
-                                :class="activeDashboardTab === 'siswa' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
+                                :class="activeDashboardTab === 'siswa' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md shadow-orange-500/25' : 'text-zinc-400 hover:text-white'"
+                                class="flex-1 py-2 text-xs font-semibold rounded-full transition-all duration-200">
                             Dasbor Siswa
                         </button>
                         <button @click="activeDashboardTab = 'guru'" 
-                                :class="activeDashboardTab === 'guru' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
+                                :class="activeDashboardTab === 'guru' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md shadow-orange-500/25' : 'text-zinc-400 hover:text-white'"
+                                class="flex-1 py-2 text-xs font-semibold rounded-full transition-all duration-200">
                             Dasbor Ustadz
                         </button>
                         <button @click="activeDashboardTab = 'wali'" 
-                                :class="activeDashboardTab === 'wali' ? 'bg-white text-zinc-900 shadow-md font-bold' : 'text-zinc-500 hover:text-zinc-800'"
-                                class="flex-1 py-2 text-xs font-semibold rounded-xl transition-all duration-200">
+                                :class="activeDashboardTab === 'wali' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md shadow-orange-500/25' : 'text-zinc-400 hover:text-white'"
+                                class="flex-1 py-2 text-xs font-semibold rounded-full transition-all duration-200">
                             Dasbor Wali
                         </button>
                     </div>
 
-                    <!-- Interactive Mockup Screen -->
-                    <div class="bg-white rounded-3xl p-5 sm:p-6 border border-zinc-200 shadow-[0_30px_70px_rgba(0,0,0,0.06)] min-h-[380px] flex flex-col justify-between transition-all duration-300">
+                    <!-- Interactive Mockup Screen (Glassmorphic Container) -->
+                    <div class="bg-zinc-900/80 backdrop-blur-2xl rounded-3xl p-5 sm:p-7 border border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] min-h-[380px] flex flex-col justify-between transition-all duration-300">
                         
+                        <!-- Top Window Control Header -->
+                        <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                                <span class="text-xs font-bold text-zinc-400 ml-2 hidden sm:inline">IMS Simulation Console</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping"></span>
+                                    Mode Preview
+                                </span>
+                            </div>
+                        </div>
+
                         <!-- Inner Container transitions based on active role -->
                         <!-- 1. SISWA VIEW -->
                         <div x-show="activeDashboardTab === 'siswa'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
                                 <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Murid — Syamil Rabbani</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Kelas: VIII-A | Rumah Tahfidz Al-Ikhlas</p>
+                                    <h4 class="text-base sm:text-lg font-bold text-white">Dasbor Murid — Syamil Rabbani</h4>
+                                    <p class="text-xs text-zinc-400 font-medium mt-0.5">Kelas: X-MIPA 1 • SMA Islam Al Azhar 7 Solo Baru</p>
                                 </div>
-                                <span class="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-xs font-bold text-teal-700">Target Tercapai 90%</span>
+                                <span class="inline-flex items-center gap-1.5 self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    Target Tercapai 90%
+                                </span>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Hafalan Baru</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">29 Juz</div>
-                                    <div class="text-[9px] text-teal-600 font-bold mt-1">Sisa Target: 1 Juz</div>
+                                <div class="p-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 hover:border-orange-500/30 transition duration-200">
+                                    <div class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Hafalan Baru</div>
+                                    <div class="text-xl sm:text-2xl font-extrabold text-white mt-1">29 Juz</div>
+                                    <div class="text-[10px] text-orange-400 font-bold mt-1">Sisa Target: 1 Juz</div>
                                 </div>
 
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Lancarnya Murajaah</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">15 Juz</div>
-                                    <div class="text-[9px] text-amber-600 font-bold mt-1">Poin Nilai: Mumtaz</div>
+                                <div class="p-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 hover:border-amber-500/30 transition duration-200">
+                                    <div class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Lancarnya Murajaah</div>
+                                    <div class="text-xl sm:text-2xl font-extrabold text-white mt-1">15 Juz</div>
+                                    <div class="text-[10px] text-amber-400 font-bold mt-1">Poin Kelancaran: Mutqin</div>
                                 </div>
 
-                                <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 shadow-inner">
-                                    <div class="text-[10px] text-zinc-400 font-bold uppercase">Skor Disiplin</div>
-                                    <div class="text-xl font-extrabold text-zinc-900 mt-1">100 Poin</div>
-                                    <div class="text-[9px] text-teal-600 font-bold mt-1">Status: Tanpa Pelanggaran</div>
+                                <div class="p-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 hover:border-emerald-500/30 transition duration-200">
+                                    <div class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Skor Pembiasaan Adab</div>
+                                    <div class="text-xl sm:text-2xl font-extrabold text-white mt-1">100 Poin</div>
+                                    <div class="text-[10px] text-emerald-400 font-bold mt-1">Status: Berakhlak Mulia</div>
                                 </div>
                             </div>
 
                             <!-- Mini Chart Simulator -->
-                            <div class="p-4 border border-zinc-150 rounded-2xl flex flex-col gap-3">
-                                <div class="flex items-center justify-between text-xs font-bold text-zinc-700">
+                            <div class="p-4 bg-black/30 border border-white/10 rounded-2xl flex flex-col gap-3">
+                                <div class="flex items-center justify-between text-xs font-bold text-zinc-300">
                                     <span>Statistik Progres Setoran Bulanan</span>
-                                    <span>Bulan Juni</span>
+                                    <span class="text-orange-400">Semester Ganjil 2026</span>
                                 </div>
                                 <div class="h-20 flex items-end gap-2 pt-2 px-1">
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[30%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[50%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[40%]"></div>
-                                    <div class="bg-teal-500/20 border border-teal-500/30 rounded-t w-full h-[75%]"></div>
-                                    <div class="bg-teal-600 border border-teal-400 rounded-t w-full h-[95%] shadow-[0_0_12px_rgba(20,184,166,0.25)]"></div>
+                                    <div class="bg-orange-500/20 border border-orange-500/30 rounded-t w-full h-[35%]"></div>
+                                    <div class="bg-orange-500/25 border border-orange-500/40 rounded-t w-full h-[55%]"></div>
+                                    <div class="bg-orange-500/30 border border-orange-500/50 rounded-t w-full h-[45%]"></div>
+                                    <div class="bg-orange-500/40 border border-orange-500/60 rounded-t w-full h-[78%]"></div>
+                                    <div class="bg-gradient-to-t from-orange-500 to-amber-400 border border-amber-300 rounded-t w-full h-[95%] shadow-[0_0_15px_rgba(249,115,22,0.4)]"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 2. GURU VIEW -->
                         <div x-show="activeDashboardTab === 'guru'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6" style="display: none;">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
                                 <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Dasbor Ustadz Penguji — Ustadz Ahmad</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Kelas: Halaqah Tahfidz VIII-A</p>
+                                    <h4 class="text-base sm:text-lg font-bold text-white">Dasbor Ustadz Penguji — Ust. Ahmad Rabbani</h4>
+                                    <p class="text-xs text-zinc-400 font-medium mt-0.5">Halaqah Tahfidz Gemilang • SMA Islam Al Azhar 7</p>
                                 </div>
-                                <button class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-xs font-bold text-white rounded-xl transition-colors duration-150 shadow-md shadow-teal-600/10">
-                                    + Input Setoran
+                                <button class="self-start sm:self-auto px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-xs font-bold text-white rounded-full transition-all duration-150 shadow-md shadow-orange-500/25 hover:scale-105">
+                                    + Input Cepat Setoran
                                 </button>
                             </div>
 
                             <!-- List of Students under evaluation -->
                             <div class="space-y-3">
-                                <div class="p-3 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center justify-between">
+                                <div class="p-3.5 bg-black/40 border border-white/10 rounded-2xl flex items-center justify-between gap-3 hover:border-orange-500/30 transition">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center font-bold text-teal-700 text-xs">SR</div>
+                                        <div class="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center font-bold text-orange-400 text-xs">SR</div>
                                         <div>
-                                            <div class="text-xs font-bold text-zinc-800">Syamil Rabbani</div>
-                                            <div class="text-[9px] text-zinc-400 mt-0.5">Baru saja menyetor QS. Al-Kahfi: 1-10</div>
+                                            <div class="text-xs sm:text-sm font-bold text-white">Syamil Rabbani</div>
+                                            <div class="text-[10px] text-zinc-400 mt-0.5">Menyetor QS. Al-Kahfi: 1–10 (15 Baris)</div>
                                         </div>
                                     </div>
-                                    <span class="text-[10px] bg-teal-50 border border-teal-200 text-teal-700 font-bold px-2 py-1 rounded">Nilai: Mumtaz</span>
+                                    <span class="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-full">Mumtaz</span>
                                 </div>
 
-                                <div class="p-3 bg-zinc-50 border border-zinc-150 rounded-xl flex items-center justify-between">
+                                <div class="p-3.5 bg-black/40 border border-white/10 rounded-2xl flex items-center justify-between gap-3 hover:border-amber-500/30 transition">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-700 text-xs">AM</div>
+                                        <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400 text-xs">AM</div>
                                         <div>
-                                            <div class="text-xs font-bold text-zinc-800">Aisyah Muthmainnah</div>
-                                            <div class="text-[9px] text-zinc-400 mt-0.5">Mengulang setoran QS. Al-Baqarah: 1-20</div>
+                                            <div class="text-xs sm:text-sm font-bold text-white">Aisyah Muthmainnah</div>
+                                            <div class="text-[10px] text-zinc-400 mt-0.5">Murajaah QS. An-Naba' – 'Abasa</div>
                                         </div>
                                     </div>
-                                    <span class="text-[10px] bg-amber-50 border border-amber-200 text-amber-700 font-bold px-2 py-1 rounded">Nilai: Jayyid</span>
+                                    <span class="text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold px-2.5 py-1 rounded-full">Mutqin</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 3. WALI VIEW -->
                         <div x-show="activeDashboardTab === 'wali'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="space-y-6" style="display: none;">
-                            <div class="flex items-center justify-between pb-4 border-b border-zinc-150">
+                            <div class="flex items-center justify-between pb-4 border-b border-white/10">
                                 <div>
-                                    <h4 class="text-base font-extrabold text-zinc-900">Portal Wali Murid — Bpk. Abdurrahman</h4>
-                                    <p class="text-[10px] text-zinc-400 font-bold mt-1">Mengawasi Murid: Syamil Rabbani</p>
+                                    <h4 class="text-base sm:text-lg font-bold text-white">Portal Wali Murid 360° — Bpk. Abdurrahman</h4>
+                                    <p class="text-xs text-zinc-400 font-medium mt-0.5">Memantau Murid: Syamil Rabbani</p>
                                 </div>
-                                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" title="Terhubung"></span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    Terhubung Real-Time
+                                </span>
                             </div>
 
                             <!-- Parents overview feed -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="p-4 bg-teal-50 border border-teal-150 rounded-2xl flex flex-col gap-1.5">
-                                    <span class="text-[10px] text-teal-800 font-bold uppercase">Pembaruan Hafalan Terakhir</span>
-                                    <div class="text-sm font-extrabold text-zinc-900">Syamil menyetor QS. Al-Kahfi: 1-10</div>
-                                    <span class="text-[9px] text-teal-700 font-semibold mt-1">Ustadz Ahmad: "Bacaan lancar, pertahankan tajwid"</span>
+                                <div class="p-4 bg-black/40 border border-white/10 rounded-2xl flex flex-col gap-1.5 hover:border-orange-500/30 transition">
+                                    <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">Pembaruan Hafalan Terakhir</span>
+                                    <div class="text-sm font-bold text-white">Syamil menyetor QS. Al-Kahfi: 1–10</div>
+                                    <span class="text-xs text-zinc-400 mt-1">Ust. Ahmad: "Bacaan sangat lancar, tajwid dan makhraj ممتاز"</span>
                                 </div>
 
-                                <div class="p-4 bg-amber-50 border border-amber-150 rounded-2xl flex flex-col gap-1.5">
-                                    <span class="text-[10px] text-amber-800 font-bold uppercase">Laporan Adab & Karakter</span>
-                                    <div class="text-sm font-extrabold text-zinc-900">Sikap: Sangat Menghormati Guru</div>
-                                    <span class="text-[9px] text-amber-700 font-semibold mt-1">Terakhir diperbarui: Juni 2026</span>
+                                <div class="p-4 bg-black/40 border border-white/10 rounded-2xl flex flex-col gap-1.5 hover:border-amber-500/30 transition">
+                                    <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Laporan Pembiasaan Adab</span>
+                                    <div class="text-sm font-bold text-white">Sikap: Sangat Disiplin & Hormat Guru</div>
+                                    <span class="text-xs text-zinc-400 mt-1">Status: 100 Poin • Mempertahankan Nilai Karakter Gemilang</span>
                                 </div>
                             </div>
                         </div>
