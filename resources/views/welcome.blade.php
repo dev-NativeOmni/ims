@@ -5,12 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
 
-        <!-- Theme Initialization Script -->
+        <!-- Theme Initialization Script (Default: Light Mode unless explicitly set to dark) -->
         <script>
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.classList.add('dark');
             } else {
-                document.documentElement.classList.remove('dark')
+                document.documentElement.classList.remove('dark');
             }
         </script>
 
