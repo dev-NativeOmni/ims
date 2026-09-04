@@ -109,7 +109,7 @@
                 <!-- Title & Basmalah -->
                 <div class="flex-1 flex flex-col items-center px-2">
                     <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
-                    <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">LAPORAN PENILAIAN ADAB, TAHFIDZ, DAN TANSE</h1>
+                    <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">LAPORAN TAHFIDZ, ADAB DAN TANSE</h1>
                     <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">SMA ISLAM AL AZHAR 7 SUKOHARJO</h2>
                     
                     <!-- Semester Box -->
@@ -342,7 +342,7 @@
                         <p>Sukoharjo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                         <p class="font-semibold">Koordinator Keagamaan</p>
                         <div class="h-16 print:h-12"></div>
-                        <p class="font-bold underline text-black">Rifqi Ihsan, S.Pd</p>
+                        <p class="font-bold underline text-black">Rifqi Ihsan, S.Pd., Gr.</p>
                         <p class="text-[10px] text-gray-650">NIK. 15.06.0393</p>
                     </div>
                 </div>
