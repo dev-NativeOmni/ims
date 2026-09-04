@@ -295,56 +295,54 @@
                     </div>
                 </header>
 
-                <!-- Center Hero Stage: Apple-Style Frosted Glass Pod Island -->
-                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-6 sm:py-10">
-                    <div class="w-full p-6 sm:p-10 rounded-3xl sm:rounded-[2.5rem] bg-white/30 dark:bg-black/45 backdrop-blur-2xl border border-white/55 dark:border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] flex flex-col items-center justify-center">
-                        
-                        <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
-                        <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/15 dark:bg-white/10 backdrop-blur-md border border-orange-500/35 dark:border-white/20 shadow-sm text-[10px] sm:text-xs font-bold text-orange-800 dark:text-amber-300 uppercase tracking-wider mb-4 sm:mb-5">
-                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
-                            </svg>
-                            <span>Generasi Mulia Islami Cemerlang</span>
-                        </div>
+                <!-- Center Hero Stage: Open & Sleek Typography (No Box Covering School Building) -->
+                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-8 sm:py-14">
+                    
+                    <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
+                    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/15 dark:bg-black/40 backdrop-blur-md border border-orange-500/35 dark:border-white/20 shadow-sm text-[10px] sm:text-xs font-bold text-orange-900 dark:text-amber-300 uppercase tracking-wider mb-4 sm:mb-6 animate-pulse">
+                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
+                        </svg>
+                        <span>Generasi Mulia Islami Cemerlang</span>
+                    </div>
 
-                        <!-- Main Hero Title -->
-                        <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-sm dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] px-2">
-                            Integrated Management System
-                        </h1>
+                    <!-- Main Hero Title -->
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] px-2">
+                        Integrated Management System
+                    </h1>
 
-                        <!-- Hero Subtitle in Indonesian -->
-                        <p class="mt-3 sm:mt-4 text-xs sm:text-base lg:text-lg text-zinc-800 dark:text-zinc-200 max-w-2xl mx-auto leading-relaxed font-normal px-2">
-                            Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
-                        </p>
+                    <!-- Hero Subtitle in Indonesian -->
+                    <p class="mt-3 sm:mt-5 text-xs sm:text-base lg:text-lg text-zinc-800 dark:text-zinc-100 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-[0_1px_8px_rgba(255,255,255,0.7)] dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] px-2">
+                        Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
+                    </p>
 
-                        <!-- Dual Action CTA Buttons (Proportionate on Mobile) -->
-                        <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
-                            @auth
-                                <a href="{{ url('/dashboard') }}" 
-                                   class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                                    <span>Buka Dashboard</span>
-                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" 
-                                   class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                                    <span>Akses Portal Masuk</span>
-                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </a>
-                            @endauth
-
-                            <a href="#fitur" 
-                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-zinc-800 dark:text-zinc-200 hover:text-orange-600 dark:hover:text-white font-bold text-xs sm:text-sm tracking-wide bg-white/40 dark:bg-black/40 hover:bg-white/70 dark:hover:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/20 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
-                                <span>Jelajahi Fitur</span>
-                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    <!-- Dual Action CTA Buttons (Proportionate on Mobile) -->
+                    <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
+                        @auth
+                            <a href="{{ url('/dashboard') }}" 
+                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                <span>Buka Dashboard</span>
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                 </svg>
                             </a>
-                        </div>
+                        @else
+                            <a href="{{ route('login') }}" 
+                               class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                                <span>Akses Portal Masuk</span>
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                            </a>
+                        @endauth
+
+                        <a href="#fitur" 
+                           class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-zinc-800 dark:text-zinc-200 hover:text-orange-600 dark:hover:text-white font-bold text-xs sm:text-sm tracking-wide bg-white/60 dark:bg-black/40 hover:bg-white/90 dark:hover:bg-white/10 backdrop-blur-xl border border-white/80 dark:border-white/20 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                            <span>Jelajahi Fitur</span>
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </a>
                     </div>
                 </div>
 
