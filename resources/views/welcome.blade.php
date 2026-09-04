@@ -613,51 +613,151 @@
                 </div>
             </section>
 
-            <!-- SECTION 4: CONNECTIONS & MAP GEOLOCATION (Globe representation - Dark) -->
-            <section id="sebaran" class="bg-[#09090b] text-zinc-100 py-24 relative overflow-hidden border-b border-white/5">
+            <!-- SECTION 4: CONNECTIONS & MAP GEOLOCATION (Indonesia Archipelago Map - Dark Glassmorphism) -->
+            <section id="sebaran" class="bg-[#09090b] text-zinc-100 py-24 sm:py-28 relative overflow-hidden border-b border-white/10">
+                <!-- Ambient Glows -->
+                <div class="absolute inset-0 pointer-events-none z-0">
+                    <div class="absolute w-[500px] h-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-500/10 rounded-full blur-[160px]"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                </div>
+
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
                     
-                    <div class="text-center flex flex-col gap-4 max-w-2xl mx-auto mb-16">
-                        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+                    <!-- Header -->
+                    <div class="text-center flex flex-col items-center gap-4 max-w-3xl mx-auto mb-16">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                            Ekosistem Terintegrasi
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
                             Jaringan Konektivitas Terpadu Seluruh Indonesia
                         </h2>
-                        <p class="text-zinc-400 text-sm leading-relaxed">
-                            Menghubungkan ratusan pondok pesantren, sekolah dasar, sekolah menengah, serta rumah tahfidz dalam satu dasbor pusat.
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Menghubungkan berbagai Pondok Pesantren, Sekolah Dasar, Sekolah Menengah, serta Rumah Tahfizh dalam satu sistem terpusat pusat.
                         </p>
                     </div>
 
-                    <!-- Interactive Dotted Globe Placeholder with pulse pins -->
-                    <div class="relative w-full max-w-[650px] aspect-[2/1] bg-zinc-950/40 rounded-3xl border border-white/5 overflow-hidden flex items-center justify-center">
-                        <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                    <!-- Interactive Indonesia Dotted Map Showcase Card -->
+                    <div class="relative w-full max-w-4xl bg-zinc-900/70 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden p-6 sm:p-10 flex flex-col items-center justify-center min-h-[380px] sm:min-h-[440px]">
                         
-                        <!-- Dotted Map SVG Representation -->
-                        <svg class="w-4/5 h-4/5 text-zinc-800 animate-pulse-slow" fill="currentColor" viewBox="0 0 100 50">
-                            <!-- Simulated Dots representing Indonesia and nodes -->
-                            <circle cx="20" cy="20" r="0.6" class="text-zinc-700"/>
-                            <circle cx="25" cy="25" r="0.6" class="text-zinc-700"/>
-                            <circle cx="30" cy="23" r="0.8" class="text-zinc-600"/>
-                            <circle cx="35" cy="24" r="0.6" class="text-zinc-700"/>
-                            <circle cx="45" cy="28" r="0.7" class="text-zinc-600"/>
-                            <circle cx="50" cy="30" r="0.8" class="text-teal-500 animate-ping"/> <!-- Pulse Pin Jkt -->
-                            <circle cx="50" cy="30" r="1.2" class="text-teal-400"/>
-                            <circle cx="58" cy="31" r="0.8" class="text-amber-500 animate-ping"/> <!-- Pulse Pin Sby -->
-                            <circle cx="58" cy="31" r="1.2" class="text-amber-400"/>
-                            <circle cx="65" cy="32" r="0.8" class="text-zinc-600"/>
-                            <circle cx="70" cy="25" r="0.6" class="text-zinc-700"/>
-                            <circle cx="75" cy="22" r="0.8" class="text-teal-400"/>
-                            <circle cx="85" cy="26" r="0.6" class="text-zinc-700"/>
-                        </svg>
-
-                        <!-- Float overlay details representing active metrics -->
-                        <div class="absolute bottom-5 left-5 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl flex items-center gap-3">
-                            <span class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span>
-                            <span class="text-xs text-zinc-300 font-bold uppercase tracking-wider">12,400+ Murid Aktif</span>
+                        <!-- Top-Right Metric: 7+ Lembaga Terhubung -->
+                        <div class="sm:absolute top-5 right-5 mb-4 sm:mb-0 self-end sm:self-auto bg-black/60 backdrop-blur-md border border-white/15 px-4 py-2 rounded-2xl flex items-center gap-2.5 shadow-lg">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                            </span>
+                            <span class="text-xs sm:text-sm font-bold text-zinc-200">7+ Lembaga Terhubung</span>
                         </div>
 
-                        <div class="absolute top-5 right-5 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl flex items-center gap-3">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span class="text-xs text-zinc-300 font-bold uppercase tracking-wider">150+ Lembaga Terhubung</span>
+                        <!-- Indonesia Archipelago Dotted Matrix SVG -->
+                        <div class="w-full relative my-auto py-4">
+                            <svg class="w-full h-auto max-h-[260px] sm:max-h-[300px]" viewBox="0 0 1000 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <radialGradient id="pinGlowOrange" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#f97316" stop-opacity="1"/>
+                                        <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                                    </radialGradient>
+                                    <radialGradient id="pinGlowAmber" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="1"/>
+                                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                                    </radialGradient>
+                                    <radialGradient id="pinGlowTeal" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#10b981" stop-opacity="1"/>
+                                        <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                                    </radialGradient>
+                                </defs>
+
+                                <!-- Archipelago Dotted Matrix Nodes (Sumatra, Jawa, Kalimantan, Sulawesi, Nusa Tenggara, Maluku, Papua) -->
+                                <g fill="#52525b" opacity="0.45">
+                                    <!-- SUMATRA -->
+                                    <circle cx="80" cy="110" r="4"/><circle cx="95" cy="120" r="4.5"/><circle cx="110" cy="135" r="4"/><circle cx="125" cy="150" r="5"/><circle cx="140" cy="165" r="4.5"/><circle cx="155" cy="180" r="5"/><circle cx="170" cy="195" r="4"/><circle cx="185" cy="210" r="5"/><circle cx="200" cy="225" r="4.5"/><circle cx="215" cy="240" r="5"/><circle cx="230" cy="255" r="4.5"/><circle cx="245" cy="270" r="4"/>
+                                    <circle cx="95" cy="95" r="3.5"/><circle cx="125" cy="120" r="4"/><circle cx="150" cy="140" r="4"/><circle cx="175" cy="165" r="4"/><circle cx="205" cy="195" r="4.5"/><circle cx="225" cy="225" r="4"/>
+                                    
+                                    <!-- KALIMANTAN -->
+                                    <circle cx="340" cy="130" r="4.5"/><circle cx="365" cy="120" r="4"/><circle cx="390" cy="115" r="4.5"/><circle cx="415" cy="125" r="4"/><circle cx="440" cy="135" r="4.5"/>
+                                    <circle cx="330" cy="155" r="4"/><circle cx="355" cy="150" r="5"/><circle cx="380" cy="145" r="5"/><circle cx="405" cy="150" r="5"/><circle cx="430" cy="160" r="4.5"/>
+                                    <circle cx="340" cy="180" r="4.5"/><circle cx="365" cy="175" r="5"/><circle cx="390" cy="175" r="5"/><circle cx="415" cy="180" r="4.5"/><circle cx="440" cy="190" r="4"/>
+                                    <circle cx="360" cy="205" r="4"/><circle cx="385" cy="205" r="4.5"/><circle cx="410" cy="205" r="4"/>
+
+                                    <!-- JAWA (Extended Detail) -->
+                                    <circle cx="270" cy="295" r="4.5"/><circle cx="290" cy="298" r="4.5"/><circle cx="310" cy="300" r="5"/>
+                                    <circle cx="330" cy="302" r="5"/><circle cx="350" cy="305" r="5.5"/><circle cx="370" cy="307" r="5.5"/>
+                                    <circle cx="390" cy="308" r="6"/><circle cx="410" cy="310" r="6"/><circle cx="430" cy="312" r="5.5"/>
+                                    <circle cx="450" cy="313" r="5.5"/><circle cx="470" cy="314" r="5"/><circle cx="490" cy="315" r="4.5"/>
+
+                                    <!-- BALI & NUSA TENGGARA -->
+                                    <circle cx="515" cy="318" r="4"/><circle cx="535" cy="319" r="4"/><circle cx="555" cy="320" r="4"/><circle cx="580" cy="321" r="3.5"/><circle cx="610" cy="322" r="4"/><circle cx="640" cy="323" r="3.5"/>
+
+                                    <!-- SULAWESI -->
+                                    <circle cx="505" cy="130" r="4"/><circle cx="525" cy="140" r="4.5"/><circle cx="545" cy="130" r="4"/><circle cx="565" cy="120" r="3.5"/>
+                                    <circle cx="500" cy="160" r="4.5"/><circle cx="515" cy="180" r="5"/><circle cx="510" cy="205" r="4.5"/><circle cx="505" cy="235" r="4.5"/>
+                                    <circle cx="530" cy="195" r="4"/><circle cx="550" cy="210" r="4"/><circle cx="560" cy="235" r="3.5"/>
+
+                                    <!-- MALUKU -->
+                                    <circle cx="670" cy="140" r="3.5"/><circle cx="690" cy="155" r="4"/><circle cx="665" cy="185" r="3.5"/><circle cx="685" cy="210" r="3.5"/>
+
+                                    <!-- PAPUA -->
+                                    <circle cx="780" cy="170" r="4.5"/><circle cx="810" cy="160" r="5"/><circle cx="840" cy="160" r="5"/><circle cx="870" cy="165" r="5"/><circle cx="900" cy="170" r="4.5"/>
+                                    <circle cx="765" cy="195" r="4.5"/><circle cx="795" cy="190" r="5.5"/><circle cx="825" cy="190" r="6"/><circle cx="855" cy="195" r="6"/><circle cx="885" cy="200" r="5.5"/><circle cx="915" cy="205" r="4.5"/>
+                                    <circle cx="810" cy="225" r="5"/><circle cx="840" cy="225" r="5.5"/><circle cx="870" cy="230" r="5.5"/><circle cx="900" cy="235" r="5"/><circle cx="925" cy="245" r="4"/>
+                                </g>
+
+                                <!-- Connection Arcs Between Nodes -->
+                                <path d="M345 305 Q380 270 415 310" stroke="#f97316" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+                                <path d="M415 310 Q440 280 465 314" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+                                <path d="M415 310 Q400 230 380 145" stroke="#10b981" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.4"/>
+                                <path d="M415 310 Q600 210 825 190" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.3"/>
+
+                                <!-- ======================================================== -->
+                                <!-- 1. PIN JAWA BARAT: CIREBON -->
+                                <!-- ======================================================== -->
+                                <g class="cursor-pointer group/pin">
+                                    <circle cx="345" cy="305" r="24" fill="url(#pinGlowOrange)" class="animate-ping opacity-40"/>
+                                    <circle cx="345" cy="305" r="7" fill="#f97316" stroke="#ffffff" stroke-width="2" class="drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]"/>
+                                    <!-- Tooltip Tag -->
+                                    <g transform="translate(345, 260)">
+                                        <rect x="-42" y="-12" width="84" height="22" rx="11" fill="#18181b" stroke="#f97316" stroke-width="1.5" class="shadow-lg"/>
+                                        <text x="0" y="3" fill="#fdba74" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">📍 Cirebon</text>
+                                    </g>
+                                </g>
+
+                                <!-- ======================================================== -->
+                                <!-- 2. PIN JAWA TENGAH: SOLO / SURAKARTA (PROMINENT CENTER)  -->
+                                <!-- ======================================================== -->
+                                <g class="cursor-pointer group/pin">
+                                    <circle cx="415" cy="310" r="30" fill="url(#pinGlowAmber)" class="animate-ping opacity-60"/>
+                                    <circle cx="415" cy="310" r="9" fill="#f59e0b" stroke="#ffffff" stroke-width="2.5" class="drop-shadow-[0_0_12px_rgba(245,158,11,1)]"/>
+                                    <!-- Tooltip Tag -->
+                                    <g transform="translate(415, 255)">
+                                        <rect x="-56" y="-14" width="112" height="26" rx="13" fill="#18181b" stroke="#f59e0b" stroke-width="2" class="shadow-2xl"/>
+                                        <text x="0" y="3" fill="#fde68a" font-size="10.5" font-weight="900" text-anchor="middle" font-family="sans-serif">★ Solo (Pusat)</text>
+                                    </g>
+                                </g>
+
+                                <!-- ======================================================== -->
+                                <!-- 3. PIN JAWA TIMUR: MALANG -->
+                                <!-- ======================================================== -->
+                                <g class="cursor-pointer group/pin">
+                                    <circle cx="465" cy="314" r="24" fill="url(#pinGlowTeal)" class="animate-ping opacity-40"/>
+                                    <circle cx="465" cy="314" r="7" fill="#10b981" stroke="#ffffff" stroke-width="2" class="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"/>
+                                    <!-- Tooltip Tag -->
+                                    <g transform="translate(465, 260)">
+                                        <rect x="-40" y="-12" width="80" height="22" rx="11" fill="#18181b" stroke="#10b981" stroke-width="1.5" class="shadow-lg"/>
+                                        <text x="0" y="3" fill="#6ee7b7" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">📍 Malang</text>
+                                    </g>
+                                </g>
+                            </svg>
                         </div>
+
+                        <!-- Bottom-Left Metric: 250+ Murid Aktif -->
+                        <div class="sm:absolute bottom-5 left-5 mt-4 sm:mt-0 self-start sm:self-auto bg-black/60 backdrop-blur-md border border-white/15 px-4 py-2 rounded-2xl flex items-center gap-2.5 shadow-lg">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                            <span class="text-xs sm:text-sm font-bold text-zinc-200">250+ Murid Aktif</span>
+                        </div>
+
                     </div>
 
                 </div>
