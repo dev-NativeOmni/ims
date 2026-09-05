@@ -24,92 +24,168 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <!-- Filter Form -->
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm transition-colors duration-200">
-                <form method="GET" action="{{ route('reports.periodic') }}" x-data="{ periodType: '{{ $periodType }}' }" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    
-                    <!-- ClassRoom Selector -->
-                    <div>
-                        <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas</label>
-                        <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
-                            @foreach ($classRooms as $class)
-                                <option value="{{ $class->id }}" {{ $selectedClassId == $class->id ? 'selected' : '' }}>{{ $class->name }} ({{ $class->program?->name }})</option>
-                            @endforeach
-                        </select>
+            <!-- Filter Bar with Active Status & Collapsible Toggle -->
+            <div x-data="{ showFilter: false, periodType: '{{ $periodType }}' }" 
+                 class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm transition-all duration-200">
+                
+                <!-- Active Filter Bar Header -->
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <!-- Active Filter Chips / Badges -->
+                    <div class="flex items-center gap-2 flex-wrap min-w-0">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60 text-xs font-bold shadow-xs truncate">
+                            <svg class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span class="truncate">{{ $selectedClass?->name ?? 'Pilih Kelas' }}</span>
+                            <span class="text-[10px] font-medium text-teal-600 dark:text-teal-400 hidden xs:inline">({{ $selectedClass?->program?->name }})</span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700 text-xs font-bold shadow-xs">
+                            <svg class="w-3.5 h-3.5 text-gray-500 dark:text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>{{ $periodType === 'monthly' ? ($monthsList[$selectedMonth] ?? 'Bulanan') : 'Term ' . $selectedQuarter }} {{ $selectedYear }}</span>
+                        </div>
                     </div>
 
-                    <!-- Period Type Selector -->
-                    <div>
-                        <label for="period_type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Rentang Waktu</label>
-                        <select name="period_type" id="period_type" x-model="periodType" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
-                            <option value="monthly">Bulanan</option>
-                            <option value="quarterly">Tiga Bulanan (Term)</option>
-                        </select>
-                    </div>
+                    <!-- Toggle Button -->
+                    <button type="button" 
+                            @click="showFilter = !showFilter"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                        </svg>
+                        <span x-text="showFilter ? 'Tutup Filter' : 'Ubah Filter'"></span>
+                        <svg :class="showFilter ? 'rotate-180' : ''" class="w-3 h-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                </div>
 
-                    <!-- Month Selector / Quarter Selector (Toggled by alpine) -->
-                    <div>
-                        <!-- Monthly Option -->
-                        <div x-show="periodType === 'monthly'">
-                            <label for="month" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Bulan</label>
-                            <select name="month" id="month" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
-                                @foreach ($monthsList as $key => $name)
-                                    <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $name }}</option>
+                <!-- Collapsible Form Content -->
+                <div x-show="showFilter" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-2"
+                     class="pt-4 mt-4 border-t border-gray-150 dark:border-zinc-800">
+                    <form method="GET" action="{{ route('reports.periodic') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-end">
+                        
+                        <!-- ClassRoom Selector -->
+                        <div>
+                            <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Kelas</label>
+                            <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                                @foreach ($classRooms as $class)
+                                    <option value="{{ $class->id }}" {{ $selectedClassId == $class->id ? 'selected' : '' }}>{{ $class->name }} ({{ $class->program?->name }})</option>
                                 @endforeach
                             </select>
                         </div>
-                        
-                        <!-- Quarterly Option -->
-                        <div x-show="periodType === 'quarterly'" style="display: none;">
-                            <label for="quarter" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Term (Triwulan)</label>
-                            <select name="quarter" id="quarter" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
-                                <option value="1" {{ $selectedQuarter == 1 ? 'selected' : '' }}>Term 1 (Jul - Sep)</option>
-                                <option value="2" {{ $selectedQuarter == 2 ? 'selected' : '' }}>Term 2 (Okt - Des)</option>
-                                <option value="3" {{ $selectedQuarter == 3 ? 'selected' : '' }}>Term 3 (Jan - Mar)</option>
-                                <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>Term 4 (Apr - Jun)</option>
+
+                        <!-- Period Type Selector -->
+                        <div>
+                            <label for="period_type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Rentang Waktu</label>
+                            <select name="period_type" id="period_type" x-model="periodType" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                                <option value="monthly">Bulanan</option>
+                                <option value="quarterly">Tiga Bulanan (Term)</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Year and Submit Button -->
-                    <div class="flex gap-2">
-                        <div class="w-24">
-                            <label for="year" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tahun</label>
-                            <input type="number" name="year" id="year" value="{{ $selectedYear }}" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
+                        <!-- Month Selector / Quarter Selector -->
+                        <div>
+                            <div x-show="periodType === 'monthly'">
+                                <label for="month" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Bulan</label>
+                                <select name="month" id="month" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                                    @foreach ($monthsList as $key => $name)
+                                        <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div x-show="periodType === 'quarterly'" style="display: none;">
+                                <label for="quarter" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Term (Triwulan)</label>
+                                <select name="quarter" id="quarter" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                                    <option value="1" {{ $selectedQuarter == 1 ? 'selected' : '' }}>Term 1 (Jul - Sep)</option>
+                                    <option value="2" {{ $selectedQuarter == 2 ? 'selected' : '' }}>Term 2 (Okt - Des)</option>
+                                    <option value="3" {{ $selectedQuarter == 3 ? 'selected' : '' }}>Term 3 (Jan - Mar)</option>
+                                    <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>Term 4 (Apr - Jun)</option>
+                                </select>
+                            </div>
                         </div>
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-colors duration-150 min-h-[42px]">
-                            Filter
-                        </button>
-                    </div>
 
-                </form>
+                        <!-- Year and Submit Button -->
+                        <div class="flex gap-2">
+                            <div class="w-24">
+                                <label for="year" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Tahun</label>
+                                <input type="number" name="year" id="year" value="{{ $selectedYear }}" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                            </div>
+                            <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-xl text-xs sm:text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-colors duration-150 min-h-[38px] cursor-pointer">
+                                Terapkan
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
             </div>
 
             @if ($selectedClass)
-                <!-- Metrics Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Total Murid</div>
-                        <div class="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">{{ $summary['total_students'] }}</div>
-                        <div class="mt-1 text-xs text-gray-500">Murid terdaftar aktif di kelas</div>
+                <!-- Metrics Summary Cards (2-cols on mobile, 4-cols on iPad/Desktop) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <!-- Total Murid -->
+                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-sm transition hover:border-gray-300 dark:hover:border-zinc-700">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider truncate">Total Murid</span>
+                            <div class="w-6 h-6 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-none font-display">{{ $summary['total_students'] }}</div>
+                        <div class="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-zinc-400 truncate">Murid aktif</div>
                     </div>
                     
-                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Total Setoran</div>
-                        <div class="mt-2 text-3xl font-extrabold text-teal-600 dark:text-teal-400">{{ $summary['total_hafalan'] }}</div>
-                        <div class="mt-1 text-xs text-gray-500">Setoran hafalan baru lulus</div>
+                    <!-- Total Setoran -->
+                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-sm transition hover:border-teal-300 dark:hover:border-teal-800">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[10px] sm:text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider truncate">Total Setoran</span>
+                            <div class="w-6 h-6 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400 leading-none font-display">{{ $summary['total_hafalan'] }}</div>
+                        <div class="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-zinc-400 truncate">Hafalan baru lulus</div>
                     </div>
 
-                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Total Murajaah</div>
-                        <div class="mt-2 text-3xl font-extrabold text-amber-600 dark:text-amber-450">{{ $summary['total_murajaah'] }}</div>
-                        <div class="mt-1 text-xs text-gray-500">Pengulangan hafalan lulus</div>
+                    <!-- Total Murajaah -->
+                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-sm transition hover:border-amber-300 dark:hover:border-amber-800">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[10px] sm:text-xs font-bold text-amber-600 dark:text-amber-450 uppercase tracking-wider truncate">Total Murajaah</span>
+                            <div class="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-450 leading-none font-display">{{ $summary['total_murajaah'] }}</div>
+                        <div class="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-zinc-400 truncate">Pengulangan lulus</div>
                     </div>
 
-                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
-                        <div class="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Rerata Nilai Hafalan</div>
-                        <div class="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">{{ $summary['avg_hafalan_score'] }}</div>
-                        <div class="mt-1 text-xs text-gray-500">Skala penilaian 100</div>
+                    <!-- Rerata Nilai -->
+                    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-3.5 sm:p-5 shadow-sm transition hover:border-indigo-300 dark:hover:border-indigo-800">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate">Rerata Nilai</span>
+                            <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 leading-none font-display">{{ $summary['avg_hafalan_score'] }}</div>
+                        <div class="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-zinc-400 truncate">Skala nilai 100</div>
                     </div>
                 </div>
 
