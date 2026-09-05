@@ -20,38 +20,78 @@
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
 
-            {{-- 1. Stat Cards (2-Col Mobile Grid, 5-Col Desktop) --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-5 transition hover:shadow-md">
-                    <p class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Total Murid</p>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-0.5">{{ data_get($stats, 'total_students', 0) }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-1">Aktif: {{ data_get($stats, 'active_students', 0) }}</p>
+            {{-- 1. Stat Cards (Bento Modern Grid) --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4.5">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Murid</span>
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                            👥
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_students', 0) }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs font-medium text-emerald-700 dark:text-emerald-400">Aktif: {{ data_get($stats, 'active_students', 0) }} santri</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-5 transition hover:shadow-md">
-                    <p class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Guru</p>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-0.5">{{ data_get($stats, 'total_teachers', 0) }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-1">Orangtua: {{ data_get($stats, 'total_parents', 0) }}</p>
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Tenaga Pendidik</span>
+                        <div class="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xs">
+                            🎓
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_teachers', 0) }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400">Orangtua: {{ data_get($stats, 'total_parents', 0) }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-5 transition hover:shadow-md">
-                    <p class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Setoran Hari Ini</p>
-                    <p class="text-xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">{{ data_get($stats, 'hafalan_today', 0) }}</p>
-                    <p class="text-[10px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-1">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</span>
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                            📖
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ data_get($stats, 'hafalan_today', 0) }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs font-medium text-amber-700 dark:text-amber-400">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-5 transition hover:shadow-md">
-                    <p class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Target Aktif</p>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-0.5">{{ data_get($stats, 'active_targets', 0) }}</p>
-                    <p class="text-[10px] sm:text-xs text-red-500 font-medium mt-1">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</span>
+                        <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
+                            🎯
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'active_targets', 0) }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        <p class="text-[10px] sm:text-xs font-medium text-rose-600 dark:text-rose-400 font-semibold">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
+                    </div>
                 </div>
 
-                <div class="col-span-2 md:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-5 transition hover:shadow-md">
-                    <p class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Adab Hari Ini</p>
-                    <p class="text-xl sm:text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-0.5">
-                        {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-xs sm:text-sm font-normal text-gray-400 dark:text-zinc-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
+                <div class="col-span-2 md:col-span-1 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Adab Hari Ini</span>
+                        <div class="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xs">
+                            ✨
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400 tracking-tight">
+                        {{ data_get($stats, 'adab_filled_today', 0) }}<span class="text-sm font-semibold text-zinc-400 dark:text-zinc-500">/{{ data_get($stats, 'adab_total_students', 0) }}</span>
                     </p>
-                    <p class="text-[10px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-1">Status Pengisian Murid</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400">Pengisian Angket</p>
+                    </div>
                 </div>
             </div>
 

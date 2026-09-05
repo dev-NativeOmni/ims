@@ -29,25 +29,25 @@
                 </div>
             </div>
 
-            <!-- Kartu Statistik (3-Kolom Responsif) -->
-            <div class="grid grid-cols-3 gap-2 sm:gap-5">
+            <!-- Kartu Statistik (Bento Modern Grid) -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-5">
                 
                 <!-- Total Murid -->
-                <div class="rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 sm:p-6 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                    <div class="p-2 sm:p-3.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg sm:rounded-xl">
+                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                    <div class="p-2 sm:p-3 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl">
                         <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                     </div>
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total Murid</p>
-                        <h4 class="text-lg sm:text-2xl font-extrabold text-zinc-900 dark:text-white mt-0.5">{{ $totalStudents }}</h4>
+                        <h4 class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">{{ $totalStudents }}</h4>
                     </div>
                 </div>
 
                 <!-- Sudah Mengisi -->
-                <div class="rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 sm:p-6 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                    <div class="p-2 sm:p-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl">
+                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                    <div class="p-2 sm:p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
                         <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -55,8 +55,8 @@
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Sudah Isi</p>
                         <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 mt-0.5">
-                            <h4 class="text-lg sm:text-2xl font-extrabold text-zinc-900 dark:text-white">{{ $filledCount }}</h4>
-                            <span class="text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            <h4 class="text-xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $filledCount }}</h4>
+                            <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                 @if($totalStudents > 0)
                                     ({{ round(($filledCount / $totalStudents) * 100) }}%)
                                 @else
@@ -68,8 +68,8 @@
                 </div>
 
                 <!-- Belum Mengisi -->
-                <div class="rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 sm:p-6 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                    <div class="p-2 sm:p-3.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg sm:rounded-xl">
+                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                    <div class="p-2 sm:p-3 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-xl">
                         <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
@@ -77,8 +77,8 @@
                     <div>
                         <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Belum Isi</p>
                         <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 mt-0.5">
-                            <h4 class="text-lg sm:text-2xl font-extrabold text-zinc-900 dark:text-white">{{ $notFilledCount }}</h4>
-                            <span class="text-[10px] sm:text-xs font-semibold text-rose-600 dark:text-rose-400">
+                            <h4 class="text-xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $notFilledCount }}</h4>
+                            <span class="text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400">
                                 @if($totalStudents > 0)
                                     ({{ round(($notFilledCount / $totalStudents) * 100) }}%)
                                 @else

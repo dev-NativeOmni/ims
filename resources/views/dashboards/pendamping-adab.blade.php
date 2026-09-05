@@ -13,50 +13,62 @@
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
 
-            {{-- 1. Metric Cards (2-Col Mobile Grid, 4-Col Desktop) --}}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-xl sm:rounded-2xl p-3.5 sm:p-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Adab Hari Ini</span>
-                        <div class="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl">
-                            <x-heroicon-o-check-circle class="w-4 h-4 sm:w-6 sm:h-6" />
+            {{-- 1. Metric Cards (Bento Modern Grid) --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Adab Hari Ini</span>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                            <x-heroicon-o-check-circle class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ $stats['adab_filled_today'] }} <span class="text-xs sm:text-sm font-normal text-gray-400">/ {{ $stats['total_students'] }}</span></p>
-                    <p class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold truncate">Persentase: {{ $stats['fill_percentage_today'] }}%</p>
+                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['adab_filled_today'] }} <span class="text-xs sm:text-sm font-normal text-zinc-400">/ {{ $stats['total_students'] }}</span></p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-semibold truncate">Persentase: {{ $stats['fill_percentage_today'] }}%</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-xl sm:rounded-2xl p-3.5 sm:p-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Rerata Adab / Bln</span>
-                        <div class="p-1.5 sm:p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg sm:rounded-xl">
-                            <x-heroicon-o-star class="w-4 h-4 sm:w-6 sm:h-6" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rerata Adab / Bln</span>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center">
+                            <x-heroicon-o-star class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ $stats['avg_adab_score_month'] }} <span class="text-xs sm:text-sm font-normal text-gray-400">/ 100</span></p>
-                    <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold truncate">Predikat: {{ $stats['adab_grade_month'] }}</p>
+                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['avg_adab_score_month'] }} <span class="text-xs sm:text-sm font-normal text-zinc-400">/ 100</span></p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-semibold truncate">Predikat: {{ $stats['adab_grade_month'] }}</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-xl sm:rounded-2xl p-3.5 sm:p-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Materi Adab</span>
-                        <div class="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg sm:rounded-xl">
-                            <x-heroicon-o-academic-cap class="w-4 h-4 sm:w-6 sm:h-6" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Materi Adab</span>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center">
+                            <x-heroicon-o-academic-cap class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ $stats['total_materials'] }}</p>
-                    <p class="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 mt-1 font-semibold truncate">Modul Aktif</p>
+                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['total_materials'] }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 font-semibold truncate">Modul Aktif</p>
+                    </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition rounded-xl sm:rounded-2xl p-3.5 sm:p-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-zinc-400">Hari Kerja Efektif</span>
-                        <div class="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg sm:rounded-xl">
-                            <x-heroicon-o-calendar class="w-4 h-4 sm:w-6 sm:h-6" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Hari Kerja Efektif</span>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                            <x-heroicon-o-calendar class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{{ $stats['effective_days'] }} <span class="text-xs sm:text-sm font-normal text-gray-400">Hari</span></p>
-                    <p class="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold truncate">Bulan {{ date('F Y') }}</p>
+                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['effective_days'] }} <span class="text-xs sm:text-sm font-normal text-zinc-400">Hari</span></p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-semibold truncate">Bulan {{ date('F Y') }}</p>
+                    </div>
                 </div>
             </div>
 

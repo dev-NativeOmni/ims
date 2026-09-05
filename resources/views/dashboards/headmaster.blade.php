@@ -13,79 +13,97 @@
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
 
-            {{-- ═══════════════ TOP KPI CARDS (2-Col Mobile, 6-Col Desktop) ═══════════════ --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
+            {{-- ═══════════════ TOP KPI CARDS (Bento Modern Executive Grid) ═══════════════ --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
 
                 {{-- Hafalan Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Hafalan/bln</span>
-                        <div class="p-1 sm:p-1.5 bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 rounded-lg">
-                            <x-heroicon-o-book-open class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Hafalan/bln</span>
+                        <div class="w-7 h-7 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-book-open class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ number_format($hafalanThisMonth) }}</p>
-                    <p class="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 mt-0.5 font-semibold">Hari ini: {{ $hafalanToday }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{{ number_format($hafalanThisMonth) }}</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 font-semibold truncate">Hari ini: {{ $hafalanToday }}</p>
+                    </div>
                 </div>
 
                 {{-- Target Selesai --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Target ✓</span>
-                        <div class="p-1 sm:p-1.5 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-lg">
-                            <x-heroicon-o-check-badge class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target ✓</span>
+                        <div class="w-7 h-7 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-check-badge class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ $targetRate }}%</p>
-                    <p class="text-[10px] sm:text-xs text-green-600 dark:text-green-400 mt-0.5 font-semibold truncate">{{ $completedTargets }} / {{ $activeTargets + $completedTargets }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $targetRate }}%</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">{{ $completedTargets }}/{{ $activeTargets + $completedTargets }} selesai</p>
+                    </div>
                 </div>
 
                 {{-- Adab Diisi Hari Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Adab Hari Ini</span>
-                        <div class="p-1 sm:p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg">
-                            <x-heroicon-o-check-circle class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Adab Hari Ini</span>
+                        <div class="w-7 h-7 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-check-circle class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ $fillPercentage }}%</p>
-                    <p class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-semibold truncate">{{ $adabFilledToday }}/{{ $totalStudents }} murid</p>
+                    <p class="text-xl sm:text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tight">{{ $fillPercentage }}%</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">{{ $adabFilledToday }}/{{ $totalStudents }} murid</p>
+                    </div>
                 </div>
 
                 {{-- Rata-rata Adab --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Rerata Adab</span>
-                        <div class="p-1 sm:p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg">
-                            <x-heroicon-o-star class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rerata Adab</span>
+                        <div class="w-7 h-7 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-star class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ $avgAdabScore }}</p>
-                    <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5 font-semibold truncate">Predikat: {{ $adabGrade }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $avgAdabScore }}</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-semibold truncate">Predikat: {{ $adabGrade }}</p>
+                    </div>
                 </div>
 
                 {{-- Pelanggaran Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Pelanggaran</span>
-                        <div class="p-1 sm:p-1.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg">
-                            <x-heroicon-o-exclamation-triangle class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Pelanggaran</span>
+                        <div class="w-7 h-7 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-exclamation-triangle class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ $tanseStats['violations'] }}</p>
-                    <p class="text-[10px] sm:text-xs text-red-600 dark:text-red-400 mt-0.5 font-semibold truncate">{{ $tanseStats['violation_points'] }} poin</p>
+                    <p class="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $tanseStats['violations'] }}</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-semibold truncate">{{ $tanseStats['violation_points'] }} poin</p>
+                    </div>
                 </div>
 
                 {{-- Penghargaan Bulan Ini --}}
-                <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Reward</span>
-                        <div class="p-1 sm:p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg">
-                            <x-heroicon-o-trophy class="w-4 h-4 sm:w-5 sm:h-5" />
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Reward</span>
+                        <div class="w-7 h-7 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center">
+                            <x-heroicon-o-trophy class="w-4 h-4" />
                         </div>
                     </div>
-                    <p class="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white">{{ $tanseStats['rewards'] }}</p>
-                    <p class="text-[10px] sm:text-xs text-purple-600 dark:text-purple-400 mt-0.5 font-semibold truncate">Bulan {{ date('M') }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{{ $tanseStats['rewards'] }}</p>
+                    <div class="flex items-center gap-1 mt-1.5">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">Bulan {{ date('M') }}</p>
+                    </div>
                 </div>
             </div>
 

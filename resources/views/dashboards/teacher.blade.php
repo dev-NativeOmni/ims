@@ -26,59 +26,71 @@
                 </div>
             @endif
 
-            {{-- ═══════════════ 2x2 COMPACT STATS GRID (MOBILE-FIRST) ═══════════════ --}}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-                <div class="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between">
+            {{-- ═══════════════ 2x2 COMPACT STATS GRID (BENTO MODERN) ═══════════════ --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-sm border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                     <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">Murid Bimbingan</p>
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Murid Bimbingan</p>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A2.25 2.25 0 0112.75 21.5h-1.5a2.25 2.25 0 01-2.25-2.263V19.13m4.786-3.07a9.348 9.348 0 00-2.813-1.077M14.214 16.06c-.822-.656-1.854-1.06-2.964-1.06-1.11 0-2.142.404-2.964 1.06m8.892 0c.501.91.786 1.957.786 3.07v.003m-11.784 0a4.125 4.125 0 01-7.533-2.493 9.337 9.337 0 014.121-.952 9.38 9.38 0 012.625.372m0 3.07c0-1.113.285-2.16.786-3.07m-5.412 3.07v.109A2.25 2.25 0 004.5 21.5h1.5a2.25 2.25 0 002.25-2.263V19.13m4.786-3.07a9.348 9.348 0 012.813-1.077M8.906 16.06a9.38 9.38 0 00-2.813-1.077m0 0a9.338 9.338 0 015.626 0M8.906 16.06v-.003c0-1.113.285-2.16.786-3.07M12 12a3 3 0 100-6 3 3 0 000 6z" /></svg>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">{{ data_get($stats, 'total_students', 0) }}</p>
-                        <p class="text-[10px] sm:text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Santri terdaftar</p>
+                    <div class="mt-2.5">
+                        <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_students', 0) }}</p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Santri terdaftar</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-sm border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                     <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</p>
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</p>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">{{ data_get($stats, 'hafalan_today', 0) }}</p>
-                        <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
+                    <div class="mt-2.5">
+                        <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ data_get($stats, 'hafalan_today', 0) }}</p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            <p class="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-semibold">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-sm border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                     <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">Target Aktif</p>
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</p>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white">{{ data_get($stats, 'active_targets', 0) }}</p>
-                        <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 mt-0.5">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
+                    <div class="mt-2.5">
+                        <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'active_targets', 0) }}</p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                            <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-semibold">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200/70 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-5 flex flex-col justify-between">
+                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-sm border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                     <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">Butuh Perhatian</p>
-                        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Butuh Perhatian</p>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <p class="text-xl sm:text-3xl font-black text-rose-600 dark:text-rose-400">
+                    <div class="mt-2.5">
+                        <p class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
                             {{ data_get($stats, 'hafalan_need_attention', 0) + data_get($stats, 'murajaah_need_attention', 0) }}
                         </p>
-                        <p class="text-[10px] sm:text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Setoran &amp; Murajaah</p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                            <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Setoran &amp; Murajaah</p>
+                        </div>
                     </div>
                 </div>
             </div>
