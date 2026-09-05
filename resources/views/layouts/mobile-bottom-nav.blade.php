@@ -223,10 +223,10 @@
      x-transition:leave="transition ease-in duration-150"
      x-transition:leave-start="translate-y-0 opacity-100"
      x-transition:leave-end="translate-y-full opacity-0"
-     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[env(safe-area-inset-bottom)]"
+     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
      aria-label="Navigasi Bawah">
     
-    <div class="flex items-center justify-around h-16 max-w-md mx-auto px-1 relative">
+    <div class="flex items-center justify-around h-14 sm:h-16 landscape:h-13 max-w-md mx-auto px-1 relative">
 
         <!-- 1. LEFT ITEM 1 -->
         @if (isset($leftItems[0]) && \Illuminate\Support\Facades\Route::has($leftItems[0]['route']))
@@ -256,7 +256,7 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[0]['label'] }}</span>
+                <span class="text-[9px] sm:text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[0]['label'] }}</span>
             </a>
         @endif
 
@@ -284,16 +284,16 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[1]['label'] }}</span>
+                <span class="text-[9px] sm:text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $leftItems[1]['label'] }}</span>
             </a>
         @endif
 
         <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (BLUE-TO-ORANGE LIQUID GLASS WITH STATIC UPRIGHT ICON) -->
         <a href="{{ route('dashboard') }}"
-           class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-20 select-none group">
+           class="flex-1 flex flex-col items-center justify-center relative -top-3 sm:-top-3.5 landscape:-top-2 z-20 select-none group">
             
             <!-- Outer Button Container -->
-            <div class="relative w-13 h-13 sm:w-14 sm:h-14 flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-90">
+            <div class="relative w-12 h-12 sm:w-14 sm:h-14 landscape:w-11 landscape:h-11 flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-90">
                 
                 <!-- 1. Ambient Halo Glow (Rotating + Breathing Aura behind the button) -->
                 <div class="absolute inset-[-2px] rounded-full liquid-blue-orange-ring liquid-halo-pulse pointer-events-none"></div>
@@ -302,10 +302,10 @@
                 <div class="absolute inset-0 rounded-full liquid-blue-orange-ring liquid-ring-spin liquid-blue-orange-glow pointer-events-none"></div>
                 
                 <!-- 3. Static Dark Glass Concave Core (NEVER ROTATES) -->
-                <div class="relative z-10 w-[calc(100%-5px)] h-[calc(100%-5px)] rounded-full liquid-dial-concave p-2 flex items-center justify-center border border-white/20 backdrop-blur-md">
+                <div class="relative z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] sm:w-[calc(100%-5px)] sm:h-[calc(100%-5px)] rounded-full liquid-dial-concave p-1.5 sm:p-2 flex items-center justify-center border border-white/20 backdrop-blur-md">
                     
                     <!-- 3D Silver Metallic Embossed Home Icon (ALWAYS STATIC & UPRIGHT) -->
-                    <svg class="w-6 h-6 metallic-icon-gradient liquid-icon-shimmer" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 metallic-icon-gradient liquid-icon-shimmer" viewBox="0 0 24 24">
                         <defs>
                             <linearGradient id="silverMetallicHome" x1="0%" y1="0%" x2="0%" y2="100%">
                                 <stop offset="0%" stop-color="#ffffff" />
@@ -320,7 +320,7 @@
                 </div>
             </div>
 
-            <span class="text-[10px] font-bold tracking-tight mt-1 leading-none {{ $isDashboardActive ? 'text-teal-600 dark:text-teal-400 font-extrabold' : 'text-zinc-600 dark:text-zinc-300 font-medium' }} group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+            <span class="text-[9px] sm:text-[10px] font-bold tracking-tight mt-0.5 sm:mt-1 leading-none {{ $isDashboardActive ? 'text-teal-600 dark:text-teal-400 font-extrabold' : 'text-zinc-600 dark:text-zinc-300 font-medium' }} group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                 Beranda
             </span>
         </a>
@@ -357,7 +357,7 @@
                         </svg>
                     @endif
                 </div>
-                <span class="text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $rightItems[0]['label'] }}</span>
+                <span class="text-[9px] sm:text-[10px] mt-0.5 tracking-tight leading-none truncate max-w-full px-0.5">{{ $rightItems[0]['label'] }}</span>
             </a>
         @endif
 
@@ -370,7 +370,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </div>
-            <span class="text-[10px] mt-0.5 tracking-tight leading-none">Lainnya</span>
+            <span class="text-[9px] sm:text-[10px] mt-0.5 tracking-tight leading-none">Lainnya</span>
         </button>
 
     </div>

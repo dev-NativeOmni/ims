@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'IMS SMAIA 7') }}</title>
@@ -48,7 +48,7 @@
         $bgSetting = \App\Models\Setting::get('background');
         $bgUrl = $bgSetting ? asset('storage/' . $bgSetting) : (file_exists(public_path('images/school_sunset_bg.jpg')) ? asset('images/school_sunset_bg.jpg') : null);
     @endphp
-    <body class="font-sans antialiased bg-[#f8fafc] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white relative min-h-screen">
+    <body class="font-sans antialiased bg-[#f8fafc] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white relative min-h-screen min-h-[100dvh]">
         <!-- Ambient Sunset & Gradient Background Layer -->
         <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-cover bg-center bg-no-repeat transition-all duration-300"
              @if($bgUrl) style="background-image: url('{{ $bgUrl }}');" @endif>
@@ -61,9 +61,9 @@
             <div class="glow-blob bg-emerald-500/15 w-[450px] h-[450px] -bottom-40 left-[20%] blur-[130px] opacity-60 dark:opacity-20 transition-opacity duration-300"></div>
         </div>
 
-        <div class="min-h-screen relative z-10 flex flex-col" x-data="{ sidebarOpen: false, dark: document.documentElement.classList.contains('dark'), toggleTheme() { this.dark = !this.dark; if (this.dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); } } }">
+        <div class="min-h-screen min-h-[100dvh] relative z-10 flex flex-col" x-data="{ sidebarOpen: false, dark: document.documentElement.classList.contains('dark'), toggleTheme() { this.dark = !this.dark; if (this.dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); } } }">
             @if (session()->has('impersonated_by'))
-                <div class="bg-amber-600 text-white px-4 py-2.5 shadow-md flex items-center justify-between z-50 text-xs sm:text-sm font-medium sticky top-0">
+                <div class="bg-amber-600 text-white px-4 py-2.5 shadow-md flex items-center justify-between z-50 text-xs sm:text-sm font-medium sticky top-0 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]">
                     <div class="flex items-center gap-2">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-200 animate-ping"></span>
                         <span>⚠️ <strong>Mode Impersonasi:</strong> Anda sedang meninjau sistem sebagai <strong>{{ auth()->user()?->name }}</strong> ({{ auth()->user()?->role?->display_name ?? auth()->user()?->role?->name }}).</span>
@@ -82,7 +82,7 @@
             <div class="flex-grow flex flex-col min-h-screen">
                 <!-- Page Heading -->
                 @isset($header)
-                    <header class="bg-white/75 dark:bg-[#18181b]/70 backdrop-blur-xl border-b border-zinc-200/70 dark:border-white/10 transition-colors duration-200">
+                    <header class="bg-white/75 dark:bg-[#18181b]/70 backdrop-blur-xl border-b border-zinc-200/70 dark:border-white/10 transition-colors duration-200 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))]">
                         <div class="max-w-7xl mx-auto py-3.5 px-3 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
@@ -90,7 +90,7 @@
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 py-5 px-3 sm:px-6 lg:px-8 pb-24 md:pb-8">
+                <main class="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-[max(6rem,calc(5rem+env(safe-area-inset-bottom)))] md:pb-[max(2rem,calc(1.5rem+env(safe-area-inset-bottom)))]">
                     {{ $slot }}
                 </main>
             </div>

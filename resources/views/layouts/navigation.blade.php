@@ -80,13 +80,13 @@
          x-transition:leave="transition ease-in-out duration-300 transform"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="-translate-x-full"
-         class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-[max(env(safe-area-inset-bottom),16px)] bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-r border-zinc-200 dark:border-white/5 shadow-2xl transition-colors duration-200">
+         class="relative flex-1 flex flex-col max-w-xs w-full h-[100dvh] max-h-[100dvh] pt-[max(1.25rem,calc(0.75rem+env(safe-area-inset-top)))] pb-[max(1.25rem,calc(0.75rem+env(safe-area-inset-bottom)))] pl-[max(0rem,env(safe-area-inset-left))] bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-r border-zinc-200 dark:border-white/5 shadow-2xl transition-colors duration-200">
          
          <!-- Close Button -->
-         <div class="absolute top-0 right-0 -mr-12 pt-2">
-             <button type="button" @click="sidebarOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none">
+         <div class="absolute top-0 right-0 -mr-12 pt-3">
+             <button type="button" @click="sidebarOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none cursor-pointer bg-black/20 text-white backdrop-blur-xs">
                  <span class="sr-only">Tutup sidebar</span>
-                 <svg class="h-6 w-6 text-zinc-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                  </svg>
              </button>
@@ -105,7 +105,7 @@
          </div>
 
          <!-- Menu List -->
-         <div class="mt-5 flex-1 h-0 overflow-y-auto">
+         <div class="mt-4 flex-1 h-0 overflow-y-auto overscroll-contain touch-scroll">
              <nav class="px-2 space-y-1">
                  @include('layouts.navigation-links')
              </nav>
@@ -201,26 +201,26 @@
 </div>
 
 <!-- Global Top Bar -->
-<div class="sticky top-0 z-30 flex h-16 bg-white/75 dark:bg-[#18181b]/70 backdrop-blur-xl border-b border-zinc-200/70 dark:border-white/10 flex-shrink-0 transition-colors duration-200">
-    <button type="button" @click="sidebarOpen = true" class="px-4 border-r border-zinc-200/70 dark:border-white/10 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none cursor-pointer">
+<div class="sticky top-0 z-30 flex h-14 sm:h-16 bg-white/75 dark:bg-[#18181b]/70 backdrop-blur-xl border-b border-zinc-200/70 dark:border-white/10 flex-shrink-0 transition-colors duration-200 pl-[max(0rem,env(safe-area-inset-left))] pr-[max(0rem,env(safe-area-inset-right))] pt-[env(safe-area-inset-top)]">
+    <button type="button" @click="sidebarOpen = true" class="px-3 sm:px-4 border-r border-zinc-200/70 dark:border-white/10 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none cursor-pointer">
         <span class="sr-only">Buka sidebar</span>
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
-    <div class="flex-1 flex justify-between px-4 items-center gap-2">
-        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+    <div class="flex-1 flex justify-between px-3 sm:px-4 items-center gap-2 min-w-0">
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 select-none">
                 @if ($logo)
-                    <img src="{{ asset('storage/' . $logo) }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
+                    <img src="{{ asset('storage/' . $logo) }}" alt="Logo SMA Islam Al Azhar 7" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
                 @else
-                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
+                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
                 @endif
-                <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-6 max-w-[105px] xs:max-w-[135px] sm:max-w-[160px] object-contain drop-shadow-xs shrink-0">
+                <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-4.5 sm:h-6 max-w-[95px] xs:max-w-[130px] sm:max-w-[160px] object-contain drop-shadow-xs shrink-0">
             </a>
 
             <!-- Theme Toggle -->
-            <button @click="toggleTheme()" class="p-1.5 sm:p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 shadow-xs cursor-pointer" title="Ubah Tema">
+            <button @click="toggleTheme()" class="p-1 sm:p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 shadow-xs cursor-pointer shrink-0" title="Ubah Tema">
                 <svg x-show="dark" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
                 </svg>
@@ -231,7 +231,7 @@
         </div>
 
         <!-- Role badge & avatar pill button -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             @if ($user)
                 <button type="button" @click="sidebarOpen = true" class="hidden sm:flex items-center gap-2 py-1 px-2.5 rounded-full bg-white/70 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 hover:border-teal-500/30 transition-all text-left shadow-2xs cursor-pointer">
                     <span class="inline-block w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
@@ -242,11 +242,11 @@
 
             <!-- Small visual avatar on the right -->
             @if ($user?->avatar)
-                <button type="button" @click="sidebarOpen = true" class="w-9 h-9 rounded-full overflow-hidden border border-zinc-200/80 dark:border-white/10 shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all">
+                <button type="button" @click="sidebarOpen = true" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-zinc-200/80 dark:border-white/10 shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all shrink-0">
                     <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                 </button>
             @else
-                <button type="button" @click="sidebarOpen = true" class="w-9 h-9 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-500/20 flex items-center justify-center font-bold text-xs uppercase shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all">
+                <button type="button" @click="sidebarOpen = true" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-500/20 flex items-center justify-center font-bold text-xs uppercase shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all shrink-0">
                     {{ substr($user?->name ?? 'U', 0, 1) }}
                 </button>
             @endif

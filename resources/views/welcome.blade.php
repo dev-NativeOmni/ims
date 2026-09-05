@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
         <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
 
         <!-- Theme Initialization Script (Default: Light Mode unless explicitly set to dark) -->

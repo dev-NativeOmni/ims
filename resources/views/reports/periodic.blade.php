@@ -21,8 +21,8 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             <!-- Filter & Class Selector Card -->
             <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm space-y-4">
@@ -285,8 +285,8 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="relative w-full overflow-x-auto" style="height: 380px;">
-                                    <canvas id="capaianChart" style="min-width: 600px; height: 350px;"></canvas>
+                                <div class="relative w-full overflow-x-auto touch-scroll" style="height: 380px;">
+                                    <canvas id="capaianChart" style="min-width: 500px; height: 350px;"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -360,7 +360,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="overflow-x-auto">
+                                    <div class="overflow-x-auto touch-scroll">
                                         <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-xs">
                                             <thead class="bg-zinc-50 dark:bg-zinc-900/30 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-center">
                                                 <!-- Row 1: Main Headers -->
