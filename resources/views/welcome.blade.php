@@ -1171,7 +1171,7 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+                 class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
                  role="dialog"
                  aria-modal="true"
                  aria-labelledby="login-modal-title">
@@ -1189,7 +1189,7 @@
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
                      @click.stop
-                     class="relative w-full max-w-[420px] p-6 sm:p-8 rounded-[2.25rem] bg-gradient-to-b from-white/20 via-white/[0.08] to-white/[0.03] dark:from-white/10 dark:via-white/[0.04] dark:to-black/55 backdrop-blur-3xl border border-white/30 dark:border-amber-400/25 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] text-white overflow-hidden transition-all duration-300 z-10 my-auto">
+                     class="relative w-full max-w-[400px] sm:max-w-[420px] max-h-[92vh] overflow-y-auto p-5 xs:p-6 sm:p-8 rounded-[1.75rem] sm:rounded-[2.25rem] bg-gradient-to-b from-white/20 via-white/[0.08] to-white/[0.03] dark:from-white/10 dark:via-white/[0.04] dark:to-black/55 backdrop-blur-3xl border border-white/30 dark:border-amber-400/25 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] text-white transition-all duration-300 z-10 my-auto">
                     
                     <!-- Top Specular Glare / Rim Reflection Effect -->
                     <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/40 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>

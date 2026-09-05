@@ -68,10 +68,10 @@
     </div>
 
     <!-- Main Container -->
-    <div class="w-full max-w-[420px] relative z-10 my-auto">
+    <div class="w-full max-w-[400px] sm:max-w-[420px] relative z-10 my-auto py-3 sm:py-6">
 
         <!-- Glassmorphism Login Card (Matching Mockup Reference) -->
-        <div class="relative w-full p-7 sm:p-9 rounded-[2.25rem] bg-gradient-to-b from-white/15 via-white/[0.08] to-white/[0.03] backdrop-blur-3xl border border-white/30 dark:border-amber-400/25 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] text-white overflow-hidden transition-all duration-300">
+        <div class="relative w-full max-h-[94vh] overflow-y-auto p-5 xs:p-7 sm:p-9 rounded-[1.75rem] sm:rounded-[2.25rem] bg-gradient-to-b from-white/15 via-white/[0.08] to-white/[0.03] backdrop-blur-3xl border border-white/30 dark:border-amber-400/25 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] text-white transition-all duration-300">
             
             <!-- Top Specular Glare / Rim Reflection Effect -->
             <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/40 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>
