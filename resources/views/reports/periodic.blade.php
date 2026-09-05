@@ -168,9 +168,6 @@
                                         <h3 class="text-base font-bold text-gray-900 dark:text-white">
                                             {{ $titleCapaian }}
                                         </h3>
-                                        <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
-                                            Membandingkan jumlah capaian baris setoran (batang) dengan target baris (garis).
-                                        </p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
