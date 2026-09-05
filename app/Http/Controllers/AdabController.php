@@ -235,11 +235,12 @@ class AdabController extends Controller
                     'attendance_rate' => 0,
                     'students_detail' => [],
                 ];
-            }
-
+            }            
+            
             $studentsDetail = [];
             $totalAttendanceRateSum = 0;
             $totalFilledDaysSum = 0;
+            $effectiveDatesSet = Setting::getEffectiveDatesSet($year, $month);
 
             foreach ($students as $student) {
                 // Calculate effective days filled in memory
@@ -247,10 +248,8 @@ class AdabController extends Controller
                 $filledDates = $studentRecs->pluck('assessment_date')->unique();
                 $effectiveDaysFilled = 0;
                 foreach ($filledDates as $dateStr) {
-                    $cDate = \Carbon\Carbon::parse($dateStr);
-                    // Inline Check: isEffectiveAdabDay
-                    $dayIso = $cDate->dayOfWeekIso;
-                    if ($dayIso >= 2 && $dayIso <= 5 && ! in_array($dateStr, $holidays, true)) {
+                    $d = is_string($dateStr) ? substr($dateStr, 0, 10) : (is_object($dateStr) ? $dateStr->format('Y-m-d') : '');
+                    if (isset($effectiveDatesSet[$d])) {
                         $effectiveDaysFilled++;
                     }
                 }
@@ -278,20 +277,18 @@ class AdabController extends Controller
                     'attendance_rate' => $attendanceRate,
                     'final_score' => $finalScore,
                     'grade' => $grade,
+                    'mentor_score' => $mentorScore,
                 ];
 
                 $totalAttendanceRateSum += $attendanceRate;
                 $totalFilledDaysSum += $effectiveDaysFilled;
             }
 
-            $avgAttendanceRate = round($totalAttendanceRateSum / $totalStudents, 1);
-            $avgFilledDays = round($totalFilledDaysSum / $totalStudents, 1);
-
             return [
                 'class_room' => $classRoom,
                 'total_students' => $totalStudents,
-                'avg_filled_days' => $avgFilledDays,
-                'attendance_rate' => $avgAttendanceRate,
+                'avg_filled_days' => round($totalFilledDaysSum / $totalStudents, 1),
+                'attendance_rate' => round($totalAttendanceRateSum / $totalStudents, 1),
                 'students_detail' => $studentsDetail,
             ];
         });
@@ -309,17 +306,9 @@ class AdabController extends Controller
         ];
 
         // ─── OPTIMIZED 12-Month Historical Trend ───
-        // Precalculate effective days for all 12 months
-        $effectiveDaysByMonth = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $effectiveDaysByMonth[$m] = Setting::getEffectiveDaysCount($year, $m);
-        }
-
-        // Fetch all AdabRecords for this entire year for all students in scope in ONE query
-        $startOfYear = \Carbon\Carbon::createFromDate($year, 1, 1)->toDateString();
-        $endOfYear = \Carbon\Carbon::createFromDate($year, 12, 31)->toDateString();
+        
         $allYearRecords = \App\Models\AdabRecord::whereIn('student_id', $studentIds)
-            ->whereBetween('assessment_date', [$startOfYear, $endOfYear])
+            ->whereBetween('assessment_date', [\Carbon\Carbon::createFromDate($year, 1, 1)->toDateString(), \Carbon\Carbon::createFromDate($year, 12, 31)->toDateString()])
             ->get()
             ->groupBy(function ($rec) {
                 $m = (int) \Carbon\Carbon::parse($rec->assessment_date)->format('n');
@@ -327,6 +316,13 @@ class AdabController extends Controller
             });
 
         $monthlyTrends = [];
+        $effectiveDaysByMonth = [];
+        $effectiveDatesSetByMonth = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $effectiveDaysByMonth[$m] = Setting::getEffectiveDaysCount($year, $m);
+            $effectiveDatesSetByMonth[$m] = Setting::getEffectiveDatesSet($year, $m);
+        }
+
         for ($m = 1; $m <= 12; $m++) {
             if ($totalScopeStudents === 0) {
                 $monthlyTrends[$m] = [
@@ -339,6 +335,7 @@ class AdabController extends Controller
 
             $rateSum = 0;
             $effDaysMonth = $effectiveDaysByMonth[$m];
+            $monthDatesSet = $effectiveDatesSetByMonth[$m];
 
             foreach ($allStudentsInScope as $st) {
                 // Get pre-grouped records from memory
@@ -346,13 +343,12 @@ class AdabController extends Controller
                 $filledDates = $studentMonthRecords->pluck('assessment_date')->unique();
                 $effectiveDaysFilled = 0;
                 foreach ($filledDates as $dateStr) {
-                    $cDate = \Carbon\Carbon::parse($dateStr);
-                    $dayIso = $cDate->dayOfWeekIso;
-                    if ($dayIso >= 2 && $dayIso <= 5 && ! in_array($dateStr, $holidays, true)) {
+                    $d = is_string($dateStr) ? substr($dateStr, 0, 10) : (is_object($dateStr) ? $dateStr->format('Y-m-d') : '');
+                    if (isset($monthDatesSet[$d])) {
                         $effectiveDaysFilled++;
                     }
                 }
-                $attendanceRate = round(($effectiveDaysFilled / $effDaysMonth) * 100, 1);
+                $attendanceRate = $effDaysMonth > 0 ? round(($effectiveDaysFilled / $effDaysMonth) * 100, 1) : 0;
                 $rateSum += min(100.0, $attendanceRate);
             }
             $avgMonthRate = round($rateSum / $totalScopeStudents, 1);

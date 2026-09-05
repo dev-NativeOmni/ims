@@ -53,48 +53,47 @@ class ReportController extends Controller
         $murajaahQuery = $this->filteredMurajaahQuery($request, $visibleStudentIds);
         $targetQuery = $this->filteredTargetQuery($request, $visibleStudentIds);
 
+        $hafalanAgg = (clone $hafalanQuery)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) as passed_cnt,
+                SUM(CASE WHEN status IN ('repeat', 'needs_improvement') THEN 1 ELSE 0 END) as repeat_cnt,
+                AVG(score) as avg_score
+            ")
+            ->first();
+
+        $murajaahAgg = (clone $murajaahQuery)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) as passed_cnt,
+                SUM(CASE WHEN status IN ('repeat', 'needs_improvement') THEN 1 ELSE 0 END) as repeat_cnt,
+                AVG(overall_score) as avg_score
+            ")
+            ->first();
+
+        $targetAgg = (clone $targetQuery)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status IN ('active', 'planned', 'in_progress') THEN 1 ELSE 0 END) as active_cnt,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_cnt,
+                SUM(CASE WHEN status = 'missed' THEN 1 ELSE 0 END) as missed_cnt
+            ")
+            ->first();
+
         $summary = [
             'total_students' => $visibleStudentIds->count(),
-
-            'total_hafalan' => (clone $hafalanQuery)->count(),
-            'total_murajaah' => (clone $murajaahQuery)->count(),
-            'total_targets' => (clone $targetQuery)->count(),
-
-            'active_targets' => (clone $targetQuery)
-                ->whereIn('status', ['active', 'planned', 'in_progress'])
-                ->count(),
-
-            'completed_targets' => (clone $targetQuery)
-                ->where('status', 'completed')
-                ->count(),
-
-            'missed_targets' => (clone $targetQuery)
-                ->where('status', 'missed')
-                ->count(),
-
-            'passed_hafalan' => (clone $hafalanQuery)
-                ->where('status', 'passed')
-                ->count(),
-
-            'repeat_hafalan' => (clone $hafalanQuery)
-                ->whereIn('status', ['repeat', 'needs_improvement'])
-                ->count(),
-
-            'passed_murajaah' => (clone $murajaahQuery)
-                ->where('status', 'passed')
-                ->count(),
-
-            'repeat_murajaah' => (clone $murajaahQuery)
-                ->whereIn('status', ['repeat', 'needs_improvement'])
-                ->count(),
-
-            'average_hafalan_score' => round((float) (clone $hafalanQuery)
-                ->whereNotNull('score')
-                ->avg('score'), 2),
-
-            'average_murajaah_score' => round((float) (clone $murajaahQuery)
-                ->whereNotNull('overall_score')
-                ->avg('overall_score'), 2),
+            'total_hafalan' => (int) ($hafalanAgg?->total ?? 0),
+            'total_murajaah' => (int) ($murajaahAgg?->total ?? 0),
+            'total_targets' => (int) ($targetAgg?->total ?? 0),
+            'active_targets' => (int) ($targetAgg?->active_cnt ?? 0),
+            'completed_targets' => (int) ($targetAgg?->completed_cnt ?? 0),
+            'missed_targets' => (int) ($targetAgg?->missed_cnt ?? 0),
+            'passed_hafalan' => (int) ($hafalanAgg?->passed_cnt ?? 0),
+            'repeat_hafalan' => (int) ($hafalanAgg?->repeat_cnt ?? 0),
+            'passed_murajaah' => (int) ($murajaahAgg?->passed_cnt ?? 0),
+            'repeat_murajaah' => (int) ($murajaahAgg?->repeat_cnt ?? 0),
+            'average_hafalan_score' => round((float) ($hafalanAgg?->avg_score ?? 0), 2),
+            'average_murajaah_score' => round((float) ($murajaahAgg?->avg_score ?? 0), 2),
         ];
 
         $hafalanRecords = (clone $hafalanQuery)
