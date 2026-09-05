@@ -857,3 +857,48 @@ button.bg-gray-900 * {
     box-shadow: 0 0 100px 20px rgba(217, 119, 6, 0.15), inset 0 0 80px 10px rgba(13, 148, 136, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* 🌟 Rich Bento Glassmorphism & UI Widgets */
+.gold-medal-badge {
+    background: radial-gradient(circle at 35% 30%, #fef08a 0%, #eab308 45%, #ca8a04 80%, #a16207 100%);
+    box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.silver-medal-badge {
+    background: radial-gradient(circle at 35% 30%, #f1f5f9 0%, #cbd5e1 45%, #94a3b8 80%, #64748b 100%);
+    box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.7), inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.glow-teal-ring {
+    filter: drop-shadow(0 0 12px rgba(13, 148, 136, 0.55));
+}
+
+.glow-emerald-ring {
+    filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.55));
+}
+
+.glow-amber-ring {
+    filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.55));
+}
+
+.prayer-pill-done {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #059669;
+}
+.dark .prayer-pill-done {
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+.prayer-pill-pending {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #d97706;
+}
+.dark .prayer-pill-pending {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+}

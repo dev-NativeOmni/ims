@@ -180,11 +180,11 @@
                     </div>
 
                     {{-- Progress Hafalan --}}
-                    <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-6 lg:col-span-2 space-y-4">
+                    <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-6 lg:col-span-2 space-y-4 border border-teal-500/20 shadow-md">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-zinc-200/70 dark:border-white/10 pb-4">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Progress Hafalan</h3>
+                                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Progress Hafalan Al-Qur'an</h3>
                                     @if (!empty($progress['target_juz_label']))
                                         <span class="inline-flex items-center rounded-full bg-teal-500/15 px-3 py-0.5 text-xs font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
                                             Target: {{ $progress['target_juz_label'] }}
@@ -196,52 +196,75 @@
                                 </p>
                             </div>
 
-                            <div class="text-left sm:text-right">
-                                <p class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white leading-tight">
-                                    {{ number_format($progressPercent, 2) }}%
-                                </p>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    {{ number_format(data_get($progress, 'memorized_ayahs', 0)) }} / {{ number_format(data_get($progress, 'target_total_ayahs', data_get($progress, 'total_quran_ayahs', 6236))) }} ayat
-                                </p>
+                            <div>
+                                <span class="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500 text-white shadow-xs">
+                                    {{ $statusLabel }}
+                                </span>
                             </div>
                         </div>
 
-                        <div class="h-2.5 w-full overflow-hidden rounded-full bg-zinc-200/80 dark:bg-zinc-800 shadow-inner">
-                            <div class="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-500" style="width: {{ $progressWidth }}%"></div>
+                        {{-- Circular Ring & Key Stats --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                            <div class="sm:col-span-5 flex items-center justify-center py-2">
+                                <div class="relative w-36 h-36 flex items-center justify-center">
+                                    @php
+                                        $pctStudent = min(100, max(0, (float) $progressPercent));
+                                        $dashStudent = 2 * 3.14159 * 44;
+                                        $offsetStudent = $dashStudent - ($pctStudent / 100) * $dashStudent;
+                                    @endphp
+                                    <svg class="w-full h-full transform -rotate-90 glow-teal-ring" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="8" class="text-zinc-200 dark:text-zinc-800" fill="none" />
+                                        <circle cx="50" cy="50" r="44" stroke="url(#studentTealGrad)" stroke-width="8" stroke-dasharray="{{ $dashStudent }}" stroke-dashoffset="{{ $offsetStudent }}" stroke-linecap="round" fill="none" />
+                                        <defs>
+                                            <linearGradient id="studentTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#0d9488" />
+                                                <stop offset="100%" stop-color="#10b981" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="absolute flex flex-col items-center justify-center text-center">
+                                        <span class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($pctStudent) }}%</span>
+                                        <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="sm:col-span-7 space-y-3">
+                                <div class="grid grid-cols-3 gap-2.5">
+                                    <div class="rounded-2xl glass-liquid-inner p-3 text-center">
+                                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">Setoran</p>
+                                        <p class="text-lg sm:text-xl font-black text-zinc-900 dark:text-white mt-0.5">
+                                            {{ number_format(data_get($progress, 'total_hafalan_records', 0)) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl glass-liquid-inner p-3 text-center">
+                                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">Murajaah</p>
+                                        <p class="text-lg sm:text-xl font-black text-zinc-900 dark:text-white mt-0.5">
+                                            {{ number_format(data_get($progress, 'total_murajaah_records', 0)) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl glass-liquid-inner p-3 text-center">
+                                        <p class="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">Terlambat</p>
+                                        <p class="text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
+                                            {{ number_format(data_get($progress, 'overdue_targets', $overdueTargets->count())) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <p class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                                    Tercatat: <strong class="text-zinc-900 dark:text-white">{{ number_format(data_get($progress, 'memorized_ayahs', 0)) }}</strong> dari {{ number_format(data_get($progress, 'target_total_ayahs', data_get($progress, 'total_quran_ayahs', 6236))) }} ayat target.
+                                </p>
+
+                                @if (Route::has('progress.show'))
+                                    <a href="{{ route('progress.show', $student) }}"
+                                       class="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/20">
+                                        Lihat Detail Rapor &amp; Progres Lengkap &rarr;
+                                    </a>
+                                @endif
+                            </div>
                         </div>
-
-                        {{-- 3 Mini Stat Boxes --}}
-                        <div class="grid grid-cols-3 gap-3 sm:gap-4 pt-1">
-                            <div class="rounded-2xl glass-liquid-inner p-3 sm:p-4 text-center">
-                                <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-semibold">Setoran</p>
-                                <p class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">
-                                    {{ number_format(data_get($progress, 'total_hafalan_records', 0)) }}
-                                </p>
-                            </div>
-
-                            <div class="rounded-2xl glass-liquid-inner p-3 sm:p-4 text-center">
-                                <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-semibold">Murajaah</p>
-                                <p class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">
-                                    {{ number_format(data_get($progress, 'total_murajaah_records', 0)) }}
-                                </p>
-                            </div>
-
-                            <div class="rounded-2xl glass-liquid-inner p-3 sm:p-4 text-center">
-                                <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-semibold">Terlambat</p>
-                                <p class="text-lg sm:text-2xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
-                                    {{ number_format(data_get($progress, 'overdue_targets', $overdueTargets->count())) }}
-                                </p>
-                            </div>
-                        </div>
-
-                        @if (Route::has('progress.show'))
-                            <div class="pt-2">
-                                <a href="{{ route('progress.show', $student) }}"
-                                   class="w-full inline-flex items-center justify-center rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-sm">
-                                    Lihat Detail Progress Lengkap &rarr;
-                                </a>
-                            </div>
-                        @endif
                     </div>
                 </div>
 

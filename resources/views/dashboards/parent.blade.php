@@ -141,46 +141,137 @@
                                     </div>
                                 </div>
 
-                                {{-- Quick 3-Category Status Row (Responsive 1-col on mobile, 3-col on desktop) --}}
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-                                    {{-- Tahfizh Pill --}}
-                                    <div class="rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
-                                        <div>
-                                            <p class="text-[9px] sm:text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 {{ "Tahfizh Al-Qur'an" }}</p>
-                                            <p class="text-sm sm:text-base font-black text-zinc-900 dark:text-white mt-0.5">
-                                                {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz Lengkap' }}
-                                            </p>
+                                {{-- 🌟 3-PILLAR BENTO GRID (TAHFIZH RING, ADAB GOLD MEDAL, TANSE POINTS) 🌟 --}}
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+                                    
+                                    {{-- 1. Tahfizh Circular Progress Bento --}}
+                                    <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden border border-teal-500/20 shadow-md">
+                                        <div class="flex items-center justify-between gap-2 mb-3">
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-xl">
+                                                <span>📖</span> {{ "Tahfizh Al-Qur'an" }}
+                                            </span>
+                                            <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                                                {{ number_format((float) data_get($row, 'progress_percent', 0), 1) }}%
+                                            </span>
                                         </div>
-                                        <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-800 px-2 py-0.5 rounded-lg shadow-xs">
-                                            {{ number_format((float) data_get($row, 'progress_percent', 0), 1) }}% Target
-                                        </span>
+
+                                        <div class="flex items-center justify-center my-2 sm:my-3">
+                                            <div class="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
+                                                @php
+                                                    $pct = min(100, max(0, (float) data_get($row, 'progress_percent', 0)));
+                                                    $strokeDash = 2 * 3.14159 * 44; // r=44 => circumference ~276.46
+                                                    $offset = $strokeDash - ($pct / 100) * $strokeDash;
+                                                @endphp
+                                                <svg class="w-full h-full transform -rotate-90 glow-teal-ring" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="8" class="text-zinc-200 dark:text-zinc-800" fill="none" />
+                                                    <circle cx="50" cy="50" r="44" stroke="url(#tealGradient{{ $idx }})" stroke-width="8" stroke-dasharray="{{ $strokeDash }}" stroke-dashoffset="{{ $offset }}" stroke-linecap="round" fill="none" />
+                                                    <defs>
+                                                        <linearGradient id="tealGradient{{ $idx }}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                            <stop offset="0%" stop-color="#0d9488" />
+                                                            <stop offset="100%" stop-color="#10b981" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                </svg>
+                                                <div class="absolute flex flex-col items-center justify-center text-center">
+                                                    <span class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($pct) }}%</span>
+                                                    <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Target</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-xs">
+                                            <div>
+                                                <p class="font-bold text-zinc-900 dark:text-white">
+                                                    {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz Lengkap' }}
+                                                </p>
+                                                <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Status: {{ $statusLabel }}</p>
+                                            </div>
+                                            <span class="px-2.5 py-1 rounded-xl text-[10px] font-black {{ $pct >= 80 ? 'bg-emerald-500 text-white' : 'bg-amber-500/20 text-amber-700 dark:text-amber-300' }}">
+                                                {{ $pct >= 80 ? 'Tuntas' : 'Berjalan' }}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    {{-- Adab Pill --}}
-                                    <div class="rounded-xl bg-teal-50/60 dark:bg-teal-950/30 p-3 sm:p-3.5 border border-teal-100 dark:border-teal-900/40 flex items-center justify-between">
-                                        <div>
-                                            <p class="text-[9px] sm:text-[10px] font-black uppercase text-teal-700 dark:text-teal-400">🕌 Karakter &amp; Adab</p>
-                                            <p class="text-sm sm:text-base font-black text-zinc-900 dark:text-white mt-0.5">
-                                                Nilai: {{ data_get($adabData, 'final_score', '-') }} (Grade {{ data_get($adabData, 'grade', '-') }})
-                                            </p>
+                                    {{-- 2. Adab Assessment & Prayer Checklist Bento --}}
+                                    <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden border border-amber-500/20 shadow-md">
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl">
+                                                <span>🕌</span> Karakter &amp; Adab
+                                            </span>
+                                            <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg {{ data_get($adabData, 'today_record') ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300' }}">
+                                                {{ data_get($adabData, 'today_record') ? '✓ Hari Ini Terisi' : 'Belum Terisi' }}
+                                            </span>
                                         </div>
-                                        <span class="text-[10px] sm:text-xs font-bold {{ data_get($adabData, 'today_record') ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950' : 'text-amber-600 bg-amber-50 dark:bg-amber-950' }} px-2 py-0.5 rounded-lg border border-current/20">
-                                            {{ data_get($adabData, 'today_record') ? '✓ Terisi' : 'Belum Terisi' }}
-                                        </span>
+
+                                        <div class="flex items-center gap-4 my-2">
+                                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl gold-medal-badge flex flex-col items-center justify-center text-zinc-950 shrink-0 shadow-lg border border-amber-300/40">
+                                                <span class="text-xs sm:text-sm font-black uppercase tracking-tight">Grade</span>
+                                                <span class="text-xl sm:text-2xl font-black leading-none">{{ data_get($adabData, 'grade', 'A') }}</span>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h4 class="text-base sm:text-lg font-black text-zinc-900 dark:text-white truncate">
+                                                    {{ data_get($adabData, 'grade') === 'A' ? 'Mumtaz (Istimewa)' : (data_get($adabData, 'grade') === 'B' ? 'Jayyid Jiddan' : 'Pembiasaan Baik') }}
+                                                </h4>
+                                                <p class="text-xs font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
+                                                    Skor: <strong class="text-zinc-900 dark:text-white text-sm font-black">{{ data_get($adabData, 'final_score', '-') }}</strong> / 100
+                                                </p>
+                                                <p class="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
+                                                    Ibadah shalat, adab belajar &amp; santun
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Prayer Checklist Pills --}}
+                                        <div class="mt-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+                                            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">Checklist Shalat Fardhu Hari Ini:</p>
+                                            <div class="grid grid-cols-5 gap-1 text-center text-[10px] font-bold">
+                                                @php
+                                                    $isFilled = (bool) data_get($adabData, 'today_record');
+                                                @endphp
+                                                <div class="p-1 rounded-lg {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Subuh</div>
+                                                <div class="p-1 rounded-lg {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Dzuhur</div>
+                                                <div class="p-1 rounded-lg {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Ashar</div>
+                                                <div class="p-1 rounded-lg {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Maghrib</div>
+                                                <div class="p-1 rounded-lg {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Isya</div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {{-- Tanse / Poin Pill --}}
-                                    <div class="rounded-xl bg-purple-50/60 dark:bg-purple-950/30 p-3 sm:p-3.5 border border-purple-100 dark:border-purple-900/40 flex items-center justify-between">
-                                        <div>
-                                            <p class="text-[9px] sm:text-[10px] font-black uppercase text-purple-700 dark:text-purple-400">⭐ Kedisiplinan &amp; Prestasi</p>
-                                            <p class="text-sm sm:text-base font-black text-zinc-900 dark:text-white mt-0.5">
-                                                +{{ data_get($tanseData, 'reward_points', 0) }} Poin Reward
-                                            </p>
+                                    {{-- 3. Tanse Discipline & Points Bento --}}
+                                    <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden border border-purple-500/20 shadow-md">
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-xl">
+                                                <span>⭐</span> Kedisiplinan &amp; Prestasi
+                                            </span>
+                                            <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg {{ data_get($tanseData, 'violation_points', 0) > 0 ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300' : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' }}">
+                                                {{ data_get($tanseData, 'violation_points', 0) > 0 ? 'Perlu Perhatian' : 'Teladan' }}
+                                            </span>
                                         </div>
-                                        <span class="text-[10px] sm:text-xs font-bold {{ data_get($tanseData, 'violation_points', 0) > 0 ? 'text-rose-600 bg-rose-50 dark:bg-rose-950' : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950' }} px-2 py-0.5 rounded-lg border border-current/20">
-                                            {{ data_get($tanseData, 'violation_points', 0) }} Pelanggaran
-                                        </span>
+
+                                        <div class="my-2">
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                                                    +{{ data_get($tanseData, 'reward_points', 0) }}
+                                                </span>
+                                                <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400">Poin Reward</span>
+                                            </div>
+                                            <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 mt-2 overflow-hidden">
+                                                <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style="width: {{ min(100, max(20, (int) data_get($tanseData, 'reward_points', 0) * 2)) }}%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-xs">
+                                            <div>
+                                                <span class="text-[10px] text-zinc-500 dark:text-zinc-400">Pelanggaran:</span>
+                                                <span class="font-bold text-rose-600 dark:text-rose-400 block">{{ data_get($tanseData, 'violation_points', 0) }} Kasus</span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-[10px] text-zinc-500 dark:text-zinc-400">Status Sikap:</span>
+                                                <span class="font-bold text-emerald-700 dark:text-emerald-400 block">Sangat Tertib</span>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
 

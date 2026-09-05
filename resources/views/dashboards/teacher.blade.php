@@ -15,6 +15,9 @@
         $latestTargets = collect(data_get($stats, 'latest_targets', []));
         $latestHafalanRecords = collect(data_get($stats, 'latest_hafalan_records', []));
         $latestMurajaahRecords = collect(data_get($stats, 'latest_murajaah_records', []));
+        $avgClassProgress = $studentsProgress->isNotEmpty() 
+            ? round($studentsProgress->avg(fn($s) => (float) data_get($s, 'progress_percentage', data_get($s, 'progress_percent', 0))), 1) 
+            : 0;
     @endphp
 
     <div class="py-4 sm:py-6">
@@ -26,70 +29,112 @@
                 </div>
             @endif
 
-            {{-- ═══════════════ 2x2 COMPACT STATS GRID (FROSTED GLASS BENTO) ═══════════════ --}}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5">
-                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-                    <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Murid Bimbingan</p>
-                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A2.25 2.25 0 0112.75 21.5h-1.5a2.25 2.25 0 01-2.25-2.263V19.13m4.786-3.07a9.348 9.348 0 00-2.813-1.077M14.214 16.06c-.822-.656-1.854-1.06-2.964-1.06-1.11 0-2.142.404-2.964 1.06m8.892 0c.501.91.786 1.957.786 3.07v.003m-11.784 0a4.125 4.125 0 01-7.533-2.493 9.337 9.337 0 014.121-.952 9.38 9.38 0 012.625.372m0 3.07c0-1.113.285-2.16.786-3.07m-5.412 3.07v.109A2.25 2.25 0 004.5 21.5h1.5a2.25 2.25 0 002.25-2.263V19.13m4.786-3.07a9.348 9.348 0 012.813-1.077M8.906 16.06a9.38 9.38 0 00-2.813-1.077m0 0a9.338 9.338 0 015.626 0M8.906 16.06v-.003c0-1.113.285-2.16.786-3.07M12 12a3 3 0 100-6 3 3 0 000 6z" /></svg>
+            {{-- 🌟 TEACHER HERO BENTO WITH CLASS CIRCULAR PROGRESS RING 🌟 --}}
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+                
+                {{-- Left 4-col: Class Average Completion Ring --}}
+                <div class="lg:col-span-4 glass-liquid-card rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden border border-teal-500/20 shadow-md">
+                    <div class="w-full flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-xl">
+                            <span>📊</span> Rata-Rata Bimbingan
+                        </span>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                            {{ $studentsProgress->count() }} Murid
+                        </span>
+                    </div>
+
+                    <div class="relative w-36 h-36 sm:w-40 sm:h-40 my-3 flex items-center justify-center">
+                        @php
+                            $dashTeacher = 2 * 3.14159 * 44;
+                            $offsetTeacher = $dashTeacher - ($avgClassProgress / 100) * $dashTeacher;
+                        @endphp
+                        <svg class="w-full h-full transform -rotate-90 glow-teal-ring" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="8" class="text-zinc-200 dark:text-zinc-800" fill="none" />
+                            <circle cx="50" cy="50" r="44" stroke="url(#teacherTealGrad)" stroke-width="8" stroke-dasharray="{{ $dashTeacher }}" stroke-dashoffset="{{ $offsetTeacher }}" stroke-linecap="round" fill="none" />
+                            <defs>
+                                <linearGradient id="teacherTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#0d9488" />
+                                    <stop offset="100%" stop-color="#10b981" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center text-center">
+                            <span class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($avgClassProgress) }}%</span>
+                            <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas Target</span>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_students', 0) }}</p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <p class="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-semibold">Santri aktif bimbingan</p>
-                        </div>
+
+                    <div class="w-full pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-xs">
+                        <span class="text-zinc-500 dark:text-zinc-400">Total Bimbingan</span>
+                        <strong class="text-zinc-900 dark:text-white font-black">{{ data_get($stats, 'total_students', 0) }} Santri Aktif</strong>
                     </div>
                 </div>
 
-                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-                    <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</p>
-                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                {{-- Right 8-col: 4 Stat Cards Grid --}}
+                <div class="lg:col-span-8 grid grid-cols-2 gap-3 sm:gap-4">
+                    <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-zinc-200/70 dark:border-white/10">
+                        <div class="flex items-center justify-between gap-1">
+                            <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</p>
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
+                                <span>📖</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ data_get($stats, 'hafalan_today', 0) }}</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <p class="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-semibold">Setoran baru masuk</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ data_get($stats, 'hafalan_today', 0) }}</p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
-                            <p class="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-semibold">Murajaah: {{ data_get($stats, 'murajaah_today', 0) }}</p>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-                    <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</p>
-                        <div class="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 shadow-xs">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-zinc-200/70 dark:border-white/10">
+                        <div class="flex items-center justify-between gap-1">
+                            <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Murajaah Hari Ini</p>
+                            <div class="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                                <span>🔄</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{{ data_get($stats, 'murajaah_today', 0) }}</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                                <p class="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-semibold">Pengulangan hafalan</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'active_targets', 0) }}</p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
-                            <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-bold">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-                    <div class="flex items-center justify-between gap-1">
-                        <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Butuh Perhatian</p>
-                        <div class="w-8 h-8 rounded-xl bg-rose-500/10 dark:bg-rose-400/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 shadow-xs">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-zinc-200/70 dark:border-white/10">
+                        <div class="flex items-center justify-between gap-1">
+                            <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</p>
+                            <div class="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 shadow-xs">
+                                <span>🎯</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'active_targets', 0) }}</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-teal-500"></span>
+                                <p class="text-[10px] sm:text-xs text-teal-700 dark:text-teal-400 font-semibold">Sasaran pekan ini</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <p class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
-                            {{ data_get($stats, 'hafalan_need_attention', 0) + data_get($stats, 'murajaah_need_attention', 0) }}
-                        </p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
-                            <p class="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-semibold">Setoran &amp; Murajaah</p>
+
+                    <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-zinc-200/70 dark:border-white/10">
+                        <div class="flex items-center justify-between gap-1">
+                            <p class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Butuh Perhatian</p>
+                            <div class="w-8 h-8 rounded-xl bg-rose-500/10 dark:bg-rose-400/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 shadow-xs">
+                                <span>⚠️</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
+                                {{ data_get($stats, 'hafalan_need_attention', 0) + data_get($stats, 'murajaah_need_attention', 0) }}
+                            </p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
+                                <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-bold">Terlambat: {{ data_get($stats, 'overdue_targets', 0) }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -97,7 +142,7 @@
 
             {{-- ═══════════════ QUICK ACTION RIBBON (FROSTED GLASS BUTTONS) ═══════════════ --}}
             <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
-                <a href="{{ url('/hafalan-records/create') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group">
+                <a href="{{ url('/hafalan-records/create') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group border border-emerald-500/20">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition shadow-2xs">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     </div>
@@ -107,7 +152,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('murajaah-records.fast-input') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-amber-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group">
+                <a href="{{ route('murajaah-records.fast-input') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-amber-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group border border-amber-500/20">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition shadow-2xs">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.656 48.656 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7C4.547 9.547 4.5 10.768 4.5 12s.047 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.092-1.209.138-2.43.138-3.662zM9 10.5h6M9 13.5h6" /></svg>
                     </div>
@@ -117,7 +162,7 @@
                     </div>
                 </a>
 
-                <a href="{{ url('/hafalan-targets/create') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-teal-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group">
+                <a href="{{ url('/hafalan-targets/create') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-teal-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group border border-teal-500/20">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 group-hover:bg-teal-500 group-hover:text-white transition shadow-2xs">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
