@@ -207,32 +207,32 @@
 </div>
 
 <!-- Global Top Bar -->
-<div class="sticky top-0 z-30 flex h-16 bg-white/85 dark:bg-[#09090b]/60 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 flex-shrink-0 transition-colors duration-200">
-    <button type="button" @click="sidebarOpen = true" class="px-4 border-r border-zinc-200 dark:border-white/5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none">
+<div class="sticky top-0 z-30 flex h-16 bg-white/75 dark:bg-[#18181b]/70 backdrop-blur-xl border-b border-zinc-200/70 dark:border-white/10 flex-shrink-0 transition-colors duration-200">
+    <button type="button" @click="sidebarOpen = true" class="px-4 border-r border-zinc-200/70 dark:border-white/10 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none cursor-pointer">
         <span class="sr-only">Buka sidebar</span>
         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
-    <div class="flex-1 flex justify-between px-4 items-center">
+    <div class="flex-1 flex justify-between px-4 items-center gap-2">
         <div class="flex items-center gap-3">
-            <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
+            <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-2">
                 @if ($logo)
-                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0">
-                        <img src="{{ asset('storage/' . $logo) }}" class="h-4.5 w-4.5 object-contain" alt="Logo">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-white/80 dark:bg-white/10 border border-zinc-200/70 dark:border-white/10 flex-shrink-0 shadow-sm">
+                        <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
                     </div>
                 @else
-                    <div class="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-500 dark:text-indigo-400">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-500/20 flex-shrink-0 text-teal-600 dark:text-teal-400 shadow-sm">
                         <svg class="h-4.5 w-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                     </div>
                 @endif
-                <span class="truncate max-w-[120px]">{{ $namaInstansi ?: 'IMS' }}</span>
+                <span class="truncate max-w-[140px] sm:max-w-[240px] font-extrabold">{{ $namaInstansi ?: 'IMS' }}</span>
             </span>
 
             <!-- Theme Toggle -->
-            <button @click="toggleTheme()" class="p-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150" title="Ubah Tema">
+            <button @click="toggleTheme()" class="p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 shadow-xs cursor-pointer" title="Ubah Tema">
                 <svg x-show="dark" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
                 </svg>
@@ -242,15 +242,26 @@
             </button>
         </div>
 
-        <!-- Small visual avatar on the right -->
-        @if ($user?->avatar)
-            <button type="button" @click="sidebarOpen = true" class="w-8 h-8 rounded-full overflow-hidden border border-zinc-200 dark:border-white/10 shadow-inner">
-                <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
-            </button>
-        @else
-            <button type="button" @click="sidebarOpen = true" class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center font-bold text-xs uppercase shadow-inner">
-                {{ substr($user?->name ?? 'U', 0, 1) }}
-            </button>
-        @endif
+        <!-- Role badge & avatar pill button -->
+        <div class="flex items-center gap-2">
+            @if ($user)
+                <button type="button" @click="sidebarOpen = true" class="hidden sm:flex items-center gap-2 py-1 px-2.5 rounded-full bg-white/70 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 hover:border-teal-500/30 transition-all text-left shadow-2xs cursor-pointer">
+                    <span class="inline-block w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+                    <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-200 max-w-[130px] truncate">{{ $user->name }}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200/50 dark:border-teal-500/20">{{ $user->currentRole()?->display_name ?? $user->role?->display_name ?? 'User' }}</span>
+                </button>
+            @endif
+
+            <!-- Small visual avatar on the right -->
+            @if ($user?->avatar)
+                <button type="button" @click="sidebarOpen = true" class="w-9 h-9 rounded-full overflow-hidden border border-zinc-200/80 dark:border-white/10 shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all">
+                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                </button>
+            @else
+                <button type="button" @click="sidebarOpen = true" class="w-9 h-9 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-500/20 flex items-center justify-center font-bold text-xs uppercase shadow-sm cursor-pointer hover:ring-2 hover:ring-teal-500/30 transition-all">
+                    {{ substr($user?->name ?? 'U', 0, 1) }}
+                </button>
+            @endif
+        </div>
     </div>
 </div>

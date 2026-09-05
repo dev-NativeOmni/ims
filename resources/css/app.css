@@ -83,6 +83,74 @@
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04), 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
+.monolith-glass-panel {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.75rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+}
+@media (min-width: 640px) {
+    .monolith-glass-panel {
+        border-radius: 2rem;
+    }
+}
+.dark .monolith-glass-panel {
+    background: rgba(24, 24, 27, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.monolith-card-sm {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 1.25rem;
+    padding: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+}
+@media (min-width: 640px) {
+    .monolith-card-sm {
+        border-radius: 1.5rem;
+        padding: 1.25rem;
+    }
+}
+.dark .monolith-card-sm {
+    background: rgba(24, 24, 27, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-liquid-card {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+}
+.dark .glass-liquid-card {
+    background: rgba(24, 24, 27, 0.72);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-liquid-inner {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+.dark .glass-liquid-inner {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
 .glass-panel-hover {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

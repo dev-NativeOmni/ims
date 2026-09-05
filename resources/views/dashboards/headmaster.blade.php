@@ -10,99 +10,99 @@
         </div>
     </x-slot>
 
-    <div class="py-4 sm:py-8">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-5 sm:space-y-6">
 
-            {{-- ═══════════════ TOP KPI CARDS (Bento Modern Executive Grid) ═══════════════ --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {{-- ═══════════════ TOP KPI CARDS (Frosted Liquid Glass Grid) ═══════════════ --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4.5">
 
                 {{-- Hafalan Bulan Ini --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Hafalan/bln</span>
-                        <div class="w-7 h-7 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-teal-500/15 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-book-open class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{{ number_format($hafalanThisMonth) }}</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-teal-500"></span>
                         <p class="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 font-semibold truncate">Hari ini: {{ $hafalanToday }}</p>
                     </div>
                 </div>
 
                 {{-- Target Selesai --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target ✓</span>
-                        <div class="w-7 h-7 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-check-badge class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $targetRate }}%</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">{{ $completedTargets }}/{{ $activeTargets + $completedTargets }} selesai</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-300 font-medium truncate">{{ $completedTargets }}/{{ $activeTargets + $completedTargets }} selesai</p>
                     </div>
                 </div>
 
                 {{-- Adab Diisi Hari Ini --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Adab Hari Ini</span>
-                        <div class="w-7 h-7 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-teal-500/15 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-check-circle class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tight">{{ $fillPercentage }}%</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">{{ $adabFilledToday }}/{{ $totalStudents }} murid</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-300 font-medium truncate">{{ $adabFilledToday }}/{{ $totalStudents }} murid</p>
                     </div>
                 </div>
 
                 {{-- Rata-rata Adab --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rerata Adab</span>
-                        <div class="w-7 h-7 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-star class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $avgAdabScore }}</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
                         <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-semibold truncate">Predikat: {{ $adabGrade }}</p>
                     </div>
                 </div>
 
                 {{-- Pelanggaran Bulan Ini --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Pelanggaran</span>
-                        <div class="w-7 h-7 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-rose-500/15 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-exclamation-triangle class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $tanseStats['violations'] }}</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
                         <p class="text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-semibold truncate">{{ $tanseStats['violation_points'] }} poin</p>
                     </div>
                 </div>
 
                 {{-- Penghargaan Bulan Ini --}}
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Reward</span>
-                        <div class="w-7 h-7 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-trophy class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{{ $tanseStats['rewards'] }}</p>
-                    <div class="flex items-center gap-1 mt-1.5">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">Bulan {{ date('M') }}</p>
+                    <div class="flex items-center gap-1.5 mt-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-semibold truncate">+{{ $tanseStats['reward_points'] ?? 0 }} poin</p>
                     </div>
                 </div>
             </div>

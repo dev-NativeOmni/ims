@@ -17,39 +17,39 @@
         $childrenMotivation = collect(data_get($stats, 'children_motivation', []));
     @endphp
 
-    <div class="py-4 sm:py-8">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-5 sm:space-y-6">
 
             @if (! $parent)
-                <div class="rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-950/20 p-4 text-xs sm:text-sm text-amber-800 dark:text-amber-300">
+                <div class="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5 text-xs sm:text-sm text-amber-800 dark:text-amber-300 font-semibold">
                     Profil orang tua belum terhubung dengan akun ini. Silakan hubungi admin sekolah.
                 </div>
             @elseif ($childrenProgress->isEmpty())
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 sm:p-8 text-center border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div class="glass-liquid-card rounded-[1.75rem] p-6 sm:p-8 text-center">
                     <p class="text-zinc-500 dark:text-zinc-400 font-medium text-xs sm:text-sm">
                         Belum ada data murid yang ditautkan ke akun Anda.
                     </p>
                 </div>
             @else
-                {{-- 🌟 APPRECIATION & HIGHLIGHTS BANNER (COMPACT ON MOBILE) 🌟 --}}
-                <div class="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 p-4 sm:p-6 shadow-sm relative overflow-hidden">
+                {{-- 🌟 APPRECIATION & HIGHLIGHTS BANNER 🌟 --}}
+                <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-7 shadow-sm relative overflow-hidden">
                     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5">
                         <div class="space-y-1 sm:space-y-1.5">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                                <x-heroicon-o-sparkles class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-300" /> Portal Wali Murid
+                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                                <x-heroicon-o-sparkles class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Portal Wali Murid
                             </span>
                             <h3 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
                             </h3>
-                            <p class="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed font-medium">
+                            <p class="text-xs text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed font-medium">
                                 Ruang sinergi pemantauan jejak langkah ananda dalam hafalan Al-Qur'an, adab islami, dan prestasi.
                             </p>
                         </div>
 
                         <div class="flex items-center gap-2 sm:gap-3 shrink-0 self-start sm:self-auto">
-                            <div class="rounded-xl bg-emerald-50 dark:bg-zinc-800/80 px-3.5 py-2 sm:px-4 sm:py-2.5 border border-emerald-100 dark:border-zinc-700/60 text-center">
-                                <p class="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 tracking-wider">Total Ananda</p>
-                                <p class="text-base sm:text-xl font-black text-zinc-900 dark:text-white mt-0.5">{{ $childrenProgress->count() }} Murid</p>
+                            <div class="rounded-2xl glass-liquid-inner px-4 py-2.5 sm:px-5 sm:py-3 text-center">
+                                <p class="text-[9px] sm:text-[10px] uppercase font-bold text-teal-700 dark:text-teal-300 tracking-wider">Total Ananda</p>
+                                <p class="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5">{{ $childrenProgress->count() }} Murid</p>
                             </div>
                         </div>
                     </div>
@@ -60,14 +60,14 @@
 
                     @if ($childrenProgress->count() > 1)
                         {{-- Tab Selector for multiple children (Touch-scrollable) --}}
-                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 p-2 sm:p-2.5 rounded-2xl shadow-sm flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none">
+                        <div class="glass-liquid-card p-2 sm:p-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none">
                             <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-2 sm:px-3 flex items-center gap-1 shrink-0">
                                 <x-heroicon-o-user-group class="w-3.5 h-3.5" /> Ananda:
                             </span>
                             @foreach ($childrenProgress as $idx => $row)
                                 <button @click="activeChild = {{ $idx }}"
-                                        :class="activeChild === {{ $idx }} ? 'bg-emerald-600 text-white shadow-md font-black' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-semibold'"
-                                        class="flex items-center gap-1.5 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm transition-all shrink-0 cursor-pointer">
+                                        :class="activeChild === {{ $idx }} ? 'bg-teal-600 text-white shadow-md font-black' : 'glass-liquid-inner text-zinc-700 dark:text-zinc-300 hover:bg-white/60 dark:hover:bg-white/10 font-semibold'"
+                                        class="flex items-center gap-1.5 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm transition-all shrink-0 cursor-pointer">
                                     <x-heroicon-o-user class="w-3.5 h-3.5" />
                                     <span>{{ data_get($row, 'student_name', 'Ananda '.($idx+1)) }}</span>
                                     <span class="text-[10px] sm:text-[11px] opacity-80">({{ data_get($row, 'class_room_name', '-') }})</span>
