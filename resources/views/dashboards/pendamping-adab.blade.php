@@ -73,52 +73,60 @@
             </div>
 
             {{-- 2. Quick Action Shortcuts --}}
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm">
-                <h3 class="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-3 pb-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-1.5">
+            <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm">
+                <h3 class="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-3.5 pb-2 border-b border-zinc-200/70 dark:border-white/10 flex items-center gap-1.5">
                     <x-heroicon-o-bolt class="w-4 h-4 text-amber-500" /> Akses Cepat Menu Adab
                 </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor'])) lg:grid-cols-4 @endif gap-2 sm:gap-3">
-                    <a href="{{ route('adab.index') }}" class="p-2.5 sm:p-4 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-xl sm:rounded-2xl hover:bg-emerald-100/70 transition text-center group flex flex-col items-center">
-                        <x-heroicon-o-sparkles class="w-5 h-5 sm:w-7 sm:h-7 mb-1 text-emerald-600 dark:text-emerald-400" />
-                        <span class="text-[11px] sm:text-xs font-bold text-emerald-900 dark:text-emerald-300">Monitoring Adab</span>
+                <div class="grid grid-cols-2 sm:grid-cols-3 @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor'])) lg:grid-cols-4 @endif gap-2.5 sm:gap-3">
+                    <a href="{{ route('adab.index') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-emerald-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <x-heroicon-o-sparkles class="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
+                        <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Monitoring Adab</span>
                     </a>
-                    <a href="{{ route('adab.chart') }}" class="p-2.5 sm:p-4 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 rounded-xl sm:rounded-2xl hover:bg-amber-100/70 transition text-center group flex flex-col items-center">
-                        <x-heroicon-o-chart-bar class="w-5 h-5 sm:w-7 sm:h-7 mb-1 text-amber-600 dark:text-amber-400" />
-                        <span class="text-[11px] sm:text-xs font-bold text-amber-900 dark:text-amber-300">Grafik Pengisian</span>
+                    <a href="{{ route('adab.chart') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-amber-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <x-heroicon-o-chart-bar class="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
+                        <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Grafik Pengisian</span>
                     </a>
-                    <a href="{{ route('adab-materials.index') }}" class="p-2.5 sm:p-4 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-xl sm:rounded-2xl hover:bg-indigo-100/70 transition text-center group flex flex-col items-center">
-                        <x-heroicon-o-book-open class="w-5 h-5 sm:w-7 sm:h-7 mb-1 text-indigo-600 dark:text-indigo-400" />
-                        <span class="text-[11px] sm:text-xs font-bold text-indigo-900 dark:text-indigo-300">Materi Adab</span>
+                    <a href="{{ route('adab-materials.index') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-indigo-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <x-heroicon-o-book-open class="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
+                        <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Materi Adab</span>
                     </a>
                     @if (auth()->user()->hasAnyRole(['super_admin', 'admin', 'supervisor']))
-                        <a href="{{ route('settings.adab') }}" class="p-2.5 sm:p-4 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 rounded-xl sm:rounded-2xl hover:bg-purple-100/70 transition text-center group flex flex-col items-center">
-                            <x-heroicon-o-cog-6-tooth class="w-5 h-5 sm:w-7 sm:h-7 mb-1 text-purple-600 dark:text-purple-400" />
-                            <span class="text-[11px] sm:text-xs font-bold text-purple-900 dark:text-purple-300">Pengaturan</span>
+                        <a href="{{ route('settings.adab') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-purple-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                                <x-heroicon-o-cog-6-tooth class="w-5 h-5 sm:w-6 sm:h-6" />
+                            </div>
+                            <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Pengaturan</span>
                         </a>
                     @endif
                 </div>
             </div>
 
             {{-- 3. Class Ranking Table --}}
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm">
-                <h3 class="text-xs sm:text-base font-bold text-gray-900 dark:text-white mb-3 pb-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-1.5">
+            <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm">
+                <h3 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-3.5 pb-2 border-b border-zinc-200/70 dark:border-white/10 flex items-center gap-1.5">
                     <x-heroicon-o-trophy class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" /> Peringkat Adab Per Kelas (Bulan Ini)
                 </h3>
-                <div class="space-y-2">
+                <div class="space-y-2.5">
                     @forelse($classRankings as $rank => $c)
-                        <div class="flex items-center justify-between p-2.5 sm:p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg sm:rounded-xl border border-zinc-100 dark:border-zinc-800">
-                            <div class="flex items-center gap-2.5">
-                                <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[11px] sm:text-xs flex items-center justify-center">
+                        <div class="flex items-center justify-between p-3 rounded-xl glass-liquid-inner hover:border-amber-500/30 transition-all">
+                            <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-xs flex items-center justify-center border border-amber-500/30">
                                     {{ $rank + 1 }}
                                 </span>
-                                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-white">{{ is_array($c) ? $c['name'] : $c->name }}</span>
+                                <span class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">{{ is_array($c) ? $c['name'] : $c->name }}</span>
                             </div>
-                            <span class="font-extrabold text-xs sm:text-sm text-indigo-600 dark:text-indigo-400">
-                                {{ round(is_array($c) ? $c['avg_score'] : $c->avg_score, 1) }} <span class="text-[10px] sm:text-xs font-normal text-gray-400">/ 100</span>
+                            <span class="font-black text-xs sm:text-sm text-teal-600 dark:text-teal-400">
+                                {{ round(is_array($c) ? $c['avg_score'] : $c->avg_score, 1) }} <span class="text-[10px] sm:text-xs font-normal text-zinc-400">/ 100</span>
                             </span>
                         </div>
                     @empty
-                        <p class="text-xs text-gray-400 py-3 text-center">Belum ada data peringkat kelas.</p>
+                        <p class="text-xs text-zinc-400 py-4 text-center">Belum ada data peringkat kelas.</p>
                     @endforelse
                 </div>
             </div>

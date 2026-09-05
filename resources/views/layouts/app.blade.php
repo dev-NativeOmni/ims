@@ -44,12 +44,21 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-[#f1f5f9] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white">
-        <!-- Glow background mesh blobs matching landing page -->
-        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="glow-blob bg-teal-500/10 w-[550px] h-[550px] -top-60 -left-60 blur-[130px] opacity-60 dark:opacity-30 transition-opacity duration-300"></div>
-            <div class="glow-blob bg-orange-500/10 w-[500px] h-[500px] top-[25%] -right-40 blur-[140px] opacity-50 dark:opacity-25 transition-opacity duration-300"></div>
-            <div class="glow-blob bg-emerald-500/10 w-[450px] h-[450px] -bottom-40 left-[20%] blur-[120px] opacity-50 dark:opacity-20 transition-opacity duration-300"></div>
+    @php
+        $bgSetting = \App\Models\Setting::get('background');
+        $bgUrl = $bgSetting ? asset('storage/' . $bgSetting) : (file_exists(public_path('images/school_sunset_bg.jpg')) ? asset('images/school_sunset_bg.jpg') : null);
+    @endphp
+    <body class="font-sans antialiased bg-[#f8fafc] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white relative min-h-screen">
+        <!-- Ambient Sunset & Gradient Background Layer -->
+        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-cover bg-center bg-no-repeat transition-all duration-300"
+             @if($bgUrl) style="background-image: url('{{ $bgUrl }}');" @endif>
+            <!-- Frosted Contrast Overlay: Light Mode Soft Crystal & Dark Mode Deep Glass -->
+            <div class="absolute inset-0 bg-slate-100/90 dark:bg-[#09090b]/92 backdrop-blur-2xl transition-colors duration-300"></div>
+            
+            <!-- Glow background mesh blobs matching landing page -->
+            <div class="glow-blob bg-teal-500/15 w-[550px] h-[550px] -top-60 -left-60 blur-[140px] opacity-70 dark:opacity-25 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-orange-500/15 w-[500px] h-[500px] top-[25%] -right-40 blur-[150px] opacity-60 dark:opacity-20 transition-opacity duration-300"></div>
+            <div class="glow-blob bg-emerald-500/15 w-[450px] h-[450px] -bottom-40 left-[20%] blur-[130px] opacity-60 dark:opacity-20 transition-opacity duration-300"></div>
         </div>
 
         <div class="min-h-screen relative z-10 flex flex-col" x-data="{ sidebarOpen: false, dark: document.documentElement.classList.contains('dark'), toggleTheme() { this.dark = !this.dark; if (this.dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); } } }">
