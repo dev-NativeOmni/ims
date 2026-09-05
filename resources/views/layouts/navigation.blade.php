@@ -94,20 +94,14 @@
 
          <!-- Logo -->
          <div class="flex-shrink-0 flex items-center px-4">
-             <span class="font-bold text-xl text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                  @if ($logo)
-                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/10 flex-shrink-0">
-                          <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
-                      </div>
-                  @else
-                      <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10 border border-zinc-200 dark:border-white/10 flex-shrink-0 text-indigo-600 dark:text-indigo-400">
-                          <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                      </div>
-                  @endif
-                 <span class="truncate max-w-[160px]">{{ $namaInstansi ?: 'IMS' }}</span>
-             </span>
+             <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0 select-none">
+                 @if ($logo)
+                     <img src="{{ asset('storage/' . $logo) }}" alt="Logo SMA Islam Al Azhar 7" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs">
+                 @else
+                     <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs">
+                 @endif
+                 <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-6 max-w-[130px] sm:max-w-[150px] object-contain drop-shadow-xs shrink-0">
+             </a>
          </div>
 
          <!-- Menu List -->
@@ -215,24 +209,18 @@
         </svg>
     </button>
     <div class="flex-1 flex justify-between px-4 items-center gap-2">
-        <div class="flex items-center gap-3">
-            <span class="font-bold text-lg text-zinc-800 dark:text-white tracking-tight flex items-center gap-2">
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 select-none">
                 @if ($logo)
-                    <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-white/80 dark:bg-white/10 border border-zinc-200/70 dark:border-white/10 flex-shrink-0 shadow-sm">
-                        <img src="{{ asset('storage/' . $logo) }}" class="h-5 w-5 object-contain" alt="Logo">
-                    </div>
+                    <img src="{{ asset('storage/' . $logo) }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
                 @else
-                    <div class="w-8 h-8 flex items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-500/20 flex-shrink-0 text-teal-600 dark:text-teal-400 shadow-sm">
-                        <svg class="h-4.5 w-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
+                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs">
                 @endif
-                <span class="truncate max-w-[140px] sm:max-w-[240px] font-extrabold">{{ $namaInstansi ?: 'IMS' }}</span>
-            </span>
+                <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-6 max-w-[105px] xs:max-w-[135px] sm:max-w-[160px] object-contain drop-shadow-xs shrink-0">
+            </a>
 
             <!-- Theme Toggle -->
-            <button @click="toggleTheme()" class="p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 shadow-xs cursor-pointer" title="Ubah Tema">
+            <button @click="toggleTheme()" class="p-1.5 sm:p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 shadow-xs cursor-pointer" title="Ubah Tema">
                 <svg x-show="dark" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
                 </svg>
