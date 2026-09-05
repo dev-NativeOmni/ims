@@ -4,6 +4,8 @@ export default () => ({
     activeDashboardTab: 'siswa', // for the simulator: 'siswa', 'guru', 'wali'
     isScrolled: false, // for sticky navbar contrast adjustments
     isDark: document.documentElement.classList.contains('dark'),
+    loginModalOpen: false,
+    showPassword: false,
     
     init() {
         this.isDark = document.documentElement.classList.contains('dark');
@@ -16,8 +18,25 @@ export default () => ({
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
             this.scrollProgress = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
         });
+
+        // Close modal on Escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.loginModalOpen) {
+                this.closeLoginModal();
+            }
+        });
         
-        console.log('IMS ScrollLayout component loaded with Theme Switcher support!');
+        console.log('IMS ScrollLayout component loaded with Theme Switcher and Login Modal support!');
+    },
+
+    openLoginModal() {
+        this.loginModalOpen = true;
+        document.body.style.overflow = 'hidden';
+    },
+
+    closeLoginModal() {
+        this.loginModalOpen = false;
+        document.body.style.overflow = '';
     },
 
     toggleTheme() {

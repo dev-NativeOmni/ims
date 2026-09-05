@@ -8,7 +8,7 @@
     "name": "vendor-axios"
   },
   "resources/css/app.css": {
-    "file": "assets/app-9UIWGuqf.css",
+    "file": "assets/app-BBZY2tPw.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -17,7 +17,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bk8z8oZ7.js",
+    "file": "assets/app-BVJrSmw9.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
