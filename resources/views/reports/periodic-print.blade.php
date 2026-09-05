@@ -229,13 +229,27 @@
             </div>
         </div>
 
-        <!-- Chart 2: Pie Chart (Distribusi Ketuntasan) -->
+        <!-- Chart 2: Donut Chart (Distribusi Ketuntasan) -->
         <div class="mb-8 border border-zinc-200 rounded-2xl p-6 bg-white shadow-sm">
             <h3 class="text-sm font-bold text-zinc-800 text-center uppercase tracking-wider mb-2">
                 Persentase Ketuntasan Kelas
             </h3>
-            <div class="relative w-full h-[220px]">
-                <canvas id="pieCompletenessChart"></canvas>
+            <div class="relative w-full h-[240px] flex items-center justify-center">
+                <div class="relative w-[220px] h-[220px] flex items-center justify-center">
+                    <canvas id="pieCompletenessChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                        @php
+                            $totP = ($tuntasCount ?? 0) + ($tidakTuntasCount ?? 0);
+                            $pctP = $totP > 0 ? round((($tuntasCount ?? 0) / $totP) * 100, 1) : 0;
+                        @endphp
+                        <span class="text-2xl font-black text-zinc-900 leading-none">
+                            {{ $pctP }}%
+                        </span>
+                        <span class="text-[9px] font-extrabold text-teal-600 uppercase tracking-wider mt-0.5">
+                            TUNTAS
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -260,7 +274,7 @@
                             </td>
                             <td class="py-2 px-3 text-center font-bold">
                                 @if ($r['completed_targets'] >= $r['total_targets'] && $r['total_targets'] > 0)
-                                    <span class="text-blue-600 uppercase">TUNTAS</span>
+                                    <span class="text-teal-600 uppercase">TUNTAS</span>
                                 @else
                                     <span class="text-rose-600 uppercase">TIDAK TUNTAS</span>
                                 @endif
@@ -291,14 +305,31 @@
                         labels: labels,
                         datasets: [
                             {
-                                label: 'Target Setoran',
-                                data: targets,
-                                backgroundColor: '#4f81bd',
-                            },
-                            {
                                 label: 'Terealisasi',
                                 data: completed,
-                                backgroundColor: '#9bbb59',
+                                backgroundColor: '#0284c7', // Cyan Ocean
+                                borderRadius: {
+                                    topLeft: 6,
+                                    topRight: 6,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                barPercentage: 0.6,
+                                order: 2
+                            },
+                            {
+                                label: 'Target Setoran',
+                                type: 'line',
+                                data: targets,
+                                borderColor: '#f97316', // Sunset Orange
+                                borderWidth: 2.5,
+                                tension: 0.35,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#ea580c',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                fill: false,
+                                order: 1
                             }
                         ]
                     },
@@ -306,6 +337,40 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    font: {
+                                        family: 'Arial, sans-serif',
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.06)'
+                                },
+                                beginAtZero: true
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 9
+                                    },
+                                    minRotation: 90,
+                                    maxRotation: 90
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -313,18 +378,37 @@
             const pieCtx = document.getElementById('pieCompletenessChart')?.getContext('2d');
             if (pieCtx) {
                 new Chart(pieCtx, {
-                    type: 'pie',
+                    type: 'doughnut',
                     data: {
                         labels: ['TUNTAS', 'TIDAK TUNTAS'],
                         datasets: [{
                             data: [{{ $tuntasCount ?? 0 }}, {{ $tidakTuntasCount ?? 0 }}],
-                            backgroundColor: ['#4f81bd', '#c00000']
+                            backgroundColor: ['#0d9488', '#f43f5e'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            borderRadius: 4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
+                        cutout: '72%',
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    boxWidth: 8,
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
             }

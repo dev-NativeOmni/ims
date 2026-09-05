@@ -209,8 +209,24 @@
                                     </div>
                                 </div>
                                 <div class="relative w-full flex justify-center items-center" style="height: 380px;">
-                                    <div style="width: 280px; height: 280px;">
+                                    <div style="width: 280px; height: 280px;" class="relative flex items-center justify-center">
                                         <canvas id="ketuntasanChart"></canvas>
+                                        <!-- Center Metric Summary Overlay inside Donut Hole -->
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center pb-4">
+                                            @php
+                                                $totK = $tuntasCount + $tidakTuntasCount;
+                                                $pctK = $totK > 0 ? round(($tuntasCount / $totK) * 100, 1) : 0;
+                                            @endphp
+                                            <span class="text-3xl font-black text-gray-900 dark:text-white leading-none font-display tracking-tight">
+                                                {{ $pctK }}%
+                                            </span>
+                                            <span class="text-[10px] font-extrabold text-teal-600 dark:text-teal-400 uppercase tracking-widest mt-1">
+                                                TUNTAS
+                                            </span>
+                                            <span class="text-[10px] text-gray-400 dark:text-zinc-500 font-semibold mt-0.5">
+                                                {{ $tuntasCount }} dari {{ $totK }} Murid
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -507,55 +523,77 @@
                 Chart.register(ChartDataLabels);
 
                 const isDark = document.documentElement.classList.contains('dark');
-                const gridColor = isDark ? 'rgba(63, 63, 70, 0.3)' : 'rgba(228, 228, 231, 0.8)';
-                const labelColor = isDark ? '#a1a1aa' : '#71717a';
+                const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+                const labelColor = isDark ? '#a1a1aa' : '#64748b';
 
-                // --- CAPAIAN vs TARGET CHART ---
-                const capaianCtx = document.getElementById('capaianChart').getContext('2d');
+                // --- CAPAIAN vs TARGET CHART (MODERN SAAS GLASSMORPHIC STYLE) ---
+                const capaianCanvas = document.getElementById('capaianChart');
+                const capaianCtx = capaianCanvas.getContext('2d');
+
+                // Create sleek vertical gradient for bars
+                const barGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
+                barGradient.addColorStop(0, '#0ea5e9'); // Sky / Cyan top
+                barGradient.addColorStop(1, '#0284c7'); // Ocean Blue bottom
+
+                // Subtle orange amber area glow for target curve
+                const targetAreaGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
+                targetAreaGradient.addColorStop(0, 'rgba(249, 115, 22, 0.2)');
+                targetAreaGradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+
                 new Chart(capaianCtx, {
                     type: 'bar',
                     data: {
                         labels: @json($names),
                         datasets: [
                             {
-                                label: 'CAPAIAN',
+                                label: 'CAPAIAN BARIS',
                                 type: 'bar',
                                 data: @json($capaians),
-                                backgroundColor: '#1d70b8', // Blue bar matching screenshot
-                                borderColor: '#1d70b8',
-                                borderWidth: 1,
+                                backgroundColor: barGradient,
+                                hoverBackgroundColor: '#38bdf8',
+                                borderWidth: 0,
+                                borderRadius: {
+                                    topLeft: 8,
+                                    topRight: 8,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                borderSkipped: 'bottom',
+                                barPercentage: 0.65,
+                                categoryPercentage: 0.85,
                                 order: 2,
                                 datalabels: {
-                                    anchor: 'start',
-                                    align: 'end',
-                                    offset: 4,
-                                    color: '#ffffff', // White numbers inside the bar at the bottom
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    color: isDark ? '#38bdf8' : '#0284c7',
                                     font: {
+                                        family: 'Outfit, Inter, sans-serif',
                                         weight: 'bold',
                                         size: 10
                                     }
                                 }
                             },
                             {
-                                label: 'TARGET',
+                                label: 'TARGET BARIS',
                                 type: 'line',
                                 data: @json($targets),
-                                borderColor: '#c1392b', // Red line matching screenshot
-                                backgroundColor: '#c1392b',
-                                borderWidth: 2.5,
-                                pointBackgroundColor: '#c1392b',
-                                pointRadius: 4,
-                                pointHoverRadius: 6,
-                                fill: false,
+                                borderColor: '#f97316', // Sunset Amber
+                                borderWidth: 3,
+                                tension: 0.38, // Smooth spline bezier curve
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#ea580c',
+                                pointBorderWidth: 2.5,
+                                pointRadius: 4.5,
+                                pointHoverRadius: 7,
+                                pointHoverBackgroundColor: '#ea580c',
+                                pointHoverBorderColor: '#ffffff',
+                                pointHoverBorderWidth: 2,
+                                fill: true,
+                                backgroundColor: targetAreaGradient,
                                 order: 1,
                                 datalabels: {
-                                    anchor: 'end',
-                                    align: 'top',
-                                    color: '#c1392b', // Red numbers above the points
-                                    font: {
-                                        weight: 'bold',
-                                        size: 10
-                                    }
+                                    display: false
                                 }
                             }
                         ]
@@ -563,29 +601,56 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
                         plugins: {
                             legend: {
                                 display: true,
                                 position: 'top',
                                 labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    boxWidth: 8,
+                                    padding: 20,
                                     color: labelColor,
                                     font: {
-                                        weight: 'bold'
+                                        family: 'Inter, sans-serif',
+                                        weight: 'bold',
+                                        size: 11
                                     }
                                 }
                             },
                             tooltip: {
-                                enabled: true
+                                backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                titleColor: isDark ? '#ffffff' : '#0f172a',
+                                bodyColor: isDark ? '#cbd5e1' : '#334155',
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                titleFont: {
+                                    family: 'Outfit, Inter, sans-serif',
+                                    weight: 'bold',
+                                    size: 12
+                                }
                             }
                         },
                         scales: {
                             y: {
                                 grid: {
-                                    color: gridColor
+                                    color: gridColor,
+                                    borderDash: [4, 4]
                                 },
                                 ticks: {
                                     color: labelColor,
-                                    stepSize: 10
+                                    stepSize: 10,
+                                    font: {
+                                        family: 'Inter, sans-serif',
+                                        size: 10
+                                    }
                                 },
                                 beginAtZero: true
                             },
@@ -596,7 +661,9 @@
                                 ticks: {
                                     color: labelColor,
                                     font: {
-                                        size: 9
+                                        family: 'Inter, sans-serif',
+                                        size: 9,
+                                        weight: '600'
                                     },
                                     minRotation: 90,
                                     maxRotation: 90
@@ -606,45 +673,69 @@
                     }
                 });
 
-                // --- KETUNTASAN PIE CHART ---
+                // --- KETUNTASAN MODERN DONUT CHART ---
                 const ketuntasanCtx = document.getElementById('ketuntasanChart').getContext('2d');
                 new Chart(ketuntasanCtx, {
-                    type: 'pie',
+                    type: 'doughnut',
                     data: {
-                        labels: ['TUNTAS', 'TIDAK TUNTAS'],
+                        labels: ['TUNTAS', 'BELUM TUNTAS'],
                         datasets: [{
                             data: [{{ $tuntasCount }}, {{ $tidakTuntasCount }}],
                             backgroundColor: [
-                                '#1d70b8', // Blue for Tuntas
-                                '#c1392b'  // Red/brown for Tidak Tuntas
+                                '#0d9488', // Emerald Teal
+                                '#f43f5e'  // Coral Rose
                             ],
-                            borderWidth: 1,
-                            borderColor: isDark ? '#18181b' : '#ffffff'
+                            hoverBackgroundColor: [
+                                '#14b8a6',
+                                '#fb7185'
+                            ],
+                            borderWidth: 4,
+                            borderColor: isDark ? '#18181b' : '#ffffff',
+                            borderRadius: 6,
+                            spacing: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        cutout: '74%', // Clean donut hole for central metric badge
                         plugins: {
                             legend: {
-                                display: false // Hidden because labels are drawn directly on slices
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    boxWidth: 8,
+                                    padding: 16,
+                                    color: labelColor,
+                                    font: {
+                                        family: 'Inter, sans-serif',
+                                        weight: '600',
+                                        size: 11
+                                    }
+                                }
                             },
                             datalabels: {
-                                formatter: (value, ctx) => {
-                                    let sum = 0;
-                                    let dataArr = ctx.chart.data.datasets[0].data;
-                                    dataArr.map(data => {
-                                        sum += data;
-                                    });
-                                    let percentage = (value * 100 / sum).toFixed(1) + "%";
-                                    return ctx.chart.data.labels[ctx.dataIndex] + "\n" + percentage;
-                                },
-                                color: '#ffffff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 11
-                                },
-                                textAlign: 'center'
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                titleColor: isDark ? '#ffffff' : '#0f172a',
+                                bodyColor: isDark ? '#cbd5e1' : '#334155',
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                borderWidth: 1,
+                                padding: 10,
+                                boxPadding: 4,
+                                usePointStyle: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = {{ $tuntasCount + $tidakTuntasCount }};
+                                        const val = context.raw || 0;
+                                        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                        return ` ${context.label}: ${val} Murid (${pct}%)`;
+                                    }
+                                }
                             }
                         }
                     }
