@@ -151,30 +151,21 @@
 
         @if ($canManageRecords)
 
+            @if ($hasRoute('spreadsheet-input.index'))
+                <a href="{{ route('spreadsheet-input.index') }}" class="{{ $getLinkClasses($routeIs('spreadsheet-input.*') || $routeIs('hafalan-records.create') || $routeIs('murajaah-records.fast-input') || $routeIs('murajaah-records.create')) }}">
+                    <svg class="{{ $getIconClasses($routeIs('spreadsheet-input.*') || $routeIs('hafalan-records.create') || $routeIs('murajaah-records.fast-input') || $routeIs('murajaah-records.create')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Input Setoran & Muraja'ah</span>
+                </a>
+            @endif
+
             @if ($hasRoute('hafalan-records.index'))
-                <a href="{{ route('hafalan-records.index') }}" class="{{ $getLinkClasses($routeIs('hafalan-records.*')) }}">
-                    <svg class="{{ $getIconClasses($routeIs('hafalan-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <a href="{{ route('hafalan-records.index') }}" class="{{ $getLinkClasses(($routeIs('hafalan-records.*') && !$routeIs('hafalan-records.create')) || ($routeIs('murajaah-records.*') && !$routeIs('murajaah-records.fast-input') && !$routeIs('murajaah-records.create'))) }}">
+                    <svg class="{{ $getIconClasses(($routeIs('hafalan-records.*') && !$routeIs('hafalan-records.create')) || ($routeIs('murajaah-records.*') && !$routeIs('murajaah-records.fast-input') && !$routeIs('murajaah-records.create'))) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span>Hafalan</span>
-                </a>
-            @endif
-
-            @if ($hasRoute('spreadsheet-input.index'))
-                <a href="{{ route('spreadsheet-input.index') }}" class="{{ $getLinkClasses($routeIs('spreadsheet-input.*')) }}">
-                    <svg class="{{ $getIconClasses($routeIs('spreadsheet-input.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <span>Input Spreadsheet</span>
-                </a>
-            @endif
-
-            @if ($hasRoute('murajaah-records.index'))
-                <a href="{{ route('murajaah-records.index') }}" class="{{ $getLinkClasses($routeIs('murajaah-records.*')) }}">
-                    <svg class="{{ $getIconClasses($routeIs('murajaah-records.*')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
-                    </svg>
-                    <span>Murajaah</span>
+                    <span>Riwayat & Data Setoran</span>
                 </a>
             @endif
 

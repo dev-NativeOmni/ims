@@ -35,6 +35,8 @@
         }
     }">
         <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4">
+            @include('partials.tahfizh-records-nav-tabs', ['activeTab' => 'hafalan'])
+
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-3 rounded-xl text-sm font-semibold">
                     {{ session('success') }}

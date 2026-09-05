@@ -32,7 +32,7 @@ class NavigationMenuTest extends TestCase
         $response->assertSee(route('parents.index'));
         $response->assertSee(route('students.index'));
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
+        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
@@ -60,7 +60,7 @@ class NavigationMenuTest extends TestCase
         $response->assertSee(route('parents.index'));
         $response->assertSee(route('students.index'));
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
+        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
@@ -96,7 +96,7 @@ class NavigationMenuTest extends TestCase
 
         // Should see
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
+        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
@@ -195,7 +195,7 @@ class NavigationMenuTest extends TestCase
 
         // Should see
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
+        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
@@ -273,7 +273,7 @@ class NavigationMenuTest extends TestCase
 
         // Should see
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('murajaah-records.index'));
+        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
