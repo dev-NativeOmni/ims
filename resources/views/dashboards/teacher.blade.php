@@ -174,13 +174,84 @@
             </div>
 
             {{-- ═══════════════ PROGRESS MURID BIMBINGAN (FROSTED GLASS CONTAINER) ═══════════════ --}}
-            <div class="glass-liquid-card rounded-[1.75rem] overflow-hidden">
-                <div class="px-5 py-4 sm:px-6 sm:py-4.5 border-b border-zinc-200/70 dark:border-white/10 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+            @php
+                $assignedClasses = $studentsProgress
+                    ->map(function ($item) {
+                        $name = data_get($item, 'class_room_name') ?: (data_get($item, 'student.classRoom.name') ?: 'Tanpa Kelas');
+                        return [
+                            'name' => $name,
+                            'key' => \Illuminate\Support\Str::slug($name),
+                        ];
+                    })
+                    ->unique('name')
+                    ->values();
+
+                $classCounts = $studentsProgress->groupBy(function ($item) {
+                    return data_get($item, 'class_room_name') ?: (data_get($item, 'student.classRoom.name') ?: 'Tanpa Kelas');
+                })->map->count();
+            @endphp
+
+            <div x-data="{ 
+                    selectedClass: 'all',
+                    selectedClassName: 'Semua Kelas',
+                    selectedCount: {{ $studentsProgress->count() }},
+                    setClass(key, name, count) {
+                        this.selectedClass = key;
+                        this.selectedClassName = name;
+                        this.selectedCount = count;
+                    }
+                 }" 
+                 class="glass-liquid-card rounded-[1.75rem] overflow-hidden shadow-sm">
+                
+                <div class="px-5 py-4 sm:px-6 sm:py-4.5 border-b border-zinc-200/70 dark:border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <div class="flex items-center gap-2.5">
                         <div class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></div>
-                        <h3 class="font-bold text-base text-zinc-900 dark:text-white">Progres Murid Bimbingan</h3>
+                        <div>
+                            <h3 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
+                                <span>Progres Murid Bimbingan</span>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20" x-text="selectedCount + ' Santri'">{{ $studentsProgress->count() }} Santri</span>
+                            </h3>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Filter tampilan santri berdasarkan kelas yang Anda ampu</p>
+                        </div>
                     </div>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">{{ $studentsProgress->count() }} Santri</span>
+
+                    {{-- Class Toggle Filter Pills --}}
+                    @if ($assignedClasses->isNotEmpty())
+                        <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+                            <button type="button"
+                                    @click="setClass('all', 'Semua Kelas', {{ $studentsProgress->count() }})"
+                                    :class="selectedClass === 'all' 
+                                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-sm shadow-teal-500/20 ring-1 ring-teal-500' 
+                                        : 'glass-liquid-inner text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/60 font-medium'"
+                                    class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border border-transparent">
+                                <span>🏢 Semua Kelas</span>
+                                <span class="px-1.5 py-0.2 rounded-md text-[10px] font-bold" 
+                                      :class="selectedClass === 'all' ? 'bg-white/20 text-white' : 'bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'">
+                                    {{ $studentsProgress->count() }}
+                                </span>
+                            </button>
+
+                            @foreach ($assignedClasses as $ac)
+                                @php
+                                    $clsName = $ac['name'];
+                                    $clsKey = $ac['key'];
+                                    $countInClass = $classCounts[$clsName] ?? 0;
+                                @endphp
+                                <button type="button"
+                                        @click="setClass('{{ $clsKey }}', '{{ $clsName }}', {{ $countInClass }})"
+                                        :class="selectedClass === '{{ $clsKey }}' 
+                                            ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold shadow-sm shadow-teal-500/20 ring-1 ring-teal-500' 
+                                            : 'glass-liquid-inner text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/60 font-medium'"
+                                        class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border border-transparent">
+                                    <span>📖 {{ $clsName }}</span>
+                                    <span class="px-1.5 py-0.2 rounded-md text-[10px] font-bold" 
+                                          :class="selectedClass === '{{ $clsKey }}' ? 'bg-white/20 text-white' : 'bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'">
+                                        {{ $countInClass }}
+                                    </span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Mobile Card List View (< sm) --}}
@@ -191,8 +262,14 @@
                             $percentage = (float) data_get($item, 'progress_percentage', data_get($item, 'progress_percent', 0));
                             $activeTargetCount = (int) data_get($item, 'active_targets', data_get($item, 'active_target_count', 0));
                             $overdueTargetCount = (int) data_get($item, 'overdue_targets', data_get($item, 'overdue_target_count', 0));
+                            $className = data_get($item, 'class_room_name') ?: ($student?->classRoom?->name ?: 'Tanpa Kelas');
+                            $classKey = \Illuminate\Support\Str::slug($className);
                         @endphp
-                        <div class="p-3.5 rounded-xl glass-liquid-inner space-y-2.5">
+                        <div x-show="selectedClass === 'all' || selectedClass === '{{ $classKey }}'"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 transform -translate-y-1"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             class="p-3.5 rounded-xl glass-liquid-inner space-y-2.5">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <div class="w-8 h-8 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-300 font-bold text-xs flex items-center justify-center shrink-0 border border-teal-500/20">
@@ -200,7 +277,7 @@
                                     </div>
                                     <div class="min-w-0">
                                         <p class="font-bold text-xs text-zinc-900 dark:text-white truncate">{{ $student?->name ?? data_get($item, 'student_name', '-') }}</p>
-                                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400">{{ $student?->classRoom?->name ?? data_get($item, 'class_room_name', '-') }}</p>
+                                        <p class="text-[10px] text-teal-600 dark:text-teal-400 font-semibold">{{ $className }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
@@ -248,10 +325,20 @@
                                     $percentage = (float) data_get($item, 'progress_percentage', data_get($item, 'progress_percent', 0));
                                     $activeTargetCount = (int) data_get($item, 'active_targets', data_get($item, 'active_target_count', 0));
                                     $overdueTargetCount = (int) data_get($item, 'overdue_targets', data_get($item, 'overdue_target_count', 0));
+                                    $className = data_get($item, 'class_room_name') ?: ($student?->classRoom?->name ?: 'Tanpa Kelas');
+                                    $classKey = \Illuminate\Support\Str::slug($className);
                                 @endphp
-                                <tr class="hover:bg-white/40 dark:hover:bg-white/[0.04] transition">
+                                <tr x-show="selectedClass === 'all' || selectedClass === '{{ $classKey }}'"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 transform -translate-y-1"
+                                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                                    class="hover:bg-white/40 dark:hover:bg-white/[0.04] transition">
                                     <td class="px-6 py-3.5 font-bold text-zinc-900 dark:text-white">{{ $student?->name ?? data_get($item, 'student_name', '-') }}</td>
-                                    <td class="px-6 py-3.5 text-zinc-600 dark:text-zinc-400 font-medium">{{ $student?->classRoom?->name ?? data_get($item, 'class_room_name', '-') }}</td>
+                                    <td class="px-6 py-3.5 text-zinc-600 dark:text-zinc-400 font-medium">
+                                        <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+                                            {{ $className }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-3.5">
                                         <div class="flex items-center gap-3">
                                             <div class="w-36 bg-zinc-200/80 dark:bg-zinc-800 rounded-full h-2 overflow-hidden shadow-inner">
