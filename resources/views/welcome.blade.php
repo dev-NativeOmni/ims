@@ -173,19 +173,17 @@
             
             <!-- Centered Logo Container with Liquid Halo & Shimmer -->
             <div class="relative z-10 flex flex-col items-center gap-6 sm:gap-7 px-4 max-w-md w-full">
-                <!-- Glowing Ring & Logo Card -->
-                <div class="relative">
-                    <!-- Outer pulsating aura ring -->
-                    <div :class="logoVisible ? 'scale-110 opacity-75' : 'scale-75 opacity-0'"
-                         class="absolute -inset-3 rounded-full bg-gradient-to-tr from-teal-500/30 via-emerald-400/20 to-amber-500/30 blur-xl transition-all duration-1000 ease-out"></div>
-                    
-                    <!-- Circular Glass Orb / Frame -->
-                    <div :class="logoVisible ? 'scale-100 opacity-100 rotate-0' : 'scale-75 opacity-0 -rotate-6'"
-                         class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-white/10 dark:bg-zinc-900/60 border border-white/25 shadow-[0_16px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.4)] backdrop-blur-2xl flex items-center justify-center p-5 transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) overflow-hidden group">
-                        <img src="{{ $effectiveLogo }}" 
-                             alt="{{ $effectiveName }}" 
-                             class="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)] transition-transform duration-700 group-hover:scale-105">
-                    </div>
+                <!-- Logo Direct (Tanpa Box Wrapper) -->
+                <div class="relative flex items-center justify-center">
+                    <!-- Subtle Glow Behind Logo -->
+                    <div :class="logoVisible ? 'scale-110 opacity-60' : 'scale-50 opacity-0'"
+                         class="absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-teal-500/20 via-emerald-400/15 to-amber-500/20 blur-2xl transition-all duration-1000 ease-out pointer-events-none"></div>
+
+                    <!-- Direct Logo Image -->
+                    <img :class="logoVisible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'"
+                         src="{{ $effectiveLogo }}" 
+                         alt="{{ $effectiveName }}" 
+                         class="relative z-10 w-32 h-32 sm:w-40 sm:h-40 object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.65)] transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1)">
                 </div>
                 
                 <!-- Institution Name Reveal -->
