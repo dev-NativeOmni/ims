@@ -220,24 +220,27 @@ class DashboardController extends Controller
         $avgScoreMonth = $monthlyScores->isNotEmpty() ? round($monthlyScores->avg(), 1) : 0;
         $adabGradeMonth = Setting::getAdabGrade($avgScoreMonth);
 
-        $classRoomQuery = ClassRoom::with('students');
-        if ($assignedClassIds !== null) {
-            $classRoomQuery->whereIn('id', $assignedClassIds);
-        }
+        $rankCacheKey = 'pendamping_adab_rankings_' . ($user->id) . "_{$year}_{$month}";
+        $classRankings = \Illuminate\Support\Facades\Cache::remember($rankCacheKey, 120, function () use ($assignedClassIds, $year, $month) {
+            $classRoomQuery = ClassRoom::with(['students' => fn ($q) => $q->where('status', 'active')]);
+            if ($assignedClassIds !== null) {
+                $classRoomQuery->whereIn('id', $assignedClassIds);
+            }
 
-        $classRankings = $classRoomQuery
-            ->get()
-            ->map(function ($classRoom) use ($year, $month) {
-                $st = $classRoom->students->where('status', 'active');
-                if ($st->isEmpty()) {
-                    return ['name' => $classRoom->name, 'avg_score' => 0];
-                }
-                $sc = $st->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
-                return ['name' => $classRoom->name, 'avg_score' => round($sc->avg(), 1)];
-            })
-            ->sortByDesc('avg_score')
-            ->take(5)
-            ->values();
+            return $classRoomQuery
+                ->get()
+                ->map(function ($classRoom) use ($year, $month) {
+                    $st = $classRoom->students;
+                    if ($st->isEmpty()) {
+                        return ['name' => $classRoom->name, 'avg_score' => 0];
+                    }
+                    $sc = $st->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
+                    return ['name' => $classRoom->name, 'avg_score' => round($sc->avg(), 1)];
+                })
+                ->sortByDesc('avg_score')
+                ->take(5)
+                ->values();
+        });
 
         $stats = [
             'total_students' => $totalStudents,
@@ -322,32 +325,37 @@ class DashboardController extends Controller
             $adabFilledToday  = AdabRecord::where('assessment_date', $today)->count();
             $fillPercentage   = $totalStudents > 0 ? round(($adabFilledToday / $totalStudents) * 100, 1) : 0;
 
-            $students         = Student::where('status', 'active')->get();
-            $monthlyScores    = $students->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
-            $avgAdabScore     = $monthlyScores->isNotEmpty() ? round($monthlyScores->avg(), 1) : 0;
-            $adabGrade        = Setting::getAdabGrade($avgAdabScore);
-
-            // Adab per class-level
+            // Compute adab scores by level and overall in a single optimized pass
             $classRooms = ClassRoom::with(['students' => fn ($q) => $q->where('status', 'active')])->get();
             $adabByLevel = [
                 'X'   => 0, 'XI'  => 0, 'XII' => 0,
                 'X_total' => 0, 'XI_total' => 0, 'XII_total' => 0,
             ];
+            $allScores = [];
+
             foreach ($classRooms as $cr) {
+                $key = null;
                 if (preg_match('/^XII\b/i', $cr->name)) {
                     $key = 'XII';
                 } elseif (preg_match('/^XI\b/i', $cr->name)) {
                     $key = 'XI';
                 } elseif (preg_match('/^X\b/i', $cr->name)) {
                     $key = 'X';
-                } else {
-                    continue;
                 }
+
                 foreach ($cr->students as $st) {
-                    $adabByLevel[$key] += Setting::calculateAdabScore($st->id, $year, $month)['final_score'];
-                    $adabByLevel[$key . '_total']++;
+                    $sc = Setting::calculateAdabScore($st->id, $year, $month)['final_score'] ?? 0;
+                    $allScores[] = $sc;
+                    if ($key) {
+                        $adabByLevel[$key] += $sc;
+                        $adabByLevel[$key . '_total']++;
+                    }
                 }
             }
+
+            $avgAdabScore = count($allScores) > 0 ? round(array_sum($allScores) / count($allScores), 1) : 0;
+            $adabGrade    = Setting::getAdabGrade($avgAdabScore);
+
             foreach (['X', 'XI', 'XII'] as $lv) {
                 $cnt = $adabByLevel[$lv . '_total'];
                 $adabByLevel[$lv] = $cnt > 0 ? round($adabByLevel[$lv] / $cnt, 1) : 0;

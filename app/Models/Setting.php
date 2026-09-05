@@ -91,20 +91,25 @@ class Setting extends Model
     }
 
     /**
-     * Get list of national holidays (tanggal merah) for Indonesia.
+     * Get list of national holidays for a given year.
+     * Checks database setting 'national_holidays_{year}' first, then falls back to defaults.
      */
     public static function getNationalHolidays(int $year): array
     {
+        if (isset(self::$holidaysCache[$year])) {
+            return self::$holidaysCache[$year];
+        }
+
         $custom = self::get("national_holidays_{$year}");
         if ($custom) {
             $decoded = json_decode($custom, true);
             if (is_array($decoded)) {
-                return $decoded;
+                return self::$holidaysCache[$year] = $decoded;
             }
         }
 
         // Default Indonesian national holidays (fixed dates + common movable holidays estimate)
-        return [
+        return self::$holidaysCache[$year] = [
             "{$year}-01-01", // Tahun Baru Masehi
             "{$year}-05-01", // Hari Buruh
             "{$year}-06-01", // Hari Lahir Pancasila
@@ -126,10 +131,15 @@ class Setting extends Model
     }
 
     /**
-     * Calculate count of effective workdays (Selasa-Jumat, excluding national holidays) for a month.
+     * Get associative set of effective dates for a given month ['YYYY-MM-DD' => true] for O(1) lookup.
      */
-    public static function getEffectiveDaysCount(int $year, int $month, ?string $untilDate = null): int
+    public static function getEffectiveDatesSet(int $year, int $month, ?string $untilDate = null): array
     {
+        $cacheKey = "{$year}_{$month}_" . ($untilDate ?? 'full');
+        if (isset(self::$effectiveDatesSetCache[$cacheKey])) {
+            return self::$effectiveDatesSetCache[$cacheKey];
+        }
+
         $startDate = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfDay();
         $daysInMonth = $startDate->daysInMonth;
 
@@ -145,17 +155,31 @@ class Setting extends Model
         }
 
         $holidays = self::getNationalHolidays($year);
-        $effectiveCount = 0;
+        $set = [];
 
         $current = $startDate->copy();
         while ($current->lte($endDate) && $current->month === $month) {
             if (self::isEffectiveAdabDay($current, $holidays)) {
-                $effectiveCount++;
+                $set[$current->toDateString()] = true;
             }
             $current->addDay();
         }
 
-        return max(1, $effectiveCount);
+        return self::$effectiveDatesSetCache[$cacheKey] = $set;
+    }
+
+    /**
+     * Calculate count of effective workdays (Selasa-Jumat, excluding national holidays) for a month.
+     */
+    public static function getEffectiveDaysCount(int $year, int $month, ?string $untilDate = null): int
+    {
+        $cacheKey = "{$year}_{$month}_" . ($untilDate ?? 'full');
+        if (isset(self::$effectiveDaysCountCache[$cacheKey])) {
+            return self::$effectiveDaysCountCache[$cacheKey];
+        }
+
+        $datesSet = self::getEffectiveDatesSet($year, $month, $untilDate);
+        return self::$effectiveDaysCountCache[$cacheKey] = max(1, count($datesSet));
     }
 
     /**
@@ -167,8 +191,7 @@ class Setting extends Model
         $endDate = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
 
         $effectiveDaysTotal = self::getEffectiveDaysCount($year, $month);
-
-        $holidays = self::getNationalHolidays($year);
+        $effectiveDatesSet = self::getEffectiveDatesSet($year, $month);
 
         // Fetch distinct assessment dates filled by student in effective days
         $filledDates = \App\Models\AdabRecord::where('student_id', $studentId)
@@ -178,8 +201,8 @@ class Setting extends Model
 
         $effectiveDaysFilled = 0;
         foreach ($filledDates as $dateStr) {
-            $cDate = \Carbon\Carbon::parse($dateStr);
-            if (self::isEffectiveAdabDay($cDate, $holidays)) {
+            $d = is_string($dateStr) ? substr($dateStr, 0, 10) : (is_object($dateStr) ? $dateStr->format('Y-m-d') : '');
+            if (isset($effectiveDatesSet[$d])) {
                 $effectiveDaysFilled++;
             }
         }
@@ -198,6 +221,11 @@ class Setting extends Model
      */
     public static function calculateAdabScore(int $studentId, int $year, int $month): array
     {
+        $cacheKey = "{$studentId}_{$year}_{$month}";
+        if (isset(self::$studentAdabScoreCache[$cacheKey])) {
+            return self::$studentAdabScoreCache[$cacheKey];
+        }
+
         $attendance = self::getStudentAdabAttendanceDetails($studentId, $year, $month);
         $attendanceRate = $attendance['attendance_rate'];
 
@@ -224,7 +252,7 @@ class Setting extends Model
         $grade = self::getAdabGrade($finalScore);
         $gradeLabel = self::getAdabGradeLabel($grade);
 
-        return [
+        $result = [
             'attendance_rate' => $attendanceRate,
             'effective_days_filled' => $attendance['effective_days_filled'],
             'effective_days_total' => $attendance['effective_days_total'],
@@ -233,6 +261,8 @@ class Setting extends Model
             'grade' => $grade,
             'grade_label' => $gradeLabel,
         ];
+
+        return self::$studentAdabScoreCache[$cacheKey] = $result;
     }
 
     /**

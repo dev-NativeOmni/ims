@@ -136,9 +136,13 @@ class StudentReportController extends Controller
 
         $visibleStudentIds = $this->progressService->visibleStudentQuery($user)
             ->where('class_room_id', $classRoom->id)
-            ->pluck('id');
+            ->pluck('id')
+            ->toArray();
 
-        $students = Student::whereIn('id', $visibleStudentIds)->orderBy('name')->get();
+        $students = Student::whereIn('id', $visibleStudentIds)
+            ->with(['classRoom.program', 'teacher.user', 'parents.user'])
+            ->orderBy('name')
+            ->get();
 
         if ($students->isEmpty()) {
             abort(404, 'Tidak ada murid di kelas ini yang dapat Anda akses.');
@@ -147,56 +151,117 @@ class StudentReportController extends Controller
         $academicYear = $request->input('academic_year', '2025/2026');
         $semester = $request->integer('semester', 1);
 
+        // Batch prefetch all data for the entire classroom in single queries (reduces 700+ queries to <10)
+        $batchContext = [
+            'reports' => StudentReport::whereIn('student_id', $visibleStudentIds)
+                ->where('academic_year', $academicYear)
+                ->where('semester', $semester)
+                ->get()
+                ->keyBy('student_id'),
+            'hafalanRecords' => HafalanRecord::with('surah')
+                ->whereIn('student_id', $visibleStudentIds)
+                ->where('status', 'passed')
+                ->latest('submitted_at')
+                ->latest()
+                ->get()
+                ->groupBy('student_id'),
+            'murajaahRecords' => MurajaahRecord::with('surah')
+                ->whereIn('student_id', $visibleStudentIds)
+                ->where('status', 'passed')
+                ->latest('reviewed_at')
+                ->latest()
+                ->get()
+                ->groupBy('student_id'),
+            'targetRecords' => HafalanTarget::with('surah')
+                ->whereIn('student_id', $visibleStudentIds)
+                ->orderBy('target_date', 'asc')
+                ->get()
+                ->groupBy('student_id'),
+            'tahfizhExams' => TahfizhExam::with('surah')
+                ->whereIn('student_id', $visibleStudentIds)
+                ->latest('exam_date')
+                ->latest()
+                ->get()
+                ->groupBy('student_id'),
+            'ummiRecords' => UmmiRecord::with('surah')
+                ->whereIn('student_id', $visibleStudentIds)
+                ->latest('tanggal')
+                ->latest()
+                ->get()
+                ->groupBy('student_id'),
+            'adabRecords' => AdabRecord::whereIn('student_id', $visibleStudentIds)
+                ->get()
+                ->groupBy('student_id'),
+            'violations' => StudentPoint::violations()
+                ->whereIn('student_id', $visibleStudentIds)
+                ->get()
+                ->groupBy('student_id'),
+            'rewards' => StudentPoint::whereIn('student_id', $visibleStudentIds)
+                ->where('type', 'reward')
+                ->get()
+                ->groupBy('student_id'),
+        ];
+
         $reportsData = [];
         foreach ($students as $student) {
-            $reportsData[] = $this->getReportData($student, $academicYear, $semester);
+            $reportsData[] = $this->getReportData($student, $academicYear, $semester, $batchContext);
         }
 
         return view('reports.digital-report-class-print', compact('classRoom', 'reportsData', 'academicYear', 'semester'));
     }
 
-    private function getReportData(Student $student, string $academicYear, int $semester): array
+    private function getReportData(Student $student, string $academicYear, int $semester, ?array $batch = null): array
     {
-        $student->load(['classRoom.program', 'teacher.user', 'parents.user']);
+        if (! $student->relationLoaded('classRoom')) {
+            $student->load(['classRoom.program', 'teacher.user', 'parents.user']);
+        }
 
         // Tahfizh
         $progress = $this->progressService->calculate($student);
-        $hafalanRecords = HafalanRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest()->limit(5)->get();
-        $murajaahRecords = MurajaahRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest()->limit(5)->get();
-        $targetRecords = HafalanTarget::with('surah')->where('student_id', $student->id)->orderBy('target_date', 'asc')->limit(5)->get();
+
+        if ($batch) {
+            $studentHafalanAll = $batch['hafalanRecords']->get($student->id, collect());
+            $hafalanRecords = $studentHafalanAll->take(5);
+            $murajaahRecords = $batch['murajaahRecords']->get($student->id, collect())->take(5);
+            $targetRecords = $batch['targetRecords']->get($student->id, collect())->take(5);
+            $tahfizhExams = $batch['tahfizhExams']->get($student->id, collect())->take(5);
+            $report = $batch['reports']->get($student->id);
+            $studentUmmiAll = $batch['ummiRecords']->get($student->id, collect());
+            $adabRecords = $batch['adabRecords']->get($student->id, collect());
+            $violations = $batch['violations']->get($student->id, collect());
+            $rewards = $batch['rewards']->get($student->id, collect());
+        } else {
+            $studentHafalanAll = HafalanRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest('submitted_at')->latest()->get();
+            $hafalanRecords = $studentHafalanAll->take(5);
+            $murajaahRecords = MurajaahRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest('reviewed_at')->latest()->limit(5)->get();
+            $targetRecords = HafalanTarget::with('surah')->where('student_id', $student->id)->orderBy('target_date', 'asc')->limit(5)->get();
+            $tahfizhExams = TahfizhExam::with('surah')->where('student_id', $student->id)->latest('exam_date')->latest()->limit(5)->get();
+            $report = StudentReport::where([
+                'student_id' => $student->id,
+                'academic_year' => $academicYear,
+                'semester' => $semester,
+            ])->first();
+            $studentUmmiAll = UmmiRecord::with('surah')->where('student_id', $student->id)->latest('tanggal')->latest()->get();
+            $adabRecords = AdabRecord::where('student_id', $student->id)->get();
+            $violations = StudentPoint::violations()->where('student_id', $student->id)->get();
+            $rewards = StudentPoint::where('student_id', $student->id)->where('type', 'reward')->get();
+        }
 
         foreach ($targetRecords as $target) {
-            $matchingRecord = HafalanRecord::where('student_id', $student->id)
+            $matchingRecord = $studentHafalanAll
                 ->where('surah_id', $target->surah_id)
-                ->where('status', 'passed')
                 ->where('ayah_start', '<=', $target->ayah_start)
                 ->where('ayah_end', '>=', $target->ayah_end)
-                ->latest()
                 ->first();
 
             if (! $matchingRecord) {
-                $matchingRecord = HafalanRecord::where('student_id', $student->id)
+                $matchingRecord = $studentHafalanAll
                     ->where('surah_id', $target->surah_id)
-                    ->where('status', 'passed')
-                    ->latest()
                     ->first();
             }
 
             $target->matching_record = $matchingRecord;
         }
-
-        $tahfizhExams = TahfizhExam::with('surah')
-            ->where('student_id', $student->id)
-            ->latest('exam_date')
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        $report = StudentReport::where([
-            'student_id' => $student->id,
-            'academic_year' => $academicYear,
-            'semester' => $semester,
-        ])->first();
 
         // Compute Tahfizh Level and targets
         $tahfizhLevelLabel = $student->tahfizh_level_label;
@@ -249,28 +314,23 @@ class StudentReportController extends Controller
         $latestCapaianNotes = '';
 
         if ($student->tahfizh_level === 'ummi') {
-            $latestUmmiRecord = UmmiRecord::where('student_id', $student->id)
-                ->latest('tanggal')
-                ->latest()
-                ->first();
+            $latestUmmiRecord = $studentUmmiAll->first();
 
             if ($latestUmmiRecord) {
-                $latestUmmiRecords = UmmiRecord::with('surah')
-                    ->where('student_id', $student->id)
-                    ->where('tanggal', $latestUmmiRecord->getRawOriginal('tanggal'))
-                    ->where('tatap_muka', $latestUmmiRecord->tatap_muka)
-                    ->get();
+                $rawTanggal = $latestUmmiRecord->getRawOriginal('tanggal');
+                $latestUmmiRecords = $studentUmmiAll
+                    ->filter(fn ($rec) => $rec->getRawOriginal('tanggal') === $rawTanggal && $rec->tatap_muka == $latestUmmiRecord->tatap_muka);
 
                 $parts = [];
                 $firstRec = $latestUmmiRecords->first();
-                if ($firstRec->ummi_jilid) {
+                if ($firstRec && $firstRec->ummi_jilid) {
                     $parts[] = $firstRec->ummi_jilid.($firstRec->ummi_halaman ? ' Hal. '.$firstRec->ummi_halaman : '');
                 }
 
                 $surahParts = [];
                 foreach ($latestUmmiRecords as $rec) {
                     if ($rec->hafalan_surah_id) {
-                        $surahParts[] = 'Hafalan QS. '.$rec->surah?->name_latin.($rec->hafalan_ayah ? ' Ayat '.$rec->hafalan_ayah : '');
+                        $surahParts[] = 'Hafalan QS. '.($rec->surah?->name_latin ?? '').($rec->hafalan_ayah ? ' Ayat '.$rec->hafalan_ayah : '');
                     }
                 }
                 if (! empty($surahParts)) {
@@ -278,7 +338,7 @@ class StudentReportController extends Controller
                 }
 
                 $latestCapaianText = implode(', ', $parts);
-                if ($firstRec->nilai) {
+                if ($firstRec && $firstRec->nilai) {
                     $latestCapaianText .= ' [Nilai: '.$firstRec->nilai.']';
                 }
                 $latestCapaianNotes = $latestUmmiRecords->pluck('keterangan')->filter()->unique()->implode('; ');
@@ -286,36 +346,26 @@ class StudentReportController extends Controller
                 $latestCapaianText = 'Belum ada catatan UMMI.';
             }
         } else {
-            $hafalanQuery = HafalanRecord::with('surah')
-                ->where('student_id', $student->id)
-                ->where('status', 'passed');
-
             $latestHafalan = null;
-            if ($isUmmiProgram) {
-                $latestHafalan = (clone $hafalanQuery)
-                    ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114]))
-                    ->get()
+            if (isset($isUmmiProgram) && $isUmmiProgram) {
+                $latestHafalan = $studentHafalanAll
+                    ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
                     ->sortBy(fn ($r) => $r->surah?->number ?? 114)
                     ->first();
             }
 
             if (! $latestHafalan) {
-                $latestHafalan = (clone $hafalanQuery)
-                    ->latest('submitted_at')
-                    ->latest()
-                    ->first();
+                $latestHafalan = $studentHafalanAll->first();
             }
 
             if ($latestHafalan) {
-                $latestCapaianText = 'QS. '.$latestHafalan->surah?->name_latin.' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
+                $latestCapaianText = 'QS. '.($latestHafalan->surah?->name_latin ?? '').' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
                 $latestCapaianNotes = $latestHafalan->notes;
             } else {
                 $latestCapaianText = 'Belum ada data setoran.';
             }
         }
 
-        // Adab
-        $adabRecords = AdabRecord::where('student_id', $student->id)->get();
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();
         $adabCategoryScores = [];
@@ -346,9 +396,6 @@ class StudentReportController extends Controller
         $adabGradeLabel = $adabScoreData['grade_label'];
 
         // Tanse (Ketahanan Sekolah)
-        $violations = StudentPoint::violations()->where('student_id', $student->id)->get();
-        $rewards = StudentPoint::where('student_id', $student->id)->where('type', 'reward')->get();
-
         $totalViolationPoints = $violations->sum('points');
         $latenessCount = $violations->where('type', 'lateness')->count();
         $attributeCount = $violations->where('type', 'attribute')->count();
