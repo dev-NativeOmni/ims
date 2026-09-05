@@ -39,6 +39,7 @@
     $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh;
     $isAllowedRapor = $isSuperAdmin || $isAdminUser || $isTeacher || $isCoordinatorTahfizh || $isTanse;
     $canViewReports = $isAllowedRapor;
+    $canViewPeriodicReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isHeadmaster || $isCoordinatorTahfizh || $isSupervisor;
     $canViewDigitalReports = $isAllowedRapor;
     $canViewReportSettings = $isAllowedRapor;
     $canViewTeacherPerformance = $isSuperAdmin || $isAdminUser || $isHeadmaster;
@@ -143,7 +144,7 @@
 @endif
 
 <!-- AKADEMIK & TAHFIZH Group -->
-@if ($canViewTahfizhGroup && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
+@if ($canViewTahfizhGroup && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewPeriodicReports && $hasRoute('reports.periodic')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
     <div class="mt-6 space-y-1">
         <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
             Tahfizh
@@ -214,7 +215,7 @@
             </a>
         @endif
 
-        @if ($canViewReports && $hasRoute('reports.periodic'))
+        @if ($canViewPeriodicReports && $hasRoute('reports.periodic'))
             <a href="{{ route('reports.periodic') }}" class="{{ $getLinkClasses($routeIs('reports.periodic') || $routeIs('reports.periodic.print')) }}">
                 <svg class="{{ $getIconClasses($routeIs('reports.periodic') || $routeIs('reports.periodic.print')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />

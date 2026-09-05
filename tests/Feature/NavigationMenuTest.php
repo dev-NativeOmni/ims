@@ -187,7 +187,7 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('parents.index'));
         $response->assertDontSee(route('students.index'));
         $response->assertDontSee(route('reports.teachers'));
-        $response->assertDontSee(route('reports.index'));
+        $response->assertDontSee('href="' . route('reports.index') . '"');
         $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
