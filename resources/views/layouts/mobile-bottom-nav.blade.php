@@ -288,21 +288,41 @@
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (TEAL-EMERALD GRADIENT) -->
+        <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (PRISMATIC LIQUID GLASS UI) -->
         <a href="{{ route('dashboard') }}"
-           class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-10 select-none group">
-            <div style="background: linear-gradient(135deg, #0d9488 0%, #059669 100%); box-shadow: 0 8px 20px -2px rgba(13, 148, 136, 0.45);"
-                 class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white transition-all duration-200 group-active:scale-95 border-2 border-white dark:border-[#09090b]">
-                <!-- Solid 4-Square Grid Dashboard Icon -->
-                <svg style="color: #ffffff; width: 26px; height: 26px;" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
-                    <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
-                    <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
-                    <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
-                </svg>
+           class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-20 select-none group">
+            
+            <!-- Liquid Prismatic Outer Glow Wrapper -->
+            <div class="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-active:scale-95">
+                
+                <!-- Prismatic Halo Glow (Blurred Under-layer) -->
+                <div class="absolute inset-0 rounded-full liquid-prismatic-ring blur-[5px] opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                <!-- Sharp Prismatic Ring Wrapper -->
+                <div class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full p-[2.5px] liquid-prismatic-ring liquid-prismatic-glow flex items-center justify-center">
+                    
+                    <!-- Dark Tactile Concave Dial -->
+                    <div class="w-full h-full rounded-full liquid-dial-concave p-2 flex items-center justify-center border border-white/15">
+                        
+                        <!-- 3D Silver Metallic Embossed Home Icon -->
+                        <svg class="w-6 h-6 metallic-icon-gradient" viewBox="0 0 24 24">
+                            <defs>
+                                <linearGradient id="silverMetallicHome" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffffff" />
+                                    <stop offset="40%" stop-color="#e2e8f0" />
+                                    <stop offset="100%" stop-color="#94a3b8" />
+                                </linearGradient>
+                            </defs>
+                            <path fill="url(#silverMetallicHome)" d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                            <path fill="url(#silverMetallicHome)" d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.432z" />
+                        </svg>
+
+                    </div>
+                </div>
             </div>
-            <span class="text-[10px] font-bold tracking-tight mt-1 leading-none text-teal-600 dark:text-teal-400">
-                Dashboard
+
+            <span class="text-[10px] font-bold tracking-tight mt-1 leading-none {{ $isDashboardActive ? 'text-teal-600 dark:text-teal-400 font-extrabold' : 'text-zinc-600 dark:text-zinc-300 font-medium' }} group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                Beranda
             </span>
         </a>
 
