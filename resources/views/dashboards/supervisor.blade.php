@@ -108,7 +108,7 @@
             <!-- Daftar Progres Pengisian Hari Ini -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl overflow-hidden">
                 <div class="px-3.5 sm:px-6 py-3 sm:py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <h3 class="text-xs sm:text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Hari Ini</h3>
+                    <h3 class="text-xs sm:text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Murid Hari Ini</h3>
                     <span class="text-xs text-zinc-400">Total: {{ $totalStudents }} Murid</span>
                 </div>
 

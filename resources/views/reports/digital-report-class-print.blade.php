@@ -61,7 +61,7 @@
             <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
             <div>
                 <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <span>📄</span> Cetak Massal Rapor Kelas: {{ $classRoom->name }}
+                    <span>📄</span> Cetak Masal Rapor Kelas: {{ $classRoom->name }}
                 </h4>
                 <p class="text-xs text-gray-500 dark:text-zinc-400">
                     Total: {{ count($reportsData) }} Santri &bull; Tahun Ajaran {{ $academicYear }} (Sem. {{ $semester }})

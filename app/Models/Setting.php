@@ -9,6 +9,11 @@ class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
+    protected static array $holidaysCache = [];
+    protected static array $effectiveDatesSetCache = [];
+    protected static array $effectiveDaysCountCache = [];
+    protected static array $studentAdabScoreCache = [];
+
     public static function get($key, $default = null)
     {
         return Cache::rememberForever("setting:{$key}", function () use ($key, $default) {
@@ -22,6 +27,10 @@ class Setting extends Model
     {
         $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget("setting:{$key}");
+        self::$holidaysCache = [];
+        self::$effectiveDatesSetCache = [];
+        self::$effectiveDaysCountCache = [];
+        self::$studentAdabScoreCache = [];
 
         return $setting;
     }

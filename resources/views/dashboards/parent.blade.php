@@ -36,7 +36,7 @@
                     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5">
                         <div class="space-y-1 sm:space-y-1.5">
                             <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                                <x-heroicon-o-sparkles class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Portal Wali Murid
+                                <x-heroicon-o-sparkles class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> Portal Khusus Wali Murid
                             </span>
                             <h3 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white">
                                 Assalamu'alaikum, Ayah / Bunda {{ $parent->user?->name ?? '' }}!
@@ -146,7 +146,7 @@
                                     {{-- Tahfizh Pill --}}
                                     <div class="rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
                                         <div>
-                                            <p class="text-[9px] sm:text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 Tahfizh Al-Qur'an</p>
+                                            <p class="text-[9px] sm:text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400">📖 {{ "Tahfizh Al-Qur'an" }}</p>
                                             <p class="text-sm sm:text-base font-black text-zinc-900 dark:text-white mt-0.5">
                                                 {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz Lengkap' }}
                                             </p>
