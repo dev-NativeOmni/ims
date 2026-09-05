@@ -14,6 +14,7 @@ class SettingController extends Controller
             'logo' => Setting::get('logo'),
             'nama_instansi' => Setting::get('nama_instansi'),
             'login_bg' => Setting::get('login_bg'),
+            'landing_bg' => Setting::get('landing_bg'),
         ]);
     }
 
@@ -23,6 +24,7 @@ class SettingController extends Controller
             'logo' => 'nullable|image|max:2048',
             'nama_instansi' => 'nullable|string|max:255',
             'login_bg' => 'nullable|image|max:5120',
+            'landing_bg' => 'nullable|image|max:5120',
         ]);
 
         if ($request->boolean('reset_logo')) {
@@ -57,6 +59,21 @@ class SettingController extends Controller
             }
             $path = $request->file('login_bg')->store('settings', 'public');
             Setting::set('login_bg', $path);
+        }
+
+        if ($request->boolean('reset_landing_bg')) {
+            $oldLandingBg = Setting::get('landing_bg');
+            if ($oldLandingBg) {
+                Storage::disk('public')->delete($oldLandingBg);
+            }
+            Setting::set('landing_bg', null);
+        } elseif ($request->hasFile('landing_bg')) {
+            $oldLandingBg = Setting::get('landing_bg');
+            if ($oldLandingBg) {
+                Storage::disk('public')->delete($oldLandingBg);
+            }
+            $path = $request->file('landing_bg')->store('settings', 'public');
+            Setting::set('landing_bg', $path);
         }
 
         return redirect()->route('settings.index')->with('success', 'Pengaturan berhasil diperbarui.');

@@ -1,16 +1,19 @@
 @php
     $institutionLogo = null;
     $institutionName = null;
+    $landingBg = null;
     try {
         if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
             $institutionLogo = \App\Models\Setting::get('logo');
             $institutionName = \App\Models\Setting::get('nama_instansi');
+            $landingBg = \App\Models\Setting::get('landing_bg');
         }
     } catch (\Throwable $e) {
         // Safe fallback
     }
     $effectiveLogo = $institutionLogo ? asset('storage/' . $institutionLogo) : asset('images/logo_alazhar7.png');
     $effectiveName = $institutionName ?: 'Lembaga Pendidikan';
+    $effectiveBg = $landingBg ? asset('storage/' . $landingBg) : asset('images/school_sunset_bg.jpg');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
@@ -271,7 +274,7 @@
             <!-- SECTION 1: CLEAN MINIMALIST HERO (CRYSTAL FROSTED GLASS & NATURAL SUNSET) -->
             <!-- ========================================================================= -->
             <section class="w-full relative min-h-[100dvh] flex flex-col justify-between py-4 sm:py-7 px-3 sm:px-6 lg:px-8 overflow-hidden bg-cover bg-center bg-no-repeat"
-                     style="background-image: url('{{ asset('images/school_sunset_bg.jpg') }}');">
+                     style="background-image: url('{{ $effectiveBg }}');">
                 
                 <!-- Layer 1: Elegant Glassmorphic Ambient Tone (No Blinding White Wash) -->
                 <div class="absolute inset-0 pointer-events-none z-0">

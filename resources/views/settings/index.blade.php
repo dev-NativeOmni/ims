@@ -193,6 +193,54 @@
                                 class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 file:cursor-pointer hover:file:bg-indigo-100 dark:file:bg-zinc-800 dark:file:text-zinc-200"
                             />
                         </div>
+                    </div>
+
+                    <hr class="border-gray-200 dark:border-zinc-800" />
+
+                    <!-- Custom Background Landing Page -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                                Background Landing Page (Hero)
+                            </label>
+                            <p class="text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">
+                                Gambar panorama / foto gedung instansi yang tampil di section atas landing page.
+                                <br><strong class="font-medium text-gray-700 dark:text-zinc-400">Ukuran Rekomendasi:</strong> 1920 × 1080 px (16:9 Landscape) atau 2560 × 1440 px. Format JPG / WebP terkompresi (Maksimal 5MB).
+                            </p>
+                        </div>
+                        <div class="md:col-span-2 space-y-4">
+                            @if ($landing_bg)
+                                <div class="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-[#09090b]/20 rounded-xl border border-gray-100 dark:border-zinc-800">
+                                    <div class="w-full h-36 rounded-lg overflow-hidden border dark:border-zinc-800 bg-gray-200">
+                                        <img src="{{ asset('storage/' . $landing_bg) }}" alt="Background Landing Page" class="w-full h-full object-cover" />
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs font-semibold text-gray-900 dark:text-zinc-300">Background Landing Page Custom Aktif</span>
+                                        <label class="inline-flex items-center text-xs text-red-600 hover:text-red-700 cursor-pointer">
+                                            <input type="checkbox" name="reset_landing_bg" value="1" class="rounded border-gray-300 text-red-600 focus:ring-red-500 mr-1.5" />
+                                            Hapus & kembali ke Background Default
+                                        </label>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-[#09090b]/20 rounded-xl border border-gray-100 dark:border-zinc-800">
+                                    <div class="w-full h-36 rounded-lg overflow-hidden border dark:border-zinc-800 bg-gray-200">
+                                        <img src="{{ asset('images/school_sunset_bg.jpg') }}" alt="Background Landing Page Default" class="w-full h-full object-cover" />
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-zinc-400">
+                                        Menggunakan background default gedung/sunset (school_sunset_bg.jpg).
+                                    </div>
+                                </div>
+                            @endif
+
+                            <input
+                                type="file"
+                                name="landing_bg"
+                                accept="image/*"
+                                class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 file:cursor-pointer hover:file:bg-indigo-100 dark:file:bg-zinc-800 dark:file:text-zinc-200"
+                            />
+                        </div>
+                    </div>
 
                     <!-- Actions -->
                     <div class="pt-4 border-t border-gray-200 dark:border-zinc-800 flex justify-end gap-3">
