@@ -98,10 +98,10 @@
                  @if ($logo)
                      <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                  @else
-                     <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo SMA Islam Al Azhar 7' }}" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
+                     <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                  @endif
                  <span class="text-xs font-bold text-zinc-800 dark:text-zinc-100 leading-tight line-clamp-2 max-w-[155px]">
-                     {{ $namaInstansi ?: 'SMA Islam Al Azhar 7' }}
+                     {{ $namaInstansi ?: 'IMS' }}
                  </span>
              </a>
          </div>
@@ -216,10 +216,10 @@
                 @if ($logo)
                     <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                 @else
-                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo SMA Islam Al Azhar 7' }}" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
+                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                 @endif
                 <span class="text-xs font-bold text-zinc-800 dark:text-zinc-100 leading-tight truncate max-w-[140px] sm:max-w-[200px]">
-                    {{ $namaInstansi ?: 'SMA Islam Al Azhar 7' }}
+                    {{ $namaInstansi ?: 'IMS' }}
                 </span>
             </a>
 

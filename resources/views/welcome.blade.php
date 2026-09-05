@@ -10,7 +10,7 @@
         // Safe fallback
     }
     $effectiveLogo = $institutionLogo ? asset('storage/' . $institutionLogo) : asset('images/logo_alazhar7.png');
-    $effectiveName = $institutionName ?: 'SMA Islam Al Azhar 7';
+    $effectiveName = $institutionName ?: 'Lembaga Pendidikan';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
@@ -359,7 +359,7 @@
                     <!-- Hero Subtitle in Indonesian with Sleek Frosted Glass Container to avoid Background Sign Clashing -->
                     <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-2xl bg-white/40 dark:bg-black/45 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm max-w-2xl mx-auto">
                         <p class="text-xs sm:text-sm md:text-base text-zinc-900 dark:text-zinc-100 leading-relaxed font-medium">
-                            Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
+                            Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">{{ $effectiveName }}</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
                         </p>
                     </div>
 
@@ -940,7 +940,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-white/10">
                                 <div>
                                     <h4 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">Dasbor Murid — Syamil Rabbani</h4>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Kelas: X-MIPA 1 • SMA Islam Al Azhar 7 Solo Baru</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Kelas: X-MIPA 1 • {{ $effectiveName }}</p>
                                 </div>
                                 <span class="inline-flex items-center gap-1.5 self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
@@ -989,7 +989,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-white/10">
                                 <div>
                                     <h4 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">Dasbor Ustadz Penguji — Ust. Ahmad Rabbani</h4>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Halaqah Tahfidz Gemilang • SMA Islam Al Azhar 7</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Halaqah Tahfidz • {{ $effectiveName }}</p>
                                 </div>
                                 <button class="self-start sm:self-auto px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-xs font-bold text-white rounded-full transition-all duration-150 shadow-md shadow-orange-500/25 hover:scale-105">
                                     + Input Cepat Setoran
@@ -1046,7 +1046,7 @@
                                 <div class="p-4 glass-liquid-inner rounded-2xl flex flex-col gap-1.5 hover:border-amber-500/40 transition">
                                     <span class="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">Laporan Pembiasaan Adab</span>
                                     <div class="text-sm font-bold text-zinc-900 dark:text-white">Sikap: Sangat Disiplin & Hormat Guru</div>
-                                    <span class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Status: 100 Poin • Mempertahankan Nilai Karakter Gemilang</span>
+                                    <span class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Status: 100 Poin • Mempertahankan Nilai Karakter Islami</span>
                                 </div>
                             </div>
                         </div>
@@ -1194,7 +1194,7 @@
             <footer class="w-full bg-zinc-950 dark:bg-black border-t border-zinc-800 dark:border-white/5 py-10 text-center relative z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p class="text-xs text-zinc-500">
-                        &copy; {{ date('Y') }} IMS (Integrated Management System). SMA Islam Al Azhar 7 Sukoharjo.
+                        &copy; {{ date('Y') }} IMS (Integrated Management System). {{ $effectiveName }}.
                     </p>
                     <div class="flex items-center gap-6 text-xs text-zinc-500">
                         <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>

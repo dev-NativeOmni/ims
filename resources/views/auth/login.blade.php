@@ -102,7 +102,7 @@
                 @if ($namaInstansi)
                     <p class="text-xs text-zinc-300/90 font-semibold mt-1 uppercase tracking-wider">{{ $namaInstansi }}</p>
                 @else
-                    <p class="text-xs text-zinc-300/80 font-medium mt-1">SMA Islam Al Azhar 7 Sukoharjo</p>
+                    <p class="text-xs text-zinc-300/80 font-medium mt-1">Integrated Management System</p>
                 @endif
             </div>
 

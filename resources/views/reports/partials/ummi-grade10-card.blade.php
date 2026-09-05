@@ -14,7 +14,7 @@
     <!-- Top Header Bar with Centered Logos -->
     <div class="flex items-center justify-center border-b-2 border-amber-300 pb-3 mb-3 text-center">
         <!-- Logo Bulat -->
-        <img src="{{ $circleLogoBase64 }}" alt="Logo Al Azhar 7" class="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" style="height: 48px !important; width: 48px !important; max-height: 48px !important; max-width: 48px !important;">
+        <img src="{{ $circleLogoBase64 }}" alt="Logo Lembaga" class="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0" style="height: 48px !important; width: 48px !important; max-height: 48px !important; max-width: 48px !important;">
     </div>
 
     <!-- Main Title Section -->
@@ -114,7 +114,7 @@
 
         <!-- Right: Social Media Contacts -->
         <div class="text-right text-[10px] font-semibold space-y-0.5" style="color: #334155 !important;">
-            <p class="font-bold text-sm" style="color: #0f172a !important;">SMA Islam Al Azhar 7 Solo Baru</p>
+            <p class="font-bold text-sm" style="color: #0f172a !important;">{{ \App\Models\Setting::get('nama_instansi', 'Lembaga Pendidikan Tahfizh') }}</p>
             <p>🌐 smaialazhar7.sch.id | 📞 0812-2347-0077</p>
             <p class="text-[9px]" style="color: #64748b !important;">@smaialazhar7</p>
         </div>

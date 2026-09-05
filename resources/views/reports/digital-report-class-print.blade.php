@@ -115,8 +115,8 @@
             $report = $data['report'] ?? null;
 
             $reportMainTitle = \App\Models\Setting::get('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE');
-            $reportSchoolName = \App\Models\Setting::get('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO');
-            $reportCity = \App\Models\Setting::get('report_city', 'Sukoharjo');
+            $reportSchoolName = \App\Models\Setting::get('report_school_name') ?: (\App\Models\Setting::get('nama_instansi') ?: 'Lembaga Pendidikan Tahfizh');
+            $reportCity = \App\Models\Setting::get('report_city', 'Kota');
 
             $coordTahfizhName = \App\Models\Setting::get('report_coord_tahfizh_name', 'Zainal Arifin, S.Pd');
             $coordTahfizhNik = \App\Models\Setting::get('report_coord_tahfizh_nik', '15.06.0393');
@@ -124,12 +124,14 @@
             $coordKeagamaanName = \App\Models\Setting::get('report_coord_keagamaan_name', 'Rifqi Ihsan, S.Pd., Gr.');
             $coordKeagamaanNik = \App\Models\Setting::get('report_coord_keagamaan_nik', '15.06.0393');
 
-            $headmasterTitle = \App\Models\Setting::get('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo');
+            $headmasterTitle = \App\Models\Setting::get('report_headmaster_title') ?: ('Kepala ' . (\App\Models\Setting::get('nama_instansi') ?: 'Sekolah'));
             $headmasterName = \App\Models\Setting::get('report_headmaster_name', 'Moh Pandoyo, S.Si., M.Pd., Gr.');
             $headmasterNik = \App\Models\Setting::get('report_headmaster_nik', '08.04.0160');
 
             $coordTanseName = \App\Models\Setting::get('report_coord_tanse_name', 'Yatim Hermawan, S.E., S.Kom');
             $coordTanseNik = \App\Models\Setting::get('report_coord_tanse_nik', '15.06.0393');
+
+            $printLogo = \App\Models\Setting::get('logo') ? asset('storage/' . \App\Models\Setting::get('logo')) : asset('images/logo_alazhar7.png');
         @endphp
 
         <!-- Official Report Card Layout -->
@@ -137,9 +139,9 @@
             
             <!-- Kop Surat Terpadu -->
             <div class="grid grid-cols-[85px_1fr_85px] items-center border-b border-black pb-4 mb-6">
-                <!-- Left Logo: SMA Islam Al Azhar 7 -->
+                <!-- Left Logo -->
                 <div class="shrink-0 flex justify-start">
-                    <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" />
+                    <img src="{{ $printLogo }}" class="h-20 w-auto object-contain" alt="{{ $reportSchoolName }}" />
                 </div>
                 
                 <!-- Title & Basmalah -->
