@@ -673,6 +673,7 @@ class ReportController extends Controller
 
         // Fetch classrooms available to user
         $classRooms = ClassRoom::query()
+            ->with('program')
             ->whereHas('students', function ($q) use ($visibleStudentIds) {
                 $q->whereIn('id', $visibleStudentIds);
             })

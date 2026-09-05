@@ -24,108 +24,139 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <!-- Filter Bar with Active Status & Collapsible Toggle -->
-            <div x-data="{ showFilter: false, periodType: '{{ $periodType }}' }" 
-                 class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm transition-all duration-200">
+            <!-- Filter & Class Selector Card -->
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm space-y-4">
                 
-                <!-- Active Filter Bar Header -->
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <!-- Active Filter Chips / Badges -->
-                    <div class="flex items-center gap-2 flex-wrap min-w-0">
-                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60 text-xs font-bold shadow-xs truncate">
-                            <svg class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <span class="truncate">{{ $selectedClass?->name ?? 'Pilih Kelas' }}</span>
-                            <span class="text-[10px] font-medium text-teal-600 dark:text-teal-400 hidden xs:inline">({{ $selectedClass?->program?->name }})</span>
-                        </div>
+                <!-- Top Row: Date & Period Filter Dropdowns -->
+                <form id="periodicFilterForm" method="GET" action="{{ route('reports.periodic') }}" 
+                      x-data="{ periodType: '{{ $periodType }}' }"
+                      class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
+                    
+                    <input type="hidden" name="class_room_id" id="filter_class_room_id" value="{{ $selectedClassId }}">
 
-                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700 text-xs font-bold shadow-xs">
-                            <svg class="w-3.5 h-3.5 text-gray-500 dark:text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>{{ $periodType === 'monthly' ? ($monthsList[$selectedMonth] ?? 'Bulanan') : 'Term ' . $selectedQuarter }} {{ $selectedYear }}</span>
-                        </div>
+                    <!-- Period Type Selector -->
+                    <div>
+                        <label for="period_type" class="block text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Rentang Waktu</label>
+                        <select name="period_type" id="period_type" x-model="periodType" @change="$nextTick(() => $el.form.submit())"
+                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white shadow-xs focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm py-2 px-3 font-medium cursor-pointer">
+                            <option value="monthly">Bulanan</option>
+                            <option value="quarterly">Tiga Bulanan (Term)</option>
+                        </select>
                     </div>
 
-                    <!-- Toggle Button -->
-                    <button type="button" 
-                            @click="showFilter = !showFilter"
-                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition-all duration-200 cursor-pointer active:scale-95 shrink-0">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                        </svg>
-                        <span x-text="showFilter ? 'Tutup Filter' : 'Ubah Filter'"></span>
-                        <svg :class="showFilter ? 'rotate-180' : ''" class="w-3 h-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Collapsible Form Content -->
-                <div x-show="showFilter" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 -translate-y-2"
-                     x-transition:enter-end="opacity-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 -translate-y-2"
-                     class="pt-4 mt-4 border-t border-gray-150 dark:border-zinc-800">
-                    <form method="GET" action="{{ route('reports.periodic') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-end">
-                        
-                        <!-- ClassRoom Selector -->
-                        <div>
-                            <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Kelas</label>
-                            <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
-                                @foreach ($classRooms as $class)
-                                    <option value="{{ $class->id }}" {{ $selectedClassId == $class->id ? 'selected' : '' }}>{{ $class->name }} ({{ $class->program?->name }})</option>
+                    <!-- Month Selector / Quarter Selector -->
+                    <div>
+                        <div x-show="periodType === 'monthly'">
+                            <label for="month" class="block text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Bulan</label>
+                            <select name="month" id="month" @change="$el.form.submit()"
+                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white shadow-xs focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm py-2 px-3 font-medium cursor-pointer">
+                                @foreach ($monthsList as $key => $name)
+                                    <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>
-
-                        <!-- Period Type Selector -->
-                        <div>
-                            <label for="period_type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Rentang Waktu</label>
-                            <select name="period_type" id="period_type" x-model="periodType" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
-                                <option value="monthly">Bulanan</option>
-                                <option value="quarterly">Tiga Bulanan (Term)</option>
+                        
+                        <div x-show="periodType === 'quarterly'" style="display: none;">
+                            <label for="quarter" class="block text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Term (Triwulan)</label>
+                            <select name="quarter" id="quarter" @change="$el.form.submit()"
+                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white shadow-xs focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm py-2 px-3 font-medium cursor-pointer">
+                                <option value="1" {{ $selectedQuarter == 1 ? 'selected' : '' }}>Term 1 (Jul - Sep)</option>
+                                <option value="2" {{ $selectedQuarter == 2 ? 'selected' : '' }}>Term 2 (Okt - Des)</option>
+                                <option value="3" {{ $selectedQuarter == 3 ? 'selected' : '' }}>Term 3 (Jan - Mar)</option>
+                                <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>Term 4 (Apr - Jun)</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Month Selector / Quarter Selector -->
-                        <div>
-                            <div x-show="periodType === 'monthly'">
-                                <label for="month" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Bulan</label>
-                                <select name="month" id="month" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
-                                    @foreach ($monthsList as $key => $name)
-                                        <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div x-show="periodType === 'quarterly'" style="display: none;">
-                                <label for="quarter" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Term (Triwulan)</label>
-                                <select name="quarter" id="quarter" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
-                                    <option value="1" {{ $selectedQuarter == 1 ? 'selected' : '' }}>Term 1 (Jul - Sep)</option>
-                                    <option value="2" {{ $selectedQuarter == 2 ? 'selected' : '' }}>Term 2 (Okt - Des)</option>
-                                    <option value="3" {{ $selectedQuarter == 3 ? 'selected' : '' }}>Term 3 (Jan - Mar)</option>
-                                    <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>Term 4 (Apr - Jun)</option>
-                                </select>
-                            </div>
+                    <!-- Year Selector -->
+                    <div>
+                        <label for="year" class="block text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Tahun</label>
+                        <select name="year" id="year" @change="$el.form.submit()"
+                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white shadow-xs focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm py-2 px-3 font-medium cursor-pointer">
+                            @for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
+                                <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
+                    <!-- Filter Apply Button -->
+                    <div class="col-span-2 sm:col-span-3 lg:col-span-1 flex items-center justify-end">
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 active:scale-95 shadow-sm transition-all duration-150 cursor-pointer min-h-[38px]">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                            <span>Terapkan Filter</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Bottom Row: Class Toggles (Interactive Pills for Accessible Classes) -->
+                <div class="border-t border-gray-150 dark:border-zinc-800/80 pt-3">
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                Toggle Kelas:
+                            </span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200/60 dark:border-teal-800/60">
+                                {{ $classRooms->count() }} Kelas Tersedia
+                            </span>
                         </div>
+                        @if ($selectedClass)
+                            <span class="text-[11px] text-gray-400 dark:text-zinc-500 hidden sm:inline">
+                                Aktif: <strong class="text-teal-600 dark:text-teal-400 font-semibold">{{ $selectedClass->name }}</strong>
+                            </span>
+                        @endif
+                    </div>
 
-                        <!-- Year and Submit Button -->
-                        <div class="flex gap-2">
-                            <div class="w-24">
-                                <label for="year" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Tahun</label>
-                                <input type="number" name="year" id="year" value="{{ $selectedYear }}" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm">
+                    <!-- Scrollable on mobile, flex-wrap on tablet/desktop -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar sm:flex-wrap -mx-1 px-1">
+                        @forelse ($classRooms as $class)
+                            @php
+                                $isActive = ($selectedClassId == $class->id);
+                            @endphp
+                            <a href="{{ route('reports.periodic', [
+                                    'class_room_id' => $class->id,
+                                    'period_type' => $periodType,
+                                    'month' => $selectedMonth,
+                                    'quarter' => $selectedQuarter,
+                                    'year' => $selectedYear
+                                ]) }}"
+                               class="group relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 cursor-pointer select-none active:scale-95
+                                      {{ $isActive 
+                                         ? 'bg-teal-600 text-white shadow-md shadow-teal-600/25 ring-2 ring-teal-500/40 font-bold' 
+                                         : 'bg-gray-50 dark:bg-zinc-800/80 text-gray-700 dark:text-zinc-300 hover:bg-gray-150 dark:hover:bg-zinc-700 border border-gray-200/90 dark:border-zinc-700/80 hover:border-gray-300 dark:hover:border-zinc-600' }}">
+                                
+                                @if ($isActive)
+                                    <!-- Active Pulsing Dot -->
+                                    <span class="flex h-2 w-2 relative">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-200 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                    </span>
+                                @else
+                                    <!-- Inactive Dot -->
+                                    <span class="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-zinc-600 group-hover:bg-teal-500 transition-colors"></span>
+                                @endif
+
+                                <span>{{ $class->name }}</span>
+
+                                @if ($class->program)
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-md font-medium
+                                                 {{ $isActive 
+                                                    ? 'bg-teal-700/60 text-teal-100' 
+                                                    : 'bg-gray-200/70 dark:bg-zinc-700/70 text-gray-500 dark:text-zinc-400 group-hover:text-gray-700 dark:group-hover:text-zinc-200' }}">
+                                        {{ $class->program->name }}
+                                    </span>
+                                @endif
+                            </a>
+                        @empty
+                            <div class="text-xs text-gray-400 dark:text-zinc-500 italic py-1">
+                                Tidak ada kelas yang dapat diakses untuk akun Anda.
                             </div>
-                            <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-xl text-xs sm:text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-colors duration-150 min-h-[38px] cursor-pointer">
-                                Terapkan
-                            </button>
-                        </div>
-
-                    </form>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 
