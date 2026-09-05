@@ -288,36 +288,35 @@
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (PRISMATIC LIQUID GLASS UI WITH ANIMATION) -->
+        <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (BLUE-TO-ORANGE LIQUID GLASS WITH STATIC UPRIGHT ICON) -->
         <a href="{{ route('dashboard') }}"
            class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-20 select-none group">
             
-            <!-- Liquid Prismatic Outer Glow Wrapper -->
-            <div class="relative flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-90 group-active:rotate-[-2deg]">
+            <!-- Outer Button Container -->
+            <div class="relative w-13 h-13 sm:w-14 sm:h-14 flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-90">
                 
-                <!-- Prismatic Halo Glow (Living Breathing & Rotating Caustic Aura) -->
-                <div class="absolute inset-0 rounded-full liquid-prismatic-ring liquid-prismatic-halo-animated"></div>
+                <!-- 1. Ambient Halo Glow (Rotating + Breathing Aura behind the button) -->
+                <div class="absolute inset-[-2px] rounded-full liquid-blue-orange-ring liquid-halo-pulse pointer-events-none"></div>
 
-                <!-- Sharp Prismatic Ring Wrapper (Continuous Slow Chromatic Rotation) -->
-                <div class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full p-[2.5px] liquid-prismatic-ring liquid-prismatic-animated liquid-prismatic-glow flex items-center justify-center">
+                <!-- 2. Sharp Rotating Glass Ring (Background Only) -->
+                <div class="absolute inset-0 rounded-full liquid-blue-orange-ring liquid-ring-spin liquid-blue-orange-glow pointer-events-none"></div>
+                
+                <!-- 3. Static Dark Glass Concave Core (NEVER ROTATES) -->
+                <div class="relative z-10 w-[calc(100%-5px)] h-[calc(100%-5px)] rounded-full liquid-dial-concave p-2 flex items-center justify-center border border-white/20 backdrop-blur-md">
                     
-                    <!-- Dark Tactile Concave Dial (Static Inner Core) -->
-                    <div class="w-full h-full rounded-full liquid-dial-concave p-2 flex items-center justify-center border border-white/15">
-                        
-                        <!-- 3D Silver Metallic Embossed Home Icon (Specular Shimmer) -->
-                        <svg class="w-6 h-6 metallic-icon-gradient liquid-icon-animated" viewBox="0 0 24 24">
-                            <defs>
-                                <linearGradient id="silverMetallicHome" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#ffffff" />
-                                    <stop offset="40%" stop-color="#e2e8f0" />
-                                    <stop offset="100%" stop-color="#94a3b8" />
-                                </linearGradient>
-                            </defs>
-                            <path fill="url(#silverMetallicHome)" d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
-                            <path fill="url(#silverMetallicHome)" d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.432z" />
-                        </svg>
+                    <!-- 3D Silver Metallic Embossed Home Icon (ALWAYS STATIC & UPRIGHT) -->
+                    <svg class="w-6 h-6 metallic-icon-gradient liquid-icon-shimmer" viewBox="0 0 24 24">
+                        <defs>
+                            <linearGradient id="silverMetallicHome" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#ffffff" />
+                                <stop offset="45%" stop-color="#e2e8f0" />
+                                <stop offset="100%" stop-color="#94a3b8" />
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#silverMetallicHome)" d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                        <path fill="url(#silverMetallicHome)" d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.432z" />
+                    </svg>
 
-                    </div>
                 </div>
             </div>
 
