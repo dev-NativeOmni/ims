@@ -100,7 +100,7 @@
                  @else
                      <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="h-8 w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                  @endif
-                 <span class="text-xs font-bold text-zinc-800 dark:text-zinc-100 leading-tight line-clamp-2 max-w-[155px]">
+                 <span class="text-xs font-bold text-zinc-800 dark:text-zinc-100 leading-snug line-clamp-3">
                      {{ $namaInstansi ?: 'IMS' }}
                  </span>
              </a>
@@ -210,15 +210,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
-    <div class="flex-1 flex justify-between px-3 sm:px-4 items-center gap-2 min-w-0">
-        <div class="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0 select-none group">
+    <div class="flex-1 flex justify-between px-3 sm:px-4 items-center gap-2 sm:gap-4 min-w-0">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-2 sm:gap-2.5 min-w-0 select-none group">
                 @if ($logo)
                     <img src="{{ asset('storage/' . $logo) }}" alt="{{ $namaInstansi ?? 'Logo' }}" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                 @else
                     <img src="{{ asset('images/logo_alazhar7.png') }}" alt="{{ $namaInstansi ?? 'Logo Instansi' }}" class="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0 drop-shadow-xs transition-transform duration-200 group-hover:scale-105">
                 @endif
-                <span class="text-xs font-bold text-zinc-800 dark:text-zinc-100 leading-tight truncate max-w-[140px] sm:max-w-[200px]">
+                <span class="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-100 leading-snug whitespace-normal line-clamp-2 md:line-clamp-none max-w-none">
                     {{ $namaInstansi ?: 'IMS' }}
                 </span>
             </a>

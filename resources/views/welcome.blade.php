@@ -219,7 +219,7 @@
                     <!-- Brand Logo: Pure Institution Logo -->
                     <a href="{{ url('/') }}" class="flex items-center gap-2 sm:gap-2.5 shrink-0 select-none group">
                         <img src="{{ $effectiveLogo }}" alt="{{ $effectiveName }}" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm transition-transform duration-200 group-hover:scale-105">
-                        <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-tight hidden xs:inline-block max-w-[190px] sm:max-w-[260px] truncate">
+                        <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-snug hidden xs:inline-block whitespace-normal line-clamp-2 max-w-sm sm:max-w-md">
                             {{ $effectiveName }}
                         </span>
                     </a>
@@ -291,7 +291,7 @@
                         <!-- Left Brand Logo: Pure Institution Logo -->
                         <div class="flex items-center gap-2 sm:gap-2.5 pl-1.5 sm:pl-2.5 shrink-0 select-none">
                             <img src="{{ $effectiveLogo }}" alt="{{ $effectiveName }}" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm brightness-105 dark:brightness-110">
-                            <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-tight hidden xs:inline-block max-w-[180px] sm:max-w-[240px] truncate">
+                            <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-snug hidden xs:inline-block whitespace-normal">
                                 {{ $effectiveName }}
                             </span>
                         </div>
