@@ -167,8 +167,7 @@
 
         <!-- Root Scroll Container with Alpine ScrollLayout -->
         <div x-data="scrollLayout" class="relative z-10 flex flex-col min-h-screen">
-            
-            <!-- Sticky Floating Header Navbar (When Scrolled) -->
+                       <!-- Sticky Floating Header Navbar (When Scrolled) -->
             <header x-show="isScrolled" 
                     x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 -translate-y-4"
@@ -179,22 +178,22 @@
                     class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/85 dark:bg-zinc-900/85 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2 sm:py-2.5 backdrop-blur-2xl transition-colors duration-300">
                 <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
                     <!-- Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
-                    <div class="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
-                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 object-contain shrink-0 drop-shadow-sm">
-                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-8 md:h-9 max-w-[100px] xs:max-w-[130px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm shrink">
+                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm">
+                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-7 md:h-8 max-w-[95px] xs:max-w-[125px] sm:max-w-[160px] md:max-w-[200px] object-contain drop-shadow-sm shrink-0">
                     </div>
 
-                    <!-- Desktop Pill Menu Navigation (Visible on Large Desktops only so iPad/Tablets don't overflow) -->
-                    <nav class="hidden lg:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm shrink-0">
-                        <a href="#fitur" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                        <a href="#keunggulan" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                        <a href="#sebaran" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                        <a href="#simulator" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                        <a href="#faq" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                    <!-- Desktop Pill Menu Navigation (Visible on Widescreen Desktops >= 1280px to ensure zero collision on iPads/Tablets in landscape) -->
+                    <nav class="hidden xl:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm shrink-0">
+                        <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                        <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                        <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                        <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                        <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                     </nav>
 
                     <!-- Auth Actions & Theme Switcher -->
-                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                         <!-- Theme Toggle Button -->
                         <button @click="toggleTheme()" 
                                 type="button"
@@ -212,11 +211,11 @@
 
                         @if (Route::has('login'))
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
+                                <a href="{{ url('/dashboard') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
+                                <a href="{{ route('login') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
                                     Masuk
                                 </a>
                             @endauth
@@ -246,19 +245,19 @@
                 <header class="max-w-6xl mx-auto w-full relative z-20">
                     <div class="p-1.5 sm:p-2.5 rounded-full bg-white/40 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/60 dark:border-white/15 shadow-xl shadow-black/5 flex items-center justify-between gap-1.5 sm:gap-3 transition-colors duration-300">
                         
-                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Responsive scaling) -->
-                        <div class="flex items-center gap-1.5 sm:gap-3 pl-1 sm:pl-2 min-w-0 shrink">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 object-contain shrink-0 drop-shadow-sm">
-                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-8 md:h-9 max-w-[95px] xs:max-w-[125px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm brightness-105 dark:brightness-110 shrink">
+                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Responsive scaling & zero collision) -->
+                        <div class="flex items-center gap-1.5 sm:gap-2.5 pl-1 sm:pl-2 shrink-0">
+                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm">
+                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-7 md:h-8 max-w-[95px] xs:max-w-[125px] sm:max-w-[160px] md:max-w-[200px] object-contain drop-shadow-sm brightness-105 dark:brightness-110 shrink-0">
                         </div>
 
-                        <!-- Center Navigation Links (Visible on Large Desktops only so iPad Mini/Air don't overflow) -->
-                        <nav class="hidden lg:flex items-center gap-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shrink-0">
-                            <a href="#fitur" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                            <a href="#keunggulan" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                            <a href="#sebaran" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                            <a href="#simulator" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                            <a href="#faq" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                        <!-- Center Navigation Links (Visible on Widescreen Desktops >= 1280px to guarantee zero overlapping on Tablets/iPads in landscape) -->
+                        <nav class="hidden xl:flex items-center gap-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shrink-0">
+                            <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                            <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                            <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                            <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                            <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                         </nav>
 
                         <!-- Right Actions & Theme Switcher -->
@@ -281,12 +280,12 @@
                             @if (Route::has('login'))
                                 @auth
                                     <a href="{{ url('/dashboard') }}" 
-                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
+                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
                                         <span>Dashboard</span>
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" 
-                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
+                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
                                         <span>Masuk</span>
                                     </a>
                                 @endauth
