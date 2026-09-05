@@ -10,20 +10,23 @@
     <style>
         @page {
             size: 215mm 330mm;
-            margin: 8mm 12mm;
+            margin: 10mm 12mm 10mm 12mm;
         }
         @media print {
             .no-print {
                 display: none !important;
             }
             body {
-                background-color: white !important;
+                background: white !important;
                 color: black !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .page-break {
                 page-break-before: always;
+                break-before: page;
             }
             .print-container {
                 min-height: 0 !important;
@@ -32,41 +35,56 @@
                 box-shadow: none !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                zoom: 80% !important;
             }
-            .signature-block {
+            .signature-block, .report-section, tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
         }
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Times New Roman', 'Liberation Serif', serif;
         }
-        .logo-left {
-            width: 90px;
-            height: 80px;
-            object-fit: cover;
-            object-position: left;
+        .report-table {
+            border-collapse: collapse;
+            width: 100%;
         }
-        .logo-right {
-            width: 92px;
-            height: 80px;
-            object-fit: cover;
-            object-position: right;
+        .report-table th, .report-table td {
+            border: 1px solid #000;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 p-4 sm:p-8">
+<body class="bg-zinc-100 text-gray-900 p-4 sm:p-8" x-data="{ paperSize: 'f4' }" :class="{ 'max-w-[215mm]': paperSize === 'f4', 'max-w-[210mm]': paperSize === 'a4' }">
 
-    <!-- Floating Action Button for print (hidden on print) -->
-    <div class="max-w-4xl mx-auto mb-6 flex justify-between items-center no-print bg-white p-4 rounded-xl border shadow-sm">
-        <span class="text-sm text-gray-500 font-semibold">📄 Preview Cetak Dokumen Rapor Terpadu</span>
-        <div class="flex gap-2">
-            <button onclick="window.close()" class="px-4 py-2 border rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50">
-                Tutup Halaman
+    <!-- Floating Action Toolbar for print preview (hidden during print) -->
+    <div class="max-w-4xl mx-auto mb-6 flex flex-wrap justify-between items-center gap-3 no-print bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg">
+        <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <span>📄</span> Pratinjau Cetak Rapor Digital
+                </h4>
+                <p class="text-xs text-gray-500 dark:text-zinc-400">
+                    {{ $student->name }} &bull; {{ $student->classRoom?->name ?: '-' }}
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Paper Size Selector -->
+            <div class="flex items-center bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl text-xs font-semibold">
+                <button type="button" @click="paperSize = 'f4'" :class="paperSize === 'f4' ? 'bg-white dark:bg-zinc-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700'" class="px-2.5 py-1 rounded-lg transition">
+                    F4 (Folio)
+                </button>
+                <button type="button" @click="paperSize = 'a4'" :class="paperSize === 'a4' ? 'bg-white dark:bg-zinc-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700'" class="px-2.5 py-1 rounded-lg transition">
+                    A4
+                </button>
+            </div>
+
+            <button onclick="window.close()" class="px-3.5 py-2 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 transition">
+                Tutup
             </button>
-            <button onclick="window.print()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow">
-                Cetak Sekarang
+            <button onclick="window.print()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+                <span>🖨️</span> Cetak / Simpan PDF
             </button>
         </div>
     </div>

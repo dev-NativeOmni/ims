@@ -231,7 +231,7 @@
         <!-- 1. LEFT ITEM 1 -->
         @if (isset($leftItems[0]) && \Illuminate\Support\Facades\Route::has($leftItems[0]['route']))
             <a href="{{ route($leftItems[0]['route']) }}"
-               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[0]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[0]['active'] ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $leftItems[0]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($leftItems[0]['icon'] === 'book')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,7 +263,7 @@
         <!-- 2. LEFT ITEM 2 -->
         @if (isset($leftItems[1]) && \Illuminate\Support\Facades\Route::has($leftItems[1]['route']))
             <a href="{{ route($leftItems[1]['route']) }}"
-               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[1]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $leftItems[1]['active'] ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $leftItems[1]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($leftItems[1]['icon'] === 'table')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -288,13 +288,12 @@
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (VIBRANT SAPA SKY-BLUE SQUIRCLE) -->
+        <!-- 3. CENTER ELEVATED BERANDA / DASHBOARD BUTTON (TEAL-EMERALD GRADIENT) -->
         <a href="{{ route('dashboard') }}"
            class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-10 select-none group">
-            <!-- Vibrant Glowing Floating Squircle Button with Bulletproof Gradient & Shadow -->
-            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 8px 20px -2px rgba(2, 132, 199, 0.55);"
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #059669 100%); box-shadow: 0 8px 20px -2px rgba(13, 148, 136, 0.45);"
                  class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white transition-all duration-200 group-active:scale-95 border-2 border-white dark:border-[#09090b]">
-                <!-- Solid 4-Square Grid Dashboard Icon (Sharp, Filled White, 100% High Visibility) -->
+                <!-- Solid 4-Square Grid Dashboard Icon -->
                 <svg style="color: #ffffff; width: 26px; height: 26px;" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
                     <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
@@ -302,7 +301,7 @@
                     <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
                 </svg>
             </div>
-            <span style="color: #0284c7;" class="text-[10px] font-bold tracking-tight mt-1 leading-none">
+            <span class="text-[10px] font-bold tracking-tight mt-1 leading-none text-teal-600 dark:text-teal-400">
                 Dashboard
             </span>
         </a>
@@ -310,7 +309,7 @@
         <!-- 4. RIGHT ITEM 1 -->
         @if (isset($rightItems[0]) && \Illuminate\Support\Facades\Route::has($rightItems[0]['route']))
             <a href="{{ route($rightItems[0]['route']) }}"
-               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $rightItems[0]['active'] ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
+               class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 {{ $rightItems[0]['active'] ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium' }}">
                 <div class="p-1 rounded-xl transition-all duration-200 {{ $rightItems[0]['active'] ? 'scale-110' : 'group-active:scale-95' }}">
                     @if ($rightItems[0]['icon'] === 'shield')
                         <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -346,9 +345,9 @@
         <!-- 5. RIGHT ITEM 2: "Menu Lainnya" Drawer Trigger -->
         <button type="button"
                 @click="sidebarOpen = true"
-                class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 text-zinc-500 dark:text-zinc-400 hover:text-sky-600 dark:hover:text-sky-400 font-medium cursor-pointer">
+                class="flex-1 flex flex-col items-center justify-center h-full py-1 text-center select-none group transition-colors duration-150 text-zinc-500 dark:text-zinc-400 hover:text-teal-600 dark:hover:text-teal-400 font-medium cursor-pointer">
             <div class="p-1 rounded-xl transition-all duration-200 group-active:scale-95">
-                <svg class="w-5 h-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-sky-600 dark:group-hover:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-5 h-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-teal-600 dark:group-hover:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </div>
