@@ -21,25 +21,25 @@
         </div>
     </x-slot>
 
-    <div class="py-8" x-data="{ tab: 'list' }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6" x-data="{ tab: 'list' }">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             @if (session('success'))
-                <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300">
+                <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300">
                     {{ session('success') }}
                 </div>
             @endif
 
             <!-- Statistics Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Total Violations Card -->
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
                     <div>
                         <p class="text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Poin Pelanggaran</p>
-                        <h3 class="text-3xl font-extrabold text-red-600 dark:text-rose-500 mt-2">{{ $totalViolations }}</h3>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-red-600 dark:text-rose-500 mt-2">{{ $totalViolations }}</h3>
                         <p class="text-[10px] text-gray-400 dark:text-zinc-500 mt-1">Akumulasi pelanggaran tata tertib</p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-rose-950/30 flex items-center justify-center text-red-500">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-rose-950/30 flex items-center justify-center text-red-500 text-xl shadow-xs">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z" />
                         </svg>
@@ -47,13 +47,13 @@
                 </div>
 
                 <!-- Total Rewards Card -->
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
                     <div>
                         <p class="text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Poin Penghargaan</p>
-                        <h3 class="text-3xl font-extrabold text-green-600 dark:text-emerald-500 mt-2">{{ $totalRewards }}</h3>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-green-600 dark:text-emerald-500 mt-2">{{ $totalRewards }}</h3>
                         <p class="text-[10px] text-gray-400 dark:text-zinc-500 mt-1">Akumulasi prestasi & kebaikan</p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-emerald-950/30 flex items-center justify-center text-green-500">
+                    <div class="w-12 h-12 rounded-2xl bg-green-50 dark:bg-emerald-950/30 flex items-center justify-center text-green-500 text-xl shadow-xs">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-2.25a1.125 1.125 0 00-1.125 1.125V18.75m9 0a9 9 0 11-18 0M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -62,15 +62,15 @@
 
                 <!-- Net Score Card -->
                 @php $balance = $totalRewards - $totalViolations; @endphp
-                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
                     <div>
                         <p class="text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Selisih Kebaikan (Net)</p>
-                        <h3 class="text-3xl font-extrabold mt-2 {{ $balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600' }}">
+                        <h3 class="text-2xl sm:text-3xl font-extrabold mt-2 {{ $balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600' }}">
                             {{ $balance > 0 ? '+' : '' }}{{ $balance }}
                         </h3>
                         <p class="text-[10px] text-gray-400 dark:text-zinc-500 mt-1">Total penghargaan dikurangi pelanggaran</p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 text-xl shadow-xs">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
                         </svg>
@@ -80,18 +80,18 @@
 
             <!-- Tab Controls (Only for Staff/Teachers) -->
             @if(!auth()->user()->hasAnyRole(['parent', 'student']))
-                <div class="flex border-b border-gray-200 dark:border-zinc-800 gap-6 no-print">
+                <div class="flex border-b border-gray-200 dark:border-zinc-800 gap-4 sm:gap-6 no-print overflow-x-auto scrollbar-none">
                     <button 
                         @click="tab = 'list'"
                         :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                        class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                     >
                         Riwayat Catatan
                     </button>
                     <button 
                         @click="tab = 'dashboard'"
                         :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400' "
-                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none"
+                        class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                     >
                         Dashboard Analitis
                     </button>
@@ -99,12 +99,12 @@
             @endif
 
             <!-- List Tab Content -->
-            <div x-show="tab === 'list'" x-transition class="space-y-6">
+            <div x-show="tab === 'list'" x-transition class="space-y-5 sm:space-y-6">
                 @if(!auth()->user()->hasAnyRole(['parent', 'student']))
                     <!-- Filter & Search (no-print) -->
-                    <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm transition-colors duration-200">
-                        <form method="GET" action="{{ route('student-points.index') }}" class="flex flex-wrap items-end gap-4">
-                            <div class="flex-1 min-w-[200px]">
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm transition-colors duration-200">
+                        <form method="GET" action="{{ route('student-points.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
+                            <div>
                                 <label for="search" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Cari Murid</label>
                                 <input
                                     type="text"
@@ -112,14 +112,14 @@
                                     id="search"
                                     value="{{ request('search') }}"
                                     placeholder="Cari nama atau NIS murid..."
-                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                    class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3"
                                 />
                             </div>
 
                             @if ($classRooms->isNotEmpty())
-                                <div class="w-full sm:w-48">
+                                <div>
                                     <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas</label>
-                                    <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                    <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3 font-medium cursor-pointer">
                                         <option value="">Semua Kelas</option>
                                         @foreach ($classRooms as $class)
                                             <option value="{{ $class->id }}" {{ request('class_room_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
@@ -128,9 +128,9 @@
                                 </div>
                             @endif
 
-                            <div class="w-full sm:w-48">
+                            <div>
                                 <label for="type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tipe Poin</label>
-                                <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3 font-medium cursor-pointer">
                                     <option value="">Semua Tipe</option>
                                     <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
                                     <option value="lateness" {{ request('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
@@ -140,11 +140,11 @@
                             </div>
 
                             <div class="flex gap-2">
-                                <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors min-h-[42px]">
+                                <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors min-h-[42px] cursor-pointer">
                                     Filter
                                 </button>
                                 @if (request()->anyFilled(['search', 'type', 'class_room_id']))
-                                    <a href="{{ route('student-points.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors min-h-[42px]">
+                                    <a href="{{ route('student-points.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors min-h-[42px] cursor-pointer">
                                         Reset
                                     </a>
                                 @endif
@@ -156,7 +156,7 @@
                 <!-- List Table -->
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors duration-200">
                     <div class="border-b border-gray-200 dark:border-zinc-800 px-6 py-4 bg-gray-50/50 dark:bg-[#09090b]/40">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Riwayat Poin Kedisiplinan</h3>
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Riwayat Poin Kedisiplinan</h3>
                     </div>
 
                     @if ($points->isEmpty())
@@ -164,7 +164,7 @@
                             Tidak ada riwayat catatan poin disiplin ditemukan.
                         </div>
                     @else
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto touch-scroll">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                                 <thead class="bg-gray-50 dark:bg-[#09090b]/40">
                                     <tr>

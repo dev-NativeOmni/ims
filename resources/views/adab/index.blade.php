@@ -5,35 +5,35 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="{ tab: '{{ request('tab', 'list') }}' }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6" x-data="{ tab: '{{ request('tab', 'list') }}' }">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
             @if (session('success'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-800 dark:text-emerald-300 text-sm">
+                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-emerald-800 dark:text-emerald-300 text-sm font-semibold">
                     {{ session('success') }}
                 </div>
             @endif
 
             <!-- Banner / Deskripsi -->
-            <div class="bg-gradient-to-r from-teal-500 via-indigo-600 to-indigo-700 text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+            <div class="bg-gradient-to-r from-teal-500 via-indigo-600 to-indigo-700 text-white rounded-2xl shadow-lg p-5 sm:p-6 relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-12 translate-y-12">
                     <svg class="h-64 w-64" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
                     </svg>
                 </div>
                 <div class="relative z-10 max-w-2xl">
-                    <h3 class="text-xl font-bold mb-2">Evaluasi Akhlak & Adab Harian</h3>
-                    <p class="text-teal-100 text-sm leading-relaxed">
+                    <h3 class="text-lg sm:text-xl font-bold mb-1.5 sm:mb-2">Evaluasi Akhlak & Adab Harian</h3>
+                    <p class="text-teal-100 text-xs sm:text-sm leading-relaxed">
                         Evaluasi kedisiplinan dan pembiasaan adab islami harian murid. Penilaian mencakup 3 modul mandiri murid (adab kepada Allah, adab kepada Rasulullah, adab belajar) dengan bobot 50% dan penilaian pendamping adab dengan bobot 50%.
                     </p>
                 </div>
             </div>
 
             <!-- Tab Controls -->
-            <div class="flex border-b border-zinc-200 dark:border-zinc-800 gap-6 no-print overflow-x-auto scrollbar-none">
+            <div class="flex border-b border-zinc-200 dark:border-zinc-800 gap-4 sm:gap-6 no-print overflow-x-auto scrollbar-none">
                 <button 
                     @click="tab = 'list'"
                     :class="tab === 'list' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
+                    class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                 >
                     Daftar Evaluasi Murid
                 </button>
@@ -41,7 +41,7 @@
                     <button 
                         @click="tab = 'monthly_mentor'"
                         :class="tab === 'monthly_mentor' ? 'border-teal-600 text-teal-600 dark:text-teal-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
-                        class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none flex items-center gap-1.5 shrink-0 cursor-pointer"
                     >
                         <span>⚡</span> Penilaian Bulanan Pendamping
                     </button>
@@ -49,18 +49,18 @@
                 <button 
                     @click="tab = 'dashboard'"
                     :class="tab === 'dashboard' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
-                    class="py-3 px-1 border-b-2 text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
+                    class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none shrink-0 cursor-pointer"
                 >
                     Dashboard Kepatuhan Adab
                 </button>
             </div>
 
             <!-- List Tab Content -->
-            <div x-show="tab === 'list'" x-transition class="space-y-6">
+            <div x-show="tab === 'list'" x-transition class="space-y-5 sm:space-y-6">
                 @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                     <!-- Filter -->
-                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
-                        <form method="GET" action="{{ route('adab.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-2xl p-4 sm:p-5">
+                        <form method="GET" action="{{ route('adab.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             <div>
                                 <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari Murid</label>
                                 <input
@@ -69,13 +69,13 @@
                                     id="search"
                                     value="{{ request('search') }}"
                                     placeholder="Cari nama..."
-                                    class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
+                                    class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 py-2.5 px-3"
                                 >
                             </div>
 
                             <div>
                                 <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas</label>
-                                <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                                <select name="class_room_id" id="class_room_id" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white py-2.5 px-3 font-medium cursor-pointer">
                                     <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
                                     @foreach ($classRooms as $classRoom)
                                         <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id) class="dark:bg-zinc-900">
@@ -85,12 +85,12 @@
                                 </select>
                             </div>
 
-                            <div class="md:col-span-2 flex items-end gap-3">
-                                <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
+                            <div class="sm:col-span-2 lg:col-span-2 flex items-end gap-3">
+                                <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-semibold transition duration-150 shadow-sm min-h-[42px] cursor-pointer">
                                     Filter Data
                                 </button>
 
-                                <a href="{{ route('adab.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150">
+                                <a href="{{ route('adab.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 active:scale-95 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold transition duration-150 min-h-[42px] cursor-pointer">
                                     Reset
                                 </a>
                             </div>

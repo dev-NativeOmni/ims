@@ -203,37 +203,37 @@
         });
     </script>
 
-    <div class="py-8" x-data="spreadsheetData">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6" x-data="spreadsheetData">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             <!-- UNIFIED INPUT HUB TABS -->
             @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'spreadsheet'])
 
             <!-- FILTER PANEL -->
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
-                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-2xl p-4 sm:p-5">
+                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 items-end">
                     <div>
-                        <label for="class_room_id" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
+                        <label for="class_room_id" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
                             Kelas Halaqoh
                         </label>
-                        <select id="class_room_id" name="class_room_id" x-model="selectedClass" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                        <select id="class_room_id" name="class_room_id" x-model="selectedClass" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs">
                             @foreach ($classRooms as $class)
                                 <option value="{{ $class->id }}" class="dark:bg-zinc-900">{{ $class->name }} ({{ $class->program?->name }})</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label for="month" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
+                        <label for="month" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
                             Pilih Bulan & Tahun
                         </label>
-                        <input type="month" id="month" name="month" x-model="selectedMonth" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                        <input type="month" id="month" name="month" x-model="selectedMonth" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs">
                     </div>
                     @if (!$isWeekly)
                     <div>
-                        <label for="week" class="block text-sm font-medium text-gray-750 dark:text-zinc-300">
+                        <label for="week" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
                             Pilih Pekan
                         </label>
-                        <select id="week" name="week" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                        <select id="week" name="week" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs">
                             <option value="all" {{ $selectedWeek === 'all' ? 'selected' : '' }} class="dark:bg-zinc-900">Semua Pekan (Scroll)</option>
                             @foreach ($weeksList as $index => $w)
                                 <option value="{{ $index }}" {{ $selectedWeek == $index ? 'selected' : '' }} class="dark:bg-zinc-900">
@@ -244,8 +244,11 @@
                     </div>
                     @endif
                     <div>
-                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition cursor-pointer">
-                            🔍 Tampilkan Kelas
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer min-h-[42px]">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span>Tampilkan Kelas</span>
                         </button>
                     </div>
                 </form>
@@ -284,27 +287,27 @@
             </div>
 
             <!-- TABS & SAVE ACTION -->
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-3 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-3 sm:p-4 rounded-2xl shadow-sm">
                 <!-- Worksheet Tabs -->
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
                         <x-heroicon-o-book-open class="w-4 h-4" /> Lembar Setoran Al-Qur'an
                     </button>
-                    <button type="button" @click="tab = 'ummi'" :class="tab === 'ummi' ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <button type="button" @click="tab = 'ummi'" :class="tab === 'ummi' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
                         <x-heroicon-o-sparkles class="w-4 h-4" /> Lembar Progres UMMI
                     </button>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="w-full sm:w-auto">
-                    <button type="button" @click="submitForm()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold shadow transition cursor-pointer gap-1.5">
+                    <button type="button" @click="submitForm()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:bg-gray-400 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 transition cursor-pointer gap-2 min-h-[42px]">
                         <template x-if="!isSaving">
-                            <span class="inline-flex items-center gap-1.5">
+                            <span class="inline-flex items-center gap-2">
                                 <x-heroicon-o-arrow-down-on-square class="w-4 h-4" /> Simpan Perubahan Kelas
                             </span>
                         </template>
                         <template x-if="isSaving">
-                            <span class="inline-flex items-center gap-1.5">
+                            <span class="inline-flex items-center gap-2">
                                 <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -316,7 +319,7 @@
             </div>
 
             @if ($students->isEmpty())
-                <div class="p-8 text-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl">
+                <div class="p-8 text-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl">
                     <p class="text-sm text-gray-500 dark:text-zinc-400">Tidak ada murid aktif di kelas halaqoh terpilih.</p>
                 </div>
             @else
@@ -329,9 +332,9 @@
                     <input type="hidden" name="week" value="{{ $selectedWeek }}">
 
                     <!-- ========================================== -->
-                    <!-- DESKTOP SPREADSHEET VIEW (Laptop/PC)       -->
+                    <!-- DESKTOP / TABLET SPREADSHEET VIEW          -->
                     <!-- ========================================== -->
-                    <div class="hidden md:block bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-x-auto overflow-y-auto max-h-[72vh] shadow-sm">
+                    <div class="hidden md:block bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-x-auto overflow-y-auto touch-scroll max-h-[75vh] shadow-sm">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 table-fixed border-collapse">
                             <thead class="sticky top-0 z-30 bg-gray-100 dark:bg-zinc-800 shadow-sm">
                                 <tr>

@@ -33,7 +33,7 @@
             @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                 <!-- Filter Section -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-3">
+                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
                         <div>
                             <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Kelas</label>
                             <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
@@ -77,7 +77,7 @@
                             </select>
                         </div>
 
-                        <div class="flex items-end gap-2 col-span-1 sm:col-span-2 md:col-span-1">
+                        <div class="flex items-end gap-2 col-span-1 sm:col-span-2 lg:col-span-1">
                             <button type="submit"
                                     class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
                                 Filter
@@ -128,25 +128,43 @@
                         </div>
 
                         <!-- Action Bar Mobile -->
-                        <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                            <a href="{{ route('murajaah-records.show', $record) }}" class="btn-action-detail flex-1">
-                                🔍 Detail
-                            </a>
-                            <a href="{{ route('murajaah-records.edit', $record) }}" class="btn-action-edit flex-1">
-                                ✏️ Edit
-                            </a>
-                            <form action="{{ route('murajaah-records.destroy', $record) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data murajaah ini?')" class="flex-1">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action-delete w-full">
-                                    🗑️ Hapus
-                                </button>
-                            </form>
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            @can('view', $record)
+                                <a href="{{ route('murajaah-records.show', $record) }}"
+                                   class="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                            @endcan
+
+                            @can('update', $record)
+                                <a href="{{ route('murajaah-records.edit', $record) }}"
+                                   class="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </a>
+                            @endcan
+
+                            @can('delete', $record)
+                                <form action="{{ route('murajaah-records.destroy', $record) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan muraja\'ah ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endcan
                         </div>
                     </div>
                 @empty
-                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
-                        Belum ada data murajaah.
+                    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
+                        Belum ada catatan muraja'ah.
                     </div>
                 @endforelse
 
@@ -157,7 +175,7 @@
 
             <!-- Desktop View: Table (>= md) -->
             <div class="hidden md:block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm rounded-xl">
-                <div class="p-4 sm:p-6 overflow-x-auto">
+                <div class="p-4 sm:p-6 overflow-x-auto touch-scroll">
                     <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
                         <thead>
                             <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">

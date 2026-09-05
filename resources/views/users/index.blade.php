@@ -133,8 +133,8 @@
             </div>
 
             <!-- Filter & Pencarian Form -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-6">
-                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                     <div>
                         <label for="search" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Cari User</label>
                         <input
@@ -180,12 +180,12 @@
                         </select>
                     </div>
 
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm">
+                    <div class="flex items-end gap-2 col-span-1 sm:col-span-2 lg:col-span-1">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-sm min-h-[42px]">
                             Cari
                         </button>
 
-                        <a href="{{ route('users.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150">
+                        <a href="{{ route('users.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 active:scale-95 text-zinc-700 dark:text-zinc-300 rounded-lg text-sm font-semibold transition duration-150 min-h-[42px]">
                             Reset
                         </a>
                     </div>
@@ -193,8 +193,8 @@
             </div>
 
             <!-- List Users Table -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm sm:rounded-xl overflow-hidden">
-                <div class="overflow-x-auto">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto touch-scroll">
                     <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
                         <thead class="bg-zinc-50 dark:bg-zinc-900/50">
                             <tr class="text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">

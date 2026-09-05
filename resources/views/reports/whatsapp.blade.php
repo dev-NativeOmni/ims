@@ -15,12 +15,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             <!-- Filter Kelas & Tanggal -->
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm">
-                <form method="GET" action="{{ route('reports.whatsapp') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 sm:p-5 shadow-sm">
+                <form method="GET" action="{{ route('reports.whatsapp') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-end">
                     <!-- Classroom Selector -->
                     <div>
                         <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas Halaqoh</label>
@@ -38,8 +38,8 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <div>
-                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-colors duration-150 min-h-[42px]">
+                    <div class="col-span-1 sm:col-span-2 lg:col-span-1">
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 active:scale-95 shadow-sm transition-all duration-150 min-h-[42px]">
                             Muat Data Setoran
                         </button>
                     </div>

@@ -49,17 +49,17 @@
             @endif
 
             <!-- Filter Section -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                <form method="GET" action="{{ route('students.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-2xl p-3.5 sm:p-5">
+                <form method="GET" action="{{ route('students.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                     <input
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Cari nama / nomor murid..."
-                        class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
+                        class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm py-2 px-3"
                     >
 
-                    <select name="class_room_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                    <select name="class_room_id" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
                         <option value="">Semua Kelas</option>
                         @foreach ($classRooms as $classRoom)
                             <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id)>
@@ -68,19 +68,19 @@
                         @endforeach
                     </select>
 
-                    <select name="status" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                    <select name="status" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
                         <option value="">Semua Status</option>
                         <option value="active" @selected(request('status') === 'active')>Aktif</option>
                         <option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option>
                         <option value="graduated" @selected(request('status') === 'graduated')>Lulus</option>
                     </select>
 
-                    <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
+                    <div class="flex gap-2 col-span-1 sm:col-span-2 lg:col-span-1">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px] shadow-sm cursor-pointer">
                             Filter
                         </button>
 
-                        <a href="{{ route('students.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
+                        <a href="{{ route('students.index') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px] cursor-pointer">
                             Reset
                         </a>
                     </div>

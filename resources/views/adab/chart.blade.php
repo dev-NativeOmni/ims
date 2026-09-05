@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
                 <h2 class="font-semibold text-xl text-gray-900 dark:text-zinc-150 leading-tight">
                     Grafik Perkembangan Pengisian Kuisioner Adab
@@ -10,7 +10,7 @@
                 </p>
             </div>
             {{-- Filter Periode Bulan & Tahun --}}
-            <form method="GET" action="{{ route('adab.chart') }}" class="flex items-center gap-2">
+            <form method="GET" action="{{ route('adab.chart') }}" class="flex flex-wrap items-center gap-2">
                 <select name="month" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm font-semibold dark:text-white">
                     @foreach ($monthsList as $mNum => $mName)
                         <option value="{{ $mNum }}" {{ $month === $mNum ? 'selected' : '' }}>{{ $mName }}</option>
@@ -28,12 +28,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             {{-- Metric Cards --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm flex items-center gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 sm:p-6 shadow-sm flex items-center gap-4">
                     <div class="p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
                         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm flex items-center gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 sm:p-6 shadow-sm flex items-center gap-4">
                     <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
                         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -59,7 +59,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm flex items-center gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 sm:p-6 shadow-sm flex items-center gap-4">
                     <div class="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl">
                         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -74,7 +74,7 @@
             </div>
 
             {{-- 12-Month Historical Trend Chart --}}
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm space-y-6">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 sm:p-6 shadow-sm space-y-6">
                 <div class="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">Grafik Tren Perkembangan Pengisian Adab (Januari – Desember {{ $year }})</h3>
@@ -82,7 +82,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-12 gap-2 h-44 items-end pt-6 pb-2 px-2 border-b border-gray-100 dark:border-zinc-800">
+                <div class="overflow-x-auto touch-scroll">
+                    <div class="grid grid-cols-12 gap-2 h-44 items-end pt-6 pb-2 px-2 border-b border-gray-100 dark:border-zinc-800 min-w-[560px]">
                     @foreach ($monthlyTrends as $mNum => $tData)
                         @php
                             $tRate = $tData['rate'];
@@ -97,6 +98,7 @@
                             <span class="text-[10px] font-bold uppercase {{ $isSel ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-gray-400' }}">{{ $tData['month_name'] }}</span>
                         </div>
                     @endforeach
+                    </div>
                 </div>
             </div>
             <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm space-y-6">

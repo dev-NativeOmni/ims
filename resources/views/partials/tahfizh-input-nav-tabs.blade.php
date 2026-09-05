@@ -1,8 +1,8 @@
 @props(['activeTab' => 'spreadsheet'])
 
 <div class="mb-5 sm:mb-6">
-    <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm relative overflow-hidden border border-teal-500/20">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+    <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4.5 shadow-sm relative overflow-hidden border border-teal-500/20">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5 sm:gap-4">
             {{-- Header Title --}}
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-teal-500/25">
@@ -10,22 +10,22 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <h2 class="text-sm sm:text-base font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                         <span>Pusat Input Setoran & Muraja'ah</span>
                     </h2>
-                    <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                    <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate sm:whitespace-normal">
                         Pilih mode input yang paling sesuai dengan aktivitas bimbingan santri Anda
                     </p>
                 </div>
             </div>
 
             {{-- 3 Tab Switcher Buttons --}}
-            <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none p-1 rounded-2xl glass-liquid-inner border border-zinc-200/60 dark:border-white/10 shrink-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none p-1 rounded-2xl glass-liquid-inner border border-zinc-200/60 dark:border-white/10 shrink-0 w-full lg:w-auto">
                 
                 {{-- Tab 1: Mode Spreadsheet --}}
                 <a href="{{ route('spreadsheet-input.index') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'spreadsheet' 
+                   class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'spreadsheet' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -36,7 +36,7 @@
 
                 {{-- Tab 2: Mode Satuan --}}
                 <a href="{{ route('hafalan-records.create') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'single' 
+                   class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'single' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -47,7 +47,7 @@
 
                 {{-- Tab 3: Mode Muraja'ah --}}
                 <a href="{{ route('murajaah-records.fast-input') }}"
-                   class="px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'murajaah' 
+                   class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'murajaah' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

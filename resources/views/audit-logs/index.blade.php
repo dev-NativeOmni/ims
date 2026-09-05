@@ -43,10 +43,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <form method="GET" action="{{ route('audit-logs.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div class="md:col-span-2">
-                        <label for="search" class="block text-sm font-medium text-gray-700">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
+                <form method="GET" action="{{ route('audit-logs.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+                    <div class="sm:col-span-2 lg:col-span-2">
+                        <label for="search" class="block text-xs font-semibold uppercase text-gray-500 mb-1">
                             Pencarian
                         </label>
                         <input id="search"
@@ -54,16 +54,16 @@
                                name="search"
                                value="{{ request('search') }}"
                                placeholder="User, objek, IP, URL..."
-                               class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     </div>
 
                     <div>
-                        <label for="event" class="block text-sm font-medium text-gray-700">
+                        <label for="event" class="block text-xs font-semibold uppercase text-gray-500 mb-1">
                             Event
                         </label>
                         <select id="event"
                                 name="event"
-                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Semua</option>
 
                             @foreach ($events as $event)
@@ -82,12 +82,12 @@
                     </div>
 
                     <div>
-                        <label for="auditable_label" class="block text-sm font-medium text-gray-700">
+                        <label for="auditable_label" class="block text-xs font-semibold uppercase text-gray-500 mb-1">
                             Objek
                         </label>
                         <select id="auditable_label"
                                 name="auditable_label"
-                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             <option value="">Semua</option>
 
                             @foreach ($auditableLabels as $label)
@@ -99,36 +99,36 @@
                     </div>
 
                     <div>
-                        <label for="date_from" class="block text-sm font-medium text-gray-700">
+                        <label for="date_from" class="block text-xs font-semibold uppercase text-gray-500 mb-1">
                             Dari
                         </label>
                         <input id="date_from"
                                type="date"
                                name="date_from"
                                value="{{ request('date_from') }}"
-                               class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     </div>
 
                     <div>
-                        <label for="date_to" class="block text-sm font-medium text-gray-700">
+                        <label for="date_to" class="block text-xs font-semibold uppercase text-gray-500 mb-1">
                             Sampai
                         </label>
                         <input id="date_to"
                                type="date"
                                name="date_to"
                                value="{{ request('date_to') }}"
-                               class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     </div>
 
-                    <div class="md:col-span-6 flex flex-wrap gap-2">
+                    <div class="sm:col-span-2 lg:col-span-6 flex flex-wrap gap-2">
                         <button type="submit"
                                 style="background-color: #111827; color: #ffffff;"
-                                class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:opacity-90">
+                                class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:opacity-90 active:scale-95 transition">
                             Filter
                         </button>
 
                         <a href="{{ route('audit-logs.index') }}"
-                           class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                           class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-95 transition">
                             Reset
                         </a>
                     </div>
@@ -136,7 +136,7 @@
             </div>
 
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto touch-scroll">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>

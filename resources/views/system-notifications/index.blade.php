@@ -49,36 +49,36 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Total</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                    <p class="text-xs sm:text-sm font-medium text-gray-500">Total</p>
+                    <p class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">
                         {{ number_format($summary['total'] ?? 0) }}
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Belum Dibaca</p>
-                    <p class="mt-2 text-3xl font-bold text-red-600">
+                <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                    <p class="text-xs sm:text-sm font-medium text-gray-500">Belum Dibaca</p>
+                    <p class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-red-600">
                         {{ number_format($summary['unread'] ?? 0) }}
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Sudah Dibaca</p>
-                    <p class="mt-2 text-3xl font-bold text-emerald-600">
+                <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                    <p class="text-xs sm:text-sm font-medium text-gray-500">Sudah Dibaca</p>
+                    <p class="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-emerald-600">
                         {{ number_format($summary['read'] ?? 0) }}
                     </p>
                 </div>
             </div>
 
             @if (auth()->user()->hasRole('super_admin'))
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <div class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
                     <form method="GET" action="{{ route('system-notifications.index') }}"
-                          class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                         @if ($canManage)
                             <div>
-                                <label class="mb-1 block text-sm font-semibold text-gray-700">
+                                <label class="mb-1 block text-xs font-semibold text-gray-700">
                                     Scope
                                 </label>
 
@@ -91,7 +91,7 @@
                         @endif
 
                         <div>
-                            <label class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label class="mb-1 block text-xs font-semibold text-gray-700">
                                 Status
                             </label>
 
@@ -104,7 +104,7 @@
                         </div>
 
                         <div>
-                            <label class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label class="mb-1 block text-xs font-semibold text-gray-700">
                                 Tipe
                             </label>
 
@@ -120,7 +120,7 @@
                         </div>
 
                         <div>
-                            <label class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label class="mb-1 block text-xs font-semibold text-gray-700">
                                 Role Target
                             </label>
 
@@ -135,14 +135,14 @@
                             </select>
                         </div>
 
-                        <div class="flex items-end gap-2">
+                        <div class="flex items-end gap-2 col-span-1 sm:col-span-2 lg:col-span-1">
                             <button type="submit"
-                                    class="inline-flex w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">
+                                    class="inline-flex flex-1 items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 active:scale-95 transition">
                                 Filter
                             </button>
 
                             <a href="{{ route('system-notifications.index') }}"
-                               class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                               class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-95 transition">
                                 Reset
                             </a>
                         </div>

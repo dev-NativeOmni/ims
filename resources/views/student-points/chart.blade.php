@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
                 <h2 class="font-bold text-xl sm:text-2xl text-zinc-900 dark:text-zinc-100 leading-tight flex items-center gap-2">
                     <span>🛡️ Laporan & Rekapitulasi Ketahanan Sekolah (Tanse)</span>
@@ -52,23 +52,23 @@
                     </select>
                 @endif
 
-                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                     🔍 Filter
                 </button>
             </form>
         </div>
     </x-slot>
 
-    <div class="py-6 sm:py-8" x-data="{ viewMode: 'leaderboard' }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6" x-data="{ viewMode: 'leaderboard' }">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
 
             {{-- View Mode Tabs --}}
-            <div class="flex items-center gap-2 border-b border-gray-200 dark:border-zinc-800 pb-3">
+            <div class="flex items-center gap-2 border-b border-gray-200 dark:border-zinc-800 pb-3 overflow-x-auto touch-scroll">
                 <button
                     type="button"
                     @click="viewMode = 'leaderboard'"
                     :class="viewMode === 'leaderboard' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'"
-                    class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
                     <span>🏆 Peringkat Murid Terbanyak (<span x-text="{{ $studentLeaderboard->count() }}"></span>)</span>
                 </button>
@@ -77,14 +77,14 @@
                     type="button"
                     @click="viewMode = 'class_report'"
                     :class="viewMode === 'class_report' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'"
-                    class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                    class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
                     <span>🏫 Rekapitulasi per Kelas</span>
                 </button>
             </div>
 
             {{-- Summary Metric Cards --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {{-- Total Pelanggaran --}}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center gap-3">

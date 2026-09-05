@@ -110,7 +110,7 @@
 
                 <!-- Filter Section -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-6' }} gap-2.5 sm:gap-3">
+                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-6' }} gap-2.5 sm:gap-3">
                         <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
 
                         <select name="class_room_id" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
@@ -162,7 +162,7 @@
                         </select>
                         @endif
 
-                        <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1">
+                        <div class="flex gap-2 col-span-1 sm:col-span-2 lg:col-span-1">
                             <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition min-h-[38px]">
                                 Filter
                             </button>
