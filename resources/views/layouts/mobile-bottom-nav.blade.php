@@ -288,24 +288,24 @@
             </a>
         @endif
 
-        <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (PRISMATIC LIQUID GLASS UI) -->
+        <!-- 3. CENTER ELEVATED HOME / DASHBOARD BUTTON (PRISMATIC LIQUID GLASS UI WITH ANIMATION) -->
         <a href="{{ route('dashboard') }}"
            class="flex-1 flex flex-col items-center justify-center relative -top-3.5 z-20 select-none group">
             
             <!-- Liquid Prismatic Outer Glow Wrapper -->
-            <div class="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-active:scale-95">
+            <div class="relative flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-90 group-active:rotate-[-2deg]">
                 
-                <!-- Prismatic Halo Glow (Blurred Under-layer) -->
-                <div class="absolute inset-0 rounded-full liquid-prismatic-ring blur-[5px] opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <!-- Prismatic Halo Glow (Living Breathing & Rotating Caustic Aura) -->
+                <div class="absolute inset-0 rounded-full liquid-prismatic-ring liquid-prismatic-halo-animated"></div>
 
-                <!-- Sharp Prismatic Ring Wrapper -->
-                <div class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full p-[2.5px] liquid-prismatic-ring liquid-prismatic-glow flex items-center justify-center">
+                <!-- Sharp Prismatic Ring Wrapper (Continuous Slow Chromatic Rotation) -->
+                <div class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full p-[2.5px] liquid-prismatic-ring liquid-prismatic-animated liquid-prismatic-glow flex items-center justify-center">
                     
-                    <!-- Dark Tactile Concave Dial -->
+                    <!-- Dark Tactile Concave Dial (Static Inner Core) -->
                     <div class="w-full h-full rounded-full liquid-dial-concave p-2 flex items-center justify-center border border-white/15">
                         
-                        <!-- 3D Silver Metallic Embossed Home Icon -->
-                        <svg class="w-6 h-6 metallic-icon-gradient" viewBox="0 0 24 24">
+                        <!-- 3D Silver Metallic Embossed Home Icon (Specular Shimmer) -->
+                        <svg class="w-6 h-6 metallic-icon-gradient liquid-icon-animated" viewBox="0 0 24 24">
                             <defs>
                                 <linearGradient id="silverMetallicHome" x1="0%" y1="0%" x2="0%" y2="100%">
                                     <stop offset="0%" stop-color="#ffffff" />

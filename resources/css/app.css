@@ -904,6 +904,37 @@ button.bg-gray-900 * {
 }
 
 /* Liquid UI Prismatic Home Button (Spatial Web3 Glass) */
+@keyframes prismatic-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes prismatic-glow-pulse {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(0.96);
+        filter: blur(5px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.08);
+        filter: blur(8px);
+    }
+}
+
+@keyframes icon-specular-shimmer {
+    0%, 100% {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.75)) brightness(1);
+    }
+    50% {
+        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.5)) brightness(1.18);
+    }
+}
+
 .liquid-prismatic-ring {
     background: conic-gradient(
         from 200deg at 50% 50%,
@@ -918,6 +949,18 @@ button.bg-gray-900 * {
         #10b981 335deg,
         #ffffff 360deg
     );
+}
+
+.liquid-prismatic-animated {
+    animation: prismatic-spin 12s linear infinite;
+}
+
+.liquid-prismatic-halo-animated {
+    animation: prismatic-spin 12s linear infinite, prismatic-glow-pulse 4s ease-in-out infinite;
+}
+
+.liquid-icon-animated {
+    animation: icon-specular-shimmer 4s ease-in-out infinite;
 }
 
 .liquid-prismatic-glow {
