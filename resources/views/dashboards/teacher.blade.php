@@ -175,15 +175,53 @@
 
             {{-- ═══════════════ PROGRESS MURID BIMBINGAN (FROSTED GLASS CONTAINER) ═══════════════ --}}
             @php
+                $extractGradeWeight = function (?string $name): int {
+                    if (!$name) return 99;
+                    if (preg_match('/\b(XII|12)\b/i', $name)) return 12;
+                    if (preg_match('/\b(XI|11)\b/i', $name)) return 11;
+                    if (preg_match('/\b(X|10)\b/i', $name)) return 10;
+                    return 99;
+                };
+
+                // Sort studentsProgress by Grade 10 -> 11 -> 12, natural class name, then student name
+                $studentsProgress = $studentsProgress->sort(function ($a, $b) use ($extractGradeWeight) {
+                    $classA = data_get($a, 'class_room_name') ?: (data_get($a, 'student.classRoom.name') ?: 'Tanpa Kelas');
+                    $classB = data_get($b, 'class_room_name') ?: (data_get($b, 'student.classRoom.name') ?: 'Tanpa Kelas');
+
+                    $gradeA = $extractGradeWeight($classA);
+                    $gradeB = $extractGradeWeight($classB);
+
+                    if ($gradeA !== $gradeB) {
+                        return $gradeA <=> $gradeB;
+                    }
+
+                    $classCmp = strnatcasecmp($classA, $classB);
+                    if ($classCmp !== 0) {
+                        return $classCmp;
+                    }
+
+                    $nameA = data_get($a, 'student_name') ?: (data_get($a, 'student.name') ?: '');
+                    $nameB = data_get($b, 'student_name') ?: (data_get($b, 'student.name') ?: '');
+                    return strcasecmp($nameA, $nameB);
+                })->values();
+
+                // Extract & sort classes strictly: Grade 10 -> 11 -> 12, then natural name (e.g. X E1, X E2, XI F1...)
                 $assignedClasses = $studentsProgress
-                    ->map(function ($item) {
+                    ->map(function ($item) use ($extractGradeWeight) {
                         $name = data_get($item, 'class_room_name') ?: (data_get($item, 'student.classRoom.name') ?: 'Tanpa Kelas');
                         return [
                             'name' => $name,
                             'key' => \Illuminate\Support\Str::slug($name),
+                            'grade' => $extractGradeWeight($name),
                         ];
                     })
                     ->unique('name')
+                    ->sort(function ($a, $b) {
+                        if ($a['grade'] !== $b['grade']) {
+                            return $a['grade'] <=> $b['grade'];
+                        }
+                        return strnatcasecmp($a['name'], $b['name']);
+                    })
                     ->values();
 
                 $classCounts = $studentsProgress->groupBy(function ($item) {
