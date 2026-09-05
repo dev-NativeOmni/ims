@@ -10,106 +10,108 @@
         </div>
     </x-slot>
 
-    <div class="py-4 sm:py-8">
-        <div class="max-w-7xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-6 lg:px-8">
+    <div class="py-4 sm:py-6">
+        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6 px-3 sm:px-6 lg:px-8">
             
-            <!-- Hari & Tanggal Widget -->
-            <div class="bg-gradient-to-r from-teal-500 to-indigo-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-sm relative overflow-hidden">
-                <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-8 translate-y-8">
-                    <svg class="h-32 sm:h-48 w-32 sm:w-48" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                    </svg>
-                </div>
-                <div class="relative z-10">
-                    <h3 class="text-xs sm:text-sm font-semibold opacity-90">Hari Ini</h3>
-                    <p class="text-xl sm:text-3xl font-black mt-0.5">{{ \Carbon\Carbon::parse($today)->translatedFormat('l, d F Y') }}</p>
-                    <p class="text-[11px] sm:text-xs text-teal-100 mt-1.5 line-clamp-2 sm:line-clamp-none">
-                        Pastikan seluruh murid mengisi evaluasi adab mereka sebelum hari berganti untuk konsistensi catatan perkembangan karakter.
-                    </p>
+            <!-- Hari & Tanggal Hero Widget (Frosted Liquid Mesh) -->
+            <div class="glass-liquid-card rounded-2xl p-4 sm:p-6 text-zinc-900 dark:text-white shadow-sm relative overflow-hidden border border-teal-500/20">
+                <div class="absolute -right-6 -bottom-6 w-40 h-40 bg-teal-500/10 dark:bg-teal-400/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                                📅 Evaluasi Harian
+                            </span>
+                            <span class="text-xs text-zinc-400 dark:text-zinc-500">•</span>
+                            <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{{ \Carbon\Carbon::parse($today)->translatedFormat('l, d F Y') }}</span>
+                        </div>
+                        <h3 class="text-lg sm:text-2xl font-black mt-1.5 tracking-tight">Monitoring Adab & Akhlak Santri</h3>
+                        <p class="text-xs sm:text-sm text-zinc-650 dark:text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                            Pantau kedisiplinan dan pembiasaan ibadah harian santri secara real-time untuk membangun generasi unggul berkarakter Qur'ani.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="p-3 rounded-2xl bg-teal-500/10 dark:bg-teal-400/10 border border-teal-500/20 text-center min-w-[90px]">
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-400 block">Kepatuhan</span>
+                            <span class="text-xl sm:text-2xl font-black text-teal-600 dark:text-teal-400">{{ $totalStudents > 0 ? round(($filledCount / $totalStudents) * 100) : 0 }}%</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Kartu Statistik (Bento Modern Grid) -->
-            <div class="grid grid-cols-3 gap-3 sm:gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4.5">
                 
                 <!-- Total Murid -->
-                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                    <div class="p-2 sm:p-3 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl">
-                        <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </div>
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total Murid</p>
-                        <h4 class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-0.5">{{ $totalStudents }}</h4>
+                        <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Santri</p>
+                        <h4 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight mt-1">{{ $totalStudents }}</h4>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">Seluruh kelas aktif</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xl shadow-xs">
+                        👥
                     </div>
                 </div>
 
                 <!-- Sudah Mengisi -->
-                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                    <div class="p-2 sm:p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                        <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Sudah Isi</p>
-                        <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 mt-0.5">
-                            <h4 class="text-xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $filledCount }}</h4>
-                            <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                @if($totalStudents > 0)
-                                    ({{ round(($filledCount / $totalStudents) * 100) }}%)
-                                @else
-                                    (0%)
-                                @endif
+                        <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Sudah Mengisi</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <h4 class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $filledCount }}</h4>
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                ({{ $totalStudents > 0 ? round(($filledCount / $totalStudents) * 100) : 0 }}%)
                             </span>
                         </div>
+                        <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-medium">✓ Telah dievaluasi</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shadow-xs">
+                        ✅
                     </div>
                 </div>
 
                 <!-- Belum Mengisi -->
-                <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] p-4 sm:p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                    <div class="p-2 sm:p-3 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-xl">
-                        <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
                     <div>
-                        <p class="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Belum Isi</p>
-                        <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 mt-0.5">
-                            <h4 class="text-xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $notFilledCount }}</h4>
-                            <span class="text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400">
-                                @if($totalStudents > 0)
-                                    ({{ round(($notFilledCount / $totalStudents) * 100) }}%)
-                                @else
-                                    (0%)
-                                @endif
+                        <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Belum Mengisi</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <h4 class="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">{{ $notFilledCount }}</h4>
+                            <span class="text-xs font-bold text-rose-600 dark:text-rose-400">
+                                ({{ $totalStudents > 0 ? round(($notFilledCount / $totalStudents) * 100) : 0 }}%)
                             </span>
                         </div>
+                        <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">⚠️ Perlu diingatkan</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shadow-xs">
+                        ⏳
                     </div>
                 </div>
             </div>
 
-            <!-- Progress Bar -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl p-3.5 sm:p-6">
-                <h3 class="text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Progres Pengisian Seluruh Murid</h3>
-                @php
-                    $percent = $totalStudents > 0 ? ($filledCount / $totalStudents) * 100 : 0;
-                @endphp
-                <div class="mt-2.5 sm:mt-4 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-3 sm:h-4 overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                    <div class="bg-gradient-to-r from-teal-400 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+            <!-- Progress Bar Card -->
+            <div class="glass-liquid-card rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-center mb-2.5">
+                    <h3 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                        <span>📊 Progres Pengisian Seluruh Murid</span>
+                    </h3>
+                    @php
+                        $percent = $totalStudents > 0 ? ($filledCount / $totalStudents) * 100 : 0;
+                    @endphp
+                    <span class="text-xs font-bold text-teal-600 dark:text-teal-400">{{ round($percent, 1) }}% Terisi ({{ $filledCount }}/{{ $totalStudents }})</span>
                 </div>
-                <div class="flex justify-between items-center text-[11px] sm:text-xs text-zinc-400 mt-2">
-                    <span>{{ $filledCount }} Selesai</span>
-                    <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ round($percent, 1) }}% Terisi</span>
+                <div class="w-full bg-zinc-200/70 dark:bg-zinc-800 rounded-full h-3 overflow-hidden">
+                    <div class="bg-gradient-to-r from-teal-500 to-emerald-500 h-full rounded-full transition-all duration-500 shadow-sm" style="width: {{ $percent }}%"></div>
                 </div>
             </div>
 
             <!-- Daftar Progres Pengisian Hari Ini -->
-            <div class="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm rounded-xl sm:rounded-2xl overflow-hidden">
-                <div class="px-3.5 sm:px-6 py-3 sm:py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <h3 class="text-xs sm:text-base font-bold text-zinc-900 dark:text-white">Status Pengisian Murid Hari Ini</h3>
-                    <span class="text-xs text-zinc-400">Total: {{ $totalStudents }} Murid</span>
+            <div class="glass-liquid-card rounded-2xl overflow-hidden shadow-sm">
+                <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-zinc-200/70 dark:border-white/10 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <h3 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <span>📋 Status Pengisian Murid Hari Ini</span>
+                    </h3>
+                    <span class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Total: {{ $totalStudents }} Murid</span>
                 </div>
 
                 {{-- Mobile Card List --}}

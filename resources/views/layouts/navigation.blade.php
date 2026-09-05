@@ -48,14 +48,14 @@
 
     $getLinkClasses = function (bool $active): string {
         return $active
-            ? 'flex items-center px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white border border-indigo-100 dark:border-white/10 group transition-all duration-150 shadow-[0_4px_12px_rgba(13,148,136,0.08)] dark:shadow-[0_4px_12px_rgba(13,148,136,0.12)]'
-            : 'flex items-center px-3 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-200 dark:hover:border-white/5 group transition-all duration-150';
+            ? 'flex items-center px-3 py-2 text-sm font-bold rounded-xl bg-gradient-to-r from-teal-500/15 to-emerald-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/30 dark:border-teal-500/20 group transition-all duration-200 shadow-sm shadow-teal-500/10'
+            : 'flex items-center px-3 py-2 text-sm font-medium rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-200/60 dark:hover:border-white/5 group transition-all duration-150';
     };
 
     $getIconClasses = function (bool $active): string {
         return $active
-            ? 'mr-3 h-5 w-5 text-indigo-500 dark:text-indigo-400 flex-shrink-0 transition-colors duration-150'
-            : 'mr-3 h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 flex-shrink-0 transition-colors duration-150';
+            ? 'mr-3 h-5 w-5 text-teal-600 dark:text-teal-400 flex-shrink-0 transition-colors duration-150'
+            : 'mr-3 h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 flex-shrink-0 transition-colors duration-150';
     };
 @endphp
 

@@ -14,60 +14,60 @@
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
 
             {{-- 1. Metric Cards (Bento Modern Grid) --}}
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-emerald-500/20 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Hafalan (Bulan Ini)</span>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs">
                             <x-heroicon-o-book-open class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $stats['hafalan_this_month'] }}</p>
+                    <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $stats['hafalan_this_month'] }}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">Hari Ini: {{ $stats['hafalan_today'] }} setoran</p>
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-semibold truncate">Hari Ini: {{ $stats['hafalan_today'] }} setoran</p>
                     </div>
                 </div>
 
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-teal-500/20 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Muraja'ah (Bulan Ini)</span>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shadow-xs">
                             <x-heroicon-o-arrow-path class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['murajaah_this_month'] }}</p>
+                    <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['murajaah_this_month'] }}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                        <p class="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 font-semibold truncate">Hari Ini: {{ $stats['murajaah_today'] }} murajaah</p>
+                        <span class="inline-block w-2 h-2 rounded-full bg-teal-500"></span>
+                        <p class="text-[10px] sm:text-xs text-teal-700 dark:text-teal-400 font-semibold truncate">Hari Ini: {{ $stats['murajaah_today'] }} murajaah</p>
                     </div>
                 </div>
 
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-amber-500/20 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</span>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
                             <x-heroicon-o-check-badge class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['active_targets'] }}</p>
+                    <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['active_targets'] }}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                        <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">Selesai: {{ $stats['completed_targets'] }} target</p>
+                        <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                        <p class="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-semibold truncate">Selesai: {{ $stats['completed_targets'] }} target</p>
                     </div>
                 </div>
 
-                <div class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-2xl p-4 sm:p-5">
+                <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group border border-purple-500/20 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ujian Tahfizh</span>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-xs">
                             <x-heroicon-o-pencil-square class="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </div>
-                    <p class="text-xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ $stats['exams_this_month'] }}</p>
+                    <p class="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{{ $stats['exams_this_month'] }}</p>
                     <div class="flex items-center gap-1.5 mt-2">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                        <p class="text-[10px] sm:text-xs text-purple-600 dark:text-purple-400 font-semibold truncate">Lulus: {{ $stats['passed_exams'] }} murid</p>
+                        <span class="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
+                        <p class="text-[10px] sm:text-xs text-purple-700 dark:text-purple-400 font-semibold truncate">Lulus: {{ $stats['passed_exams'] }} murid</p>
                     </div>
                 </div>
             </div>
