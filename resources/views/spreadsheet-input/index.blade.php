@@ -206,6 +206,9 @@
     <div class="py-8" x-data="spreadsheetData">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            <!-- UNIFIED INPUT HUB TABS -->
+            @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'spreadsheet'])
+
             <!-- FILTER PANEL -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
                 <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">

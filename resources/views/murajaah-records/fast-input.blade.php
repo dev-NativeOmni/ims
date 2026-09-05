@@ -22,6 +22,9 @@
     <div x-data="fastMurajaahManager()" x-init="init()" class="py-4 sm:py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
+            <!-- UNIFIED INPUT HUB TABS -->
+            @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'murajaah'])
+
             <!-- Filter Bar & Action Header -->
             <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">

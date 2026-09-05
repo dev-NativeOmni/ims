@@ -320,6 +320,9 @@
     ">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            <!-- UNIFIED INPUT HUB TABS -->
+            @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'single'])
+
             <!-- Tab Switcher Metode Setoran -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="text-xs font-bold uppercase text-gray-500 dark:text-zinc-400 px-2 tracking-wider">

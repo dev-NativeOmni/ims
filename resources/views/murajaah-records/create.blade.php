@@ -6,8 +6,10 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'murajaah'])
+
+            <div class="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm sm:rounded-2xl border border-gray-200 dark:border-zinc-800">
                 <form method="POST" action="{{ route('murajaah-records.store') }}" class="p-6">
                     @csrf
 
