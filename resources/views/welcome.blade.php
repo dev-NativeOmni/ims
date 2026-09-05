@@ -176,47 +176,47 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 -translate-y-4"
-                    class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/70 dark:bg-zinc-900/80 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2.5 backdrop-blur-2xl transition-colors duration-300">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                    class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/85 dark:bg-zinc-900/85 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2 sm:py-2.5 backdrop-blur-2xl transition-colors duration-300">
+                <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
                     <!-- Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
-                    <div class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0 drop-shadow-sm">
-                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-8 sm:h-9 max-w-[170px] sm:max-w-[220px] object-contain drop-shadow-sm">
+                    <div class="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
+                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 object-contain shrink-0 drop-shadow-sm">
+                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-8 md:h-9 max-w-[100px] xs:max-w-[130px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm shrink">
                     </div>
 
-                    <!-- Desktop Pill Menu Navigation -->
-                    <nav class="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm">
-                        <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                        <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                        <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                        <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                        <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                    <!-- Desktop Pill Menu Navigation (Visible on Large Desktops only so iPad/Tablets don't overflow) -->
+                    <nav class="hidden lg:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm shrink-0">
+                        <a href="#fitur" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                        <a href="#keunggulan" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                        <a href="#sebaran" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                        <a href="#simulator" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                        <a href="#faq" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                     </nav>
 
                     <!-- Auth Actions & Theme Switcher -->
-                    <div class="flex items-center gap-2 sm:gap-3">
-                        <!-- Theme Toggle Button (Glassmorphic with Sun / Moon) -->
+                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                        <!-- Theme Toggle Button -->
                         <button @click="toggleTheme()" 
                                 type="button"
                                 aria-label="Toggle Theme"
-                                class="p-2 sm:p-2.5 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/15 text-zinc-700 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
-                            <!-- Sun icon (shown in dark mode to switch to light) -->
-                            <svg x-show="isDark" class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                class="p-1.5 sm:p-2 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/15 text-zinc-700 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center shrink-0">
+                            <!-- Sun icon -->
+                            <svg x-show="isDark" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
                             </svg>
-                            <!-- Moon icon (shown in light mode to switch to dark) -->
-                            <svg x-show="!isDark" class="w-4 h-4 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <!-- Moon icon -->
+                            <svg x-show="!isDark" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
                             </svg>
                         </button>
 
                         @if (Route::has('login'))
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-4 sm:px-5 py-2 text-[10px] sm:text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95">
+                                <a href="{{ url('/dashboard') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
                                     Dashboard
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-4 sm:px-5 py-2 text-[10px] sm:text-xs uppercase tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95">
+                                <a href="{{ route('login') }}" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-3 py-1.5 sm:px-5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider rounded-full transition-all duration-200 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0">
                                     Masuk
                                 </a>
                             @endauth
@@ -228,7 +228,7 @@
             <!-- ========================================================================= -->
             <!-- SECTION 1: CLEAN MINIMALIST HERO (CRYSTAL FROSTED GLASS & NATURAL SUNSET) -->
             <!-- ========================================================================= -->
-            <section class="w-full relative min-h-screen flex flex-col justify-between py-6 sm:py-8 px-4 sm:px-6 lg:px-8 overflow-hidden bg-cover bg-center bg-no-repeat"
+            <section class="w-full relative min-h-[100dvh] flex flex-col justify-between py-4 sm:py-7 px-3 sm:px-6 lg:px-8 overflow-hidden bg-cover bg-center bg-no-repeat"
                      style="background-image: url('{{ asset('images/school_sunset_bg.jpg') }}');">
                 
                 <!-- Layer 1: Elegant Glassmorphic Ambient Tone (No Blinding White Wash) -->
@@ -244,30 +244,30 @@
 
                 <!-- Top Navbar: Frosted Glass Pill Header -->
                 <header class="max-w-6xl mx-auto w-full relative z-20">
-                    <div class="p-2 sm:p-2.5 rounded-full bg-white/35 dark:bg-zinc-900/50 backdrop-blur-2xl border border-white/60 dark:border-white/15 shadow-xl shadow-black/5 flex items-center justify-between gap-2 sm:gap-3 transition-colors duration-300">
+                    <div class="p-1.5 sm:p-2.5 rounded-full bg-white/40 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/60 dark:border-white/15 shadow-xl shadow-black/5 flex items-center justify-between gap-1.5 sm:gap-3 transition-colors duration-300">
                         
-                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Original Size) -->
-                        <div class="flex items-center gap-2.5 sm:gap-3 pl-1 sm:pl-2">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-9 w-9 sm:h-11 sm:w-11 object-contain shrink-0 drop-shadow-sm">
-                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-7 sm:h-9 max-w-[160px] sm:max-w-[220px] object-contain drop-shadow-sm brightness-105 dark:brightness-110 shrink-0">
+                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Responsive scaling) -->
+                        <div class="flex items-center gap-1.5 sm:gap-3 pl-1 sm:pl-2 min-w-0 shrink">
+                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 object-contain shrink-0 drop-shadow-sm">
+                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-8 md:h-9 max-w-[95px] xs:max-w-[125px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm brightness-105 dark:brightness-110 shrink">
                         </div>
 
-                        <!-- Center Navigation Links (Hidden on Mobile) -->
-                        <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                            <a href="#fitur" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
-                            <a href="#keunggulan" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
-                            <a href="#sebaran" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
-                            <a href="#simulator" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
-                            <a href="#faq" class="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
+                        <!-- Center Navigation Links (Visible on Large Desktops only so iPad Mini/Air don't overflow) -->
+                        <nav class="hidden lg:flex items-center gap-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shrink-0">
+                            <a href="#fitur" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Fitur Utama</a>
+                            <a href="#keunggulan" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Keunggulan</a>
+                            <a href="#sebaran" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Konektivitas</a>
+                            <a href="#simulator" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Demo Interaktif</a>
+                            <a href="#faq" class="px-3 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-150">Tanya Jawab</a>
                         </nav>
 
                         <!-- Right Actions & Theme Switcher -->
-                        <div class="flex items-center gap-1.5 sm:gap-2.5 pr-1 sm:pr-1.5 shrink-0">
-                            <!-- Theme Switcher Button (Glassmorphic with Sun/Moon) -->
+                        <div class="flex items-center gap-1 sm:gap-2 pr-1 sm:pr-1.5 shrink-0">
+                            <!-- Theme Switcher Button -->
                             <button @click="toggleTheme()" 
                                     type="button"
                                     aria-label="Toggle Theme"
-                                    class="p-1.5 sm:p-2 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/20 text-zinc-800 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center">
+                                    class="p-1.5 sm:p-2 rounded-full bg-white/40 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border border-white/60 dark:border-white/20 text-zinc-800 dark:text-amber-300 shadow-sm backdrop-blur-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center shrink-0">
                                 <!-- Sun icon -->
                                 <svg x-show="isDark" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
@@ -281,12 +281,12 @@
                             @if (Route::has('login'))
                                 @auth
                                     <a href="{{ url('/dashboard') }}" 
-                                       class="inline-flex items-center justify-center px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
                                         <span>Dashboard</span>
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" 
-                                       class="inline-flex items-center justify-center px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200">
+                                       class="inline-flex items-center justify-center px-2.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-white font-bold text-[10px] sm:text-xs uppercase tracking-tight sm:tracking-wider bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap shrink-0">
                                         <span>Masuk</span>
                                     </a>
                                 @endauth
@@ -295,11 +295,11 @@
                     </div>
                 </header>
 
-                <!-- Center Hero Stage: Open & Sleek Typography (No Box Covering School Building) -->
-                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-8 sm:py-14">
+                <!-- Center Hero Stage: Open & Sleek Typography -->
+                <div class="max-w-4xl mx-auto w-full relative z-10 text-center flex flex-col items-center justify-center my-auto py-5 sm:py-8 md:py-12 px-2">
                     
                     <!-- Pill Badge: Generasi Mulia Islami Cemerlang -->
-                    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/15 dark:bg-black/40 backdrop-blur-md border border-orange-500/35 dark:border-white/20 shadow-sm text-[10px] sm:text-xs font-bold text-orange-900 dark:text-amber-300 uppercase tracking-wider mb-4 sm:mb-6 animate-pulse">
+                    <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-orange-500/15 dark:bg-black/50 backdrop-blur-md border border-orange-500/35 dark:border-white/20 shadow-sm text-[9px] xs:text-[10px] sm:text-xs font-bold text-orange-950 dark:text-amber-300 uppercase tracking-wider mb-3 sm:mb-4 animate-pulse">
                         <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2L12 16.8 5.7 21.2 8 14l-6-4.6h7.6z" />
                         </svg>
@@ -307,17 +307,19 @@
                     </div>
 
                     <!-- Main Hero Title -->
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] px-2">
+                    <h1 class="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)] px-2">
                         Integrated Management System
                     </h1>
 
-                    <!-- Hero Subtitle in Indonesian -->
-                    <p class="mt-3 sm:mt-5 text-xs sm:text-base lg:text-lg text-zinc-800 dark:text-zinc-100 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-[0_1px_8px_rgba(255,255,255,0.7)] dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] px-2">
-                        Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
-                    </p>
+                    <!-- Hero Subtitle in Indonesian with Sleek Frosted Glass Container to avoid Background Sign Clashing -->
+                    <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-2xl bg-white/40 dark:bg-black/45 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm max-w-2xl mx-auto">
+                        <p class="text-xs sm:text-sm md:text-base text-zinc-900 dark:text-zinc-100 leading-relaxed font-medium">
+                            Platform Digital Terpadu <strong class="text-zinc-950 dark:text-white font-bold">SMA Islam Al Azhar 7 Sukoharjo</strong> untuk pemantauan tahfizh mutqin, pembiasaan karakter adab, dan kemajuan akademik santri secara real-time.
+                        </p>
+                    </div>
 
-                    <!-- Dual Action CTA Buttons (Proportionate on Mobile) -->
-                    <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-xs sm:max-w-none mx-auto">
+                    <!-- Dual Action CTA Buttons (Proportionate on Mobile & Foldable) -->
+                    <div class="mt-5 sm:mt-7 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full sm:w-auto max-w-[280px] sm:max-w-none mx-auto">
                         @auth
                             <a href="{{ url('/dashboard') }}" 
                                class="w-full sm:w-auto px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full text-white font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
@@ -346,46 +348,46 @@
                     </div>
                 </div>
 
-                <!-- Bottom Floating Metric Dock: Compact 3-Column Horizontal Dock -->
+                <!-- Bottom Floating Metric Dock: Compact 3-Column Horizontal Dock (Optimized for all viewports) -->
                 <div class="max-w-4xl mx-auto w-full relative z-10 pb-2">
-                    <div class="grid grid-cols-3 gap-1.5 sm:gap-4 p-2 sm:p-4 rounded-2xl sm:rounded-3xl glass-liquid-card transition-colors duration-300">
+                    <div class="grid grid-cols-3 gap-1 xs:gap-1.5 sm:gap-4 p-1.5 xs:p-2 sm:p-4 rounded-2xl sm:rounded-3xl glass-liquid-card transition-colors duration-300">
                         
                         <!-- Metric 1: Tahfizh 30 Juz -->
-                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200">
-                            <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-                                <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 p-1.5 xs:p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200 min-w-0">
+                            <div class="w-6 h-6 xs:w-7 xs:h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                             </div>
-                            <div class="flex flex-col">
-                                <div class="text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight">30 Juz</div>
-                                <div class="text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5">Tahfizh Mutqin</div>
+                            <div class="flex flex-col min-w-0 w-full">
+                                <div class="text-[11px] xs:text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight truncate">30 Juz</div>
+                                <div class="text-[8px] xs:text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5 truncate sm:whitespace-normal">Tahfizh Mutqin</div>
                             </div>
                         </div>
 
                         <!-- Metric 2: 100% Real-Time Monitoring -->
-                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200">
-                            <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                                <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 p-1.5 xs:p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200 min-w-0">
+                            <div class="w-6 h-6 xs:w-7 xs:h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <div class="flex flex-col">
-                                <div class="text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight">100% Live</div>
-                                <div class="text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5">Monitoring</div>
+                            <div class="flex flex-col min-w-0 w-full">
+                                <div class="text-[11px] xs:text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight truncate">100% Live</div>
+                                <div class="text-[8px] xs:text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5 truncate sm:whitespace-normal">Monitoring</div>
                             </div>
                         </div>
 
                         <!-- Metric 3: 12+ Poin Pembiasaan Adab -->
-                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200">
-                            <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                                <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 p-1.5 xs:p-2 sm:p-3 rounded-xl sm:rounded-2xl glass-liquid-inner hover:bg-white/90 dark:hover:bg-white/10 transition duration-200 min-w-0">
+                            <div class="w-6 h-6 xs:w-7 xs:h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                 </svg>
                             </div>
-                            <div class="flex flex-col">
-                                <div class="text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight">12+ Poin</div>
-                                <div class="text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5">Adab Santri</div>
+                            <div class="flex flex-col min-w-0 w-full">
+                                <div class="text-[11px] xs:text-xs sm:text-lg font-black text-zinc-900 dark:text-white leading-tight truncate">12+ Poin</div>
+                                <div class="text-[8px] xs:text-[9px] sm:text-[11px] text-zinc-600 dark:text-zinc-300 font-medium leading-tight mt-0.5 truncate sm:whitespace-normal">Adab Santri</div>
                             </div>
                         </div>
 
