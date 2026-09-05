@@ -1,9 +1,25 @@
+@php
+    $institutionLogo = null;
+    $institutionName = null;
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+            $institutionLogo = \App\Models\Setting::get('logo');
+            $institutionName = \App\Models\Setting::get('nama_instansi');
+        }
+    } catch (\Throwable $e) {
+        // Safe fallback
+    }
+    $effectiveLogo = $institutionLogo ? asset('storage/' . $institutionLogo) : asset('images/logo_alazhar7.png');
+    $effectiveName = $institutionName ?: 'SMA Islam Al Azhar 7';
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
-        <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
+        <title>{{ $effectiveName }} — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
+        <link rel="icon" type="image/png" href="{{ $effectiveLogo }}">
+        <link rel="apple-touch-icon" href="{{ $effectiveLogo }}">
 
         <!-- Theme Initialization Script (Default: Light Mode unless explicitly set to dark) -->
         <script>
@@ -136,32 +152,55 @@
     <body class="bg-[#f1f5f9] dark:bg-[#09090b] text-zinc-800 dark:text-zinc-100 font-sans antialiased selection:bg-orange-500 selection:text-white relative overflow-x-hidden min-h-screen transition-colors duration-300">
 
         <!-- Full-screen Preloader / Intro Logo Reveal -->
-        <div x-data="{ loading: true, logoVisible: false }" 
-             x-init="setTimeout(() => logoVisible = true, 100); setTimeout(() => loading = false, 2000)"
+        <div x-data="{ loading: true, logoVisible: false, progress: 0 }" 
+             x-init="setTimeout(() => logoVisible = true, 100); 
+                     let interval = setInterval(() => { progress = Math.min(100, progress + 5); if (progress >= 100) clearInterval(interval); }, 40);
+                     setTimeout(() => loading = false, 1800)"
              x-show="loading"
-             x-transition:leave="transition ease-in-out duration-1000"
+             x-transition:leave="transition cubic-bezier(0.16, 1, 0.3, 1) duration-700"
              x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-105 pointer-events-none"
-             class="fixed inset-0 bg-[#09090b] z-[9999] flex flex-col items-center justify-center overflow-hidden">
+             x-transition:leave-end="opacity-0 scale-105 blur-sm pointer-events-none"
+             class="fixed inset-0 bg-[#070b10] z-[9999] flex flex-col items-center justify-center overflow-hidden select-none">
             <!-- Glowing Grid background in preloader -->
-            <div class="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-grid-pattern opacity-15 pointer-events-none"></div>
             
-            <!-- Outer Glowing Ambient Light -->
-            <div class="absolute w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse"></div>
+            <!-- Atmospheric Multi-Layer Glowing Ambient Lights -->
+            <div class="absolute w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse"></div>
+            <div class="absolute w-[380px] h-[380px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none"></div>
             
-            <!-- Large Centered Ring & Logo Container -->
-            <div class="relative z-10 flex flex-col items-center gap-8">
-                <!-- Glowing Ring -->
-                <div :class="logoVisible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
-                     class="w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-teal-500/35 flex items-center justify-center shadow-[0_0_80px_rgba(13,148,136,0.3)] transition-all duration-1000 ease-out p-0 overflow-hidden">
-                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="w-full h-full object-cover">
+            <!-- Centered Logo Container with Liquid Halo & Shimmer -->
+            <div class="relative z-10 flex flex-col items-center gap-6 sm:gap-7 px-4 max-w-md w-full">
+                <!-- Glowing Ring & Logo Card -->
+                <div class="relative">
+                    <!-- Outer pulsating aura ring -->
+                    <div :class="logoVisible ? 'scale-110 opacity-75' : 'scale-75 opacity-0'"
+                         class="absolute -inset-3 rounded-full bg-gradient-to-tr from-teal-500/30 via-emerald-400/20 to-amber-500/30 blur-xl transition-all duration-1000 ease-out"></div>
+                    
+                    <!-- Circular Glass Orb / Frame -->
+                    <div :class="logoVisible ? 'scale-100 opacity-100 rotate-0' : 'scale-75 opacity-0 -rotate-6'"
+                         class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-white/10 dark:bg-zinc-900/60 border border-white/25 shadow-[0_16px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.4)] backdrop-blur-2xl flex items-center justify-center p-5 transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) overflow-hidden group">
+                        <img src="{{ $effectiveLogo }}" 
+                             alt="{{ $effectiveName }}" 
+                             class="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)] transition-transform duration-700 group-hover:scale-105">
+                    </div>
                 </div>
                 
-                <!-- Large Text Reveal -->
-                <span :class="logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
-                      class="font-black text-3xl sm:text-5xl tracking-widest text-white uppercase transition-all duration-1000 delay-300 ease-out text-center">
-                    Al Azhar <span class="text-amber-500">7</span>
-                </span>
+                <!-- Institution Name Reveal -->
+                <div :class="logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'"
+                     class="transition-all duration-1000 delay-200 ease-out text-center space-y-1.5">
+                    <h2 class="font-black text-2xl sm:text-3xl tracking-wide text-white drop-shadow-md">
+                        {{ $effectiveName }}
+                    </h2>
+                    <p class="text-[11px] sm:text-xs font-semibold text-teal-400/90 tracking-widest uppercase">
+                        Integrated Management System
+                    </p>
+                </div>
+
+                <!-- Sleek Minimalist Loading Bar -->
+                <div class="w-48 sm:w-56 h-1 bg-white/10 rounded-full overflow-hidden relative mt-2">
+                    <div class="h-full bg-gradient-to-r from-teal-400 via-emerald-400 to-amber-400 rounded-full transition-all duration-75 ease-out shadow-[0_0_12px_rgba(45,212,191,0.8)]"
+                         :style="`width: ${progress}%`"></div>
+                </div>
             </div>
         </div>
 
@@ -177,11 +216,13 @@
                     x-transition:leave-end="opacity-0 -translate-y-4"
                     class="fixed top-0 inset-x-0 z-50 bg-[#f1f5f9]/85 dark:bg-zinc-900/85 border-b border-white/60 dark:border-white/10 shadow-lg shadow-slate-900/5 py-2 sm:py-2.5 backdrop-blur-2xl transition-colors duration-300">
                 <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
-                    <!-- Brand Logo: Pure School Logo & Pure Gemilang Banner Logo -->
-                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                        <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm">
-                        <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-7 md:h-8 max-w-[95px] xs:max-w-[125px] sm:max-w-[160px] md:max-w-[200px] object-contain drop-shadow-sm shrink-0">
-                    </div>
+                    <!-- Brand Logo: Pure Institution Logo -->
+                    <a href="{{ url('/') }}" class="flex items-center gap-2 sm:gap-2.5 shrink-0 select-none group">
+                        <img src="{{ $effectiveLogo }}" alt="{{ $effectiveName }}" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm transition-transform duration-200 group-hover:scale-105">
+                        <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-tight hidden xs:inline-block max-w-[190px] sm:max-w-[260px] truncate">
+                            {{ $effectiveName }}
+                        </span>
+                    </a>
 
                     <!-- Desktop Pill Menu Navigation (Visible on Widescreen Desktops >= 1280px to ensure zero collision on iPads/Tablets in landscape) -->
                     <nav class="hidden xl:flex items-center gap-1 p-1 rounded-full bg-white/40 dark:bg-black/50 border border-white/60 dark:border-white/10 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-xl shadow-sm shrink-0">
@@ -238,7 +279,7 @@
                     <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-[#f1f5f9] dark:from-black/50 dark:via-black/40 dark:to-[#09090b]"></div>
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(15,23,42,0.18)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.65)_100%)]"></div>
                     
-                    <!-- Duotone Gemilang Ambient Glows -->
+                    <!-- Duotone Ambient Glows -->
                     <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-orange-500/15 dark:bg-orange-500/18 rounded-full blur-[140px]"></div>
                     <div class="absolute top-1/3 -right-32 w-[550px] h-[550px] bg-blue-500/10 dark:bg-blue-600/20 rounded-full blur-[150px]"></div>
                 </div>
@@ -247,10 +288,12 @@
                 <header class="max-w-6xl mx-auto w-full relative z-20">
                     <div class="p-1.5 sm:p-2.5 rounded-full bg-white/40 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/60 dark:border-white/15 shadow-xl shadow-black/5 flex items-center justify-between gap-1.5 sm:gap-3 transition-colors duration-300">
                         
-                        <!-- Left Brand Logo: Pure School Logo & Pure Gemilang Banner Logo (Responsive scaling & zero collision) -->
-                        <div class="flex items-center gap-1.5 sm:gap-2.5 pl-1 sm:pl-2 shrink-0">
-                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm">
-                            <img src="{{ asset('images/logo-gemilang-banner.png') }}" alt="Logo Gemilang" class="h-5 sm:h-7 md:h-8 max-w-[95px] xs:max-w-[125px] sm:max-w-[160px] md:max-w-[200px] object-contain drop-shadow-sm brightness-105 dark:brightness-110 shrink-0">
+                        <!-- Left Brand Logo: Pure Institution Logo -->
+                        <div class="flex items-center gap-2 sm:gap-2.5 pl-1.5 sm:pl-2.5 shrink-0 select-none">
+                            <img src="{{ $effectiveLogo }}" alt="{{ $effectiveName }}" class="h-7 w-7 xs:h-8 xs:w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-sm brightness-105 dark:brightness-110">
+                            <span class="font-bold text-xs sm:text-sm text-zinc-800 dark:text-white tracking-tight leading-tight hidden xs:inline-block max-w-[180px] sm:max-w-[240px] truncate">
+                                {{ $effectiveName }}
+                            </span>
                         </div>
 
                         <!-- Center Navigation Links (Visible on Widescreen Desktops >= 1280px to guarantee zero overlapping on Tablets/iPads in landscape) -->
@@ -1215,13 +1258,13 @@
                         <div class="relative mb-3 flex items-center justify-center">
                             <div class="absolute inset-0 bg-amber-400/25 rounded-full blur-xl animate-pulse"></div>
                             <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-white/20 to-black/40 backdrop-blur-xl border border-amber-400/50 p-2.5 shadow-[0_0_30px_rgba(245,158,11,0.35)] flex items-center justify-center">
-                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain drop-shadow-md">
+                                <img src="{{ $effectiveLogo }}" alt="{{ $effectiveName }}" class="w-full h-full object-contain drop-shadow-md">
                             </div>
                         </div>
                         <h3 id="login-modal-title" class="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
                             Portal <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400">Masuk</span>
                         </h3>
-                        <p class="text-xs text-zinc-300/80 font-medium mt-1">SMA Islam Al Azhar 7 Sukoharjo</p>
+                        <p class="text-xs text-zinc-300/80 font-medium mt-1">{{ $effectiveName }}</p>
                     </div>
 
                     <!-- Login Form -->
