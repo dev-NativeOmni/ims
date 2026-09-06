@@ -1,7 +1,19 @@
 @php
-    $logo = \App\Models\Setting::get('logo');
-    $namaInstansi = \App\Models\Setting::get('nama_instansi');
-    $loginBg = \App\Models\Setting::get('login_bg');
+    try {
+        $logo = class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('logo') 
+            : null;
+        $namaInstansi = class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('nama_instansi') 
+            : null;
+        $loginBg = class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('login_bg') 
+            : null;
+    } catch (\Throwable $e) {
+        $logo = null;
+        $namaInstansi = null;
+        $loginBg = null;
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">

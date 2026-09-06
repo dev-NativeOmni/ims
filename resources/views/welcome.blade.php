@@ -1,3 +1,16 @@
+@php
+    try {
+        $logo = class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('logo') 
+            : null;
+        $namaInstansi = class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('nama_instansi') 
+            : null;
+    } catch (\Throwable $e) {
+        $logo = null;
+        $namaInstansi = null;
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
@@ -14,10 +27,26 @@
             }
         </script>
 
+        <!-- Google Fonts: Outfit -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <style>
+            .font-display {
+                font-family: 'Outfit', sans-serif;
+            }
+            /* Autofill compatibility: keep background clean & text sharp */
+            input:-webkit-autofill,
+            input:-webkit-autofill:hover, 
+            input:-webkit-autofill:focus {
+                -webkit-text-fill-color: #0f172a !important;
+                -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+                transition: background-color 5000s ease-in-out 0s;
+            }
             /* Bulletproof Monolith Layout & Mobile First Architecture */
             .monolith-shell {
                 display: grid;
@@ -1163,6 +1192,9 @@
             <!-- ========================================================================= -->
             <!-- POP-UP LOGIN MODAL: LUXURY CRYSTAL FROSTED GLASS (BLURS LANDING PAGE BEHIND) -->
             <!-- ========================================================================= -->
+            <!-- ========================================================================= -->
+            <!-- LOGIN POPUP MODAL (Blue-to-Orange Gradient Theme & Fixed Non-Scroll Card) -->
+            <!-- ========================================================================= -->
             <div x-show="loginModalOpen" 
                  x-cloak
                  x-transition:enter="transition ease-out duration-300"
@@ -1171,16 +1203,22 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+                 class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-hidden"
                  role="dialog"
                  aria-modal="true"
                  aria-labelledby="login-modal-title">
                 
                 <!-- Blurred Glass Backdrop Overlay (Smoothly blurs the entire landing page behind it) -->
-                <div class="fixed inset-0 bg-slate-950/70 dark:bg-black/85 backdrop-blur-2xl transition-all duration-300"
+                <div class="fixed inset-0 bg-slate-950/80 dark:bg-black/90 backdrop-blur-2xl transition-all duration-300"
                      @click="closeLoginModal()"></div>
 
-                <!-- Glassmorphism Login Card (Matching Mockup Reference) -->
+                <!-- Ambient Glow Mesh Layer (Duotone Blue & Orange Flares) -->
+                <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div class="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px]"></div>
+                    <div class="absolute -bottom-24 right-1/4 w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[140px]"></div>
+                </div>
+
+                <!-- Main Container (Fixed, Non-scrollable) -->
                 <div x-show="loginModalOpen"
                      x-transition:enter="transition ease-out duration-300 delay-75"
                      x-transition:enter-start="opacity-0 scale-95 translate-y-4"
@@ -1189,134 +1227,158 @@
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
                      @click.stop
-                     class="relative w-full max-w-[400px] sm:max-w-[420px] max-h-[92vh] overflow-y-auto p-5 xs:p-6 sm:p-8 rounded-[1.75rem] sm:rounded-[2.25rem] bg-gradient-to-b from-white/20 via-white/[0.08] to-white/[0.03] dark:from-white/10 dark:via-white/[0.04] dark:to-black/55 backdrop-blur-3xl border border-white/30 dark:border-amber-400/25 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] text-white transition-all duration-300 z-10 my-auto">
+                     class="relative w-full max-w-[390px] sm:max-w-[420px] rounded-[2rem] p-[1.5px] bg-gradient-to-br from-blue-500/80 via-sky-300/40 to-orange-500/85 shadow-[0_25px_65px_-10px_rgba(0,0,0,0.9),0_0_35px_rgba(2,132,199,0.3),0_0_40px_rgba(234,88,12,0.35)] transition-all duration-300 z-10 my-auto">
                     
-                    <!-- Top Specular Glare / Rim Reflection Effect -->
-                    <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/40 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>
-                    <div class="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/80 to-transparent pointer-events-none"></div>
+                    <!-- Inner Glassmorphism Card (Strictly Fixed, No Scrollbars) -->
+                    <div class="w-full rounded-[calc(2rem-1.5px)] bg-gradient-to-b from-[#091122]/95 via-[#0a0f1d]/95 to-[#140e0a]/95 backdrop-blur-3xl p-5 sm:p-7 text-white relative overflow-hidden">
 
-                    <!-- Ambient Glow Blobs Inside Card -->
-                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
-                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-600/15 rounded-full blur-2xl pointer-events-none"></div>
+                        <!-- Top Specular Glare / Rim Reflection Effect -->
+                        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/30 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>
+                        <div class="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-blue-400/80 via-white/60 to-orange-400/80 pointer-events-none"></div>
 
-                    <!-- Close Button (X) -->
-                    <button @click="closeLoginModal()" 
-                            type="button" 
-                            aria-label="Tutup"
-                            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-zinc-300 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 z-20">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                        <!-- Ambient Subtle Glow Corners Inside Card -->
+                        <div class="absolute -top-10 -left-10 w-36 h-36 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="absolute -bottom-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
 
-                    <!-- Header Brand Emblem & Title -->
-                    <div class="flex flex-col items-center justify-center text-center mb-6 relative z-10">
-                        <!-- Glowing Emblem Container -->
-                        <div class="relative mb-3 flex items-center justify-center">
-                            <div class="absolute inset-0 bg-amber-400/25 rounded-full blur-xl animate-pulse"></div>
-                            <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-white/20 to-black/40 backdrop-blur-xl border border-amber-400/50 p-2.5 shadow-[0_0_30px_rgba(245,158,11,0.35)] flex items-center justify-center">
-                                <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain drop-shadow-md">
-                            </div>
-                        </div>
-                        <h3 id="login-modal-title" class="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
-                            Portal <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400">Masuk</span>
-                        </h3>
-                        <p class="text-xs text-zinc-300/80 font-medium mt-1">SMA Islam Al Azhar 7 Sukoharjo</p>
-                    </div>
+                        <!-- Close Button (X) -->
+                        <button @click="closeLoginModal()" 
+                                type="button" 
+                                aria-label="Tutup"
+                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-zinc-300 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 z-20 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
 
-                    <!-- Login Form -->
-                    <form method="POST" action="{{ route('login') }}" class="space-y-4 relative z-10">
-                        @csrf
-
-                        <!-- Username / Email Field with Icon -->
-                        <div>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-300/80">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                    </svg>
+                        <!-- Header Brand Emblem & Title -->
+                        <div class="flex flex-col items-center justify-center text-center mb-5 relative z-10">
+                            <!-- Glowing Emblem Container with Blue-to-Orange border -->
+                            <div class="relative mb-3 flex items-center justify-center">
+                                <div class="absolute inset-[-4px] rounded-2xl bg-gradient-to-tr from-blue-500/50 to-orange-500/50 blur-lg animate-pulse"></div>
+                                <div class="relative w-15 h-15 sm:w-17 sm:h-17 rounded-2xl p-[1.5px] bg-gradient-to-br from-blue-400 via-sky-200 to-orange-500 shadow-[0_0_20px_rgba(2,132,199,0.35),0_0_20px_rgba(249,115,22,0.35)]">
+                                    <div class="w-full h-full rounded-[calc(1rem-0.5px)] bg-[#070c18]/95 backdrop-blur-xl flex items-center justify-center p-2">
+                                        @if ($logo)
+                                            <img src="{{ asset('storage/' . $logo) }}" alt="Logo" class="w-full h-full object-contain drop-shadow-md" />
+                                        @else
+                                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain drop-shadow-md">
+                                        @endif
+                                    </div>
                                 </div>
-                                <input type="text" 
-                                       name="username" 
-                                       value="{{ old('username') }}" 
-                                       required 
-                                       autocomplete="username"
-                                       placeholder="Email / Username"
-                                       class="w-full pl-11 pr-4 py-3 rounded-2xl bg-black/35 dark:bg-black/55 border border-amber-400/40 focus:border-amber-400 text-white placeholder-zinc-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 backdrop-blur-md transition-all duration-200">
                             </div>
-                            @if ($errors->has('username'))
-                                <p class="text-xs font-semibold text-rose-400 mt-1.5 flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span>{{ $errors->first('username') }}</span>
-                                </p>
+
+                            <h3 id="login-modal-title" class="text-2xl sm:text-[1.75rem] font-black font-display text-white tracking-tight leading-tight">
+                                Portal <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-amber-300 to-orange-400">Masuk</span>
+                            </h3>
+                            
+                            @if ($namaInstansi)
+                                <p class="text-[11px] sm:text-xs text-zinc-300/90 font-semibold mt-0.5 uppercase tracking-wider">{{ $namaInstansi }}</p>
+                            @else
+                                <p class="text-[11px] sm:text-xs text-zinc-300/80 font-medium mt-0.5">SMA Islam Al Azhar 7 Sukoharjo</p>
                             @endif
                         </div>
 
-                        <!-- Password Field with Lock Icon & Show/Hide Eye Toggle -->
-                        <div x-data="{ showPass: false }">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-300/80">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                                    </svg>
+                        <!-- Session Status Alert -->
+                        @if (session('status'))
+                            <div class="mb-3 text-center text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-400/30 p-2.5 rounded-xl backdrop-blur-md">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        <!-- Login Form -->
+                        <form method="POST" action="{{ route('login') }}" class="space-y-3.5 relative z-10">
+                            @csrf
+
+                            <!-- Username / Email Field with Blue Accent Icon -->
+                            <div>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-600">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" 
+                                           name="username" 
+                                           value="{{ old('username') }}" 
+                                           required 
+                                           autocomplete="username"
+                                           placeholder="superadmin"
+                                           class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
                                 </div>
-                                <input :type="showPass ? 'text' : 'password'" 
-                                       name="password" 
-                                       required 
-                                       autocomplete="current-password"
-                                       placeholder="Password"
-                                       class="w-full pl-11 pr-11 py-3 rounded-2xl bg-black/35 dark:bg-black/55 border border-amber-400/40 focus:border-amber-400 text-white placeholder-zinc-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 backdrop-blur-md transition-all duration-200">
-                                
-                                <!-- Eye Toggle Icon Button -->
-                                <button type="button" 
-                                        @click="showPass = !showPass" 
-                                        aria-label="Toggle password visibility"
-                                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-amber-300/70 hover:text-amber-300 focus:outline-none transition-colors">
-                                    <svg x-show="!showPass" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                                    </svg>
-                                    <svg x-show="showPass" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                @if ($errors->has('username'))
+                                    <p class="text-xs font-semibold text-rose-400 mt-1 flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span>{{ $errors->first('username') }}</span>
+                                    </p>
+                                @endif
+                            </div>
+
+                            <!-- Password Field with Lock Icon & Show/Hide Eye Toggle -->
+                            <div x-data="{ showPass: false }">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-orange-500">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                        </svg>
+                                    </div>
+                                    <input :type="showPass ? 'text' : 'password'" 
+                                           name="password" 
+                                           required 
+                                           autocomplete="current-password"
+                                           placeholder="••••••••••••"
+                                           class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
+                                    
+                                    <!-- Eye Toggle Icon Button -->
+                                    <button type="button" 
+                                            @click="showPass = !showPass" 
+                                            aria-label="Toggle password visibility"
+                                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-orange-500 focus:outline-none transition-colors cursor-pointer">
+                                        <svg x-show="!showPass" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                        </svg>
+                                        <svg x-show="showPass" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                @if ($errors->has('password'))
+                                    <p class="text-xs font-semibold text-rose-400 mt-1 flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span>{{ $errors->first('password') }}</span>
+                                    </p>
+                                @endif
+                            </div>
+
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="flex items-center justify-between text-xs text-zinc-300 pt-0.5">
+                                <label class="inline-flex items-center cursor-pointer select-none hover:text-white transition-colors">
+                                    <input type="checkbox" name="remember" class="rounded border-zinc-500 bg-black/40 text-orange-500 focus:ring-blue-500/30 w-4 h-4 mr-2">
+                                    <span>Ingat saya</span>
+                                </label>
+                                @if (Route::has('password.request'))
+                                    <a href="{{ route('password.request') }}" class="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+                                        Lupa Password?
+                                    </a>
+                                @endif
+                            </div>
+
+                            <!-- Glowing Gradient Blue-to-Orange Submit Button -->
+                            <div class="pt-2">
+                                <button type="submit"
+                                        class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-white bg-gradient-to-r from-blue-600 via-amber-500 to-orange-500 hover:from-blue-500 hover:via-amber-400 hover:to-orange-400 active:scale-[0.98] shadow-[0_4px_25px_rgba(249,115,22,0.45),0_0_25px_rgba(2,132,199,0.35)] hover:shadow-[0_4px_35px_rgba(249,115,22,0.65),0_0_35px_rgba(2,132,199,0.5)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
+                                    <span>LOGIN</span>
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                     </svg>
                                 </button>
                             </div>
-                            @if ($errors->has('password'))
-                                <p class="text-xs font-semibold text-rose-400 mt-1.5 flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span>{{ $errors->first('password') }}</span>
-                                </p>
-                            @endif
-                        </div>
+                        </form>
 
-                        <!-- Remember Me & Forgot Password -->
-                        <div class="flex items-center justify-between text-xs text-zinc-300 pt-1">
-                            <label class="inline-flex items-center cursor-pointer select-none hover:text-white transition-colors">
-                                <input type="checkbox" name="remember" class="rounded border-amber-400/40 bg-black/40 text-amber-500 focus:ring-amber-400/30 w-4 h-4 mr-2">
-                                <span>Ingat saya</span>
-                            </label>
-                            @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-amber-300 hover:text-amber-200 font-medium transition-colors">
-                                    Lupa Password?
-                                </a>
-                            @endif
-                        </div>
-
-                        <!-- Glowing Golden Submit Button (Matching Mockup) -->
-                        <div class="pt-3">
-                            <button type="submit"
-                                    class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-zinc-950 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-orange-500 shadow-[0_0_25px_rgba(245,158,11,0.45)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
-                                <span>LOGIN</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
 
