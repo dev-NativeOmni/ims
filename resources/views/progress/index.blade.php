@@ -182,11 +182,13 @@
                                     Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="downloadUmmiCardProgress()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    📥 Download Gambar (PNG)
-                                </button>
-                            </div>
+                            @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="downloadUmmiCardProgress()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                        📥 Download Gambar (PNG)
+                                    </button>
+                                </div>
+                            @endif
                         </div>
 
                         @php
@@ -271,9 +273,11 @@
                                 <span class="flex items-center gap-1.5 text-zinc-500">
                                     <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> Terealisasi (Lulus)
                                 </span>
-                                <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
-                                    📥 Download Grafik (PNG)
-                                </button>
+                                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                    <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
+                                        📥 Download Grafik (PNG)
+                                    </button>
+                                @endif
                             </div>
                         </div>
 

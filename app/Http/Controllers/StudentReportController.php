@@ -117,6 +117,8 @@ class StudentReportController extends Controller
     public function print(Student $student, Request $request)
     {
         $user = $request->user();
+        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Akses ekspor atau cetak dokumen PDF tidak diizinkan untuk akun murid dan orang tua.');
+
         $canView = $this->progressService->visibleStudentQuery($user)
             ->where('id', $student->id)
             ->exists();
@@ -133,6 +135,7 @@ class StudentReportController extends Controller
     public function printClass(ClassRoom $classRoom, Request $request)
     {
         $user = $request->user();
+        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Akses cetak rapor kelas tidak diizinkan untuk akun murid dan orang tua.');
 
         $visibleStudentIds = $this->progressService->visibleStudentQuery($user)
             ->where('class_room_id', $classRoom->id)

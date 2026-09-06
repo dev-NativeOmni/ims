@@ -308,6 +308,8 @@ class ReportController extends Controller
 
     public function exportStudentCsv(Request $request, Student $student): StreamedResponse
     {
+        abort_if($request->user()?->hasAnyRole(['student', 'parent']), 403, 'Akses ekspor CSV tidak diizinkan untuk akun murid dan orang tua.');
+
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         abort_unless($visibleStudentIds->contains($student->id), 403);
