@@ -5,16 +5,16 @@
         </h2>
     </x-slot>
 
-    <div class="py-4 sm:py-6" x-data="{ tab: '{{ request('tab', 'list') }}' }">
-        <div class="max-w-7xl mx-auto space-y-5 sm:space-y-6">
+    <div class="py-2.5 sm:py-6" x-data="{ tab: '{{ request('tab', 'list') }}' }">
+        <div class="max-w-7xl mx-auto space-y-3 sm:space-y-5 px-2 sm:px-6 lg:px-8">
             @if (session('success'))
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-emerald-800 dark:text-emerald-300 text-sm font-semibold">
+                <div class="p-3 sm:p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl sm:rounded-2xl text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-semibold">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <!-- Banner / Deskripsi -->
-            <div class="bg-gradient-to-r from-teal-500 via-indigo-600 to-indigo-700 text-white rounded-2xl shadow-lg p-5 sm:p-6 relative overflow-hidden">
+            <!-- Banner / Deskripsi (Hidden on mobile to save vertical screen space) -->
+            <div class="hidden sm:block bg-gradient-to-r from-teal-500 via-indigo-600 to-indigo-700 text-white rounded-2xl shadow-lg p-5 sm:p-6 relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-12 translate-y-12">
                     <svg class="h-64 w-64" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>

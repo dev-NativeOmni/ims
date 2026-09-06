@@ -32,20 +32,20 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div class="py-3 sm:py-6">
+        <div class="mx-auto max-w-7xl space-y-3.5 sm:space-y-5 px-2.5 sm:px-6 lg:px-8">
 
             @if (session('success'))
-                <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                <div class="rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-green-700">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(!auth()->user()->hasAnyRole(['parent', 'student']))
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <form method="GET" action="{{ route('progress.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-3.5 sm:p-5 shadow-xs">
+                    <form method="GET" action="{{ route('progress.index') }}" class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
                         <div>
-                            <label for="q" class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label for="q" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Cari
                             </label>
                             <input id="q"
@@ -53,16 +53,16 @@
                                    name="q"
                                    value="{{ request('q') }}"
                                    placeholder="Nama / nomor murid"
-                                   class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                   class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
 
                         <div>
-                            <label for="student_id" class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label for="student_id" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Murid
                             </label>
                             <select id="student_id"
                                     name="student_id"
-                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Murid</option>
                                 @foreach ($filterStudents as $student)
                                     <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
@@ -76,12 +76,12 @@
                         </div>
 
                         <div>
-                            <label for="class_room_id" class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label for="class_room_id" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Kelas
                             </label>
                             <select id="class_room_id"
                                     name="class_room_id"
-                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Kelas</option>
                                 @foreach ($classRooms as $classRoom)
                                     <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id)>
@@ -95,12 +95,12 @@
                         </div>
 
                         <div>
-                            <label for="teacher_id" class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label for="teacher_id" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Halaqoh / Musyrif
                             </label>
                             <select id="teacher_id"
                                     name="teacher_id"
-                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Halaqoh</option>
                                 @foreach ($teachers as $t)
                                     <option value="{{ $t->id }}" @selected((string) request('teacher_id') === (string) $t->id)>
@@ -111,12 +111,12 @@
                         </div>
 
                         <div>
-                            <label for="sort" class="mb-1 block text-sm font-semibold text-gray-700">
+                            <label for="sort" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Urutkan
                             </label>
                             <select id="sort"
                                     name="sort"
-                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Progress Tertinggi</option>
                                 <option value="low_progress" @selected(request('sort') === 'low_progress')>Progress Terendah</option>
                                 <option value="overdue" @selected(request('sort') === 'overdue')>Target Terlambat</option>
@@ -124,14 +124,14 @@
                             </select>
                         </div>
 
-                        <div class="flex items-end gap-2">
+                        <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
                             <button type="submit"
-                                    class="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+                                    class="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-3 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-700">
                                 Filter
                             </button>
 
                             <a href="{{ route('progress.index') }}"
-                               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                               class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50">
                                 Reset
                             </a>
                         </div>
@@ -139,31 +139,31 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Total Murid</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-2.5 sm:p-5 shadow-xs">
+                    <p class="text-[10px] sm:text-sm font-medium text-gray-500 truncate">Total Murid</p>
+                    <p class="mt-0.5 sm:mt-2 text-base sm:text-3xl font-black text-gray-900">
                         {{ number_format($summary['total_students'] ?? 0) }}
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Total Ayat Hafal</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-2.5 sm:p-5 shadow-xs">
+                    <p class="text-[10px] sm:text-sm font-medium text-gray-500 truncate">Total Ayat</p>
+                    <p class="mt-0.5 sm:mt-2 text-base sm:text-3xl font-black text-gray-900">
                         {{ number_format($summary['total_memorized_ayahs'] ?? 0) }}
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Rata-rata Progress</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
-                        {{ number_format((float) ($summary['average_progress_percent'] ?? 0), 2) }}%
+                <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-2.5 sm:p-5 shadow-xs">
+                    <p class="text-[10px] sm:text-sm font-medium text-gray-500 truncate">Rata-rata</p>
+                    <p class="mt-0.5 sm:mt-2 text-base sm:text-3xl font-black text-gray-900">
+                        {{ number_format((float) ($summary['average_progress_percent'] ?? 0), 1) }}%
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Target Terlambat</p>
-                    <p class="mt-2 text-3xl font-bold text-red-600">
+                <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-2.5 sm:p-5 shadow-xs">
+                    <p class="text-[10px] sm:text-sm font-medium text-gray-500 truncate">Terlambat</p>
+                    <p class="mt-0.5 sm:mt-2 text-base sm:text-3xl font-black text-red-600">
                         {{ number_format($summary['total_overdue_targets'] ?? 0) }}
                     </p>
                 </div>
