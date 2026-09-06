@@ -274,103 +274,117 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Chart === 'undefined') return;
+
             const isDark = document.documentElement.classList.contains('dark');
             const gridColor = isDark ? 'rgba(63,63,70,0.4)' : 'rgba(228,228,231,0.8)';
             const tickColor = isDark ? '#a1a1aa' : '#71717a';
 
             // Tahfizh Bar Chart
-            new Chart(document.getElementById('tahfizhChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Kelas X', 'Kelas XI', 'Kelas XII'],
-                    datasets: [{
-                        label: 'Setoran Hafalan',
-                        data: [{{ $tahfizhByLevel['X'] }}, {{ $tahfizhByLevel['XI'] }}, {{ $tahfizhByLevel['XII'] }}],
-                        backgroundColor: ['#0d9488','#0891b2','#0369a1'],
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
-                        x: { grid: { display: false }, ticks: { color: tickColor } }
+            const tahfizhEl = document.getElementById('tahfizhChart');
+            if (tahfizhEl) {
+                new Chart(tahfizhEl, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Kelas X', 'Kelas XI', 'Kelas XII'],
+                        datasets: [{
+                            label: 'Setoran Hafalan',
+                            data: [{{ $tahfizhByLevel['X'] }}, {{ $tahfizhByLevel['XI'] }}, {{ $tahfizhByLevel['XII'] }}],
+                            backgroundColor: ['#0d9488','#0891b2','#0369a1'],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
+                            x: { grid: { display: false }, ticks: { color: tickColor } }
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Adab Donut
-            new Chart(document.getElementById('adabDonutChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Diisi', 'Belum Diisi'],
-                    datasets: [{
-                        data: [Math.max({{ $adabFilledToday }}, 0), Math.max({{ $totalStudents }} - {{ $adabFilledToday }}, 0)],
-                        backgroundColor: ['#10b981','#f59e0b'],
-                        borderWidth: 2,
-                        borderColor: isDark ? '#18181b' : '#fff',
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '65%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: tickColor, boxWidth: 12, font: { size: 11 } } }
+            const adabDonutEl = document.getElementById('adabDonutChart');
+            if (adabDonutEl) {
+                new Chart(adabDonutEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Diisi', 'Belum Diisi'],
+                        datasets: [{
+                            data: [Math.max({{ $adabFilledToday }}, 0), Math.max({{ $totalStudents }} - {{ $adabFilledToday }}, 0)],
+                            backgroundColor: ['#10b981','#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: isDark ? '#18181b' : '#fff',
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '65%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: tickColor, boxWidth: 12, font: { size: 11 } } }
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Adab Bar per Tingkat
-            new Chart(document.getElementById('adabBarChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Kelas X', 'Kelas XI', 'Kelas XII'],
-                    datasets: [{
-                        label: 'Rata-rata Nilai Adab',
-                        data: [{{ $adabByLevel['X'] }}, {{ $adabByLevel['XI'] }}, {{ $adabByLevel['XII'] }}],
-                        backgroundColor: ['#f59e0b','#f97316','#eab308'],
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: tickColor } },
-                        x: { grid: { display: false }, ticks: { color: tickColor } }
+            const adabBarEl = document.getElementById('adabBarChart');
+            if (adabBarEl) {
+                new Chart(adabBarEl, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Kelas X', 'Kelas XI', 'Kelas XII'],
+                        datasets: [{
+                            label: 'Rata-rata Nilai Adab',
+                            data: [{{ $adabByLevel['X'] }}, {{ $adabByLevel['XI'] }}, {{ $adabByLevel['XII'] }}],
+                            backgroundColor: ['#f59e0b','#f97316','#eab308'],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: tickColor } },
+                            x: { grid: { display: false }, ticks: { color: tickColor } }
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Tanse Trend Line
-            const tanseTrend = @json($tanseTrend);
-            new Chart(document.getElementById('tanseChart'), {
-                type: 'line',
-                data: {
-                    labels: tanseTrend.map(t => t.label),
-                    datasets: [{
-                        label: 'Poin Pelanggaran',
-                        data: tanseTrend.map(t => t.points),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239,68,68,0.08)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#ef4444',
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
-                        x: { grid: { display: false }, ticks: { color: tickColor } }
+            const tanseEl = document.getElementById('tanseChart');
+            if (tanseEl) {
+                const tanseTrend = @json($tanseTrend);
+                new Chart(tanseEl, {
+                    type: 'line',
+                    data: {
+                        labels: tanseTrend.map(t => t.label),
+                        datasets: [{
+                            label: 'Poin Pelanggaran',
+                            data: tanseTrend.map(t => t.points),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ef4444',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
+                            x: { grid: { display: false }, ticks: { color: tickColor } }
+                        }
                     }
-                }
-            });
+                });
+            }
         });
     </script>
     @endpush

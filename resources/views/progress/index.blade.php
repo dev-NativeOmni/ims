@@ -417,9 +417,14 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const ctx = document.getElementById('progressChart').getContext('2d');
+                if (typeof Chart === 'undefined') return;
+
+                const canvasEl = document.getElementById('progressChart');
+                if (!canvasEl) return;
+
+                const ctx = canvasEl.getContext('2d');
                 
-                const studentsData = @json($chartData);
+                const studentsData = @json($chartData ?? []);
 
                 const labels = studentsData.map(item => item.name);
                 const targets = studentsData.map(item => item.target);

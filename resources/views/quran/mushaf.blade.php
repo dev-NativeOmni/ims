@@ -15,13 +15,15 @@
                 $canRecord = $isAdmin || auth()->user()->hasRole('teacher');
             @endphp
             @if($isAdmin || !empty($config['google_drive_id']))
-                <div class="inline-flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5" x-data="{}">
-                    <button @click="$dispatch('set-tab', 'mushaf')" 
+                <div class="inline-flex rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5" 
+                     x-data="{ activeTab: 'mushaf' }"
+                     @set-tab.window="activeTab = $event.detail">
+                    <button @click="activeTab = 'mushaf'; $dispatch('set-tab', 'mushaf')" 
                             :class="activeTab === 'mushaf' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
                             class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all">
                         Mushaf Interaktif
                     </button>
-                    <button @click="$dispatch('set-tab', 'pdf')" 
+                    <button @click="activeTab = 'pdf'; $dispatch('set-tab', 'pdf')" 
                             :class="activeTab === 'pdf' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
                             class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all">
                         PDF Dokumen Sekolah

@@ -265,7 +265,12 @@
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    const ctx = document.getElementById('studentTrendChart').getContext('2d');
+                    if (typeof Chart === 'undefined') return;
+
+                    const canvasEl = document.getElementById('studentTrendChart');
+                    if (!canvasEl) return;
+
+                    const ctx = canvasEl.getContext('2d');
                     
                     const activeTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
                     

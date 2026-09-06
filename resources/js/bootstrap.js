@@ -24,8 +24,6 @@ function updateCsrfTokens(newToken) {
 const initialCsrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 if (initialCsrfToken) {
     window.axios.defaults.headers.common['X-CSRF-TOKEN'] = initialCsrfToken;
-} else {
-    console.error('CSRF token meta tag not found!');
 }
 
 /*
@@ -38,6 +36,10 @@ if (initialCsrfToken) {
 let lastKeepAliveTime = Date.now();
 
 async function pingKeepAlive() {
+    const hasCsrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    const isAuthPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/register');
+    if (!hasCsrf || isAuthPage) return;
+
     try {
         const response = await window.axios.get('/keep-alive', {
             headers: { 'Cache-Control': 'no-cache' }
@@ -49,9 +51,8 @@ async function pingKeepAlive() {
     } catch (error) {
         // If 401 Unauthorized or 419 Page Expired occurs during ping, redirect to login
         const status = error.response ? error.response.status : 0;
-        const isAuthPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/register');
-        if ((status === 401 || status === 419) && !isAuthPage) {
-            console.warn('Session expired overnight. Redirecting to login...');
+        if (status === 401 || status === 419) {
+            console.warn('Session expired. Redirecting to login...');
             window.location.href = '/login';
         }
     }

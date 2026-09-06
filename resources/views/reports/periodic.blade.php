@@ -630,8 +630,12 @@
             }
 
             document.addEventListener('DOMContentLoaded', function() {
-                // Register datalabels plugin
-                Chart.register(ChartDataLabels);
+                if (typeof Chart === 'undefined') return;
+
+                // Register datalabels plugin if loaded
+                if (typeof ChartDataLabels !== 'undefined') {
+                    Chart.register(ChartDataLabels);
+                }
 
                 const isDark = document.documentElement.classList.contains('dark');
                 const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
@@ -639,7 +643,8 @@
 
                 // --- CAPAIAN vs TARGET CHART (MODERN SAAS GLASSMORPHIC STYLE) ---
                 const capaianCanvas = document.getElementById('capaianChart');
-                const capaianCtx = capaianCanvas.getContext('2d');
+                if (capaianCanvas) {
+                    const capaianCtx = capaianCanvas.getContext('2d');
 
                 // Create sleek vertical gradient for bars
                 const barGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
@@ -781,12 +786,14 @@
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
 
                 // --- KETUNTASAN MODERN DONUT CHART ---
-                const ketuntasanCtx = document.getElementById('ketuntasanChart').getContext('2d');
-                new Chart(ketuntasanCtx, {
+                const ketuntasanCanvas = document.getElementById('ketuntasanChart');
+                if (ketuntasanCanvas) {
+                    const ketuntasanCtx = ketuntasanCanvas.getContext('2d');
+                    new Chart(ketuntasanCtx, {
                     type: 'doughnut',
                     data: {
                         labels: ['TUNTAS', 'BELUM TUNTAS'],
@@ -851,6 +858,7 @@
                         }
                     }
                 });
+                }
             });
         </script>
     @endif
