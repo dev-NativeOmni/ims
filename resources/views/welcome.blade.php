@@ -1208,15 +1208,9 @@
                  aria-modal="true"
                  aria-labelledby="login-modal-title">
                 
-                <!-- Blurred Glass Backdrop Overlay (Smoothly blurs the entire landing page behind it) -->
-                <div class="fixed inset-0 bg-slate-950/80 dark:bg-black/90 backdrop-blur-2xl transition-all duration-300"
+                <!-- Moderate Blurred Glass Backdrop Overlay (Not Too Heavy) -->
+                <div class="fixed inset-0 bg-black/45 backdrop-blur-[6px] transition-all duration-300"
                      @click="closeLoginModal()"></div>
-
-                <!-- Ambient Glow Mesh Layer (Duotone Blue & Orange Flares) -->
-                <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                    <div class="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px]"></div>
-                    <div class="absolute -bottom-24 right-1/4 w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[140px]"></div>
-                </div>
 
                 <!-- Main Container (Fixed, Non-scrollable) -->
                 <div x-show="loginModalOpen"
@@ -1227,24 +1221,19 @@
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
                      @click.stop
-                     class="relative w-full max-w-[390px] sm:max-w-[420px] rounded-[2rem] p-[1.5px] bg-gradient-to-br from-blue-500/80 via-sky-300/40 to-orange-500/85 shadow-[0_25px_65px_-10px_rgba(0,0,0,0.9),0_0_35px_rgba(2,132,199,0.3),0_0_40px_rgba(234,88,12,0.35)] transition-all duration-300 z-10 my-auto">
+                     class="relative w-full max-w-[390px] sm:max-w-[420px] rounded-[2rem] p-[1px] bg-gradient-to-br from-blue-400/35 via-white/15 to-orange-400/35 shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all duration-300 z-10 my-auto">
                     
-                    <!-- Inner Glassmorphism Card (Strictly Fixed, No Scrollbars) -->
-                    <div class="w-full rounded-[calc(2rem-1.5px)] bg-gradient-to-b from-[#091122]/95 via-[#0a0f1d]/95 to-[#140e0a]/95 backdrop-blur-3xl p-5 sm:p-7 text-white relative overflow-hidden">
+                    <!-- Pure Glassmorphism Card (Translucent, Non-scrollable) -->
+                    <div class="w-full rounded-[calc(2rem-1px)] bg-[#0a0f1d]/50 backdrop-blur-md p-5 sm:p-7 text-white relative overflow-hidden">
 
-                        <!-- Top Specular Glare / Rim Reflection Effect -->
-                        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/30 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>
-                        <div class="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-blue-400/80 via-white/60 to-orange-400/80 pointer-events-none"></div>
-
-                        <!-- Ambient Subtle Glow Corners Inside Card -->
-                        <div class="absolute -top-10 -left-10 w-36 h-36 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
-                        <div class="absolute -bottom-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <!-- Subtle Top Glass Specular Reflection -->
+                        <div class="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"></div>
 
                         <!-- Close Button (X) -->
                         <button @click="closeLoginModal()" 
                                 type="button" 
                                 aria-label="Tutup"
-                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-zinc-300 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 z-20 cursor-pointer">
+                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-zinc-300 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 z-20 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -1359,10 +1348,10 @@
                                 @endif
                             </div>
 
-                            <!-- Glowing Gradient Blue-to-Orange Submit Button -->
+                            <!-- Gradient Blue-to-Orange Submit Button (Clean Shadow, No Harsh Glow) -->
                             <div class="pt-2">
                                 <button type="submit"
-                                        class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-white bg-gradient-to-r from-blue-600 via-amber-500 to-orange-500 hover:from-blue-500 hover:via-amber-400 hover:to-orange-400 active:scale-[0.98] shadow-[0_4px_25px_rgba(249,115,22,0.45),0_0_25px_rgba(2,132,199,0.35)] hover:shadow-[0_4px_35px_rgba(249,115,22,0.65),0_0_35px_rgba(2,132,199,0.5)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
+                                        class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-white bg-gradient-to-r from-blue-600 via-amber-500 to-orange-500 hover:from-blue-500 hover:via-amber-400 hover:to-orange-400 active:scale-[0.98] shadow-lg shadow-orange-500/25 hover:shadow-orange-500/35 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
                                     <span>LOGIN</span>
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />

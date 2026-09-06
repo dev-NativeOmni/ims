@@ -97,33 +97,22 @@
 <body class="min-h-[100dvh] w-full flex flex-col items-center justify-center p-3 sm:p-6 antialiased relative selection:bg-orange-500 selection:text-white bg-cover bg-center bg-no-repeat bg-fixed"
       style="background-image: url('{{ $loginBg ? asset('storage/' . $loginBg) : asset('images/school_sunset_bg.jpg') }}');">
 
-    <!-- Ambient Layer: Contrast Overlays & Gradient Blue to Orange Mesh Glows -->
+    <!-- Backdrop Overlay: Moderate Blur (Not too thick) & Soft Dimming -->
     <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/85"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(7,11,20,0.85)_100%)]"></div>
-        
-        <!-- Duotone Blue & Orange Ambient Glow Flares -->
-        <div class="absolute -top-24 left-1/5 w-[550px] h-[550px] bg-blue-600/25 rounded-full blur-[150px]"></div>
-        <div class="absolute -bottom-24 right-1/5 w-[550px] h-[550px] bg-orange-500/25 rounded-full blur-[150px]"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-blue-500/10 via-transparent to-orange-500/15 rounded-full blur-[160px]"></div>
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-[6px]"></div>
     </div>
 
     <!-- Main Container (Fixed, Non-scrollable) -->
     <div class="w-full max-w-[390px] sm:max-w-[420px] relative z-10 flex flex-col items-center justify-center">
 
-        <!-- Outer Gradient Border Wrapper (Blue to Orange) -->
-        <div class="relative w-full rounded-[2rem] p-[1.5px] bg-gradient-to-br from-blue-500/80 via-sky-300/40 to-orange-500/85 shadow-[0_25px_65px_-10px_rgba(0,0,0,0.9),0_0_35px_rgba(2,132,199,0.3),0_0_40px_rgba(234,88,12,0.35)] transition-all duration-300">
+        <!-- Glassmorphic Card Container (Clean Frosted Glass, No Glow) -->
+        <div class="relative w-full rounded-[2rem] p-[1px] bg-gradient-to-br from-blue-400/35 via-white/15 to-orange-400/35 shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all duration-300">
             
-            <!-- Inner Glassmorphism Card (Strictly Fixed, No Scrollbars) -->
-            <div class="w-full rounded-[calc(2rem-1.5px)] bg-gradient-to-b from-[#091122]/90 via-[#0a0f1d]/90 to-[#140e0a]/90 backdrop-blur-3xl p-5 sm:p-7 text-white relative overflow-hidden">
+            <!-- Inner Pure Glass Card (Translucent, Non-scrollable) -->
+            <div class="w-full rounded-[calc(2rem-1px)] bg-[#0a0f1d]/50 backdrop-blur-md p-5 sm:p-7 text-white relative overflow-hidden">
 
-                <!-- Top Specular Glare / Rim Reflection Effect -->
-                <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-white/30 via-white/10 to-transparent blur-xl pointer-events-none rounded-full"></div>
-                <div class="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-blue-400/80 via-white/60 to-orange-400/80 pointer-events-none"></div>
-
-                <!-- Ambient Subtle Glow Corners Inside Card -->
-                <div class="absolute -top-10 -left-10 w-36 h-36 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
-                <div class="absolute -bottom-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                <!-- Subtle Top Glass Specular Reflection -->
+                <div class="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"></div>
 
                 <!-- Header Brand Emblem & Title -->
                 <div class="flex flex-col items-center justify-center text-center mb-5 relative z-10">
@@ -235,10 +224,10 @@
                         @endif
                     </div>
 
-                    <!-- Glowing Gradient Blue-to-Orange Submit Button -->
+                    <!-- Gradient Blue-to-Orange Submit Button (Clean Shadow, No Harsh Glow) -->
                     <div class="pt-2">
                         <button type="submit"
-                                class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-white bg-gradient-to-r from-blue-600 via-amber-500 to-orange-500 hover:from-blue-500 hover:via-amber-400 hover:to-orange-400 active:scale-[0.98] shadow-[0_4px_25px_rgba(249,115,22,0.45),0_0_25px_rgba(2,132,199,0.35)] hover:shadow-[0_4px_35px_rgba(249,115,22,0.65),0_0_35px_rgba(2,132,199,0.5)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
+                                class="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest text-white bg-gradient-to-r from-blue-600 via-amber-500 to-orange-500 hover:from-blue-500 hover:via-amber-400 hover:to-orange-400 active:scale-[0.98] shadow-lg shadow-orange-500/25 hover:shadow-orange-500/35 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
                             <span>LOGIN</span>
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
