@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skrip Video Tutorial & VO Portal Orang Tua - IMS SMAIA 7</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --secondary: #d97706;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+
+        /* Top Bar */
+        .action-bar {
+            position: sticky;
+            top: 16px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 16px;
+            padding: 12px 18px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            flex-wrap: wrap;
+        }
+
+        .action-bar .brand {
+            font-weight: 800;
+            color: var(--dark);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-bar .brand span {
+            color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+            color: var(--dark);
+        }
+
+        .btn-amber {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        .btn-amber:hover {
+            background-color: #fde68a;
+        }
+
+        /* Document Header */
+        .doc-header {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .doc-badge {
+            display: inline-block;
+            background: #ccfbf1;
+            color: #0f766e;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            margin-bottom: 12px;
+        }
+
+        .doc-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .doc-header p.sub {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .meta-item {
+            font-size: 12px;
+        }
+
+        .meta-item strong {
+            display: block;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .meta-item span {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        /* Content Sections */
+        .section-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Storyboard Table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            line-height: 1.5;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* VO Teleprompter Box */
+        .teleprompter-box {
+            background: #090d16;
+            color: #f1f5f9;
+            border-radius: 16px;
+            padding: 24px;
+            font-size: 16px;
+            line-height: 1.8;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .teleprompter-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .ctrl-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .ctrl-btn:hover {
+            color: white;
+            background: #334155;
+        }
+
+        .teleprompter-text p {
+            margin-bottom: 14px;
+        }
+
+        .stage-dir {
+            color: #f59e0b;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pause-tag {
+            color: #38bdf8;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(56, 189, 248, 0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 4px 0;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.25s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+                padding: 0;
+            }
+            .action-bar, .teleprompter-controls, #toast {
+                display: none !important;
+            }
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            .doc-header, .section-card {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                margin-bottom: 20px;
+            }
+            .teleprompter-box {
+                background: white;
+                color: black;
+                padding: 0;
+                border: 1px solid #ccc;
+            }
+            .stage-dir {
+                color: #b45309;
+            }
+            .pause-tag {
+                color: #0369a1;
+                background: #f0f9ff;
+            }
+            table {
+                font-size: 11px;
+            }
+            th, td {
+                padding: 8px 10px;
+            }
+            @page {
+                margin: 1.5cm;
+                size: A4 portrait;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Sticky Download & Action Bar -->
+    <div class="action-bar no-print">
+        <div class="brand">
+            <span>IMS</span> SMA Islam Al Azhar 7
+        </div>
+        <div class="btn-group">
+            <button onclick="window.print()" class="btn btn-primary">
+                🖨️ Cetak / Simpan PDF
+            </button>
+            <a href="NASKAH_VO_ORANGTUA.txt" download="NASKAH_VO_ORANGTUA.txt" class="btn btn-amber">
+                📥 Download VO (.TXT)
+            </a>
+            <a href="SKRIP_VIDEO_TUTORIAL_ORANGTUA.md" download="SKRIP_VIDEO_TUTORIAL_ORANGTUA.md" class="btn btn-secondary">
+                📄 Download Skrip (.MD)
+            </a>
+            <button onclick="copyVoText()" class="btn btn-secondary">
+                📋 Salin Teks VO
+            </button>
+        </div>
+    </div>
+
+    <!-- Document Header -->
+    <div class="doc-header">
+        <span class="doc-badge">Dokumen Produksi Video Tutorial</span>
+        <h1>Skrip Video Tutorial & Naskah Voice Over (VO)</h1>
+        <p class="sub">Panduan Praktis Penggunaan Portal Orang Tua — Integrated Management System (IMS)</p>
+        
+        <div class="meta-grid">
+            <div class="meta-item">
+                <strong>Instansi</strong>
+                <span>SMA Islam Al Azhar 7 Solo Baru</span>
+            </div>
+            <div class="meta-item">
+                <strong>Target Durasi</strong>
+                <span>02:00 – 02:30 Menit</span>
+            </div>
+            <div class="meta-item">
+                <strong>Target Audiens</strong>
+                <span>Orang Tua &amp; Wali Murid</span>
+            </div>
+            <div class="meta-item">
+                <strong>Karakter VO</strong>
+                <span>Hangat, Santun, Profesional</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Storyboard -->
+    <div class="section-card">
+        <h2 class="section-title">🎬 Storyboard &amp; Panduan Layar Per Detik</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 110px;">Durasi</th>
+                        <th>Bagian / Scene</th>
+                        <th>Panduan Visual di Layar</th>
+                        <th>Aksi Kursor &amp; Interaksi</th>
+                        <th>Teks Grafis (Lower Third)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="time-badge">00:00 - 00:18</span></td>
+                        <td><strong>Scene 1: Login &amp; Intro</strong></td>
+                        <td>Halaman login berlatar kampus sekolah. Input username &amp; password orang tua, lalu klik masuk.</td>
+                        <td>Klik kolom form, ketik kredensial, klik tombol Login, transisi zoom-in ke dashboard.</td>
+                        <td><strong>Portal Orang Tua IMS</strong><br>SMA Islam Al Azhar 7 Solo Baru</td>
+                    </tr>
+                    <tr>
+                        <td><span class="time-badge">00:18 - 00:38</span></td>
+                        <td><strong>Scene 2: Beranda &amp; Multi-Anak</strong></td>
+                        <td>Header dashboard menampilkan kartu profil siswa dan tab pilihan anak di bagian atas.</td>
+                        <td>Klik tab nama anak kedua (data berganti seketika), lalu klik kembali ke anak pertama.</td>
+                        <td><strong>Fitur Multi-Anak (1 Akun)</strong><br>Pantau semua putra-putri tanpa ganti akun</td>
+                    </tr>
+                    <tr>
+                        <td><span class="time-badge">00:38 - 01:05</span></td>
+                        <td><strong>Scene 3: Tahfizh &amp; Peta Hafalan</strong></td>
+                        <td>Diagram capaian target juz, riwayat setoran, serta tabel Peta Perjalanan Hafalan (Kelas 10-12).</td>
+                        <td>Sorot persentase capaian juz, scroll ke tabel Term Journey, klik sel Term aktif untuk buka jendela pop-up.</td>
+                        <td><strong>Pemantauan Tahfizh</strong><br>• Capaian Target Juz<br>• Peta Jejak Hafalan per-Term</td>
+                    </tr>
+                    <tr>
+                        <td><span class="time-badge">01:05 - 01:35</span></td>
+                        <td><strong>Scene 4: Adab &amp; 4 Pilar Karakter</strong></td>
+                        <td>Kartu Adab, predikat Grade, status Kuisioner Adab Santri Hari Ini, dan kartu 4 pilar karakter.</td>
+                        <td>Klik tab Adab, sorot status kuisioner dan ikon 4 pilar karakter islami, klik tombol Buka Mutaba'ah.</td>
+                        <td><strong>Pemantauan Adab Santri</strong><br>• Status Kuisioner Harian<br>• 4 Pilar Karakter Islami</td>
+                    </tr>
+                    <tr>
+                        <td><span class="time-badge">01:35 - 01:55</span></td>
+                        <td><strong>Scene 5: Kedisiplinan &amp; Mushaf</strong></td>
+                        <td>Tab Kedisiplinan (poin tertib) dan lembaran Mushaf Digital 30 juz beresolusi tinggi dengan audio qari.</td>
+                        <td>Buka tab Disiplin, lalu buka menu Mushaf dan coba mainkan audio murottal satu ayat.</td>
+                        <td><strong>Fitur Pendukung</strong><br>⭐ Catatan Poin Disiplin<br>📖 Mushaf 30 Juz Interaktif</td>
+                    </tr>
+                    <tr>
+                        <td><span class="time-badge">01:55 - 02:15</span></td>
+                        <td><strong>Scene 6: Mobile &amp; Penutup</strong></td>
+                        <td>Tampilan responsif di smartphone dengan floating bottom navigation. Kembali ke beranda dan logo sekolah.</td>
+                        <td>Beralih ke tampilan layar smartphone, fade out ke logo resmi dan media sosial sekolah.</td>
+                        <td><strong>Bersama Menjaga Amanah Ananda</strong><br>ims.smaia7.sch.id</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 2: Teleprompter VO -->
+    <div class="section-card">
+        <h2 class="section-title">🎙️ Naskah Voice Over (VO) Siap Rekam</h2>
+        
+        <div class="teleprompter-box">
+            <div class="teleprompter-controls no-print">
+                <button class="ctrl-btn" onclick="adjustFontSize(-2)">A-</button>
+                <button class="ctrl-btn" onclick="adjustFontSize(2)">A+</button>
+                <button class="ctrl-btn" onclick="copyVoText()">📋 Salin Teks</button>
+            </div>
+
+            <div class="teleprompter-text" id="voText">
+                <p class="stage-dir">[TOMBOL PLAY / INTRO MUSIK 2 DETIK]</p>
+
+                <p class="stage-dir">[Nada: Hangat, senyum, dan bersahabat]</p>
+                <p>"Assalamu’alaikum Warahmatullahi Wabarakatuh.<br>
+                Selamat datang Ayah dan Bunda di Portal Terpadu IMS — SMA Islam Al Azhar 7 Solo Baru.</p>
+
+                <p><span class="pause-tag">[Jeda 1 detik]</span></p>
+
+                <p>Kini, mendampingi tumbuh kembang ananda tercinta menjadi semakin mudah, transparan, dan dapat diakses kapan saja langsung dari ponsel pintar Ayah dan Bunda.</p>
+
+                <p><span class="pause-tag">[Jeda 1 detik - Transisi Layar Login]</span></p>
+
+                <p>Cukup masukkan username dan kata sandi yang telah dibagikan sekolah, lalu klik Masuk.</p>
+
+                <p><span class="pause-tag">[Jeda 1 detik - Layar Dashboard]</span></p>
+
+                <p>Bagi Ayah dan Bunda yang memiliki lebih dari satu putra atau putri di SMA Islam Al Azhar 7, Ayah Bunda tidak perlu repot berganti akun. Cukup klik tab nama ananda di bagian atas untuk berpindah profil pemantauan dalam satu sentuhan.</p>
+
+                <p><span class="pause-tag">[Jeda 1.5 detik - Masuk ke Bagian Tahfizh]</span></p>
+
+                <p class="stage-dir">[Nada: Bangga dan antusias]</p>
+                <p>Pada bagian Tahfizh, Ayah Bunda dapat memantau perjalanan Al-Qur'an ananda secara terperinci. Mulai dari persentase capaian target juz, riwayat setoran hafalan baru, hingga keteraturan muraja'ah harian.<br>
+                Bahkan, Ayah Bunda dapat melihat 'Peta Perjalanan Hafalan' ananda dari kelas sepuluh hingga kelas dua belas, lengkap dengan tanggal dan riwayat setoran per-Term.</p>
+
+                <p><span class="pause-tag">[Jeda 1.5 detik - Masuk ke Bagian Adab]</span></p>
+
+                <p class="stage-dir">[Nada: Mengayomi dan tenang]</p>
+                <p>Bukan hanya capaian hafalan, pembentukan karakter islami ananda juga menjadi prioritas kami.<br>
+                Pada bagian Adab, Ayah Bunda dapat melihat hasil pengisian kuisioner adab harian ananda yang mencakup empat pilar utama:<br>
+                Adab Kepada Allah,<br>
+                Adab Kepada Sesama Teman,<br>
+                Adab Ketika Belajar,<br>
+                serta Adab terhadap Lingkungan.<br>
+                Semuanya dilengkapi dengan evaluasi langsung dari musyrif pembimbing.</p>
+
+                <p><span class="pause-tag">[Jeda 1 detik - Bagian Kedisiplinan &amp; Mushaf]</span></p>
+
+                <p>Untuk memantau ketertiban dan apresiasi prestasi, Ayah Bunda dapat memeriksa tab Kedisiplinan.<br>
+                Selain itu, portal ini juga dilengkapi Mushaf Al-Qur'an Digital interaktif beserta lantunan audio qari yang siap menemani ananda belajar di rumah.</p>
+
+                <p><span class="pause-tag">[Jeda 1 detik - Outro]</span></p>
+
+                <p class="stage-dir">[Nada: Lembut, mengajak, dan penuh kehangatan]</p>
+                <p>Mari kita terus bersinergi, menyatukan ikhtiar antara sekolah dan rumah, untuk menghantarkan ananda menjadi generasi Qur'ani yang cerdas, mandiri, dan berakhlak mulia.</p>
+
+                <p>Terima kasih.<br>
+                Wassalamu’alaikum Warahmatullahi Wabarakatuh."</p>
+
+                <p class="stage-dir">[MUSIK FADE OUT 3 DETIK]</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Tips & Pelafalan -->
+    <div class="section-card">
+        <h2 class="section-title">💡 Catatan Pelafalan &amp; Rekaman</h2>
+        <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+            <li><strong>IMS:</strong> Dilafalkan jelas huruf per huruf <em>"I - M - S"</em>.</li>
+            <li><strong>Tahfizh:</strong> Dilafalkan <em>"Tah - fizh"</em> dengan huruf z lembut.</li>
+            <li><strong>Muraja'ah:</strong> Dilafalkan berirama <em>"Mu-ra-ja-'ah"</em>.</li>
+            <li><strong>Musyrif:</strong> Dilafalkan <em>"Musy - rif"</em> (guru pembimbing asrama/adab).</li>
+            <li><strong>Term:</strong> Dilafalkan <em>"Term"</em> (periode caturwulan kegiatan belajar).</li>
+        </ul>
+    </div>
+</div>
+
+<div id="toast">Teks Voice Over berhasil disalin ke clipboard!</div>
+
+<script>
+    let currentFontSize = 16;
+    function adjustFontSize(delta) {
+        currentFontSize = Math.max(13, Math.min(26, currentFontSize + delta));
+        document.getElementById('voText').style.fontSize = currentFontSize + 'px';
+    }
+
+    function copyVoText() {
+        const textToCopy = `Assalamu’alaikum Warahmatullahi Wabarakatuh.
+Selamat datang Ayah dan Bunda di Portal Terpadu IMS — SMA Islam Al Azhar 7 Solo Baru.
+
+Kini, mendampingi tumbuh kembang ananda tercinta menjadi semakin mudah, transparan, dan dapat diakses kapan saja langsung dari ponsel pintar Ayah dan Bunda.
+
+Cukup masukkan username dan kata sandi yang telah dibagikan sekolah, lalu klik Masuk. 
+
+Bagi Ayah dan Bunda yang memiliki lebih dari satu putra atau putri di SMA Islam Al Azhar 7, Ayah Bunda tidak perlu repot berganti akun. Cukup klik tab nama ananda di bagian atas untuk berpindah profil pemantauan dalam satu sentuhan.
+
+Pada bagian Tahfizh, Ayah Bunda dapat memantau perjalanan Al-Qur'an ananda secara terperinci. Mulai dari persentase capaian target juz, riwayat setoran hafalan baru, hingga keteraturan muraja'ah harian.
+Bahkan, Ayah Bunda dapat melihat 'Peta Perjalanan Hafalan' ananda dari kelas sepuluh hingga kelas dua belas, lengkap dengan tanggal dan riwayat setoran per-Term.
+
+Bukan hanya capaian hafalan, pembentukan karakter islami ananda juga menjadi prioritas kami. 
+Pada bagian Adab, Ayah Bunda dapat melihat hasil pengisian kuisioner adab harian ananda yang mencakup empat pilar utama: 
+Adab Kepada Allah, 
+Adab Kepada Sesama Teman, 
+Adab Ketika Belajar, 
+serta Adab terhadap Lingkungan.
+Semuanya dilengkapi dengan evaluasi langsung dari musyrif pembimbing.
+
+Untuk memantau ketertiban dan apresiasi prestasi, Ayah Bunda dapat memeriksa tab Kedisiplinan.
+Selain itu, portal ini juga dilengkapi Mushaf Al-Qur'an Digital interaktif beserta lantunan audio qari yang siap menemani ananda belajar di rumah.
+
+Mari kita terus bersinergi, menyatukan ikhtiar antara sekolah dan rumah, untuk menghantarkan ananda menjadi generasi Qur'ani yang cerdas, mandiri, dan berakhlak mulia.
+
+Terima kasih.
+Wassalamu’alaikum Warahmatullahi Wabarakatuh.`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        });
+    }
+</script>
+
+</body>
+</html>

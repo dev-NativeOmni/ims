@@ -36,6 +36,30 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/panduan-video-orangtua', function () {
+    return response()->file(public_path('downloads/panduan_video_orangtua.html'));
+})->name('tutorial.parent');
+
+Route::get('/panduan-video-orangtua/download-vo', function () {
+    $filePath = public_path('downloads/NASKAH_VO_ORANGTUA.txt');
+    if (! file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->download($filePath, 'NASKAH_VO_ORANGTUA.txt', [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ]);
+})->name('tutorial.parent.download-vo');
+
+Route::get('/panduan-video-orangtua/download-script', function () {
+    $filePath = public_path('downloads/SKRIP_VIDEO_TUTORIAL_ORANGTUA.md');
+    if (! file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->download($filePath, 'SKRIP_VIDEO_TUTORIAL_ORANGTUA.md', [
+        'Content-Type' => 'text/markdown; charset=UTF-8',
+    ]);
+})->name('tutorial.parent.download-script');
+
 Route::middleware(['auth'])->group(function () {
     /*
     |--------------------------------------------------------------------------
