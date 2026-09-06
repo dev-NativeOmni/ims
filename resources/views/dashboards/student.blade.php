@@ -58,14 +58,15 @@
                     $isUmmi = data_get($progress, 'is_ummi_program', false) || $isGrade10Class;
                     $statusColor = data_get($progress, 'status_color', 'emerald');
                     $statusLabel = data_get($progress, 'status_label', 'On-Track / Tuntas');
-                    $statusIcon = data_get($progress, 'status_icon', '🟢');
                 @endphp
 
                 {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
                 <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-3.5 sm:p-6 relative overflow-hidden">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-5">
                         <div class="flex items-center gap-3">
-                            <span class="text-2xl sm:text-4xl">{{ $isUmmi ? '📗' : '📘' }}</span>
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-500/20 shadow-xs">
+                                <x-heroicon-o-book-open class="w-6 h-6 sm:w-7 sm:h-7" />
+                            </div>
                             <div>
                                 <h3 class="text-sm sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                                     <span>Program {{ $isUmmi ? 'Ummi (Kelas X)' : 'Reguler (Kelas XI/XII)' }}</span>
@@ -77,19 +78,9 @@
                         </div>
 
                         <div>
-                            @if ($statusColor === 'emerald')
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
-                                </span>
-                            @elseif ($statusColor === 'amber')
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20">
-                                    <span>{{ $statusIcon }}</span> {{ $statusLabel }}
-                                </span>
-                            @endif
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold {{ $statusColor === 'emerald' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20' : ($statusColor === 'amber' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20' : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20') }}">
+                                <span class="w-2 h-2 rounded-full {{ $statusColor === 'emerald' ? 'bg-emerald-500 animate-pulse' : ($statusColor === 'amber' ? 'bg-amber-500' : 'bg-rose-500') }}"></span> {{ $statusLabel }}
+                            </span>
                         </div>
                     </div>
 
@@ -98,7 +89,7 @@
                         <div class="mt-3 sm:mt-5 grid grid-cols-3 gap-2 sm:gap-4">
                             <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
                                 <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
-                                    <span>📖</span> Jilid Ummi
+                                    <x-heroicon-o-book-open class="w-3.5 h-3.5" /> Jilid Ummi
                                 </p>
                                 <p class="text-sm sm:text-2xl font-black text-teal-900 dark:text-teal-100 truncate">
                                     {{ data_get($progress, 'current_jilid', '-') }}
@@ -106,7 +97,7 @@
                             </div>
                             <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
                                 <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
-                                    <span>📑</span> Halaman
+                                    <x-heroicon-o-document-text class="w-3.5 h-3.5" /> Halaman
                                 </p>
                                 <p class="text-sm sm:text-2xl font-black text-teal-900 dark:text-teal-100 truncate">
                                     {{ data_get($progress, 'current_halaman', '-') }}
@@ -114,7 +105,7 @@
                             </div>
                             <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
                                 <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
-                                    <span>🏆</span> Status
+                                    <x-heroicon-o-trophy class="w-3.5 h-3.5" /> Status
                                 </p>
                                 <p class="text-xs sm:text-base font-bold text-teal-900 dark:text-teal-100 mt-0.5 truncate">
                                     {{ data_get($progress, 'ummi_notes', 'Sedang Bimbingan') }}
@@ -284,8 +275,8 @@
                 <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-7 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center text-2xl shrink-0 shadow-2xs border border-teal-500/20">
-                                🕋
+                            <div class="w-12 h-12 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 shadow-2xs border border-teal-500/20">
+                                <x-heroicon-o-sparkles class="w-6 h-6" />
                             </div>
                             <div>
                                 <h3 class="text-base font-bold text-zinc-900 dark:text-white">
@@ -300,11 +291,11 @@
                         <div>
                             @if ($adabFilledToday)
                                 <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                                    <span>✅</span> Sudah Diisi Hari Ini
+                                    <x-heroicon-o-check-circle class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Sudah Diisi Hari Ini
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 animate-pulse">
-                                    <span>⚠️</span> Belum Diisi Hari Ini
+                                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Belum Diisi Hari Ini
                                 </span>
                             @endif
                         </div>
@@ -313,12 +304,12 @@
                     <div class="mt-4 pt-3.5 border-t border-zinc-200/70 dark:border-white/10 flex flex-wrap items-center gap-2.5 sm:gap-3">
                         @if (! $adabFilledToday)
                             <a href="{{ route('adab.create', $student) }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition shadow-sm">
-                                ✏️ Isi Kuisioner Sekarang
+                                <x-heroicon-o-pencil-square class="w-4 h-4" /> Isi Kuisioner Sekarang
                             </a>
                         @endif
 
                         <a href="{{ route('adab.show', $student) }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl glass-liquid-inner hover:bg-white/60 dark:hover:bg-white/10 px-4 py-2.5 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 transition">
-                            📊 Laporan &amp; Grafik Adab &rarr;
+                            <x-heroicon-o-chart-bar class="w-4 h-4" /> Laporan &amp; Grafik Adab &rarr;
                         </a>
                     </div>
                 </div>
@@ -328,7 +319,7 @@
                     <div class="glass-liquid-card rounded-[1.75rem] overflow-hidden">
                         <div class="border-b border-zinc-200/70 dark:border-white/10 px-5 py-4 flex items-center justify-between">
                             <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                <span>🎯</span> Target Aktif
+                                <x-heroicon-o-check-circle class="w-4 h-4 text-teal-600 dark:text-teal-400" /> Target Aktif
                             </h3>
                             <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">{{ $activeTargets->count() }} Target</span>
                         </div>
@@ -339,8 +330,8 @@
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="min-w-0">
                                             @if ($target->ummi_jilid || $isUmmi)
-                                                <p class="font-bold text-xs sm:text-sm text-teal-800 dark:text-teal-300">
-                                                    📗 {{ $target->ummi_jilid ?? 'Target Ummi' }}
+                                                <p class="font-bold text-xs sm:text-sm text-teal-800 dark:text-teal-300 flex items-center gap-1">
+                                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" /> {{ $target->ummi_jilid ?? 'Target Ummi' }}
                                                 </p>
                                                 @if($target->surah)
                                                     <p class="text-xs text-teal-700 dark:text-teal-400 mt-0.5">
@@ -348,8 +339,8 @@
                                                     </p>
                                                 @endif
                                             @else
-                                                <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">
-                                                    📘 QS. {{ $target->surah?->name_latin ?? '-' }} : {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                                <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate flex items-center gap-1">
+                                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" /> QS. {{ $target->surah?->name_latin ?? '-' }} : {{ $target->ayah_start }} - {{ $target->ayah_end }}
                                                 </p>
                                             @endif
                                             <p class="mt-0.5 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">
@@ -371,7 +362,7 @@
                     <div class="glass-liquid-card rounded-[1.75rem] overflow-hidden">
                         <div class="border-b border-zinc-200/70 dark:border-white/10 px-5 py-4 flex items-center justify-between">
                             <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                <span>⚠️</span> Target Terlambat
+                                <x-heroicon-o-exclamation-triangle class="w-4 h-4 text-rose-600 dark:text-rose-400" /> Target Terlambat
                             </h3>
                             <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20">{{ $overdueTargets->count() }} Target</span>
                         </div>
@@ -382,12 +373,12 @@
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="min-w-0">
                                             @if ($target->ummi_jilid || $isUmmi)
-                                                <p class="font-bold text-xs sm:text-sm text-teal-800 dark:text-teal-300">
-                                                    📗 {{ $target->ummi_jilid ?? 'Target Ummi' }}
+                                                <p class="font-bold text-xs sm:text-sm text-teal-800 dark:text-teal-300 flex items-center gap-1">
+                                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" /> {{ $target->ummi_jilid ?? 'Target Ummi' }}
                                                 </p>
                                             @else
-                                                <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">
-                                                    📘 QS. {{ $target->surah?->name_latin ?? '-' }} : {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                                <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate flex items-center gap-1">
+                                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" /> QS. {{ $target->surah?->name_latin ?? '-' }} : {{ $target->ayah_start }} - {{ $target->ayah_end }}
                                                 </p>
                                             @endif
                                             <p class="mt-0.5 text-[10px] sm:text-xs font-semibold text-rose-600 dark:text-rose-400">
@@ -411,7 +402,7 @@
                     <div class="glass-liquid-card rounded-[1.75rem] overflow-hidden">
                         <div class="border-b border-zinc-200/70 dark:border-white/10 px-5 py-4 flex items-center justify-between">
                             <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                <span>📖</span> Hafalan Terbaru
+                                <x-heroicon-o-book-open class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Hafalan Terbaru
                             </h3>
                             <a href="{{ route('progress.index') }}" class="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Semua &rarr;</a>
                         </div>
@@ -447,7 +438,7 @@
                     <div class="glass-liquid-card rounded-[1.75rem] overflow-hidden">
                         <div class="border-b border-zinc-200/70 dark:border-white/10 px-5 py-4 flex items-center justify-between">
                             <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                <span>🔄</span> Murajaah Terbaru
+                                <x-heroicon-o-arrow-path class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Murajaah Terbaru
                             </h3>
                             <a href="{{ route('progress.index') }}" class="text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline">Semua &rarr;</a>
                         </div>

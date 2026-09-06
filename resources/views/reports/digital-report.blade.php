@@ -20,7 +20,7 @@
                         target="_blank"
                         class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
                     >
-                        🖨️ Cetak / Simpan PDF
+                        <x-heroicon-o-printer class="w-4 h-4" /> Cetak / Simpan PDF
                     </a>
                 @endif
             </div>
@@ -177,7 +177,7 @@
                 <!-- Module 3: Tanse Disiplin -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                        <span class="text-red-500">⚠️</span> Kedisiplinan & Prestasi (Tanse)
+                        <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-rose-500" /> Kedisiplinan &amp; Prestasi (Tanse)
                     </h4>
                     
                     <div class="space-y-4">
@@ -243,7 +243,7 @@
                                     </div>
                                     <p class="text-gray-500 dark:text-zinc-400 text-[11px] mb-2">{{ $v->description ?: 'Tanpa deskripsi.' }}</p>
                                     <div class="flex justify-between items-center text-[10px] text-gray-400 font-semibold border-t dark:border-zinc-800 pt-1.5">
-                                        <span>📍 {{ $v->location ?: '-' }} · Kategori: {{ ucfirst((string) $v->category) ?: '-' }}</span>
+                                        <span class="inline-flex items-center gap-1"><x-heroicon-o-map-pin class="w-3.5 h-3.5 text-zinc-400" /> {{ $v->location ?: '-' }} · Kategori: {{ ucfirst((string) $v->category) ?: '-' }}</span>
                                         <span>{{ $v->date?->format('d M Y') }}</span>
                                     </div>
                                     @if($v->sanction)
@@ -260,7 +260,7 @@
                 <!-- Rewards Log -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
-                        <span class="text-green-500">🏆</span> Catatan Penghargaan & Prestasi
+                        <x-heroicon-o-trophy class="w-5 h-5 text-amber-500" /> Catatan Penghargaan &amp; Prestasi
                     </h4>
                     @if($rewards->isEmpty())
                         <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-8 italic">Tidak ada catatan penghargaan.</p>
@@ -286,8 +286,8 @@
 
             <!-- Wali Kelas / Teacher Review & Status -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-                <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2">
-                    📝 Catatan Evaluasi Wali Kelas & Otorisasi Rapor
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                    <x-heroicon-o-pencil-square class="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Catatan Evaluasi Wali Kelas &amp; Otorisasi Rapor
                 </h4>
 
                 @if($canEditNotes)
@@ -351,7 +351,7 @@
                         <div class="flex justify-between items-center text-xs border-t dark:border-zinc-800 pt-3">
                             <span>Status Rapor: <strong class="uppercase text-indigo-600 dark:text-indigo-400">{{ $report->status }}</strong></span>
                             @if($report->status === 'locked')
-                                <span class="text-rose-500 font-bold">🔒 Catatan Terkunci</span>
+                                <span class="text-rose-500 font-bold inline-flex items-center gap-1"><x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Catatan Terkunci</span>
                             @else
                                 <span class="text-gray-400">Hanya guru kelas yang dapat memperbarui catatan ini.</span>
                             @endif

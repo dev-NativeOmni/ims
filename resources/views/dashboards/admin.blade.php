@@ -26,7 +26,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Murid</span>
                         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm shadow-xs">
-                            👥
+                            <x-heroicon-o-users class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_students', 0) }}</p>
@@ -40,7 +40,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Tenaga Pendidik</span>
                         <div class="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm shadow-xs">
-                            🎓
+                            <x-heroicon-o-academic-cap class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'total_teachers', 0) }}</p>
@@ -54,7 +54,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Setoran Hari Ini</span>
                         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm shadow-xs">
-                            📖
+                            <x-heroicon-o-book-open class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ data_get($stats, 'hafalan_today', 0) }}</p>
@@ -68,7 +68,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Aktif</span>
                         <div class="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm shadow-xs">
-                            🎯
+                            <x-heroicon-o-check-circle class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ data_get($stats, 'active_targets', 0) }}</p>
@@ -82,7 +82,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Adab Hari Ini</span>
                         <div class="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm shadow-xs">
-                            ✨
+                            <x-heroicon-o-sparkles class="w-4 h-4" />
                         </div>
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400 tracking-tight">
@@ -168,7 +168,7 @@
                     <div class="flex items-center gap-2">
                         @if (Route::has('settings.hafalan-targets'))
                             <a href="{{ route('settings.hafalan-targets') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-700/60 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-500/20 transition shadow-2xs">
-                                ⚙️ <span class="hidden sm:inline">Sesuaikan Target Progres</span><span class="sm:hidden">Target</span>
+                                <x-heroicon-o-adjustments-horizontal class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Sesuaikan Target Progres</span><span class="sm:hidden">Target</span>
                             </a>
                         @endif
                         <a href="{{ url('/students') }}" class="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">Lihat semua &rarr;</a>

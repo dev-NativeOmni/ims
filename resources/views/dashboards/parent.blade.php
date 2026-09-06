@@ -96,7 +96,6 @@
                             $isUmmi = data_get($row, 'is_ummi_program', false) || $isGrade10Class;
                             $statusColor = data_get($row, 'status_color', 'emerald');
                             $statusLabel = data_get($row, 'status_label', 'On-Track / Tuntas');
-                            $statusIcon = data_get($row, 'status_icon', '🟢');
 
                             $adabData = data_get($row, 'adab', []);
                             $tanseData = data_get($row, 'tanse', []);
@@ -135,14 +134,14 @@
                                     </div>
 
                                     <div class="flex items-center gap-1.5 shrink-0">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                            <span>{{ $statusIcon }}</span> <span class="hidden xs:inline">{{ $statusLabel }}</span>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            <span class="w-2 h-2 rounded-full {{ $statusColor === 'emerald' ? 'bg-emerald-500 animate-pulse' : ($statusColor === 'amber' ? 'bg-amber-500' : 'bg-rose-500') }}"></span> <span class="hidden xs:inline">{{ $statusLabel }}</span>
                                         </span>
                                         <a href="{{ route('quran.mushaf') }}" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-[11px] transition border border-zinc-200 dark:border-zinc-700">
-                                            <span>📖</span> <span class="hidden sm:inline">Mushaf</span>
+                                            <x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> <span class="hidden sm:inline">Mushaf</span>
                                         </a>
                                         <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shadow-xs">
-                                            <span>📊</span> <span class="hidden sm:inline">Rapor</span>
+                                            <x-heroicon-o-chart-bar class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Rapor</span>
                                         </a>
                                     </div>
                                 </div>
@@ -157,8 +156,8 @@
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-teal-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
                                     <div>
-                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
-                                            <span>📖</span> Tahfizh
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-1 truncate">
+                                            <x-heroicon-o-book-open class="w-3.5 h-3.5 shrink-0" /> Tahfizh
                                         </span>
                                         <div class="mt-1">
                                             <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
@@ -187,8 +186,8 @@
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-amber-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
                                     <div>
-                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
-                                            <span>🕌</span> Adab
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-1 truncate">
+                                            <x-heroicon-o-sparkles class="w-3.5 h-3.5 shrink-0" /> Adab
                                         </span>
                                         <div class="mt-1">
                                             <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
@@ -220,8 +219,8 @@
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-purple-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
                                     <div>
-                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
-                                            <span>⭐</span> Disiplin
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-1 truncate">
+                                            <x-heroicon-o-shield-check class="w-3.5 h-3.5 shrink-0" /> Disiplin
                                         </span>
                                         <div class="mt-1">
                                             <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
@@ -248,8 +247,8 @@
                             <div class="hidden sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
                                 <div class="glass-liquid-card rounded-2xl p-4 flex flex-col justify-between border border-teal-500/20 shadow-xs">
                                     <div class="flex items-center justify-between gap-2 mb-2">
-                                        <span class="text-xs font-bold uppercase text-teal-700 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-lg">
-                                            <span>📖</span> {{ "Tahfizh Al-Qur'an" }}
+                                        <span class="text-xs font-bold uppercase text-teal-700 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                            <x-heroicon-o-book-open class="w-4 h-4 text-teal-600 dark:text-teal-400" /> {{ "Tahfizh Al-Qur'an" }}
                                         </span>
                                         <span class="text-xs font-bold text-teal-700 dark:text-teal-300">{{ number_format($pct, 1) }}%</span>
                                     </div>
@@ -261,8 +260,8 @@
 
                                 <div class="glass-liquid-card rounded-2xl p-4 flex flex-col justify-between border border-amber-500/20 shadow-xs">
                                     <div class="flex items-center justify-between gap-2 mb-2">
-                                        <span class="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">
-                                            <span>🕌</span> Karakter &amp; Adab
+                                        <span class="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                            <x-heroicon-o-sparkles class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Karakter &amp; Adab
                                         </span>
                                         <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Grade {{ data_get($adabData, 'grade', 'A') }}</span>
                                     </div>
@@ -274,8 +273,8 @@
 
                                 <div class="glass-liquid-card rounded-2xl p-4 flex flex-col justify-between border border-purple-500/20 shadow-xs">
                                     <div class="flex items-center justify-between gap-2 mb-2">
-                                        <span class="text-xs font-bold uppercase text-purple-700 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
-                                            <span>⭐</span> Kedisiplinan &amp; Prestasi
+                                        <span class="text-xs font-bold uppercase text-purple-700 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                            <x-heroicon-o-shield-check class="w-4 h-4 text-purple-600 dark:text-purple-400" /> Kedisiplinan &amp; Prestasi
                                         </span>
                                         <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">+{{ data_get($tanseData, 'reward_points', 0) }} Poin</span>
                                     </div>
@@ -336,7 +335,9 @@
                                 <div class="rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 p-3 shadow-xs space-y-1.5">
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-1.5 min-w-0">
-                                            <span class="text-xs font-bold text-zinc-900 dark:text-white">🎯 Target Kurikulum</span>
+                                            <span class="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                                <x-heroicon-o-check-circle class="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Target Kurikulum
+                                            </span>
                                             @if (data_get($row, 'target_juz_label'))
                                                 <span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-600 text-white truncate">
                                                     {{ data_get($row, 'target_juz_label') }}
@@ -356,8 +357,8 @@
                                 {{-- Peta Perjalanan Milestone (Swipeable on mobile) --}}
                                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs">
                                     <div class="flex items-center justify-between mb-2">
-                                        <h4 class="text-[11px] font-black uppercase text-zinc-500 tracking-wider">
-                                            🗺️ Peta Perjalanan Target (4 Term)
+                                        <h4 class="text-[11px] font-black uppercase text-zinc-500 tracking-wider flex items-center gap-1.5">
+                                            <x-heroicon-o-map class="w-4 h-4 text-indigo-500" /> Peta Perjalanan Target (4 Term)
                                         </h4>
                                         <span class="text-[10px] text-zinc-400 sm:hidden">Geser &rarr;</span>
                                     </div>
@@ -367,8 +368,8 @@
                                 {{-- Riwayat Terakhir Hafalan & Murajaah (Compact 2 Col) --}}
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs space-y-1.5">
-                                        <h4 class="text-xs font-black text-zinc-900 dark:text-white flex items-center gap-1">
-                                            <span>📖</span> Setoran Hafalan Terakhir
+                                        <h4 class="text-xs font-black text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                            <x-heroicon-o-book-open class="w-4 h-4 text-teal-600 dark:text-teal-400" /> Setoran Hafalan Terakhir
                                         </h4>
                                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
                                             @forelse ($studentHafalan as $h)
@@ -387,8 +388,8 @@
                                     </div>
 
                                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs space-y-1.5">
-                                        <h4 class="text-xs font-black text-zinc-900 dark:text-white flex items-center gap-1">
-                                            <span>🔄</span> Setoran Muraja'ah Terakhir
+                                        <h4 class="text-xs font-black text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                            <x-heroicon-o-arrow-path class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Setoran Muraja'ah Terakhir
                                         </h4>
                                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
                                             @forelse ($studentMurajaah as $m)
@@ -431,11 +432,15 @@
                                 {{-- Checklist Shalat Fardhu 5 Waktu Hari Ini --}}
                                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs space-y-1.5">
                                     <div class="flex items-center justify-between">
-                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1">
-                                            <span>🕌</span> Shalat Fardhu 5 Waktu Hari Ini
+                                        <h4 class="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                            <x-heroicon-o-clock class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Shalat Fardhu 5 Waktu Hari Ini
                                         </h4>
-                                        <span class="text-[9px] font-bold px-1.5 py-0.2 rounded {{ data_get($adabData, 'today_record') ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700' }}">
-                                            {{ data_get($adabData, 'today_record') ? '✓ Terisi' : 'Belum Terisi' }}
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-1 {{ data_get($adabData, 'today_record') ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700' }}">
+                                            @if(data_get($adabData, 'today_record'))
+                                                <x-heroicon-o-check class="w-3 h-3 stroke-[2.5]" /> Terisi
+                                            @else
+                                                Belum Terisi
+                                            @endif
                                         </span>
                                     </div>
                                     <div class="grid grid-cols-5 gap-1 text-center text-[9px] font-bold">
@@ -494,7 +499,7 @@
                                     </div>
                                     <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
                                         @forelse (data_get($tanseData, 'recent_points', []) as $pt)
-                                            @php $isV = \App\Models\StudentPoint::isViolationType($pt->type); @endphp
+                                             @php $isV = \App\Models\StudentPoint::isViolationType($pt->type); @endphp
                                             <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
                                                 <div class="min-w-0">
                                                     <p class="font-bold text-zinc-900 dark:text-white truncate">{{ $pt->title }}</p>
@@ -514,17 +519,27 @@
                             {{-- ═══════════════ FITUR PENDUKUNG (MUSHAF & RAPOR) ═══════════════ --}}
                             <div class="grid grid-cols-2 gap-2 pt-1">
                                 <a href="{{ route('quran.mushaf') }}" class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200/80 dark:border-emerald-800/50 rounded-xl p-2.5 shadow-xs flex items-center justify-between gap-1.5 hover:border-emerald-500 transition">
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">📖 Mushaf Digital</p>
-                                        <p class="text-[10px] text-emerald-900/70 dark:text-emerald-300/70 truncate">Simak tilawah</p>
+                                    <div class="min-w-0 flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shrink-0">
+                                            <x-heroicon-o-book-open class="w-4 h-4" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">Mushaf Digital</p>
+                                            <p class="text-[10px] text-emerald-900/70 dark:text-emerald-300/70 truncate">Simak tilawah</p>
+                                        </div>
                                     </div>
                                     <span class="text-emerald-600 font-bold text-xs">→</span>
                                 </a>
 
                                 <a href="{{ route('progress.show', $student) }}" class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/20 border border-indigo-200/80 dark:border-indigo-800/50 rounded-xl p-2.5 shadow-xs flex items-center justify-between gap-1.5 hover:border-indigo-500 transition">
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-bold text-indigo-800 dark:text-indigo-300 truncate">📊 Rapor Digital</p>
-                                        <p class="text-[10px] text-indigo-900/70 dark:text-indigo-300/70 truncate">Arsip capaian</p>
+                                    <div class="min-w-0 flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-indigo-500/15 flex items-center justify-center text-indigo-700 dark:text-indigo-300 shrink-0">
+                                            <x-heroicon-o-chart-bar class="w-4 h-4" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-bold text-indigo-800 dark:text-indigo-300 truncate">Rapor Digital</p>
+                                            <p class="text-[10px] text-indigo-900/70 dark:text-indigo-300/70 truncate">Arsip capaian</p>
+                                        </div>
                                     </div>
                                     <span class="text-indigo-600 font-bold text-xs">→</span>
                                 </a>
