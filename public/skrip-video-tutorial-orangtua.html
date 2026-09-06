@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skrip Video Tutorial Role Orang Tua - IMS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 2.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #ccfbf1;
+            color: #0f766e;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        .meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.35rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: #0f766e;
+            color: #ffffff;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background-color: #115e59;
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.875rem;
+            padding: 1rem;
+        }
+
+        .info-card p:first-child {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .info-card p:last-child {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 0.25rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1.5rem 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.875rem;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.875rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #fcfdfd;
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.375rem;
+            white-space: nowrap;
+        }
+
+        .vo-text {
+            font-style: italic;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .caption-text {
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid #0f766e;
+        }
+
+        .tips-box {
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-radius: 0.875rem;
+            padding: 1.25rem 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .tips-box h3 {
+            color: #0f766e;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .tips-box ul {
+            padding-left: 1.25rem;
+            font-size: 0.85rem;
+            color: #115e59;
+        }
+
+        .tips-box li {
+            margin-bottom: 0.35rem;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+            }
+            .actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <span class="badge">Naskah Video Tutorial</span>
+            <h1>Panduan Penggunaan Portal Orang Tua (IMS)</h1>
+            <p class="meta">Aplikasi Pemantauan Terpadu Tahfizh, Adab & Kedisiplinan Santri</p>
+        </div>
+        <div class="actions">
+            <button onclick="window.print()" class="btn btn-primary">
+                🖨️ Cetak / Download PDF
+            </button>
+            <button onclick="downloadWord()" class="btn btn-secondary">
+                📄 Download Word (.doc)
+            </button>
+        </div>
+    </div>
+
+    <div class="info-cards">
+        <div class="info-card">
+            <p>Target Durasi</p>
+            <p>Maksimal 2 Menit (120 Detik)</p>
+        </div>
+        <div class="info-card">
+            <p>Karakter Suara (VO)</p>
+            <p>Hangat, Ramah, Tenang & Jelas</p>
+        </div>
+        <div class="info-card">
+            <p>Musik Latar (BGM)</p>
+            <p>Akustik Islami / Piano Lembut</p>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">Waktu</th>
+                <th style="width: 30%;">Visual Layar (Action)</th>
+                <th style="width: 35%;">Naskah Suara (Voiceover)</th>
+                <th style="width: 20%;">Teks Layar (Caption)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="time-badge">00:00 - 00:15</span><br><small style="color: #64748b;">(15 Detik)</small></td>
+                <td>
+                    • Tampilkan layar Login IMS.<br>
+                    • Ketik username & password orang tua, lalu klik <strong>Masuk</strong>.<br>
+                    • Masuk ke Dashboard dengan banner sambutan.
+                </td>
+                <td class="vo-text">
+                    "Assalamu’alaikum Warahmatullahi Wabarakatuh. Selamat datang Ayah dan Bunda di Portal Terpadu IMS — Integrated Management System. Melalui portal ini, Ayah Bunda dapat memantau jejak ananda secara real-time dari rumah."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>Portal Wali Santri IMS</strong><br>
+                        Pantau Ananda Kapan Saja & Di Mana Saja
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="time-badge">00:15 - 00:35</span><br><small style="color: #64748b;">(20 Detik)</small></td>
+                <td>
+                    • Kursor menyorot banner sambutan.<br>
+                    • Klik <strong>Tab Pilihan Ananda</strong> (berpindah dari Ananda 1 ke Ananda 2).
+                </td>
+                <td class="vo-text">
+                    "Setelah login, Ayah Bunda akan langsung disambut di Dashboard Utama. Bagi Ayah Bunda yang memiliki lebih dari satu putra atau putri di sekolah, cukup klik nama ananda di tab atas untuk beralih profil dengan mudah dan praktis."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>Multi-Anak (1 Akun)</strong><br>
+                        Pilih profil ananda dengan sekali klik
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="time-badge">00:35 - 01:05</span><br><small style="color: #64748b;">(30 Detik)</small></td>
+                <td>
+                    • Layar memperbesar <strong>3 Kartu Bento Utama</strong>:<br>
+                    1. Diagram Lingkaran Tahfizh.<br>
+                    2. Medali Adab & Checklist Shalat 5 Waktu.<br>
+                    3. Kartu Kedisiplinan & Poin Reward.
+                </td>
+                <td class="vo-text">
+                    "Di layar utama, terdapat 3 hal pantauan penting: Pertama, capaian Tahfizh Al-Qur'an dan persentase target hafalan. Kedua, evaluasi Karakter & Adab, lengkap dengan checklist shalat fardhu lima waktu hari ini. Serta ketiga, catatan kedisiplinan dan poin prestasi ananda."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>3 Hal Pemantauan:</strong><br>
+                        1. Tahfizh Mutqin<br>
+                        2. Adab & Shalat 5 Waktu<br>
+                        3. Kedisiplinan & Prestasi
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="time-badge">01:05 - 01:35</span><br><small style="color: #64748b;">(30 Detik)</small></td>
+                <td>
+                    • Klik sub-tab <strong>Tahfizh & Target</strong> (target kurikulum & riwayat setoran).<br>
+                    • Klik sub-tab <strong>Catatan Adab</strong>.<br>
+                    • Klik sub-tab <strong>Kedisiplinan & Prestasi</strong>.
+                </td>
+                <td class="vo-text">
+                    "Gulir ke bawah untuk rincian lebih dalam: Pada tab Tahfizh, Ayah Bunda bisa melihat target kurikulum serta ayat yang baru saja disetorkan dan dimuraja'ah. Di tab Adab, pantau pembiasaan karakter ananda. Dan di tab Kedisiplinan, lihat apresiasi reward maupun catatan tata tertib yang perlu pendampingan."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>Rincian Jejak Belajar:</strong><br>
+                        • Riwayat Hafalan & Muraja'ah<br>
+                        • Buku Mutaba'ah Adab<br>
+                        • Catatan Poin Ananda
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="time-badge">01:35 - 01:50</span><br><small style="color: #64748b;">(15 Detik)</small></td>
+                <td>
+                    • Buka Sidebar Navigasi.<br>
+                    • Buka menu <strong>Mushaf Al-Qur'an</strong>.<br>
+                    • Buka menu <strong>Progress / Rapor</strong>.
+                </td>
+                <td class="vo-text">
+                    "Ayah Bunda juga dapat membuka menu samping untuk mengakses Mushaf Al-Qur'an Digital guna menyimak hafalan ananda dari rumah, serta melihat rekapitulasi Rapor Digital perkembangan berkala."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>Menu Tambahan:</strong><br>
+                        📖 Mushaf Al-Qur'an Digital<br>
+                        📊 Rapor Perkembangan
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="time-badge">01:50 - 02:00</span><br><small style="color: #64748b;">(10 Detik)</small></td>
+                <td>
+                    • Kembali ke tampilan utama Dashboard.<br>
+                    • Fade out ke logo instansi & identitas IMS.
+                </td>
+                <td class="vo-text">
+                    "Mari bersama-sama kita dampingi tumbuh kembang ananda menjadi generasi Qur'ani yang berakhlak mulia. Terima kasih, Wassalamu’alaikum Warahmatullahi Wabarakatuh."
+                </td>
+                <td>
+                    <div class="caption-text">
+                        <strong>Bersama Menjaga Amanah</strong><br>
+                        Integrated Management System
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="tips-box">
+        <h3>💡 Tips Penting saat Rekaman Video:</h3>
+        <ul>
+            <li><strong>Resolusi:</strong> Gunakan browser dengan resolusi 1920×1080 (16:9) dan zoom 110% agar tulisan angka dan teks terlihat jelas saat ditonton lewat ponsel.</li>
+            <li><strong>Data Percontohan:</strong> Gunakan akun orang tua yang telah memiliki riwayat setoran, poin reward, dan checklist shalat aktif.</li>
+            <li><strong>Highlight Kursor:</strong> Aktifkan sorotan kursor mouse agar alur perpindahan menu mudah dipahami wali santri.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function downloadWord() {
+    var header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+                 "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+                 "xmlns='http://www.w3.org/TR/REC-html40'>"+
+                 "<head><meta charset='utf-8'><title>Skrip Video Tutorial Orang Tua IMS</title></head><body>";
+    var footer = "</body></html>";
+    var sourceHTML = header + document.querySelector('.container').innerHTML + footer;
+    
+    var source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+    var fileDownload = document.createElement("a");
+    document.body.appendChild(fileDownload);
+    fileDownload.href = source;
+    fileDownload.download = 'Skrip_Video_Tutorial_Orang_Tua_IMS.doc';
+    fileDownload.click();
+    document.body.removeChild(fileDownload);
+}
+</script>
+
+</body>
+</html>
