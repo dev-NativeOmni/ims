@@ -1262,7 +1262,7 @@
                             </div>
 
                             <h3 id="login-modal-title" class="text-2xl sm:text-[1.75rem] font-black font-display text-white tracking-tight leading-tight">
-                                Portal Masuk
+                                LOGIN IMS
                             </h3>
                             
                             <p class="text-xs sm:text-sm text-zinc-300 font-medium mt-1 tracking-wide">
