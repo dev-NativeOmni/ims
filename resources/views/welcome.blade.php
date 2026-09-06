@@ -1252,29 +1252,22 @@
 
                         <!-- Header Brand Emblem & Title -->
                         <div class="flex flex-col items-center justify-center text-center mb-5 relative z-10">
-                            <!-- Glowing Emblem Container with Blue-to-Orange border -->
+                            <!-- Logo (Clean without box wrapper) -->
                             <div class="relative mb-3 flex items-center justify-center">
-                                <div class="absolute inset-[-4px] rounded-2xl bg-gradient-to-tr from-blue-500/50 to-orange-500/50 blur-lg animate-pulse"></div>
-                                <div class="relative w-15 h-15 sm:w-17 sm:h-17 rounded-2xl p-[1.5px] bg-gradient-to-br from-blue-400 via-sky-200 to-orange-500 shadow-[0_0_20px_rgba(2,132,199,0.35),0_0_20px_rgba(249,115,22,0.35)]">
-                                    <div class="w-full h-full rounded-[calc(1rem-0.5px)] bg-[#070c18]/95 backdrop-blur-xl flex items-center justify-center p-2">
-                                        @if ($logo)
-                                            <img src="{{ asset('storage/' . $logo) }}" alt="Logo" class="w-full h-full object-contain drop-shadow-md" />
-                                        @else
-                                            <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMAIA 7" class="w-full h-full object-contain drop-shadow-md">
-                                        @endif
-                                    </div>
-                                </div>
+                                @if ($logo)
+                                    <img src="{{ asset('storage/' . $logo) }}" alt="Logo" class="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.55)]" />
+                                @else
+                                    <img src="{{ asset('images/logo_alazhar7.png') }}" alt="Logo SMA Islam Al Azhar 7 Solo Baru" class="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.55)]">
+                                @endif
                             </div>
 
                             <h3 id="login-modal-title" class="text-2xl sm:text-[1.75rem] font-black font-display text-white tracking-tight leading-tight">
-                                Portal <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-amber-300 to-orange-400">Masuk</span>
+                                Portal Masuk
                             </h3>
                             
-                            @if ($namaInstansi)
-                                <p class="text-[11px] sm:text-xs text-zinc-300/90 font-semibold mt-0.5 uppercase tracking-wider">{{ $namaInstansi }}</p>
-                            @else
-                                <p class="text-[11px] sm:text-xs text-zinc-300/80 font-medium mt-0.5">SMA Islam Al Azhar 7 Sukoharjo</p>
-                            @endif
+                            <p class="text-xs sm:text-sm text-zinc-300 font-medium mt-1 tracking-wide">
+                                {{ ($namaInstansi && !in_array($namaInstansi, ['SMAIA 7', 'SMAIA7', 'SMA Islam Al Azhar 7 Sukoharjo'])) ? $namaInstansi : 'SMA Islam Al Azhar 7 Solo Baru' }}
+                            </p>
                         </div>
 
                         <!-- Session Status Alert -->
