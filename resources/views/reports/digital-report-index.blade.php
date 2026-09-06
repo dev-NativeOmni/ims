@@ -50,8 +50,8 @@
                             </a>
                         @endif
                         @if (request('class_room_id') && $students->isNotEmpty())
-                            <a href="{{ route('digital-reports.class-print', ['classRoom' => request('class_room_id')] + request()->only(['academic_year', 'semester'])) }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors min-h-[42px] gap-1">
-                                <span>🖨️</span>
+                            <a href="{{ route('digital-reports.class-print', ['classRoom' => request('class_room_id')] + request()->only(['academic_year', 'semester'])) }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors min-h-[42px] gap-1.5">
+                                <x-heroicon-o-printer class="w-4 h-4" />
                                 <span>Cetak Rapor Satu Kelas</span>
                             </a>
                         @endif

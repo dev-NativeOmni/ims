@@ -19,18 +19,18 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div class="py-4 sm:py-6 lg:py-8">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6 px-3 sm:px-6 lg:px-8">
 
             @if (session('success'))
-                <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                <div class="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium text-emerald-800 dark:text-emerald-300">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(!auth()->user()->hasAnyRole(['parent', 'student']))
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 sm:p-5 shadow-xs">
+                    <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <label for="student_id" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Murid
@@ -131,49 +131,69 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Total Hafalan</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($summary['total_hafalan'] ?? 0) }}</p>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all hover:border-zinc-300 dark:hover:border-zinc-700">
+                    <div class="flex items-center justify-between gap-1.5">
+                        <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Total Hafalan</p>
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                            <x-heroicon-o-book-open class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </div>
+                    </div>
+                    <p class="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">{{ number_format($summary['total_hafalan'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Total Murajaah</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($summary['total_murajaah'] ?? 0) }}</p>
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all hover:border-zinc-300 dark:hover:border-zinc-700">
+                    <div class="flex items-center justify-between gap-1.5">
+                        <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Total Murajaah</p>
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                            <x-heroicon-o-arrow-path class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </div>
+                    </div>
+                    <p class="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">{{ number_format($summary['total_murajaah'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Target Aktif</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($summary['active_targets'] ?? 0) }}</p>
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all hover:border-zinc-300 dark:hover:border-zinc-700">
+                    <div class="flex items-center justify-between gap-1.5">
+                        <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Target Aktif</p>
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                            <x-heroicon-o-check-circle class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </div>
+                    </div>
+                    <p class="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">{{ number_format($summary['active_targets'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Rata-rata Nilai</p>
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all hover:border-zinc-300 dark:hover:border-zinc-700">
+                    <div class="flex items-center justify-between gap-1.5">
+                        <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Rata-rata Nilai</p>
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+                            <x-heroicon-o-chart-bar class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </div>
+                    </div>
+                    <p class="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
                         {{ number_format((float) (($summary['average_hafalan_score'] ?? 0) + ($summary['average_murajaah_score'] ?? 0)) / 2, 2) }}
                     </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Hafalan Lulus</p>
-                    <p class="mt-2 text-2xl font-bold text-emerald-700">{{ number_format($summary['passed_hafalan'] ?? 0) }}</p>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all">
+                    <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Hafalan Lulus</p>
+                    <p class="mt-1 sm:mt-1.5 text-lg sm:text-xl lg:text-2xl font-black text-emerald-600 dark:text-emerald-400">{{ number_format($summary['passed_hafalan'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Hafalan Perlu Perhatian</p>
-                    <p class="mt-2 text-2xl font-bold text-amber-700">{{ number_format($summary['repeat_hafalan'] ?? 0) }}</p>
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all">
+                    <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Hafalan Perlu Perhatian</p>
+                    <p class="mt-1 sm:mt-1.5 text-lg sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400">{{ number_format($summary['repeat_hafalan'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Murajaah Lulus/Baik</p>
-                    <p class="mt-2 text-2xl font-bold text-emerald-700">{{ number_format($summary['passed_murajaah'] ?? 0) }}</p>
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all">
+                    <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Murajaah Lulus/Baik</p>
+                    <p class="mt-1 sm:mt-1.5 text-lg sm:text-xl lg:text-2xl font-black text-teal-600 dark:text-teal-400">{{ number_format($summary['passed_murajaah'] ?? 0) }}</p>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-600">Murajaah Perlu Perhatian</p>
-                    <p class="mt-2 text-2xl font-bold text-amber-700">{{ number_format($summary['repeat_murajaah'] ?? 0) }}</p>
+                <div class="rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-all">
+                    <p class="text-[11px] sm:text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">Murajaah Perlu Perhatian</p>
+                    <p class="mt-1 sm:mt-1.5 text-lg sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400">{{ number_format($summary['repeat_murajaah'] ?? 0) }}</p>
                 </div>
             </div>
 
