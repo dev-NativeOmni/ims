@@ -152,6 +152,7 @@
             const totalQ        = {{ $totalQuestionsCount }};
 
             function updateCalc() {
+                if (!liveScoreEl || !progressBar || !filledCountEl) return;
                 const answered = new Set();
                 let yesCount   = 0;
 

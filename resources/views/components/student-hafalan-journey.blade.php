@@ -5,7 +5,19 @@
     $journey = data_get($milestones, 'journey', []);
 @endphp
 
-<div x-data="{ showModal: false, activeTerm: null, activeGrade: '' }" class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md space-y-5">
+<div x-data="{
+    showModal: false,
+    activeTerm: null,
+    activeGrade: '',
+    journeyData: @js(array_values($journey)),
+    openTerm(gradeIdx, termNum, gradeName) {
+        const gradeObj = this.journeyData[gradeIdx] || {};
+        const terms = gradeObj.terms || {};
+        this.activeTerm = terms[termNum] || null;
+        this.activeGrade = gradeName;
+        this.showModal = true;
+    }
+}" class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-md space-y-5">
     {{-- ─── HEADER & SETORAN PERTAMA BANNER ─── --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div>
@@ -72,7 +84,7 @@
                                 $firstSetoran = data_get($t, 'first_setoran');
                                 $isCurrent = data_get($t, 'is_current', false);
                             @endphp
-                            <td @click="activeTerm = {{ json_encode($t) }}; activeGrade = '{{ $gName }}'; showModal = true"
+                            <td @click="openTerm({{ $loop->parent->index }}, {{ $tNum }}, '{{ addslashes($gName) }}')"
                                 class="p-3 border-r last:border-r-0 border-zinc-300 dark:border-zinc-700 text-center align-middle cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/40 transition group relative">
                                 
                                 <div class="space-y-1.5">

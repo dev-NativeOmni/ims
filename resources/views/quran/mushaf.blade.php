@@ -1042,6 +1042,12 @@
                 }
             };
         }
+        window.mushafApp = mushafApp;
+        document.addEventListener('alpine:init', () => {
+            if (window.Alpine) {
+                window.Alpine.data('mushafApp', mushafApp);
+            }
+        });
     </script>
 
     <!-- Custom CSS styles -->

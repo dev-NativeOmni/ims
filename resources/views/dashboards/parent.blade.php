@@ -201,14 +201,13 @@
                                             {{ data_get($adabData, 'final_score', 0) }} <span class="text-[10px] font-normal opacity-70">/ 100</span>
                                         </p>
                                     </div>
-                                    <div class="flex items-center gap-0.5 mt-0.5">
+                                    <div class="flex items-center gap-1 mt-0.5">
                                         @php $isFilled = (bool) data_get($adabData, 'today_record'); @endphp
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
-                                        <span class="text-[8px] opacity-75 ml-0.5">{{ $isFilled ? '5 Shalat' : 'Shalat' }}</span>
+                                        <span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded"
+                                              :class="childTab === 'adab' ? 'bg-white/20 text-white' : '{{ $isFilled ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400' }}'">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ $isFilled ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                                            {{ $isFilled ? 'Angket Terisi' : 'Belum Diisi' }}
+                                        </span>
                                     </div>
                                 </button>
 
@@ -429,27 +428,37 @@
                                     </div>
                                 </div>
 
-                                {{-- Checklist Shalat Fardhu 5 Waktu Hari Ini --}}
-                                <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs space-y-1.5">
+                                {{-- Status Kuisioner Adab Hari Ini & 4 Pilar Karakter --}}
+                                <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs space-y-2">
                                     <div class="flex items-center justify-between">
                                         <h4 class="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                            <x-heroicon-o-clock class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Shalat Fardhu 5 Waktu Hari Ini
+                                            <x-heroicon-o-clipboard-document-check class="w-4 h-4 text-amber-600 dark:text-amber-400" /> Kuisioner Adab Harian Santri
                                         </h4>
-                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-1 {{ data_get($adabData, 'today_record') ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700' }}">
-                                            @if(data_get($adabData, 'today_record'))
-                                                <x-heroicon-o-check class="w-3 h-3 stroke-[2.5]" /> Terisi
+                                        @php $isFilled = (bool) data_get($adabData, 'today_record'); @endphp
+                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 {{ $isFilled ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400' }}">
+                                            @if($isFilled)
+                                                <x-heroicon-o-check-circle class="w-3 h-3 stroke-[2.5]" /> Terisi Hari Ini
                                             @else
-                                                Belum Terisi
+                                                <x-heroicon-o-clock class="w-3 h-3 stroke-[2.5]" /> Belum Diisi Hari Ini
                                             @endif
                                         </span>
                                     </div>
-                                    <div class="grid grid-cols-5 gap-1 text-center text-[9px] font-bold">
-                                        @php $isFilled = (bool) data_get($adabData, 'today_record'); @endphp
-                                        <div class="py-1 rounded {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Subuh</div>
-                                        <div class="py-1 rounded {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Dzuhur</div>
-                                        <div class="py-1 rounded {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Ashar</div>
-                                        <div class="py-1 rounded {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Maghrib</div>
-                                        <div class="py-1 rounded {{ $isFilled ? 'prayer-pill-done' : 'prayer-pill-pending' }}">Isya</div>
+                                    <p class="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                        Penilaian pembiasaan karakter mencakup 4 pilar adab harian santri:
+                                    </p>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[9px] font-bold">
+                                        <div class="p-1.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50 flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
+                                            <span>🕋</span> <span class="truncate">Kepada Allah</span>
+                                        </div>
+                                        <div class="p-1.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50 flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
+                                            <span>👥</span> <span class="truncate">Sesama Teman</span>
+                                        </div>
+                                        <div class="p-1.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50 flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
+                                            <span>📚</span> <span class="truncate">Ketika Belajar</span>
+                                        </div>
+                                        <div class="p-1.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50 flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
+                                            <span>🌿</span> <span class="truncate">Lingkungan</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -457,7 +466,7 @@
                                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 rounded-xl p-3 shadow-xs flex items-center justify-between gap-2">
                                     <div class="min-w-0">
                                         <h4 class="text-xs font-bold text-zinc-900 dark:text-white truncate">Buku Mutaba'ah Adab Ananda</h4>
-                                        <p class="text-[10px] text-zinc-500 truncate">Detail shalat, dhuha, tilawah, dan adab harian.</p>
+                                        <p class="text-[10px] text-zinc-500 truncate">Detail penilaian adab harian santri, catatan musyrif, dan grafik perkembangan.</p>
                                     </div>
                                     <a href="{{ route('adab.show', $student) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shrink-0 transition shadow-xs">
                                         <span>Buka</span> <x-heroicon-m-arrow-right class="w-3 h-3" />
