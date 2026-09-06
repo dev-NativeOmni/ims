@@ -213,8 +213,9 @@
                                                         </span>
                                                     @endif
                                                     @if($item->location)
-                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-350">
-                                                            📍 {{ $item->location }}
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-350">
+                                                            <x-heroicon-o-map-pin class="w-3 h-3 text-gray-500 shrink-0" />
+                                                            <span>{{ $item->location }}</span>
                                                         </span>
                                                     @endif
                                                 </div>
@@ -298,7 +299,8 @@
                     <!-- Kategori Pelanggaran -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-xs">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
-                            <span class="text-red-500">⚠️</span> Poin Pelanggaran per Kategori
+                            <x-heroicon-o-exclamation-triangle class="w-4 h-4 text-rose-500 shrink-0" />
+                            <span>Poin Pelanggaran per Kategori</span>
                         </h4>
                         <div class="space-y-3 sm:space-y-4">
                             @foreach(['ringan' => 'Ringan', 'sedang' => 'Sedang', 'berat' => 'Berat'] as $key => $label)
@@ -325,7 +327,8 @@
                     <!-- Kategori Penghargaan / Tingkatan -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-xs">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
-                            <span class="text-green-500">🏆</span> Poin Prestasi per Tingkat
+                            <x-heroicon-o-trophy class="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span>Poin Prestasi per Tingkat</span>
                         </h4>
                         <div class="space-y-3 sm:space-y-4">
                             @foreach(['school' => 'Tingkat Sekolah', 'district' => 'Kabupaten/Kota', 'province' => 'Provinsi', 'national' => 'Nasional'] as $key => $label)
@@ -356,7 +359,8 @@
                     <!-- Peta Lokasi Kejadian (Heatmap List) -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-xs md:col-span-1">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
-                            <span class="text-indigo-500">📍</span> Lokasi Kejadian Terbanyak
+                            <x-heroicon-o-map-pin class="w-4 h-4 text-indigo-500 shrink-0" />
+                            <span>Lokasi Kejadian Terbanyak</span>
                         </h4>
                         @if($violationsByLocation->isEmpty())
                             <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-4 sm:py-6">Belum ada lokasi tercatat.</p>
@@ -377,7 +381,8 @@
                     <!-- Top 5 Murid Pelanggaran Terbanyak -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-xs md:col-span-1">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
-                            <span class="text-red-500">🚨</span> Pelanggar Terbanyak
+                            <x-heroicon-o-shield-exclamation class="w-4 h-4 text-rose-500 shrink-0" />
+                            <span>Pelanggar Terbanyak</span>
                         </h4>
                         @if($topViolators->isEmpty())
                             <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-4 sm:py-6">Belum ada data pelanggaran.</p>
@@ -396,7 +401,8 @@
                     <!-- Top 5 Murid Berprestasi Terbanyak -->
                     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-6 shadow-xs md:col-span-1">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
-                            <span class="text-green-500">🎖️</span> Prestasi Tertinggi
+                            <x-heroicon-o-sparkles class="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span>Prestasi Tertinggi</span>
                         </h4>
                         @if($topAchievers->isEmpty())
                             <p class="text-xs text-gray-500 dark:text-zinc-500 text-center py-4 sm:py-6">Belum ada data prestasi.</p>

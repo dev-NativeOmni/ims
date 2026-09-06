@@ -29,7 +29,7 @@
                 </div>
             @endif
 
-            {{-- 🌟 TEACHER HERO BENTO WITH CLASS CIRCULAR PROGRESS RING 🌟 --}}
+            {{-- TEACHER HERO BENTO WITH CLASS CIRCULAR PROGRESS RING --}}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
                 
                 {{-- Left 4-col: Class Average Completion Ring --}}

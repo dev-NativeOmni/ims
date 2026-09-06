@@ -64,15 +64,18 @@
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'portrait'])) }}" 
-               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
-               📄 A4 Portrait
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               <x-heroicon-o-document-text class="w-3.5 h-3.5" />
+               <span>A4 Portrait</span>
             </a>
             <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'landscape'])) }}" 
-               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
-               📑 A4 Landscape
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               <x-heroicon-o-rectangle-stack class="w-3.5 h-3.5" />
+               <span>A4 Landscape</span>
             </a>
             <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
-                🖨️ Cetak Sekarang
+                <x-heroicon-o-printer class="w-4 h-4" />
+                <span>Cetak Sekarang</span>
             </button>
             <button onclick="window.close()" class="px-3 py-2 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
                 Tutup
@@ -148,15 +151,18 @@
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'portrait'])) }}" 
-               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
-               📄 A4 Portrait
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'portrait' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               <x-heroicon-o-document-text class="w-3.5 h-3.5" />
+               <span>A4 Portrait</span>
             </a>
             <a href="?{{ http_build_query(array_merge(request()->query(), ['orientation' => 'landscape'])) }}" 
-               class="px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
-               📑 A4 Landscape
+               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition {{ $printOrientation === 'landscape' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50' }}">
+               <x-heroicon-o-rectangle-stack class="w-3.5 h-3.5" />
+               <span>A4 Landscape</span>
             </a>
             <button onclick="window.print()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-1.5">
-                🖨️ Cetak Sekarang
+                <x-heroicon-o-printer class="w-4 h-4" />
+                <span>Cetak Sekarang</span>
             </button>
             <button onclick="window.close()" class="px-4 py-2 border border-zinc-300 rounded-lg text-sm font-semibold text-zinc-700 bg-white hover:bg-zinc-50 cursor-pointer">
                 Tutup Halaman

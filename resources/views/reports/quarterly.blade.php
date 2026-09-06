@@ -13,8 +13,9 @@
                 <span class="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-bold border border-indigo-500/20">
                     Program: {{ $selectedClass?->program?->name ?? 'Tahfizh' }}
                 </span>
-                <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20">
-                    🔒 Eksklusif Admin
+                <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20 inline-flex items-center gap-1">
+                    <x-heroicon-o-lock-closed class="w-3.5 h-3.5" />
+                    <span>Eksklusif Admin</span>
                 </span>
                 <button onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold shadow transition cursor-pointer">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -143,11 +144,13 @@
 
             <!-- Export Bar -->
             <div class="no-print flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
-                <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400">
-                    💡 <strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama bulan terpilih.
+                <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-center gap-1.5">
+                    <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama bulan terpilih.</span>
                 </span>
-                <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-2 cursor-pointer">
-                    📥 Ekspor Seluruh Kelas ke Excel (.xlsx)
+                <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
+                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                    <span>Ekspor Seluruh Kelas ke Excel (.xlsx)</span>
                 </button>
             </div>
 
@@ -159,7 +162,8 @@
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b dark:border-zinc-800 pb-4">
                         <div>
                             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                                🕌 Halaqoh: <span class="text-indigo-650 dark:text-indigo-400">{{ $halaqah['musyrif'] }}</span>
+                                <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <span>Halaqoh: <span class="text-indigo-650 dark:text-indigo-400">{{ $halaqah['musyrif'] }}</span></span>
                             </h3>
                             <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
                                 Kelompok bimbingan di kelas <span class="font-bold">{{ $selectedClass?->name }}</span> · Total: {{ $halaqah['total_students'] }} Murid aktif.
@@ -182,20 +186,25 @@
 
                     <!-- Inner Navigation Tabs -->
                     <div class="no-print flex flex-wrap items-center gap-1 border-b dark:border-zinc-800 pb-1">
-                        <button type="button" @click="activeTab = 'presensi'" :class="activeTab === 'presensi' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
-                            📅 Presensi
+                        <button type="button" @click="activeTab = 'presensi'" :class="activeTab === 'presensi' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                            <x-heroicon-o-calendar class="w-3.5 h-3.5" />
+                            <span>Presensi</span>
                         </button>
-                        <button type="button" @click="activeTab = 'jurnal'" :class="activeTab === 'jurnal' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
-                            📝 Jurnal Pembelajaran
+                        <button type="button" @click="activeTab = 'jurnal'" :class="activeTab === 'jurnal' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                            <x-heroicon-o-document-text class="w-3.5 h-3.5" />
+                            <span>Jurnal Pembelajaran</span>
                         </button>
-                        <button type="button" @click="activeTab = 'setoran'" :class="activeTab === 'setoran' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
-                            📖 Capaian Hafalan (Setoran)
+                        <button type="button" @click="activeTab = 'setoran'" :class="activeTab === 'setoran' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                            <x-heroicon-o-book-open class="w-3.5 h-3.5" />
+                            <span>Capaian Hafalan (Setoran)</span>
                         </button>
-                        <button type="button" @click="activeTab = 'grafik'" :class="activeTab === 'grafik' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
-                            📈 Grafik Akhir Bulan
+                        <button type="button" @click="activeTab = 'grafik'" :class="activeTab === 'grafik' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                            <x-heroicon-o-chart-bar class="w-3.5 h-3.5" />
+                            <span>Grafik Akhir Bulan</span>
                         </button>
-                        <button type="button" @click="activeTab = 'term'" :class="activeTab === 'term' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer">
-                            🎓 Term / Indeks (DNS)
+                        <button type="button" @click="activeTab = 'term'" :class="activeTab === 'term' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                            <x-heroicon-o-academic-cap class="w-3.5 h-3.5" />
+                            <span>Term / Indeks (DNS)</span>
                         </button>
                     </div>
 
@@ -506,7 +515,7 @@
                                     @endphp
                                     <div>
                                         <div class="flex justify-between text-xs font-semibold mb-1">
-                                            <span class="text-emerald-600">✅ Tuntas (>= Target Baris)</span>
+                                            <span class="text-emerald-600 inline-flex items-center gap-1"><x-heroicon-o-check-circle class="w-3.5 h-3.5" /> Tuntas (>= Target Baris)</span>
                                             <span>{{ $tCount }} Murid ({{ $tPercent }}%)</span>
                                         </div>
                                         <div class="w-full bg-gray-200 dark:bg-zinc-800 rounded-full h-3">
@@ -515,7 +524,7 @@
                                     </div>
                                     <div>
                                         <div class="flex justify-between text-xs font-semibold mb-1">
-                                            <span class="text-rose-600">❌ Tidak Tuntas (< Target Baris)</span>
+                                            <span class="text-rose-600 inline-flex items-center gap-1"><x-heroicon-o-x-circle class="w-3.5 h-3.5" /> Tidak Tuntas (< Target Baris)</span>
                                             <span>{{ $total - $tCount }} Murid ({{ $btPercent }}%)</span>
                                         </div>
                                         <div class="w-full bg-gray-200 dark:bg-zinc-800 rounded-full h-3">
@@ -561,12 +570,14 @@
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $row['target_lines'] }} Baris</td>
                                             <td class="px-4 py-3 font-bold">
                                                 @if ($row['is_tuntas'])
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30">
-                                                        ✅ Tuntas
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30">
+                                                        <x-heroicon-o-check-circle class="w-3 h-3 stroke-[2.5]" />
+                                                        <span>Tuntas</span>
                                                     </span>
                                                 @else
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/30">
-                                                        ❌ Tidak Tuntas
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/30">
+                                                        <x-heroicon-o-x-circle class="w-3 h-3 stroke-[2.5]" />
+                                                        <span>Tidak Tuntas</span>
                                                     </span>
                                                 @endif
                                             </td>

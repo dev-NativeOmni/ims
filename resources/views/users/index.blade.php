@@ -43,18 +43,18 @@
             </div>
 
             @php
-                $getRoleIcon = function($roleName) {
+                $getRoleIconName = function($roleName) {
                     return match($roleName) {
-                        'student' => '🎓',
-                        'teacher' => '👨‍🏫',
-                        'parent' => '👨‍👩‍👧',
-                        'coordinator_tahfizh' => '🕌',
-                        'tanse' => '🛡️',
-                        'super_admin', 'admin' => '👑',
-                        'headmaster' => '🏫',
-                        'supervisor' => '👁️',
-                        'pendamping_adab' => '🌟',
-                        default => '👤'
+                        'student' => 'academic-cap',
+                        'teacher' => 'user-group',
+                        'parent' => 'heart',
+                        'coordinator_tahfizh' => 'book-open',
+                        'tanse' => 'shield-check',
+                        'super_admin', 'admin' => 'key',
+                        'headmaster' => 'building-library',
+                        'supervisor' => 'eye',
+                        'pendamping_adab' => 'sparkles',
+                        default => 'user'
                     };
                 };
 
@@ -74,7 +74,7 @@
                     </h3>
                     @if($hasActiveFilters)
                         <a href="{{ route('users.index') }}" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
-                            <span>✕</span> Reset Filter
+                            <x-heroicon-o-x-mark class="w-3.5 h-3.5" /> Reset Filter
                         </a>
                     @endif
                 </div>
@@ -87,7 +87,7 @@
                     @endphp
                     <a href="{{ $allUrl }}"
                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isAllActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm ring-2 ring-indigo-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
-                        <span>👥</span>
+                        <x-heroicon-o-users class="w-4 h-4 shrink-0" />
                         <span>Semua User</span>
                         <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isAllActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
                             {{ $totalUsers }}
@@ -99,14 +99,14 @@
                         @php
                             $isRoleActive = (string) request('role_id') === (string) $role->id;
                             $count = $roleCounts[$role->id] ?? 0;
-                            $icon = $getRoleIcon($role->name);
+                            $iconName = $getRoleIconName($role->name);
                             $roleUrl = $isRoleActive
                                 ? route('users.index', array_filter(request()->only(['search', 'class_room_id'])))
                                 : route('users.index', array_merge(array_filter(request()->only(['search', 'class_room_id'])), ['role_id' => $role->id]));
                         @endphp
                         <a href="{{ $roleUrl }}"
                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isRoleActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm ring-2 ring-indigo-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
-                            <span>{{ $icon }}</span>
+                            <x-dynamic-component :component="'heroicon-o-' . $iconName" class="w-4 h-4 shrink-0" />
                             <span>{{ $role->display_name }}</span>
                             <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isRoleActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
                                 {{ $count }}
@@ -123,7 +123,7 @@
                     @endphp
                     <a href="{{ $inactiveUrl }}"
                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 border {{ $isInactiveActive ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/40' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/60' }}">
-                        <span>🔴</span>
+                        <x-heroicon-o-no-symbol class="w-4 h-4 shrink-0" />
                         <span>Non-Aktif</span>
                         <span class="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold {{ $isInactiveActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400' }}">
                             {{ $inactiveUsers }}
@@ -220,8 +220,8 @@
                                             <div class="mt-1.5 space-y-1">
                                                 @if ($u->studentProfile->classRoom)
                                                     <div>
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/50">
-                                                            🏫 Kelas {{ $u->studentProfile->classRoom->name }}
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/50">
+                                                            <x-heroicon-o-academic-cap class="w-3.5 h-3.5 text-indigo-500" /> Kelas {{ $u->studentProfile->classRoom->name }}
                                                         </span>
                                                     </div>
                                                 @endif
@@ -229,7 +229,7 @@
                                                 @if ($u->studentProfile->parents->isNotEmpty())
                                                     @foreach ($u->studentProfile->parents as $pProfile)
                                                         <div class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
-                                                            <span class="text-xs">👨‍👩‍👧</span>
+                                                            <x-heroicon-o-user-group class="w-3.5 h-3.5 text-zinc-400" />
                                                             <span class="text-zinc-500 dark:text-zinc-400">Ortu:</span>
                                                             <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ $pProfile->user?->name ?? 'Orang Tua' }}</span>
                                                             <span class="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">({{ '@' . ($pProfile->user?->username ?? '-') }})</span>
@@ -237,13 +237,13 @@
                                                     @endforeach
                                                 @else
                                                     <div class="text-[11px] font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                                        <span>⚠️</span> Belum Terhubung Orang Tua
+                                                        <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5" /> Belum Terhubung Orang Tua
                                                     </div>
                                                 @endif
 
                                                 <div>
                                                     <button type="button" @click="openLinkModal = true" class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition">
-                                                        <span>🔗 Edit Relasi Ortu</span>
+                                                        <x-heroicon-o-link class="w-3 h-3" /> <span>Edit Relasi Ortu</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -263,9 +263,10 @@
                                                          @click.away="openLinkModal = false">
                                                         <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800">
                                                             <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                                                <span>👨‍👩‍👧 Hubungkan Orang Tua</span>
+                                                                <x-heroicon-o-user-plus class="w-5 h-5 text-indigo-600" />
+                                                                <span>Hubungkan Orang Tua</span>
                                                             </h3>
-                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">✕</button>
+                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1"><x-heroicon-o-x-mark class="w-5 h-5" /></button>
                                                         </div>
 
                                                         <p class="text-xs text-zinc-600 dark:text-zinc-400">
@@ -330,7 +331,7 @@
                                                 @if ($u->parentProfile->students->isNotEmpty())
                                                     @foreach ($u->parentProfile->students as $cStudent)
                                                         <div class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
-                                                            <span class="text-xs">👦</span>
+                                                            <x-heroicon-o-academic-cap class="w-3.5 h-3.5 text-zinc-400" />
                                                             <span class="text-zinc-500 dark:text-zinc-400">Anak:</span>
                                                             <span class="font-bold text-zinc-800 dark:text-zinc-200">{{ $cStudent->name }}</span>
                                                             @if($cStudent->classRoom)
@@ -343,13 +344,13 @@
                                                     @endforeach
                                                 @else
                                                     <div class="text-[11px] font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                                        <span>⚠️</span> Belum Terhubung Murid
+                                                        <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5" /> Belum Terhubung Murid
                                                     </div>
                                                 @endif
 
                                                 <div>
                                                     <button type="button" @click="openLinkModal = true" class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition">
-                                                        <span>🔗 Edit Relasi Murid</span>
+                                                        <x-heroicon-o-link class="w-3 h-3" /> <span>Edit Relasi Murid</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -369,9 +370,10 @@
                                                          @click.away="openLinkModal = false">
                                                         <div class="flex items-center justify-between border-b pb-3 dark:border-zinc-800">
                                                             <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                                                <span>👦 Hubungkan Anak/Murid</span>
+                                                                <x-heroicon-o-user-plus class="w-5 h-5 text-indigo-600" />
+                                                                <span>Hubungkan Anak/Murid</span>
                                                             </h3>
-                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">✕</button>
+                                                            <button type="button" @click="openLinkModal = false" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1"><x-heroicon-o-x-mark class="w-5 h-5" /></button>
                                                         </div>
 
                                                         <p class="text-xs text-zinc-600 dark:text-zinc-400">
@@ -497,8 +499,9 @@
                                             @if (auth()->id() !== $u->id)
                                                 <form action="{{ route('impersonate.start', $u) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" title="Masuk & Uji Sistem sebagai User ini" class="inline-flex items-center px-2.5 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/60 dark:hover:bg-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-md transition duration-150 cursor-pointer">
-                                                        👤 Impersonate
+                                                    <button type="submit" title="Masuk & Uji Sistem sebagai User ini" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/60 dark:hover:bg-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-md transition duration-150 cursor-pointer">
+                                                        <x-heroicon-o-arrow-right-on-rectangle class="w-3.5 h-3.5" />
+                                                        <span>Impersonate</span>
                                                     </button>
                                                 </form>
                                             @endif

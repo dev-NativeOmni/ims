@@ -285,9 +285,9 @@
                                 type="button" 
                                 x-show="search.length > 0" 
                                 @click="search = ''; currentPage = 1" 
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-400 hover:text-gray-600 font-bold"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                             >
-                                ✕
+                                <x-heroicon-o-x-mark class="w-4 h-4" />
                             </button>
                         </div>
 

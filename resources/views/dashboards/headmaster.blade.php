@@ -34,7 +34,7 @@
                 {{-- Target Selesai --}}
                 <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target ✓</span>
+                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Target Tuntas</span>
                         <div class="w-8 h-8 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center shadow-2xs">
                             <x-heroicon-o-check-badge class="w-4 h-4" />
                         </div>
@@ -116,8 +116,8 @@
                         </h3>
                         <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Aktivitas hafalan per tingkat kelas</p>
                     </div>
-                    <a href="{{ route('reports.periodic') }}" class="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline">
-                        Detail →
+                    <a href="{{ route('reports.periodic') }}" class="inline-flex items-center gap-1 text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline">
+                        <span>Detail</span> <x-heroicon-m-arrow-right class="w-3.5 h-3.5" />
                     </a>
                 </div>
                 <div class="p-4 sm:p-6">
@@ -153,8 +153,8 @@
                         </h3>
                         <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Rata-rata nilai adab per tingkat & kehadiran</p>
                     </div>
-                    <a href="{{ route('adab.chart') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
-                        Detail →
+                    <a href="{{ route('adab.chart') }}" class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                        <span>Detail</span> <x-heroicon-m-arrow-right class="w-3.5 h-3.5" />
                     </a>
                 </div>
                 <div class="p-4 sm:p-6">
@@ -196,13 +196,13 @@
             <div class="glass-liquid-card rounded-2xl shadow-sm overflow-hidden">
                 <div class="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-zinc-200/70 dark:border-white/10 bg-zinc-50/50 dark:bg-zinc-900/50">
                     <div>
-                        <h3 class="text-xs sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 sm:gap-2">
+                        <h3 class="text-xs sm:base font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 sm:gap-2">
                             <x-heroicon-o-shield-check class="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 dark:text-rose-400" /> Perkembangan Tanse
                         </h3>
                         <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Tren ketahanan sekolah & kedisiplinan</p>
                     </div>
-                    <a href="{{ route('student-points.chart') }}" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline">
-                        Detail →
+                    <a href="{{ route('student-points.chart') }}" class="inline-flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline">
+                        <span>Detail</span> <x-heroicon-m-arrow-right class="w-3.5 h-3.5" />
                     </a>
                 </div>
                 <div class="p-4 sm:p-6">

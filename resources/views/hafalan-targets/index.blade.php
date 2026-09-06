@@ -3,7 +3,8 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-bold text-2xl text-gray-900 leading-tight flex items-center gap-2">
-                    <span>🎯 Kelola Target Hafalan Murid</span>
+                    <x-heroicon-o-flag class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                    <span>Kelola Target Hafalan Murid</span>
                 </h2>
                 <p class="text-sm text-gray-600">
                     Pengisian target hafalan reguler per-murid dan target metode Ummi serentak per-Halaqah Musyrif.
@@ -42,12 +43,14 @@
             <div class="flex items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
                 <a href="{{ route('hafalan-targets.index', array_merge(request()->except('page'), ['program' => 'reguler'])) }}"
                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition {{ $activeProgram === 'reguler' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                    <span>📘 Program Reguler (Kelas 11 &amp; 12)</span>
+                    <x-heroicon-o-book-open class="w-4 h-4" />
+                    <span>Program Reguler (Kelas 11 &amp; 12)</span>
                 </a>
 
                 <a href="{{ route('hafalan-targets.index', array_merge(request()->except('page'), ['program' => 'ummi'])) }}"
                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition {{ $activeProgram === 'ummi' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                    <span>📗 Program Metode Ummi (Kelas 10 — Per-Halaqah Musyrif)</span>
+                    <x-heroicon-o-bookmark class="w-4 h-4" />
+                    <span>Program Metode Ummi (Kelas 10 — Per-Halaqah Musyrif)</span>
                 </a>
             </div>
 
@@ -57,7 +60,8 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                         <div>
                             <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                                <span>📘 Input Target Reguler Spreadsheet Per-Kelas</span>
+                                <x-heroicon-o-table-cells class="w-5 h-5 text-indigo-600" />
+                                <span>Input Target Reguler Spreadsheet Per-Kelas</span>
                             </h3>
                             <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus.</p>
                         </div>
@@ -132,8 +136,9 @@
                             </div>
 
                             <div class="flex justify-end pt-2">
-                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition">
-                                    <span>💾 Simpan Semua Target Reguler Kelas Ini</span>
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition cursor-pointer">
+                                    <x-heroicon-o-check class="w-4 h-4" />
+                                    <span>Simpan Semua Target Reguler Kelas Ini</span>
                                 </button>
                             </div>
                         </form>
@@ -151,7 +156,8 @@
                 <div class="rounded-2xl bg-white p-6 shadow-sm border border-gray-200 space-y-5">
                     <div class="border-b border-gray-100 pb-4">
                         <h3 class="text-lg font-extrabold text-teal-900 flex items-center gap-2">
-                            <span>📗 Target Metode Ummi Bulk Per-Halaqah Musyrif (Khusus Kelas 10)</span>
+                            <x-heroicon-o-users class="w-5 h-5 text-teal-600" />
+                            <span>Target Metode Ummi Bulk Per-Halaqah Musyrif (Khusus Kelas 10)</span>
                         </h3>
                         <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak hanya untuk murid Kelas 10 anggota Halaqah Musyrif.</p>
                     </div>
@@ -163,7 +169,10 @@
                             <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @if (! empty($isTeacherOnly) && $isTeacherOnly)
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">🕌 Halaqah Musyrif Anda</label>
+                                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">
+                                            <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
+                                            <span>Halaqah Musyrif Anda</span>
+                                        </label>
                                         <p class="text-base font-extrabold text-teal-900">
                                             Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Murid Kelas 10)
                                         </p>
@@ -171,7 +180,10 @@
                                     <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
                                 @else
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🕌 Pilih Halaqah Musyrif / Guru</label>
+                                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">
+                                            <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
+                                            <span>Pilih Halaqah Musyrif / Guru</span>
+                                        </label>
                                         <select name="teacher_id" required onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id='+this.value+'{{ request('class_room_id') ? '&class_room_id='.request('class_room_id') : '' }}'" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
                                             @foreach ($teachers as $t)
                                                 <option value="{{ $t->id }}" @selected((string) request('teacher_id', $currentTeacherId) === (string) $t->id)>
@@ -183,7 +195,10 @@
                                 @endif
 
                                 <div>
-                                    <label class="block text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">🏫 Filter Kelas 10 (Opsional)</label>
+                                    <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">
+                                        <x-heroicon-o-academic-cap class="w-4 h-4 text-teal-700" />
+                                        <span>Filter Kelas 10 (Opsional)</span>
+                                    </label>
                                     <select name="class_room_id" onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id={{ $currentTeacherId }}&class_room_id='+this.value" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
                                         <option value="">Semua Kelas 10 di Halaqah Ini ({{ $students->count() }} Murid)</option>
                                         @foreach ($grade10ClassRooms as $gc)
@@ -197,26 +212,32 @@
 
                             @if ($students->isNotEmpty())
                                 <div class="lg:col-span-3 bg-white p-3 rounded-xl border border-teal-200">
-                                    <p class="text-xs font-bold text-teal-800 mb-1.5 flex items-center gap-1">
-                                        <span>👥 Daftar Murid Kelas 10 Yang Akan Menerima Target Ini ({{ $students->count() }} Murid):</span>
+                                    <p class="text-xs font-bold text-teal-800 mb-1.5 flex items-center gap-1.5">
+                                        <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
+                                        <span>Daftar Murid Kelas 10 Yang Akan Menerima Target Ini ({{ $students->count() }} Murid):</span>
                                     </p>
                                     <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                                         @foreach ($students as $st)
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
-                                                <span>👤 {{ $st->name }}</span>
+                                                <x-heroicon-o-user class="w-3.5 h-3.5 text-teal-600" />
+                                                <span>{{ $st->name }}</span>
                                                 <span class="text-[10px] text-teal-600">({{ $st->classRoom?->name ?? '-' }})</span>
                                             </span>
                                         @endforeach
                                     </div>
                                 </div>
                             @else
-                                <div class="lg:col-span-3 bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs font-semibold text-amber-800">
-                                    ⚠️ Tidak ada murid Kelas 10 pada Halaqah / Kelas yang dipilih. Silakan pilih kelas atau halaqah lain.
+                                <div class="lg:col-span-3 bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs font-semibold text-amber-800 flex items-center gap-2">
+                                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 text-amber-600 shrink-0" />
+                                    <span>Tidak ada murid Kelas 10 pada Halaqah / Kelas yang dipilih. Silakan pilih kelas atau halaqah lain.</span>
                                 </div>
                             @endif
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📖 Jilid Ummi</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Jilid Ummi</span>
+                                </label>
                                 <select name="ummi_jilid" required class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
                                     <option value="Jilid 1">Jilid 1 (Dewasa)</option>
                                     <option value="Jilid 2">Jilid 2 (Dewasa)</option>
@@ -228,17 +249,26 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">🖼️ Halaman Peraga</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-photo class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Halaman Peraga</span>
+                                </label>
                                 <input type="text" name="halaman_peraga" placeholder="Contoh: Hal. 10 - 15" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📚 Halaman Buku</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-document-text class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Halaman Buku</span>
+                                </label>
                                 <input type="text" name="halaman_buku" placeholder="Contoh: Hal. 15 - 20" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">🎯 Target Surah Hafalan Ummi</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-flag class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Target Surah Hafalan Ummi</span>
+                                </label>
                                 <select name="surah_id" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
                                     <option value="">-- Pilih Surah (Opsional) --</option>
                                     @foreach ($surahs as $surah)
@@ -250,22 +280,30 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📅 Tanggal Deadline Target</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-calendar class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Tanggal Deadline Target</span>
+                                </label>
                                 <input type="date" name="target_date" required value="{{ now()->addMonth()->toDateString() }}" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">📝 Catatan Pembimbing</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                                    <x-heroicon-o-pencil-square class="w-3.5 h-3.5 text-teal-600" />
+                                    <span>Catatan Pembimbing</span>
+                                </label>
                                 <input type="text" name="notes" placeholder="Catatan instruksi..." class="w-full rounded-xl border-gray-300 text-sm focus:ring-teal-500">
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <p class="text-xs text-gray-500">
-                                💡 Target Ummi hanya akan diterapkan kepada murid <strong>Kelas 10</strong> di Halaqah yang dipilih (Kelas 11 &amp; 12 tidak terpengaruh).
+                            <p class="text-xs text-gray-500 flex items-center gap-1.5">
+                                <x-heroicon-o-information-circle class="w-4 h-4 text-teal-600 shrink-0" />
+                                <span>Target Ummi hanya akan diterapkan kepada murid <strong>Kelas 10</strong> di Halaqah yang dipilih (Kelas 11 &amp; 12 tidak terpengaruh).</span>
                             </p>
                             <button type="submit" @disabled($students->isEmpty()) class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition disabled:opacity-50 cursor-pointer">
-                                <span>🚀 Terapkan Target Ummi Ke Murid Kelas 10</span>
+                                <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                                <span>Terapkan Target Ummi Ke Murid Kelas 10</span>
                             </button>
                         </div>
                     </form>
@@ -336,7 +374,8 @@
                             </template>
                             <button type="submit"
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-3.5 py-1.5 text-xs font-bold text-white shadow transition cursor-pointer">
-                                ✅ Tandai Selesai (<span x-text="selectedTargets.length"></span>)
+                                <x-heroicon-o-check-circle class="w-3.5 h-3.5" />
+                                <span>Tandai Selesai (<span x-text="selectedTargets.length"></span>)</span>
                             </button>
                         </form>
 
@@ -348,7 +387,8 @@
                             </template>
                             <button type="submit"
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 px-3.5 py-1.5 text-xs font-bold text-white shadow transition cursor-pointer">
-                                🗑️ Hapus Terpilih (<span x-text="selectedTargets.length"></span>)
+                                <x-heroicon-o-trash class="w-3.5 h-3.5" />
+                                <span>Hapus Terpilih (<span x-text="selectedTargets.length"></span>)</span>
                             </button>
                         </form>
 
@@ -420,7 +460,10 @@
 
                                     <td class="px-4 py-4">
                                         @if ($target->ummi_jilid)
-                                            <div class="font-bold text-teal-700">📗 {{ $target->ummi_jilid }}</div>
+                                            <div class="font-bold text-teal-700 flex items-center gap-1">
+                                                <x-heroicon-o-bookmark class="w-3.5 h-3.5 text-teal-600" />
+                                                <span>{{ $target->ummi_jilid }}</span>
+                                            </div>
                                             <div class="text-xs text-gray-600">
                                                 Peraga: {{ $target->halaman_peraga ?? '-' }} · Buku: {{ $target->halaman_buku ?? '-' }}
                                                 @if($target->surah)
@@ -428,7 +471,10 @@
                                                 @endif
                                             </div>
                                         @else
-                                            <div class="font-bold text-indigo-700">📘 {{ $target->surah?->number }}. {{ $target->surah?->name_latin }}</div>
+                                            <div class="font-bold text-indigo-700 flex items-center gap-1">
+                                                <x-heroicon-o-book-open class="w-3.5 h-3.5 text-indigo-600" />
+                                                <span>{{ $target->surah?->number }}. {{ $target->surah?->name_latin }}</span>
+                                            </div>
                                             <div class="text-xs text-gray-600">Ayat {{ $target->ayah_range }}</div>
                                         @endif
                                     </td>

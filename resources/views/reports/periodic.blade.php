@@ -251,13 +251,16 @@
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <button type="button" onclick="downloadUmmiCard()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    📥 Unduh PNG
+                                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                                    <span>Unduh PNG</span>
                                 </button>
                                 <button type="button" onclick="printUmmiCard('landscape')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    🖨️ Cetak Landscape
+                                    <x-heroicon-o-printer class="w-4 h-4" />
+                                    <span>Cetak Landscape</span>
                                 </button>
                                 <button type="button" onclick="printUmmiCard('portrait')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                    🖨️ Cetak Portrait
+                                    <x-heroicon-o-printer class="w-4 h-4" />
+                                    <span>Cetak Portrait</span>
                                 </button>
                             </div>
                         </div>
@@ -278,10 +281,12 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
-                                            📥 Unduh PNG
+                                            <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
+                                            <span>Unduh PNG</span>
                                         </button>
                                         <button type="button" onclick="printChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
-                                            🖨️ Cetak F4
+                                            <x-heroicon-o-printer class="w-3.5 h-3.5" />
+                                            <span>Cetak F4</span>
                                         </button>
                                     </div>
                                 </div>
@@ -305,10 +310,12 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" onclick="downloadChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
-                                            📥 Unduh PNG
+                                            <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
+                                            <span>Unduh PNG</span>
                                         </button>
                                         <button type="button" onclick="printChart('ketuntasanChart', '{{ $titleKetuntasan }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-zinc-700 transition cursor-pointer">
-                                            🖨️ Cetak F4
+                                            <x-heroicon-o-printer class="w-3.5 h-3.5" />
+                                            <span>Cetak F4</span>
                                         </button>
                                     </div>
                                 </div>

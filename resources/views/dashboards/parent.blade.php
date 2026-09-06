@@ -36,7 +36,7 @@
                     </p>
                 </div>
             @else
-                {{-- 🌟 DESKTOP ONLY: APPRECIATION BANNER (HIDDEN ON MOBILE TO PREVENT CLUTTER) 🌟 --}}
+                {{-- DESKTOP ONLY: APPRECIATION BANNER (HIDDEN ON MOBILE TO PREVENT CLUTTER) --}}
                 <div class="hidden sm:block glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-5 sm:p-6 shadow-sm relative overflow-hidden">
                     <div class="relative z-10 flex items-center justify-between gap-4">
                         <div class="space-y-1 min-w-0">
@@ -147,7 +147,7 @@
                                 </div>
                             </div>
 
-                            {{-- 📱 INTERACTIVE 3-HAL SEGMENTED STRIP (KONTROL UTAMA MOBILE & TABLET) 📱 --}}
+                            {{-- INTERACTIVE 3-HAL SEGMENTED STRIP (KONTROL UTAMA MOBILE & TABLET) --}}
                             <div class="grid grid-cols-3 gap-2">
                                 {{-- Hal 1: Tahfizh Tab Card --}}
                                 <button @click="childTab = 'tahfizh'"
@@ -243,7 +243,7 @@
                                 </button>
                             </div>
 
-                            {{-- 💻 DESKTOP ONLY DETAILS (BENTO GRID 3 HAL) 💻 --}}
+                            {{-- DESKTOP ONLY DETAILS (BENTO GRID 3 HAL) --}}
                             <div class="hidden sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
                                 <div class="glass-liquid-card rounded-2xl p-4 flex flex-col justify-between border border-teal-500/20 shadow-xs">
                                     <div class="flex items-center justify-between gap-2 mb-2">
@@ -459,8 +459,8 @@
                                         <h4 class="text-xs font-bold text-zinc-900 dark:text-white truncate">Buku Mutaba'ah Adab Ananda</h4>
                                         <p class="text-[10px] text-zinc-500 truncate">Detail shalat, dhuha, tilawah, dan adab harian.</p>
                                     </div>
-                                    <a href="{{ route('adab.show', $student) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shrink-0 transition shadow-xs">
-                                        <span>Buka</span> →
+                                    <a href="{{ route('adab.show', $student) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shrink-0 transition shadow-xs">
+                                        <span>Buka</span> <x-heroicon-m-arrow-right class="w-3 h-3" />
                                     </a>
                                 </div>
                             </div>
@@ -493,8 +493,8 @@
                                         <h4 class="text-xs font-black text-zinc-800 dark:text-zinc-200">
                                             Catatan Kedisiplinan Terkini
                                         </h4>
-                                        <a href="{{ route('student-points.index') }}" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                                            Semua →
+                                        <a href="{{ route('student-points.index') }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                            <span>Semua</span> <x-heroicon-m-arrow-right class="w-3 h-3" />
                                         </a>
                                     </div>
                                     <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
@@ -528,7 +528,7 @@
                                             <p class="text-[10px] text-emerald-900/70 dark:text-emerald-300/70 truncate">Simak tilawah</p>
                                         </div>
                                     </div>
-                                    <span class="text-emerald-600 font-bold text-xs">→</span>
+                                    <x-heroicon-m-chevron-right class="w-4 h-4 text-emerald-600 shrink-0" />
                                 </a>
 
                                 <a href="{{ route('progress.show', $student) }}" class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/20 border border-indigo-200/80 dark:border-indigo-800/50 rounded-xl p-2.5 shadow-xs flex items-center justify-between gap-1.5 hover:border-indigo-500 transition">
@@ -541,7 +541,7 @@
                                             <p class="text-[10px] text-indigo-900/70 dark:text-indigo-300/70 truncate">Arsip capaian</p>
                                         </div>
                                     </div>
-                                    <span class="text-indigo-600 font-bold text-xs">→</span>
+                                    <x-heroicon-m-chevron-right class="w-4 h-4 text-indigo-600 shrink-0" />
                                 </a>
                             </div>
 

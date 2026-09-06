@@ -34,8 +34,9 @@
                 </div>
                 <div class="flex gap-2 flex-wrap w-full sm:w-auto">
                     @if (!auth()->user()->hasRole('student'))
-                        <a href="{{ route('adab.index') }}" class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 border border-zinc-300 dark:border-zinc-700 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
-                            ← Kembali
+                        <a href="{{ route('adab.index') }}" class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 border border-zinc-300 dark:border-zinc-700 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
+                            <x-heroicon-m-arrow-left class="w-4 h-4 shrink-0" />
+                            <span>Kembali</span>
                         </a>
                     @endif
 

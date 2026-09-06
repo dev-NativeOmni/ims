@@ -66,7 +66,7 @@
                 <div class="bg-amber-600 text-white px-4 py-2.5 shadow-md flex items-center justify-between z-50 text-xs sm:text-sm font-medium sticky top-0 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]">
                     <div class="flex items-center gap-2">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-200 animate-ping"></span>
-                        <span>⚠️ <strong>Mode Impersonasi:</strong> Anda sedang meninjau sistem sebagai <strong>{{ auth()->user()?->name }}</strong> ({{ auth()->user()?->role?->display_name ?? auth()->user()?->role?->name }}).</span>
+                        <span class="inline-flex items-center gap-1.5"><x-heroicon-o-exclamation-triangle class="w-4 h-4 text-amber-100 shrink-0" /> <span><strong>Mode Impersonasi:</strong> Anda sedang meninjau sistem sebagai <strong>{{ auth()->user()?->name }}</strong> ({{ auth()->user()?->role?->display_name ?? auth()->user()?->role?->name }}).</span></span>
                     </div>
                     <form method="POST" action="{{ route('impersonate.stop') }}" class="inline">
                         @csrf

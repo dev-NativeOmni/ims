@@ -10,7 +10,8 @@
                 </p>
             </div>
             <a href="{{ route('digital-reports.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 text-gray-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition self-start sm:self-auto">
-                ← Kembali ke Daftar Rapor
+                <x-heroicon-m-arrow-left class="w-4 h-4 shrink-0" />
+                <span>Kembali ke Daftar Rapor</span>
             </a>
         </div>
     </x-slot>
@@ -39,7 +40,8 @@
 
             @if (session('success'))
                 <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl text-emerald-700 dark:text-emerald-300 text-sm font-semibold flex items-center gap-2 shadow-sm">
-                    <span>✅</span> {{ session('success') }}
+                    <x-heroicon-o-check-circle class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{{ session('success') }}</span>
                 </div>
             @endif
 
@@ -54,7 +56,8 @@
                         {{-- 1. Periode & Modul Komponen --}}
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 mb-5 dark:border-zinc-800 flex items-center gap-2">
-                                <span>⚙️</span> Konfigurasi Periode & Modul Rapor
+                                <x-heroicon-o-cog-6-tooth class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <span>Konfigurasi Periode & Modul Rapor</span>
                             </h3>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -77,17 +80,17 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                                     <label class="flex items-center gap-2.5 p-2.5 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-200 dark:border-zinc-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
                                         <input type="checkbox" name="report_show_tahfizh" value="1" x-model="showTahfizh" class="rounded text-indigo-600 focus:ring-indigo-500">
-                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200">📖 Tahfizh</span>
+                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200 inline-flex items-center gap-1"><x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600" /> Tahfizh</span>
                                     </label>
 
                                     <label class="flex items-center gap-2.5 p-2.5 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-200 dark:border-zinc-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
                                         <input type="checkbox" name="report_show_adab" value="1" x-model="showAdab" class="rounded text-indigo-600 focus:ring-indigo-500">
-                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200">🕋 Adab</span>
+                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200 inline-flex items-center gap-1"><x-heroicon-o-sparkles class="w-3.5 h-3.5 text-amber-500" /> Adab</span>
                                     </label>
 
                                     <label class="flex items-center gap-2.5 p-2.5 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-200 dark:border-zinc-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
                                         <input type="checkbox" name="report_show_tanse" value="1" x-model="showTanse" class="rounded text-indigo-600 focus:ring-indigo-500">
-                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200">🛡️ Tanse</span>
+                                        <span class="text-xs font-bold text-gray-800 dark:text-zinc-200 inline-flex items-center gap-1"><x-heroicon-o-shield-check class="w-3.5 h-3.5 text-rose-500" /> Tanse</span>
                                     </label>
                                 </div>
                             </div>
@@ -96,7 +99,8 @@
                         {{-- 2. Header & Kop Surat Rapor --}}
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 mb-5 dark:border-zinc-800 flex items-center gap-2">
-                                <span>📄</span> Header & Kop Surat Dokumen Rapor
+                                <x-heroicon-o-document-text class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <span>Header & Kop Surat Dokumen Rapor</span>
                             </h3>
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -120,7 +124,8 @@
                         {{-- 3. Pejabat Penandatangan Rapor --}}
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 mb-5 dark:border-zinc-800 flex items-center gap-2">
-                                <span>✍️</span> Pejabat & Tanda Tangan Dokumen
+                                <x-heroicon-o-pencil-square class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <span>Pejabat & Tanda Tangan Dokumen</span>
                             </h3>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -185,8 +190,9 @@
                         </div>
 
                         <div class="flex justify-end pt-2">
-                            <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-98 transition">
-                                <span>💾</span> Simpan Seluruh Pengaturan
+                            <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-98 transition cursor-pointer">
+                                <x-heroicon-o-check class="w-4 h-4" />
+                                <span>Simpan Seluruh Pengaturan</span>
                             </button>
                         </div>
                     </form>
@@ -199,7 +205,8 @@
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                                <span>📄</span> Live Document Preview
+                                <x-heroicon-o-document-magnifying-glass class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <span>Live Document Preview</span>
                             </span>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 animate-pulse">
                                 ● Real-time
@@ -355,8 +362,9 @@
 
                     </div>
 
-                    <p class="text-[11px] text-gray-500 dark:text-zinc-400 text-center italic">
-                        💡 Tampilan di atas adalah miniatur format cetak sebenarnya.
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400 text-center italic flex items-center justify-center gap-1">
+                        <x-heroicon-o-light-bulb class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>Tampilan di atas adalah miniatur format cetak sebenarnya.</span>
                     </p>
                 </div>
 
@@ -366,7 +374,8 @@
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
                 <div class="border-b pb-3 dark:border-zinc-800">
                     <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <span>🖨️</span> Opsi Cetak Rapor Per Kelas (Batch Print Rapor)
+                        <x-heroicon-o-printer class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Opsi Cetak Rapor Per Kelas (Batch Print Rapor)</span>
                     </h3>
                     <p class="text-xs text-gray-500 mt-1">Cetak seluruh rapor murid dalam 1 kelas secara lengkap sekaligus dalam satu dokumen siap cetak/PDF.</p>
                 </div>
@@ -379,7 +388,8 @@
                                 <p class="text-xs text-gray-500 font-medium mt-0.5">Program: {{ $cRoom->program?->name ?: '-' }}</p>
                             </div>
                             <a href="{{ route('digital-reports.class-print', ['classRoom' => $cRoom->id, 'academic_year' => $academicYear, 'semester' => $semester]) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition w-full">
-                                <span>🖨️</span> Cetak Rapor Seluruh Kelas
+                                <x-heroicon-o-printer class="w-4 h-4" />
+                                <span>Cetak Rapor Seluruh Kelas</span>
                             </a>
                         </div>
                     @empty

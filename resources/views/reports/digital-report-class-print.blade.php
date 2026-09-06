@@ -61,7 +61,8 @@
             <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
             <div>
                 <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                    <span>📄</span> Cetak Masal Rapor Kelas: {{ $classRoom->name }}
+                    <x-heroicon-o-document-text class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>Cetak Masal Rapor Kelas: {{ $classRoom->name }}</span>
                 </h4>
                 <p class="text-xs text-gray-500 dark:text-zinc-400">
                     Total: {{ count($reportsData) }} Santri &bull; Tahun Ajaran {{ $academicYear }} (Sem. {{ $semester }})
@@ -80,11 +81,12 @@
                 </button>
             </div>
 
-            <button onclick="window.close()" class="px-3.5 py-2 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 transition">
+            <button onclick="window.close()" class="px-3.5 py-2 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 transition cursor-pointer">
                 Tutup
             </button>
-            <button onclick="window.print()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
-                <span>🖨️</span> Cetak Semua Rapor
+            <button onclick="window.print()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5 cursor-pointer">
+                <x-heroicon-o-printer class="w-4 h-4" />
+                <span>Cetak Semua Rapor</span>
             </button>
         </div>
     </div>

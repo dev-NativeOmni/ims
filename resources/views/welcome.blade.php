@@ -811,7 +811,7 @@
                                     <!-- Tooltip Tag -->
                                     <g transform="translate(345, 260)">
                                         <rect x="-42" y="-12" width="84" height="22" rx="11" class="fill-white/95 dark:fill-[#18181b] stroke-orange-500 shadow-md" stroke-width="1.5"/>
-                                        <text x="0" y="3" class="fill-orange-700 dark:fill-[#fdba74]" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">📍 Cirebon</text>
+                                        <text x="0" y="3" class="fill-orange-700 dark:fill-[#fdba74]" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Cirebon</text>
                                     </g>
                                 </g>
 
@@ -824,7 +824,7 @@
                                     <!-- Tooltip Tag -->
                                     <g transform="translate(415, 255)">
                                         <rect x="-56" y="-14" width="112" height="26" rx="13" class="fill-white/95 dark:fill-[#18181b] stroke-amber-500 shadow-lg" stroke-width="2"/>
-                                        <text x="0" y="3" class="fill-amber-700 dark:fill-[#fde68a]" font-size="10.5" font-weight="900" text-anchor="middle" font-family="sans-serif">★ Solo (Pusat)</text>
+                                        <text x="0" y="3" class="fill-amber-700 dark:fill-[#fde68a]" font-size="10.5" font-weight="900" text-anchor="middle" font-family="sans-serif">Solo (Pusat)</text>
                                     </g>
                                 </g>
 
@@ -837,7 +837,7 @@
                                     <!-- Tooltip Tag -->
                                     <g transform="translate(465, 260)">
                                         <rect x="-40" y="-12" width="80" height="22" rx="11" class="fill-white/95 dark:fill-[#18181b] stroke-emerald-500 shadow-md" stroke-width="1.5"/>
-                                        <text x="0" y="3" class="fill-emerald-700 dark:fill-[#6ee7b7]" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">📍 Malang</text>
+                                        <text x="0" y="3" class="fill-emerald-700 dark:fill-[#6ee7b7]" font-size="9.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Malang</text>
                                     </g>
                                 </g>
                             </svg>

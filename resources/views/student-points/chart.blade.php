@@ -3,7 +3,8 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
                 <h2 class="font-bold text-xl sm:text-2xl text-zinc-900 dark:text-zinc-100 leading-tight flex items-center gap-2">
-                    <span>🛡️ Laporan & Rekapitulasi Ketahanan Sekolah (Tanse)</span>
+                    <x-heroicon-o-shield-check class="w-6 h-6 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Laporan & Rekapitulasi Ketahanan Sekolah (Tanse)</span>
                 </h2>
                 <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                     Pemantauan tren dan peringkat pelanggaran kedisiplinan murid (Tata Tertib, Keterlambatan, dan Atribut/Seragam).
@@ -19,9 +20,9 @@
 
                 <select name="violation_type" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                     <option value="all" @selected($violationType === 'all')>Semua Pelanggaran</option>
-                    <option value="lateness" @selected($violationType === 'lateness')>⏰ Keterlambatan</option>
-                    <option value="attribute" @selected($violationType === 'attribute')>👔 Atribut/Seragam</option>
-                    <option value="violation" @selected($violationType === 'violation')>📜 Tata Tertib</option>
+                    <option value="lateness" @selected($violationType === 'lateness')>Keterlambatan</option>
+                    <option value="attribute" @selected($violationType === 'attribute')>Atribut / Seragam</option>
+                    <option value="violation" @selected($violationType === 'violation')>Tata Tertib</option>
                 </select>
 
                 <select name="sort_by" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
@@ -52,8 +53,9 @@
                     </select>
                 @endif
 
-                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
-                    🔍 Filter
+                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+                    <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" />
+                    <span>Filter</span>
                 </button>
             </form>
         </div>
@@ -70,7 +72,8 @@
                     :class="viewMode === 'leaderboard' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'"
                     class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
-                    <span>🏆 Peringkat Murid Terbanyak (<span x-text="{{ $studentLeaderboard->count() }}"></span>)</span>
+                    <x-heroicon-o-trophy class="w-4 h-4 shrink-0" />
+                    <span>Peringkat Murid Terbanyak (<span x-text="{{ $studentLeaderboard->count() }}"></span>)</span>
                 </button>
 
                 <button
@@ -79,7 +82,8 @@
                     :class="viewMode === 'class_report' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'"
                     class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
-                    <span>🏫 Rekapitulasi per Kelas</span>
+                    <x-heroicon-o-academic-cap class="w-4 h-4 shrink-0" />
+                    <span>Rekapitulasi per Kelas</span>
                 </button>
             </div>
 
@@ -121,10 +125,10 @@
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center gap-3">
                         <div class="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
-                            <span class="text-xl">🏆</span>
+                            <x-heroicon-o-trophy class="w-6 h-6" />
                         </div>
                         <div>
-                            <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Murid Terbanyak</p>
+                            <p class="text-xs font-semibold text-gray-550 dark:text-zinc-400 uppercase tracking-wider">Murid Terbanyak</p>
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5 truncate max-w-[150px]">
                                 {{ $studentLeaderboard->first()['student']->name ?? '-' }}
                             </h3>
@@ -137,18 +141,27 @@
 
                 {{-- Rincian Tipe Pelanggaran --}}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
-                    <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran Tipe Pelanggaran</p>
+                    <p class="text-xs font-semibold text-gray-550 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran Tipe Pelanggaran</p>
                     <div class="grid grid-cols-3 gap-1.5">
                         <div class="p-2 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-amber-700 dark:text-amber-300 block truncate max-w-full" title="Keterlambatan">⏰ Telat</span>
+                            <span class="text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center justify-center gap-1 truncate max-w-full" title="Keterlambatan">
+                                <x-heroicon-o-clock class="w-3 h-3 text-amber-600 shrink-0" />
+                                <span>Telat</span>
+                            </span>
                             <span class="text-base font-black text-amber-900 dark:text-amber-100 mt-0.5">{{ $typeBreakdown['lateness'] }}</span>
                         </div>
                         <div class="p-2 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-blue-700 dark:text-blue-300 block truncate max-w-full" title="Atribut">👔 Atribut</span>
+                            <span class="text-[10px] font-bold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-1 truncate max-w-full" title="Atribut">
+                                <x-heroicon-o-tag class="w-3 h-3 text-blue-600 shrink-0" />
+                                <span>Atribut</span>
+                            </span>
                             <span class="text-base font-black text-blue-900 dark:text-blue-100 mt-0.5">{{ $typeBreakdown['attribute'] }}</span>
                         </div>
                         <div class="p-2 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-300 block truncate max-w-full" title="Tata Tertib">📜 Tatib</span>
+                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-1 truncate max-w-full" title="Tata Tertib">
+                                <x-heroicon-o-document-text class="w-3 h-3 text-rose-600 shrink-0" />
+                                <span>Tatib</span>
+                            </span>
                             <span class="text-base font-black text-rose-900 dark:text-rose-100 mt-0.5">{{ $typeBreakdown['violation'] }}</span>
                         </div>
                     </div>
@@ -160,7 +173,8 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 dark:border-zinc-800">
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span>🏆 Rekapitulasi Peringkat Murid dengan Pelanggaran Terbanyak</span>
+                            <x-heroicon-o-trophy class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Rekapitulasi Peringkat Murid dengan Pelanggaran Terbanyak</span>
                         </h3>
                         <p class="text-xs text-gray-500">
                             Diurutkan berdasarkan {{ $sortBy === 'points' ? 'Total Poin Terbanyak' : 'Jumlah Kasus Terbanyak' }} ({{ $timeFrame === 'all' ? 'Akumulasi Semua Waktu' : $monthsList[$month] . ' ' . $year }}).
@@ -224,28 +238,39 @@
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-1.5">
                                             @if ($item['lateness_count'] > 0)
-                                                <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">⏰ Telat: {{ $item['lateness_count'] }}</span>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
+                                                    <x-heroicon-o-clock class="w-3 h-3" />
+                                                    <span>Telat: {{ $item['lateness_count'] }}</span>
+                                                </span>
                                             @endif
                                             @if ($item['attribute_count'] > 0)
-                                                <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">👔 Atribut: {{ $item['attribute_count'] }}</span>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                                                    <x-heroicon-o-tag class="w-3 h-3" />
+                                                    <span>Atribut: {{ $item['attribute_count'] }}</span>
+                                                </span>
                                             @endif
                                             @if ($item['tatib_count'] > 0)
-                                                <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">📜 Tatib: {{ $item['tatib_count'] }}</span>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                                                    <x-heroicon-o-document-text class="w-3 h-3" />
+                                                    <span>Tatib: {{ $item['tatib_count'] }}</span>
+                                                </span>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         @if (!empty($item['recent_sanctions']))
-                                            <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 block truncate max-w-[200px]" title="{{ implode(', ', $item['recent_sanctions']) }}">
-                                                ⚠️ {{ implode(', ', $item['recent_sanctions']) }}
+                                            <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate max-w-[200px]" title="{{ implode(', ', $item['recent_sanctions']) }}">
+                                                <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5 shrink-0" />
+                                                <span>{{ implode(', ', $item['recent_sanctions']) }}</span>
                                             </span>
                                         @else
                                             <span class="text-xs text-gray-400 italic">-</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-right font-medium">
-                                        <a href="{{ route('student-points.index', ['search' => $st->name]) }}" class="inline-flex items-center px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition">
-                                            🔍 Detail Log
+                                        <a href="{{ route('student-points.index', ['search' => $st->name]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition">
+                                            <x-heroicon-o-magnifying-glass class="w-3 h-3" />
+                                            <span>Detail Log</span>
                                         </a>
                                     </td>
                                 </tr>
@@ -381,9 +406,24 @@
                                             <thead>
                                                 <tr class="text-gray-500 dark:text-zinc-400 uppercase font-bold text-[10px]">
                                                     <th class="py-2 px-3 text-left">Nama Murid</th>
-                                                    <th class="py-2 px-3 text-center">⏰ Telat</th>
-                                                    <th class="py-2 px-3 text-center">👔 Atribut</th>
-                                                    <th class="py-2 px-3 text-center">📜 Tatib</th>
+                                                    <th class="py-2 px-3 text-center">
+                                                        <span class="inline-flex items-center justify-center gap-1">
+                                                            <x-heroicon-o-clock class="w-3 h-3 text-amber-500" />
+                                                            <span>Telat</span>
+                                                        </span>
+                                                    </th>
+                                                    <th class="py-2 px-3 text-center">
+                                                        <span class="inline-flex items-center justify-center gap-1">
+                                                            <x-heroicon-o-tag class="w-3 h-3 text-blue-500" />
+                                                            <span>Atribut</span>
+                                                        </span>
+                                                    </th>
+                                                    <th class="py-2 px-3 text-center">
+                                                        <span class="inline-flex items-center justify-center gap-1">
+                                                            <x-heroicon-o-document-text class="w-3 h-3 text-rose-500" />
+                                                            <span>Tatib</span>
+                                                        </span>
+                                                    </th>
                                                     <th class="py-2 px-3 text-center">Total Kasus</th>
                                                     <th class="py-2 px-3 text-center">Total Poin</th>
                                                     <th class="py-2 px-3 text-left">Sanksi Terakhir</th>

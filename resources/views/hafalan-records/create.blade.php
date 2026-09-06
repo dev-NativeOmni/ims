@@ -4,8 +4,9 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-200 leading-tight">
                 Input Setoran Hafalan
             </h2>
-            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
-                ← Kembali ke List
+            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+                <x-heroicon-m-arrow-left class="w-3.5 h-3.5 shrink-0" />
+                <span>Kembali ke List</span>
             </a>
         </div>
     </x-slot>
@@ -482,8 +483,9 @@
                                 </template>
                             </select>
                             <template x-if="selectedClass && filteredStudents.length === 0">
-                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
-                                    ⚠️ Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed inline-flex items-center gap-1.5">
+                                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0 text-amber-500" />
+                                    <span>Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.</span>
                                 </p>
                             </template>
                             @error('student_id')
@@ -736,8 +738,9 @@
                                     </template>
                                 </select>
                                 <template x-if="selectedClass && filteredStudents.length === 0">
-                                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed">
-                                        ⚠️ Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold leading-relaxed inline-flex items-center gap-1.5">
+                                        <x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0 text-amber-500" />
+                                        <span>Belum ada murid yang ditandai Hadir hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.</span>
                                     </p>
                                 </template>
                             </div>
@@ -964,8 +967,9 @@
                     <template x-if="selectedClass && !selectedStudent && filteredStudents.length === 0">
                         <div class="border-t border-gray-200 dark:border-zinc-800 pt-5 mt-4">
                             <div class="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
-                                <p class="text-xs text-rose-600 dark:text-rose-400 font-semibold">
-                                    ⚠️ Tidak ada murid yang ditandai Hadir di kelas ini untuk hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.
+                                <p class="text-xs text-rose-600 dark:text-rose-400 font-semibold inline-flex items-center justify-center gap-1.5">
+                                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0 text-amber-500" />
+                                    <span>Tidak ada murid yang ditandai Hadir di kelas ini untuk hari ini. Silakan tandai kehadiran 'Hadir' pada tabel presensi di atas.</span>
                                 </p>
                             </div>
                         </div>
@@ -1060,7 +1064,8 @@
                 <button type="button" @click="submitCurrentForm()" :disabled="isSaving" :class="method === 'ummi' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'" class="disabled:bg-gray-400 text-white px-4 py-2 rounded-xl font-bold transition shadow-lg cursor-pointer flex items-center gap-1.5">
                     <template x-if="!isSaving">
                         <span class="inline-flex items-center gap-1.5">
-                            💾 Simpan Sekarang
+                            <x-heroicon-o-check class="w-4 h-4" />
+                            <span>Simpan Sekarang</span>
                         </span>
                     </template>
                     <template x-if="isSaving">

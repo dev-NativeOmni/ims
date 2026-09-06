@@ -63,19 +63,22 @@
                             @click="activeGrade = 'grade_10'"
                             :class="activeGrade === 'grade_10' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-sm font-bold' : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 font-medium'"
                             class="flex-1 py-2.5 px-4 rounded-xl text-sm transition-all duration-150 cursor-pointer flex items-center justify-center gap-2">
-                        <span>🌱 Kelas 10 (Fase E)</span>
+                        <x-heroicon-o-academic-cap class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Kelas 10 (Fase E)</span>
                     </button>
                     <button type="button"
                             @click="activeGrade = 'grade_11'"
                             :class="activeGrade === 'grade_11' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-sm font-bold' : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 font-medium'"
                             class="flex-1 py-2.5 px-4 rounded-xl text-sm transition-all duration-150 cursor-pointer flex items-center justify-center gap-2">
-                        <span>🌿 Kelas 11 (Fase F)</span>
+                        <x-heroicon-o-academic-cap class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        <span>Kelas 11 (Fase F)</span>
                     </button>
                     <button type="button"
                             @click="activeGrade = 'grade_12'"
                             :class="activeGrade === 'grade_12' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-sm font-bold' : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 font-medium'"
                             class="flex-1 py-2.5 px-4 rounded-xl text-sm transition-all duration-150 cursor-pointer flex items-center justify-center gap-2">
-                        <span>🌳 Kelas 12 (Fase F Akhir)</span>
+                        <x-heroicon-o-academic-cap class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>Kelas 12 (Fase F Akhir)</span>
                     </button>
                 </div>
 

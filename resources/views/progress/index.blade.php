@@ -185,7 +185,8 @@
                             @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                 <div class="flex items-center gap-2">
                                     <button type="button" onclick="downloadUmmiCardProgress()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
-                                        📥 Download Gambar (PNG)
+                                        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                                        <span>Download Gambar (PNG)</span>
                                     </button>
                                 </div>
                             @endif
@@ -274,8 +275,9 @@
                                     <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> Terealisasi (Lulus)
                                 </span>
                                 @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                    <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1 cursor-pointer">
-                                        📥 Download Grafik (PNG)
+                                    <button type="button" onclick="downloadChartWithTitle()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition inline-flex items-center gap-1.5 cursor-pointer">
+                                        <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
+                                        <span>Download Grafik (PNG)</span>
                                     </button>
                                 @endif
                             </div>

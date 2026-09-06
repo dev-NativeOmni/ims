@@ -11,7 +11,8 @@
             </div>
             <div>
                 <button type="submit" form="calendar-form" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow shadow-teal-500/20 transition cursor-pointer">
-                    💾 Simpan Kalender
+                    <x-heroicon-o-check class="w-4 h-4" />
+                    <span>Simpan Kalender</span>
                 </button>
             </div>
         </div>
@@ -83,7 +84,7 @@
             <!-- Success Alert Notification -->
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex items-center gap-3">
-                    <span class="text-emerald-600 dark:text-emerald-400 text-lg">✅</span>
+                    <x-heroicon-o-check-circle class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span class="text-sm text-emerald-800 dark:text-emerald-300 font-semibold">{{ session('success') }}</span>
                 </div>
             @endif
@@ -94,8 +95,9 @@
                 <!-- Left Section: Navigation & Title -->
                 <div class="flex items-center gap-3">
                     <!-- Today Button -->
-                    <a href="{{ route('academic-calendar.index', ['year' => date('Y'), 'month' => date('m')]) }}" class="px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
-                        <span>🗓️</span> Hari Ini
+                    <a href="{{ route('academic-calendar.index', ['year' => date('Y'), 'month' => date('m')]) }}" class="px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 shadow-xs">
+                        <x-heroicon-o-calendar-days class="w-4 h-4 text-gray-600 dark:text-zinc-300 shrink-0" />
+                        <span>Hari Ini</span>
                     </a>
 
                     <!-- Prev/Next Month Arrows -->
@@ -128,8 +130,9 @@
                         @endforeach
                     </select>
 
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow transition cursor-pointer">
-                        🔍 Filter
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow transition cursor-pointer">
+                        <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" />
+                        <span>Filter</span>
                     </button>
                 </form>
             </div>
@@ -210,93 +213,96 @@
 
                                     <!-- Event Pills / Holiday Tags Slot (Solid Google Calendar Style Bars) -->
                                     <div class="mt-2 space-y-1">
-                                        <!-- Global Total Holiday Solid Event Pill -->
-                                        <template x-if="selectedHolidays.includes('{{ $dateStr }}')">
-                                            <div class="bg-emerald-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs">
-                                                🚨 Libur Total
-                                            </div>
-                                        </template>
+                                         <!-- Global Total Holiday Solid Event Pill -->
+                                         <template x-if="selectedHolidays.includes('{{ $dateStr }}')">
+                                             <div class="bg-emerald-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs flex items-center gap-1">
+                                                 <x-heroicon-o-no-symbol class="w-3.5 h-3.5 shrink-0" />
+                                                 <span>Libur Total</span>
+                                             </div>
+                                         </template>
 
-                                        <!-- Partial Class Holiday Solid Event Pill -->
-                                        <template x-if="selectedClassHolidays['{{ $dateStr }}'] && selectedClassHolidays['{{ $dateStr }}'].length > 0">
-                                            <div class="bg-amber-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs">
-                                                ⚠️ Libur <span x-text="selectedClassHolidays['{{ $dateStr }}'].length"></span> Kelas
-                                            </div>
-                                        </template>
+                                         <!-- Partial Class Holiday Solid Event Pill -->
+                                         <template x-if="selectedClassHolidays['{{ $dateStr }}'] && selectedClassHolidays['{{ $dateStr }}'].length > 0">
+                                             <div class="bg-amber-600 text-white rounded-md px-2 py-1 text-[11px] font-medium truncate shadow-xs flex items-center gap-1">
+                                                 <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5 shrink-0" />
+                                                 <span>Libur <span x-text="selectedClassHolidays['{{ $dateStr }}'].length"></span> Kelas</span>
+                                             </div>
+                                         </template>
 
-                                        <!-- Default Active School Day Pill on Hover -->
-                                        <template x-if="!selectedHolidays.includes('{{ $dateStr }}') && (!selectedClassHolidays['{{ $dateStr }}'] || selectedClassHolidays['{{ $dateStr }}'].length === 0)">
-                                            <div class="opacity-0 group-hover:opacity-100 transition duration-150 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-200 rounded-md px-2 py-1 text-[10px] font-semibold truncate">
-                                                {{ $isWeekend ? 'Akhir Pekan' : 'Hari Sekolah' }}
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            @else
-                                <!-- Non-Current Month Padded Date Cell (Muted Gray) -->
-                                <div style="min-height: 120px;" class="p-2.5 bg-gray-50/50 dark:bg-zinc-950/40 opacity-40 select-none flex flex-col justify-between">
-                                    <span class="font-semibold text-xs text-gray-400 dark:text-zinc-600 px-1 py-0.5">
-                                        {{ $dayNum }}
-                                    </span>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
+                                         <!-- Default Active School Day Pill on Hover -->
+                                         <template x-if="!selectedHolidays.includes('{{ $dateStr }}') && (!selectedClassHolidays['{{ $dateStr }}'] || selectedClassHolidays['{{ $dateStr }}'].length === 0)">
+                                             <div class="opacity-0 group-hover:opacity-100 transition duration-150 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-200 rounded-md px-2 py-1 text-[10px] font-semibold truncate">
+                                                 {{ $isWeekend ? 'Akhir Pekan' : 'Hari Sekolah' }}
+                                             </div>
+                                         </template>
+                                     </div>
+                                 </div>
+                             @else
+                                 <!-- Non-Current Month Padded Date Cell (Muted Gray) -->
+                                 <div style="min-height: 120px;" class="p-2.5 bg-gray-50/50 dark:bg-zinc-950/40 opacity-40 select-none flex flex-col justify-between">
+                                     <span class="font-semibold text-xs text-gray-400 dark:text-zinc-600 px-1 py-0.5">
+                                         {{ $dayNum }}
+                                     </span>
+                                 </div>
+                             @endif
+                         @endforeach
+                     </div>
 
-                </div>
-            </form>
+                 </div>
+             </form>
 
-        </div>
+         </div>
 
-        <!-- Alpine.js Date Configuration Modal Popup -->
-        <div x-show="modal.isOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-            <!-- Modal Backdrop Blur -->
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-xs"></div>
+         <!-- Alpine.js Date Configuration Modal Popup -->
+         <div x-show="modal.isOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+             <!-- Modal Backdrop Blur -->
+             <div class="fixed inset-0 bg-black/60 backdrop-blur-xs"></div>
 
-            <!-- Modal Content Wrapper -->
-            <div class="relative min-h-screen flex items-center justify-center p-4">
-                <div class="relative bg-white dark:bg-zinc-900 rounded-3xl max-w-md w-full border border-gray-200 dark:border-zinc-800 p-6 shadow-2xl space-y-5" @click.away="modal.isOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0">
-                    
-                    <!-- Header -->
-                    <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-3">
-                        <div>
-                            <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                                📅 Atur Tanggal <span x-text="modal.dayNum" class="text-blue-600 dark:text-blue-400"></span>
-                            </h3>
-                            <p class="text-xs text-gray-500 mt-0.5" x-text="modal.dateStr"></p>
-                        </div>
-                        <button type="button" @click="modal.isOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 font-bold text-xl cursor-pointer">
-                            &times;
-                        </button>
-                    </div>
+             <!-- Modal Content Wrapper -->
+             <div class="relative min-h-screen flex items-center justify-center p-4">
+                 <div class="relative bg-white dark:bg-zinc-900 rounded-3xl max-w-md w-full border border-gray-200 dark:border-zinc-800 p-6 shadow-2xl space-y-5" @click.away="modal.isOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0">
+                     
+                     <!-- Header -->
+                     <div class="flex justify-between items-center border-b dark:border-zinc-800 pb-3">
+                         <div>
+                             <h3 class="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                                 <x-heroicon-o-calendar class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                 <span>Atur Tanggal <span x-text="modal.dayNum" class="text-blue-600 dark:text-blue-400"></span></span>
+                             </h3>
+                             <p class="text-xs text-gray-500 mt-0.5" x-text="modal.dateStr"></p>
+                         </div>
+                         <button type="button" @click="modal.isOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 font-bold text-xl cursor-pointer">
+                             &times;
+                         </button>
+                     </div>
 
-                    <!-- Configuration Options -->
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-gray-400 dark:text-zinc-400 uppercase tracking-wider">Status Hari Ini</label>
-                        
-                        <div class="grid grid-cols-3 gap-2.5">
-                            <!-- Hari Sekolah -->
-                            <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'school' ? 'border-emerald-500 bg-emerald-50/30 text-emerald-800 dark:text-emerald-400 dark:border-emerald-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
-                                <input type="radio" x-model="modal.type" value="school" class="sr-only">
-                                <span class="text-lg">🏫</span>
-                                <span class="text-[11px] font-bold">Hari Sekolah</span>
-                            </label>
+                     <!-- Configuration Options -->
+                     <div class="space-y-4">
+                         <label class="block text-xs font-bold text-gray-400 dark:text-zinc-400 uppercase tracking-wider">Status Hari Ini</label>
+                         
+                         <div class="grid grid-cols-3 gap-2.5">
+                             <!-- Hari Sekolah -->
+                             <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'school' ? 'border-emerald-500 bg-emerald-50/30 text-emerald-800 dark:text-emerald-400 dark:border-emerald-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
+                                 <input type="radio" x-model="modal.type" value="school" class="sr-only">
+                                 <x-heroicon-o-academic-cap class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                                 <span class="text-[11px] font-bold">Hari Sekolah</span>
+                             </label>
 
-                            <!-- Libur Total -->
-                            <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'global' ? 'border-rose-500 bg-rose-50/30 text-rose-800 dark:text-rose-400 dark:border-rose-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
-                                <input type="radio" x-model="modal.type" value="global" class="sr-only">
-                                <span class="text-lg">🚨</span>
-                                <span class="text-[11px] font-bold">Libur Total</span>
-                            </label>
+                             <!-- Libur Total -->
+                             <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'global' ? 'border-rose-500 bg-rose-50/30 text-rose-800 dark:text-rose-400 dark:border-rose-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
+                                 <input type="radio" x-model="modal.type" value="global" class="sr-only">
+                                 <x-heroicon-o-no-symbol class="w-6 h-6 text-rose-600 dark:text-rose-400" />
+                                 <span class="text-[11px] font-bold">Libur Total</span>
+                             </label>
 
-                            <!-- Libur Sebagian -->
-                            <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'partial' ? 'border-amber-500 bg-amber-50/30 text-amber-800 dark:text-amber-400 dark:border-amber-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
-                                <input type="radio" x-model="modal.type" value="partial" class="sr-only">
-                                <span class="text-lg">⚠️</span>
-                                <span class="text-[11px] font-bold">Libur Sebagian</span>
-                            </label>
-                        </div>
-                    </div>
+                             <!-- Libur Sebagian -->
+                             <label class="border dark:border-zinc-800 rounded-2xl p-3 flex flex-col items-center gap-1.5 text-center cursor-pointer transition select-none hover:bg-gray-50 dark:hover:bg-zinc-850/50" :class="modal.type === 'partial' ? 'border-amber-500 bg-amber-50/30 text-amber-800 dark:text-amber-400 dark:border-amber-800 shadow-xs' : 'bg-transparent text-gray-700 dark:text-zinc-300'">
+                                 <input type="radio" x-model="modal.type" value="partial" class="sr-only">
+                                 <x-heroicon-o-exclamation-triangle class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                                 <span class="text-[11px] font-bold">Libur Sebagian</span>
+                             </label>
+                         </div>
+                     </div>
 
                     <!-- Classroom Checklist (Shows only when Libur Sebagian is selected) -->
                     <div x-show="modal.type === 'partial'" x-transition class="space-y-3 pt-3 border-t dark:border-zinc-800 max-h-56 overflow-y-auto">

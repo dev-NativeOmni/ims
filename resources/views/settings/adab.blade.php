@@ -55,7 +55,7 @@
                                         type="text"
                                         :name="'categories[' + catIdx + '][title]'"
                                         x-model="cat.title"
-                                        placeholder="Misal: 🕋 Adab Kepada Allah"
+                                        placeholder="Misal: Adab Kepada Allah"
                                         class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold"
                                         required
                                     />
@@ -121,7 +121,10 @@
                 {{-- Keterangan Nilai & Formula Penilaian --}}
                 <div class="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl px-6 py-4 space-y-3">
                     <div class="flex items-center justify-between">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">📊 Formula Logika Penilaian Adab Terpadu</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+                            <x-heroicon-o-chart-bar class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                            <span>Formula Logika Penilaian Adab Terpadu</span>
+                        </h4>
                         <span class="text-xs font-bold bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2.5 py-1 rounded-full">Kerajinan 40% + Pendamping 60%</span>
                     </div>
                     <p class="text-xs text-zinc-600 dark:text-zinc-400">
@@ -156,7 +159,7 @@
             return {
                 categories: Array.isArray(initialCategories) && initialCategories.length > 0 ? initialCategories : [
                     {
-                        title: '🕋 Adab Utama',
+                        title: 'Adab Utama',
                         desc: 'Pengembangan karakter dan kebiasaan adab harian',
                         questions: [
                             'Apakah Anda melaksanakan ibadah dan pembiasaan adab tepat waktu?',
@@ -166,7 +169,7 @@
                 ],
                 addCategory() {
                     this.categories.push({
-                        title: '✨ Kategori Adab Baru',
+                        title: 'Kategori Adab Baru',
                         desc: 'Deskripsi kategori adab baru',
                         questions: [
                             'Apakah Anda melaksanakan pembiasaan adab ini dengan konsisten?',

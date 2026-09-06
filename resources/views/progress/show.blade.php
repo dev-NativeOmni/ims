@@ -23,8 +23,9 @@
                 @if (!auth()->user()->hasAnyRole(['student', 'parent']) && ($student->tahfizh_level === 'ummi' || $student->ummiRecords()->exists()))
                     <a href="{{ route('hafalan-records.student.ummi-card', $student->id) }}"
                        target="_blank"
-                       class="inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
-                        📄 Cetak Kartu UMMI
+                       class="inline-flex items-center gap-1.5 justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition">
+                        <x-heroicon-o-printer class="w-4 h-4" />
+                        <span>Cetak Kartu UMMI</span>
                     </a>
                 @endif
 
@@ -240,15 +241,17 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            📈 Tren Perkembangan Hafalan
+                            <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Tren Perkembangan Hafalan</span>
                         </h3>
                         <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
                             Grafik performa hafalan bulanan dan pertumbuhan akumulasi baris hafalan murid dalam 12 bulan terakhir.
                         </p>
                     </div>
                     @if ($mostActiveMonthLabel)
-                        <div class="bg-indigo-50 dark:bg-indigo-955/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl px-4 py-2 text-xs text-indigo-700 dark:text-indigo-400 font-semibold self-start md:self-auto">
-                            🔥 Bulan Teraktif: <span class="font-black">{{ $mostActiveMonthLabel }}</span> ({{ number_format($maxLines, 1) }} baris)
+                        <div class="bg-indigo-50 dark:bg-indigo-955/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl px-4 py-2 text-xs text-indigo-700 dark:text-indigo-400 font-semibold self-start md:self-auto flex items-center gap-1.5">
+                            <x-heroicon-m-fire class="w-4 h-4 text-amber-500 shrink-0" />
+                            <span>Bulan Teraktif: <span class="font-black">{{ $mostActiveMonthLabel }}</span> ({{ number_format($maxLines, 1) }} baris)</span>
                         </div>
                     @endif
                 </div>

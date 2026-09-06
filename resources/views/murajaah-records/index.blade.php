@@ -7,8 +7,9 @@
 
             <div class="flex items-center gap-2">
                 <a href="{{ route('murajaah-records.fast-input') }}"
-                   class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
-                    ⚡ Input Murajaah Cepat
+                   class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
+                    <x-heroicon-o-bolt class="w-4 h-4" />
+                    <span>Input Murajaah Cepat</span>
                 </a>
             </div>
         </div>

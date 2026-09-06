@@ -4,8 +4,9 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-200 leading-tight">
                 Input Spreadsheet Perkembangan Kelas
             </h2>
-            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
-                ← Kembali ke List
+            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+                <x-heroicon-m-arrow-left class="w-3.5 h-3.5 shrink-0" />
+                <span>Kembali ke List</span>
             </a>
         </div>
     </x-slot>
@@ -257,8 +258,9 @@
                 @if (!$isWeekly && count($dates) > 0)
                 <div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
-                            📅 Tanggal Aktif ({{ $selectedWeek === 'all' ? 'Semua Pekan' : 'Pekan ' . $selectedWeek }}):
+                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
+                            <x-heroicon-o-calendar class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Tanggal Aktif ({{ $selectedWeek === 'all' ? 'Semua Pekan' : 'Pekan ' . $selectedWeek }}):</span>
                         </label>
                         <span class="text-[11px] text-gray-500 dark:text-zinc-400">
                             Klik nomor tanggal untuk melompat/fokus ke tanggal tersebut
@@ -780,7 +782,8 @@
                 <button type="button" @click="submitForm()" :disabled="isSaving" class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-xl font-bold transition shadow-lg cursor-pointer flex items-center gap-1.5">
                     <template x-if="!isSaving">
                         <span class="inline-flex items-center gap-1.5">
-                            💾 Simpan Sekarang
+                            <x-heroicon-o-check class="w-4 h-4" />
+                            <span>Simpan Sekarang</span>
                         </span>
                     </template>
                     <template x-if="isSaving">

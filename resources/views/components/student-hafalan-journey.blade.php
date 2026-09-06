@@ -79,16 +79,16 @@
                                     <!-- Status Pill Badge -->
                                     <div class="flex items-center justify-center gap-1">
                                         @if ($hasData)
-                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60">
-                                                🟢 Ada Setoran
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ada Setoran
                                             </span>
                                         @elseif ($isCurrent)
-                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200/60 animate-pulse">
-                                                🟡 Term Aktif
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-full font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200/60">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span> Term Aktif
                                             </span>
                                         @else
-                                            <span class="px-2 py-0.5 text-[9px] rounded-full font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
-                                                ⚪ Belum Setoran
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-full font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span> Belum Setoran
                                             </span>
                                         @endif
                                     </div>
@@ -149,8 +149,8 @@
              class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 relative">
             
             <!-- Close Button -->
-            <button @click="showModal = false" class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold p-1">
-                ✕
+            <button @click="showModal = false" class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg p-1 transition cursor-pointer">
+                <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
 
             <!-- Modal Header -->
