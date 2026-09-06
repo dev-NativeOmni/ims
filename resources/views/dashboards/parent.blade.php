@@ -156,21 +156,23 @@
                                             ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-600/30' 
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-teal-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
-                                    <div class="flex items-center justify-between gap-1 mb-1">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-85 flex items-center gap-0.5 truncate">
+                                    <div>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
                                             <span>📖</span> Tahfizh
                                         </span>
-                                        <span class="text-[9px] font-black px-1 rounded"
-                                              :class="childTab === 'tahfizh' ? 'bg-white/20 text-white' : 'bg-teal-500/15 text-teal-700 dark:text-teal-300'">
-                                            {{ round($pct) }}%
-                                        </span>
+                                        <div class="mt-1">
+                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
+                                                  :class="childTab === 'tahfizh' ? 'bg-white/20 text-white' : 'bg-teal-500/15 text-teal-700 dark:text-teal-300'">
+                                                {{ round($pct) }}%
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="my-0.5">
+                                    <div class="my-1">
                                         <p class="text-sm font-black leading-tight truncate">
                                             {{ $isUmmi ? data_get($row, 'ummi_jilid_str', 'Jilid 1') : data_get($row, 'completed_juz_count', 0).' Juz' }}
                                         </p>
                                     </div>
-                                    <div class="w-full rounded-full h-1 mt-1 overflow-hidden"
+                                    <div class="w-full rounded-full h-1 mt-0.5 overflow-hidden"
                                          :class="childTab === 'tahfizh' ? 'bg-white/30' : 'bg-zinc-200 dark:bg-zinc-700'">
                                         <div class="h-1 rounded-full"
                                              :class="childTab === 'tahfizh' ? 'bg-white' : 'bg-teal-500'"
@@ -184,21 +186,23 @@
                                             ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-600/30' 
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-amber-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
-                                    <div class="flex items-center justify-between gap-1 mb-1">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-85 flex items-center gap-0.5 truncate">
+                                    <div>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
                                             <span>🕌</span> Adab
                                         </span>
-                                        <span class="text-[9px] font-black px-1 rounded"
-                                              :class="childTab === 'adab' ? 'bg-white/20 text-white' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'">
-                                            Grade {{ data_get($adabData, 'grade', 'A') }}
-                                        </span>
+                                        <div class="mt-1">
+                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
+                                                  :class="childTab === 'adab' ? 'bg-white/20 text-white' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'">
+                                                Grade {{ data_get($adabData, 'grade', 'A') }}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="my-0.5">
+                                    <div class="my-1">
                                         <p class="text-sm font-black leading-tight truncate">
                                             {{ data_get($adabData, 'final_score', 0) }} <span class="text-[10px] font-normal opacity-70">/ 100</span>
                                         </p>
                                     </div>
-                                    <div class="flex items-center gap-0.5 mt-1">
+                                    <div class="flex items-center gap-0.5 mt-0.5">
                                         @php $isFilled = (bool) data_get($adabData, 'today_record'); @endphp
                                         <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
                                         <span class="w-1.5 h-1.5 rounded-full" :class="childTab === 'adab' ? '{{ $isFilled ? 'bg-white' : 'bg-white/40' }}' : '{{ $isFilled ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600' }}'"></span>
@@ -215,21 +219,23 @@
                                             ? 'bg-purple-600 text-white shadow-sm ring-2 ring-purple-600/30' 
                                             : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800 hover:border-purple-500/40'"
                                         class="p-2.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer">
-                                    <div class="flex items-center justify-between gap-1 mb-1">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-85 flex items-center gap-0.5 truncate">
+                                    <div>
+                                        <span class="text-[11px] font-bold uppercase tracking-wider opacity-90 flex items-center gap-0.5 truncate">
                                             <span>⭐</span> Disiplin
                                         </span>
-                                        <span class="text-[9px] font-black px-1 rounded"
-                                              :class="childTab === 'tanse' ? 'bg-white/20 text-white' : 'bg-purple-500/15 text-purple-700 dark:text-purple-300'">
-                                            {{ data_get($tanseData, 'violation_points', 0) > 0 ? '-'.data_get($tanseData, 'violation_points', 0) : 'Tertib' }}
-                                        </span>
+                                        <div class="mt-1">
+                                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded inline-block"
+                                                  :class="childTab === 'tanse' ? 'bg-white/20 text-white' : 'bg-purple-500/15 text-purple-700 dark:text-purple-300'">
+                                                {{ data_get($tanseData, 'violation_points', 0) > 0 ? '-'.data_get($tanseData, 'violation_points', 0) : 'Tertib' }}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="my-0.5">
+                                    <div class="my-1">
                                         <p class="text-sm font-black leading-tight truncate">
                                             +{{ data_get($tanseData, 'reward_points', 0) }} <span class="text-[10px] font-normal opacity-70">Poin</span>
                                         </p>
                                     </div>
-                                    <div class="w-full rounded-full h-1 mt-1 overflow-hidden"
+                                    <div class="w-full rounded-full h-1 mt-0.5 overflow-hidden"
                                          :class="childTab === 'tanse' ? 'bg-white/30' : 'bg-zinc-200 dark:bg-zinc-700'">
                                         <div class="h-1 rounded-full"
                                              :class="childTab === 'tanse' ? 'bg-white' : 'bg-purple-500'"
