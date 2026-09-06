@@ -57,7 +57,17 @@
         }
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden !important;
+            overflow-x: hidden !important;
+        }
+        @media (min-height: 520px) {
+            body {
+                overflow-y: hidden !important;
+            }
+        }
+        @media (max-height: 519px) {
+            body {
+                overflow-y: auto !important;
+            }
         }
         .font-display {
             font-family: 'Outfit', sans-serif;
@@ -72,7 +82,7 @@
         }
     </style>
 </head>
-<body class="h-[100dvh] w-full flex flex-col items-center justify-center p-3 sm:p-6 antialiased relative overflow-hidden selection:bg-orange-500 selection:text-white bg-cover bg-center bg-no-repeat bg-fixed"
+<body class="min-h-[100dvh] w-full flex flex-col items-center justify-center p-3 sm:p-6 antialiased relative selection:bg-orange-500 selection:text-white bg-cover bg-center bg-no-repeat bg-fixed"
       style="background-image: url('{{ $loginBg ? asset('storage/' . $loginBg) : asset('images/school_sunset_bg.jpg') }}');">
 
     <!-- Ambient Layer: Contrast Overlays & Gradient Blue to Orange Mesh Glows -->
@@ -156,7 +166,7 @@
                                    autofocus 
                                    autocomplete="username"
                                    placeholder="superadmin"
-                                   class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
+                                   class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
                         </div>
                         @if ($errors->has('username'))
                             <p class="text-xs font-semibold text-rose-400 mt-1 flex items-center gap-1">
@@ -181,7 +191,7 @@
                                    required 
                                    autocomplete="current-password"
                                    placeholder="••••••••••••"
-                                   class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
+                                   class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
                             
                             <!-- Eye Toggle Icon Button -->
                             <button type="button" 
