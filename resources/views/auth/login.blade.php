@@ -159,7 +159,7 @@
                                    required 
                                    autofocus 
                                    autocomplete="username"
-                                   placeholder="superadmin"
+                                   placeholder="Username"
                                    class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
                         </div>
                         @if ($errors->has('username'))
@@ -184,7 +184,7 @@
                                    name="password" 
                                    required 
                                    autocomplete="current-password"
-                                   placeholder="••••••••••••"
+                                   placeholder="Password"
                                    class="w-full pl-11 pr-11 py-3 rounded-2xl bg-white text-zinc-900 font-semibold placeholder-zinc-400 text-base sm:text-sm border-2 border-transparent focus:border-orange-500 focus:ring-4 focus:ring-blue-500/25 shadow-inner focus:outline-none transition-all duration-200">
                             
                             <!-- Eye Toggle Icon Button -->

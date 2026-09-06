@@ -62,15 +62,15 @@
                 @endphp
 
                 {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
-                <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-7 relative overflow-hidden">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-4 sm:pb-5">
+                <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-3.5 sm:p-6 relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-5">
                         <div class="flex items-center gap-3">
-                            <span class="text-3xl sm:text-4xl">{{ $isUmmi ? '📗' : '📘' }}</span>
+                            <span class="text-2xl sm:text-4xl">{{ $isUmmi ? '📗' : '📘' }}</span>
                             <div>
-                                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                <h3 class="text-sm sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                                     <span>Program {{ $isUmmi ? 'Ummi (Kelas X)' : 'Reguler (Kelas XI/XII)' }}</span>
                                 </h3>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                                     {{ $isUmmi ? 'Tahsin Ummi & Halaman Hafalan' : 'Target Baris & Hafalan Periodik' }}
                                 </p>
                             </div>
@@ -78,15 +78,15 @@
 
                         <div>
                             @if ($statusColor === 'emerald')
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @elseif ($statusColor === 'amber')
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20">
                                     <span>{{ $statusIcon }}</span> {{ $statusLabel }}
                                 </span>
                             @endif
@@ -95,51 +95,51 @@
 
                     @if ($isUmmi)
                         {{-- ─── PROGRAM UMMI UI (KELAS 10) ─── --}}
-                        <div class="mt-4 sm:mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                    <span>📖</span> Jilid Ummi Aktif
+                        <div class="mt-3 sm:mt-5 grid grid-cols-3 gap-2 sm:gap-4">
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
+                                    <span>📖</span> Jilid Ummi
                                 </p>
-                                <p class="text-xl sm:text-2xl font-black text-teal-900 dark:text-teal-100">
+                                <p class="text-sm sm:text-2xl font-black text-teal-900 dark:text-teal-100 truncate">
                                     {{ data_get($progress, 'current_jilid', '-') }}
                                 </p>
                             </div>
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                    <span>📑</span> Target Halaman
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
+                                    <span>📑</span> Halaman
                                 </p>
-                                <p class="text-xl sm:text-2xl font-black text-teal-900 dark:text-teal-100">
+                                <p class="text-sm sm:text-2xl font-black text-teal-900 dark:text-teal-100 truncate">
                                     {{ data_get($progress, 'current_halaman', '-') }}
                                 </p>
                             </div>
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                    <span>🏆</span> Status Kenaikan
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider mb-0.5 truncate flex items-center gap-1">
+                                    <span>🏆</span> Status
                                 </p>
-                                <p class="text-sm sm:text-base font-bold text-teal-900 dark:text-teal-100 mt-1">
+                                <p class="text-xs sm:text-base font-bold text-teal-900 dark:text-teal-100 mt-0.5 truncate">
                                     {{ data_get($progress, 'ummi_notes', 'Sedang Bimbingan') }}
                                 </p>
                             </div>
                         </div>
                     @else
                         {{-- ─── PROGRAM REGULER UI (KELAS 11 & 12) ─── --}}
-                        <div class="mt-4 sm:mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Capaian Ayat</p>
-                                <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
+                        <div class="mt-3 sm:mt-5 grid grid-cols-3 gap-2 sm:gap-4">
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-0.5 truncate">Ayat</p>
+                                <p class="text-sm sm:text-2xl font-black text-zinc-900 dark:text-white truncate">
                                     {{ number_format(data_get($progress, 'memorized_ayahs', 0)) }}
-                                    <span class="text-xs font-normal text-zinc-400">/ {{ number_format(data_get($progress, 'target_total_ayahs', 6236)) }}</span>
+                                    <span class="text-[10px] sm:text-xs font-normal text-zinc-400">/ {{ number_format(data_get($progress, 'target_total_ayahs', 6236)) }}</span>
                                 </p>
                             </div>
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Target Juz</p>
-                                <p class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-0.5 truncate">Target</p>
+                                <p class="text-sm sm:text-2xl font-black text-zinc-900 dark:text-white truncate">
                                     {{ data_get($progress, 'target_juz_label', 'Juz 30') }}
                                 </p>
                             </div>
-                            <div class="rounded-2xl glass-liquid-inner p-4">
-                                <p class="text-[10px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Progres Total</p>
-                                <p class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                            <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-2.5 sm:p-4">
+                                <p class="text-[9px] sm:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-0.5 truncate">Progres</p>
+                                <p class="text-sm sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 truncate">
                                     {{ number_format($progressPercent, 1) }}%
                                 </p>
                             </div>
@@ -150,29 +150,29 @@
                 <x-student-hafalan-journey :milestones="data_get($progress, 'term_milestones', [])" />
 
                 {{-- ═══════════════ PROFIL & PROGRESS HAFALAN GRID ═══════════════ --}}
-                <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-3.5 sm:gap-4 lg:grid-cols-3">
                     {{-- Profil Singkat --}}
-                    <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-6 space-y-4">
-                        <div class="flex items-center gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-4">
-                            <div class="w-12 h-12 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300 font-black text-lg flex items-center justify-center shrink-0 border border-teal-500/20 shadow-xs">
+                    <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 space-y-3 sm:space-y-4">
+                        <div class="flex items-center gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-4">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-300 font-black text-base sm:text-lg flex items-center justify-center shrink-0 border border-teal-500/20 shadow-xs">
                                 {{ substr($student->name, 0, 1) }}
                             </div>
                             <div class="min-w-0">
-                                <h3 class="text-base font-bold text-zinc-900 dark:text-white truncate">{{ $student->name }}</h3>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400">NIS: {{ $student->student_number ?? '-' }}</p>
+                                <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white truncate">{{ $student->name }}</h3>
+                                <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">NIS: {{ $student->student_number ?? '-' }}</p>
                             </div>
                         </div>
 
-                        <dl class="space-y-2.5 text-xs">
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-200/40 dark:border-white/5">
+                        <dl class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center py-0.5 border-b border-zinc-200/40 dark:border-white/5">
                                 <dt class="text-zinc-500 dark:text-zinc-400">Kelas</dt>
                                 <dd class="font-bold text-zinc-900 dark:text-white">{{ $student->classRoom?->name ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between items-center py-1 border-b border-zinc-200/40 dark:border-white/5">
+                            <div class="flex justify-between items-center py-0.5 border-b border-zinc-200/40 dark:border-white/5">
                                 <dt class="text-zinc-500 dark:text-zinc-400">Program</dt>
                                 <dd class="font-bold text-zinc-900 dark:text-white">{{ $student->classRoom?->program?->name ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between items-center py-1">
+                            <div class="flex justify-between items-center py-0.5">
                                 <dt class="text-zinc-500 dark:text-zinc-400">Guru Bimbingan</dt>
                                 <dd class="font-bold text-zinc-900 dark:text-white truncate max-w-[170px]">{{ $student->teacher?->user?->name ?? '-' }}</dd>
                             </div>
@@ -180,33 +180,33 @@
                     </div>
 
                     {{-- Progress Hafalan --}}
-                    <div class="glass-liquid-card rounded-[1.75rem] p-5 sm:p-6 lg:col-span-2 space-y-4 border border-teal-500/20 shadow-md">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-zinc-200/70 dark:border-white/10 pb-4">
+                    <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 lg:col-span-2 space-y-3 sm:space-y-4 border border-teal-500/20 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-4">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Progress Hafalan Al-Qur'an</h3>
+                                    <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white">Progress Hafalan Al-Qur'an</h3>
                                     @if (!empty($progress['target_juz_label']))
-                                        <span class="inline-flex items-center rounded-full bg-teal-500/15 px-3 py-0.5 text-xs font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                                        <span class="inline-flex items-center rounded-full bg-teal-500/15 px-2.5 py-0.5 text-[10px] sm:text-xs font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
                                             Target: {{ $progress['target_juz_label'] }}
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                                     Setoran lulus sesuai target kurikulum program.
                                 </p>
                             </div>
 
                             <div>
-                                <span class="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500 text-white shadow-xs">
+                                <span class="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black bg-emerald-500 text-white shadow-xs">
                                     {{ $statusLabel }}
                                 </span>
                             </div>
                         </div>
 
                         {{-- Circular Ring & Key Stats --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                            <div class="sm:col-span-5 flex items-center justify-center py-2">
-                                <div class="relative w-36 h-36 flex items-center justify-center">
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-center">
+                            <div class="sm:col-span-5 flex items-center justify-center py-1 sm:py-2">
+                                <div class="relative w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center">
                                     @php
                                         $pctStudent = min(100, max(0, (float) $progressPercent));
                                         $dashStudent = 2 * 3.14159 * 44;
@@ -223,13 +223,13 @@
                                         </defs>
                                     </svg>
                                     <div class="absolute flex flex-col items-center justify-center text-center">
-                                        <span class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($pctStudent) }}%</span>
-                                        <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas</span>
+                                        <span class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($pctStudent) }}%</span>
+                                        <span class="text-[9px] sm:text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="sm:col-span-7 space-y-3">
+                            <div class="sm:col-span-7 space-y-2.5 sm:space-y-3">
                                 <div class="grid grid-cols-3 gap-2.5">
                                     <div class="rounded-2xl glass-liquid-inner p-3 text-center">
                                         <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">Setoran</p>

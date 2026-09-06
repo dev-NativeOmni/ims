@@ -33,7 +33,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
                 
                 {{-- Left 4-col: Class Average Completion Ring --}}
-                <div class="lg:col-span-4 glass-liquid-card rounded-2xl sm:rounded-3xl p-5 sm:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden border border-teal-500/20 shadow-md">
+                <div class="lg:col-span-4 glass-liquid-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden border border-teal-500/20 shadow-md">
                     <div class="w-full flex items-center justify-between mb-2">
                         <span class="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-xl">
                             <span>📊</span> Rata-Rata Bimbingan
@@ -43,7 +43,7 @@
                         </span>
                     </div>
 
-                    <div class="relative w-36 h-36 sm:w-40 sm:h-40 my-3 flex items-center justify-center">
+                    <div class="relative w-28 h-28 sm:w-40 sm:h-40 my-2 sm:my-3 flex items-center justify-center">
                         @php
                             $dashTeacher = 2 * 3.14159 * 44;
                             $offsetTeacher = $dashTeacher - ($avgClassProgress / 100) * $dashTeacher;
@@ -59,8 +59,8 @@
                             </defs>
                         </svg>
                         <div class="absolute flex flex-col items-center justify-center text-center">
-                            <span class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($avgClassProgress) }}%</span>
-                            <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas Target</span>
+                            <span class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">{{ round($avgClassProgress) }}%</span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase">Tuntas Target</span>
                         </div>
                     </div>
 
