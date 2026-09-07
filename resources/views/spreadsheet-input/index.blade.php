@@ -39,9 +39,20 @@
                     });
 
                     window.addEventListener('beforeunload', (e) => {
-                        if (this.isDirty) {
+                        if (this.isDirty && !this.isSaving) {
                             e.preventDefault();
                             e.returnValue = '';
+                        }
+                    });
+
+                    // Warn on internal link click navigation if unsaved changes exist
+                    document.addEventListener('click', (e) => {
+                        const link = e.target.closest('a');
+                        if (link && link.href && !link.target && !link.hasAttribute('download') && this.isDirty && !this.isSaving) {
+                            if (!confirm('Peringatan: Ada perubahan nilai/presensi di spreadsheet yang belum Anda simpan. Jika Anda meninggalkan halaman ini, perubahan tersebut akan hilang. Apakah Anda yakin ingin keluar?')) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
                         }
                     });
 
@@ -764,38 +775,6 @@
                     </div>
                 </form>
             @endif
-
-            <!-- Floating Unsaved Changes Save Bar -->
-            <div x-show="isDirty"
-                 x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="translate-y-12 opacity-0 scale-95"
-                 x-transition:enter-end="translate-y-0 opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-200 transform"
-                 x-transition:leave-start="translate-y-0 opacity-100 scale-100"
-                 x-transition:leave-end="translate-y-12 opacity-0 scale-95"
-                 class="fixed bottom-24 xl:bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-zinc-900/95 text-white dark:bg-white/95 dark:text-zinc-900 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-zinc-700/80 dark:border-zinc-300 flex items-center gap-4 text-xs font-bold"
-                 style="display: none;">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-                    <span>Ada perubahan setoran / presensi yang belum disimpan!</span>
-                </div>
-                <button type="button" @click="submitForm()" :disabled="isSaving" class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-xl font-bold transition shadow-lg cursor-pointer flex items-center gap-1.5">
-                    <template x-if="!isSaving">
-                        <span class="inline-flex items-center gap-1.5">
-                            <x-heroicon-o-check class="w-4 h-4" />
-                            <span>Simpan Sekarang</span>
-                        </span>
-                    </template>
-                    <template x-if="isSaving">
-                        <span class="inline-flex items-center gap-1.5">
-                            <svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg> Menyimpan...
-                        </span>
-                    </template>
-                </button>
-            </div>
 
         </div>
     </div>
