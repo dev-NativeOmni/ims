@@ -243,7 +243,7 @@ class ReportController extends Controller
             ->latest('reviewed_at')
             ->latest();
 
-        $fileName = 'laporan-ims-'.now()->format('Ymd-His').'.csv';
+        $fileName = 'laporan-tad-'.now()->format('Ymd-His').'.csv';
 
         // Gunakan cursor() agar hanya satu baris dimuat ke memory pada satu waktu.
         return response()->streamDownload(function () use ($hafalanQuery, $murajaahQuery) {

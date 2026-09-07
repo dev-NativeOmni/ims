@@ -26,7 +26,7 @@ export default () => ({
             }
         });
         
-        console.log('IMS ScrollLayout component loaded with Theme Switcher and Login Modal support!');
+        console.log('TAD ScrollLayout component loaded with Theme Switcher and Login Modal support!');
     },
 
     openLoginModal() {

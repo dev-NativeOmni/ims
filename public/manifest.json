@@ -1,7 +1,7 @@
 {
-  "name": "HafizPlus IMS - SMAIA 7",
-  "short_name": "IMS SMAIA 7",
-  "description": "Sistem Informasi Manajemen Hafalan Al-Qur'an & Kedisiplinan SMAIA 7",
+  "name": "TAD Management System - SMAIA 7",
+  "short_name": "TAD SMAIA 7",
+  "description": "Sistem Informasi Manajemen Hafalan Al-Qur'an, Adab & Kedisiplinan SMAIA 7",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

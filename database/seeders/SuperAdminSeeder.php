@@ -14,7 +14,7 @@ class SuperAdminSeeder extends Seeder
         $superAdminRole = Role::where('name', 'super_admin')->firstOrFail();
 
         User::updateOrCreate(
-            ['email' => 'superadmin@ims.test'],
+            ['email' => 'superadmin@tad.test'],
             [
                 'role_id' => $superAdminRole->id,
                 'name' => 'Super Admin TAD (Tahfizh, Adab, Disiplin)',

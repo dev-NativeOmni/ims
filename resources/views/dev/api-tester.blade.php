@@ -210,7 +210,7 @@
 
 <script>
     const baseUrl = window.location.origin;
-    let token = localStorage.getItem('ims_api_token') || '';
+    let token = localStorage.getItem('tad_api_token') || '';
 
     updateTokenBox();
 
@@ -263,7 +263,7 @@
             token = data?.data?.access_token || '';
 
             if (token) {
-                localStorage.setItem('ims_api_token', token);
+                localStorage.setItem('tad_api_token', token);
             }
 
             updateTokenBox();
@@ -314,7 +314,7 @@
 
     function clearToken(showMessage = true) {
         token = '';
-        localStorage.removeItem('ims_api_token');
+        localStorage.removeItem('tad_api_token');
         updateTokenBox();
 
         if (showMessage) {
