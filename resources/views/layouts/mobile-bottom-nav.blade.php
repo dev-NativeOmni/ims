@@ -216,14 +216,93 @@
 @endphp
 
 <!-- Bottom Floating Navigation Bar in SAPA SMAIA 7 Style (Mobile & Tablet / iPad) -->
-<nav x-show="!sidebarOpen"
+<nav x-data="{
+         lastScrollY: 0,
+         hideNav: false,
+         inputFocused: false,
+         touchStartY: 0,
+         init() {
+             // 1. Scroll detection on window
+             window.addEventListener('scroll', () => {
+                 const currentY = window.scrollY || window.pageYOffset || 0;
+                 
+                 // If near top or bottom of page, always show
+                 if (currentY < 40) {
+                     this.hideNav = false;
+                     this.lastScrollY = currentY;
+                     return;
+                 }
+                 
+                 const isAtBottom = (window.innerHeight + currentY) >= (document.documentElement.scrollHeight - 30);
+                 if (isAtBottom) {
+                     this.hideNav = false;
+                     this.lastScrollY = currentY;
+                     return;
+                 }
+                 
+                 const diff = currentY - this.lastScrollY;
+                 if (diff > 12) {
+                     // Scrolling DOWN -> smoothly hide nav so content is not blocked
+                     this.hideNav = true;
+                 } else if (diff < -10) {
+                     // Scrolling UP -> smoothly restore nav
+                     this.hideNav = false;
+                 }
+                 
+                 this.lastScrollY = currentY;
+             }, { passive: true });
+
+             // 2. Touch gesture detection (works inside overflow containers & tables too)
+             window.addEventListener('touchstart', (e) => {
+                 if (e.touches && e.touches[0]) {
+                     this.touchStartY = e.touches[0].clientY;
+                 }
+             }, { passive: true });
+
+             window.addEventListener('touchmove', (e) => {
+                 if (e.touches && e.touches[0]) {
+                     const currentTouchY = e.touches[0].clientY;
+                     const diff = this.touchStartY - currentTouchY;
+                     
+                     if (diff > 25 && (window.scrollY || 0) > 30) {
+                         // Dragging finger up (scrolling down page) -> hide
+                         this.hideNav = true;
+                         this.touchStartY = currentTouchY;
+                     } else if (diff < -20) {
+                         // Dragging finger down (scrolling up page) -> show
+                         this.hideNav = false;
+                         this.touchStartY = currentTouchY;
+                     }
+                 }
+             }, { passive: true });
+
+             // 3. Virtual keyboard detection (hide when entering inputs so it never floats above keyboard)
+             document.addEventListener('focusin', (e) => {
+                 if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+                     this.inputFocused = true;
+                 }
+             });
+             document.addEventListener('focusout', (e) => {
+                 if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+                     this.inputFocused = false;
+                 }
+             });
+
+             // 4. Orientation & resize reset
+             window.addEventListener('resize', () => {
+                 this.hideNav = false;
+             });
+         }
+     }"
+     x-show="!sidebarOpen && !inputFocused"
      x-transition:enter="transition-opacity ease-out duration-150"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
      x-transition:leave="transition-opacity ease-in duration-100"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="xl:hidden fixed inset-x-0 bottom-0 z-50 mobile-bottom-bar-fixed bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)]"
+     :class="hideNav ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'"
+     class="xl:hidden fixed inset-x-0 bottom-0 z-50 mobile-bottom-bar-fixed bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] transition-all duration-300 ease-in-out"
      style="position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; z-index: 50 !important;"
      aria-label="Navigasi Bawah">
     
