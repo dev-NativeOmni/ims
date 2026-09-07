@@ -223,7 +223,8 @@
      x-transition:leave="transition-opacity ease-in duration-100"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="xl:hidden mobile-bottom-bar-fixed bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)]"
+     class="xl:hidden fixed inset-x-0 bottom-0 z-50 mobile-bottom-bar-fixed bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)]"
+     style="position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; z-index: 50 !important;"
      aria-label="Navigasi Bawah">
     
     <div class="flex items-center justify-around h-14 sm:h-16 md:h-16 landscape:h-13 md:landscape:h-16 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto px-1.5 sm:px-3 relative">

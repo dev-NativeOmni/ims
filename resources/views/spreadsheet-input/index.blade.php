@@ -336,7 +336,7 @@
                     <!-- ========================================== -->
                     <!-- DESKTOP / TABLET SPREADSHEET VIEW          -->
                     <!-- ========================================== -->
-                    <div class="hidden md:block bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-x-auto overflow-y-auto touch-scroll max-h-[75vh] shadow-sm">
+                    <div class="hidden md:block bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-x-auto overflow-y-auto touch-scroll max-h-[calc(100dvh-14rem)] overscroll-contain shadow-sm">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 table-fixed border-collapse">
                             <thead class="sticky top-0 z-30 bg-gray-100 dark:bg-zinc-800 shadow-sm">
                                 <tr>
