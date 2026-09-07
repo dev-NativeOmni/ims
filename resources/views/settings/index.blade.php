@@ -140,7 +140,7 @@
                                     <div class="w-12 h-12 rounded-lg bg-white dark:bg-[#09090b]/40 border dark:border-zinc-800 flex items-center justify-center text-gray-455 font-bold">
                                         DEF
                                     </div>
-                                    <span>Menggunakan logo default IMS (SVG).</span>
+                                    <span>Menggunakan logo default TAD (SVG).</span>
                                 </div>
                             @endif
 

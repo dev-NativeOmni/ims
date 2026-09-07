@@ -17,42 +17,42 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'role' => 'super_admin',
-                'name' => 'Super Admin IMS (Integrated Management System)',
+                'name' => 'Super Admin TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'superadmin',
             ],
             [
                 'role' => 'admin',
-                'name' => 'Admin IMS (Integrated Management System)',
+                'name' => 'Admin TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'admin',
             ],
             [
                 'role' => 'teacher',
-                'name' => 'Guru IMS (Integrated Management System)',
+                'name' => 'Guru TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'guru',
             ],
             [
                 'role' => 'parent',
-                'name' => 'Orangtua IMS (Integrated Management System)',
+                'name' => 'Orangtua TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'orangtua',
             ],
             [
                 'role' => 'student',
-                'name' => 'Santri IMS (Integrated Management System)',
+                'name' => 'Santri TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'santri',
             ],
             [
                 'role' => 'headmaster',
-                'name' => 'Kepala Sekolah IMS (Integrated Management System)',
+                'name' => 'Kepala Sekolah TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'kepsek',
             ],
             [
                 'role' => 'tanse',
-                'name' => 'Tanse IMS (Integrated Management System)',
+                'name' => 'Tanse TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'tanse',
             ],
             [
                 'role' => 'coordinator_tahfizh',
-                'name' => 'Koordinator Tahfizh IMS (Integrated Management System)',
+                'name' => 'Koordinator Tahfizh TAD (Tahfizh, Adab, Disiplin)',
                 'username' => 'koordinator',
             ],
         ];

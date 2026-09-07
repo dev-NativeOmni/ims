@@ -540,7 +540,7 @@
 
                 tempCtx.fillStyle = '#6B7280';
                 tempCtx.font = '13px Arial, sans-serif';
-                tempCtx.fillText("IMS-SMAIA7", tempCanvas.width / 2, 54);
+                tempCtx.fillText("TAD-SMAIA7", tempCanvas.width / 2, 54);
 
                 // Divider line
                 tempCtx.strokeStyle = '#E5E7EB';

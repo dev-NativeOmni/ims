@@ -17,7 +17,7 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'superadmin@ims.test'],
             [
                 'role_id' => $superAdminRole->id,
-                'name' => 'Super Admin IMS (Integrated Management System)',
+                'name' => 'Super Admin TAD (Tahfizh, Adab, Disiplin)',
                 'password' => Hash::make('password123'),
                 'status' => 'active',
                 'email_verified_at' => now(),

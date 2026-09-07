@@ -17,7 +17,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>IMS — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
+        <title>TAD Management System — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
         <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
 
         <!-- Theme Initialization Script (Default: Light Mode unless explicitly set to dark) -->
@@ -341,8 +341,11 @@
 
                     <!-- Main Hero Title -->
                     <h1 class="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-snug sm:leading-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.9)] dark:drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)] px-2">
-                        Integrated Management System
+                        TAD Management System
                     </h1>
+                    <p class="text-xs sm:text-sm font-bold tracking-widest text-orange-600 dark:text-amber-400 uppercase mt-1">
+                        (Tahfizh, Adab, Disiplin)
+                    </p>
 
                     <!-- Hero Subtitle in Indonesian with Sleek Frosted Glass Container to avoid Background Sign Clashing -->
                     <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-2xl bg-white/40 dark:bg-black/45 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm max-w-2xl mx-auto">
@@ -443,7 +446,7 @@
                     <div class="text-center flex flex-col items-center gap-4 max-w-2xl mx-auto mb-16 sm:mb-20">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
                             <span class="w-1.5 h-1.5 rounded-full bg-orange-500 dark:bg-orange-400 animate-pulse"></span>
-                            Fitur Unggulan IMS
+                            Fitur Unggulan TAD Management System
                         </div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-tight">
                             Satu Platform, Semua Kebutuhan Pelacakan Tahfidz
@@ -467,7 +470,7 @@
                                     <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
                                     <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
                                     <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-                                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">IMS Tahfidz Hub • Dashboard Live</span>
+                                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">TAD Tahfidz Hub • Dashboard Live</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -624,7 +627,7 @@
                             Keunggulan Sistem
                         </div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-tight">
-                            Mengapa Memilih IMS ?
+                            Mengapa Memilih TAD Management System ?
                         </h2>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base leading-relaxed">
                             Fitur-fitur tangguh yang dirancang spesifik untuk menyederhanakan manajemen Tahfizh di sekolah, Pondok Pesantren, dan Rumah Tahfizh.
@@ -912,7 +915,7 @@
                                 <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
                                 <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
                                 <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-                                <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">IMS Simulation Console</span>
+                                <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">TAD Simulation Console</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-600 dark:text-orange-400">
@@ -1182,7 +1185,7 @@
             <footer class="w-full bg-zinc-950 dark:bg-black border-t border-zinc-800 dark:border-white/5 py-10 text-center relative z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p class="text-xs text-zinc-500">
-                        &copy; {{ date('Y') }} IMS (Integrated Management System). SMA Islam Al Azhar 7 Sukoharjo.
+                        &copy; 2026 TAD Management System. SMA Islam Al Azhar 7 Sukoharjo Developed by Native
                     </p>
                     <div class="flex items-center gap-6 text-xs text-zinc-500">
                         <a href="#" class="hover:text-zinc-300 transition-colors">Syarat Ketentuan</a>
@@ -1253,7 +1256,7 @@
                             </div>
 
                             <h3 id="login-modal-title" class="text-2xl sm:text-[1.75rem] font-black font-display text-white tracking-tight leading-tight">
-                                LOGIN IMS
+                                LOGIN TAD
                             </h3>
                             
                             <p class="text-xs sm:text-sm text-zinc-300 font-medium mt-1 tracking-wide">

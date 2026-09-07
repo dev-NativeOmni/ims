@@ -521,7 +521,7 @@
                 const ctx = tempCanvas.getContext('2d');
 
                 const titleText = "Diagram Progres Hafalan Murid";
-                const subTitleText = "IMS (Integrated Management System) — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                const subTitleText = "TAD Management System (Tahfizh, Adab, Disiplin) — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
                 const bannerHeight = 80;
                 tempCanvas.width = originalCanvas.width;
@@ -540,7 +540,7 @@
                 // Subtitle
                 ctx.fillStyle = '#6B7280';
                 ctx.font = '13px Inter, sans-serif';
-                ctx.fillText("IMS-SMAIA7", tempCanvas.width / 2, 58);
+                ctx.fillText("TAD-SMAIA7", tempCanvas.width / 2, 58);
 
                 // Line separator
                 ctx.strokeStyle = '#E5E7EB';

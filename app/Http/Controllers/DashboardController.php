@@ -76,7 +76,7 @@ class DashboardController extends Controller
 
         return view('dashboards.admin', [
             'title' => 'Super Admin Dashboard',
-            'subtitle' => 'Monitoring penuh seluruh data IMS.',
+            'subtitle' => 'Monitoring penuh seluruh data TAD.',
             'stats' => $stats,
         ]);
     }
@@ -99,7 +99,7 @@ class DashboardController extends Controller
         }
 
         return view('dashboards.admin', [
-            'title' => 'Dashboard Utama IMS',
+            'title' => 'Dashboard Utama TAD',
             'subtitle' => 'Monitoring operasional murid, guru, hafalan, adab, dan kedisiplinan.',
             'stats' => $stats,
         ]);

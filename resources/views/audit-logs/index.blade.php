@@ -5,7 +5,7 @@
                 Audit Log
             </h2>
             <p class="text-sm text-gray-600 mt-1">
-                Riwayat aktivitas penting pada sistem IMS.
+                Riwayat aktivitas penting pada sistem TAD.
             </p>
         </div>
     </x-slot>

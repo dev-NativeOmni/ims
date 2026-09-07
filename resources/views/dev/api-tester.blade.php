@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>IMS API v1 Tester</title>
+    <title>TAD API v1 Tester</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -126,9 +126,9 @@
 <body>
 <div class="container">
     <div class="card">
-        <h1>IMS API v1 Tester</h1>
+        <h1>TAD API v1 Tester</h1>
         <p>
-            Halaman ini untuk testing lokal endpoint API IMS.
+            Halaman ini untuk testing lokal endpoint API TAD.
             Jangan jadikan ini halaman publik production.
         </p>
     </div>

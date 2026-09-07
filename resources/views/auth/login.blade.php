@@ -22,7 +22,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'IMS SMAIA 7') }} - {{ __('Masuk') }}</title>
+    <title>{{ config('app.name', 'TAD SMAIA 7') }} - {{ __('Masuk') }}</title>
 
     <!-- PWA & Apple iOS Metadata -->
     <link rel="manifest" href="/manifest.json">
@@ -30,7 +30,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="IMS SMAIA 7">
+    <meta name="apple-mobile-web-app-title" content="TAD SMAIA 7">
     <link rel="apple-touch-icon" href="/images/logo_alazhar7.png">
     <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
 
@@ -126,7 +126,7 @@
                     </div>
 
                     <h1 class="text-2xl sm:text-[1.75rem] font-black font-display text-white tracking-tight leading-tight">
-                        LOGIN IMS
+                        LOGIN TAD
                     </h1>
                     
                     <p class="text-xs sm:text-sm text-zinc-300 font-medium mt-1 tracking-wide">
