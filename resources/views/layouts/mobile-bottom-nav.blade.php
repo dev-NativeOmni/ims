@@ -217,13 +217,13 @@
 
 <!-- Bottom Floating Navigation Bar in SAPA SMAIA 7 Style (Mobile & Tablet / iPad) -->
 <nav x-show="!sidebarOpen"
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="translate-y-full opacity-0"
-     x-transition:enter-end="translate-y-0 opacity-100"
-     x-transition:leave="transition ease-in duration-150"
-     x-transition:leave-start="translate-y-0 opacity-100"
-     x-transition:leave-end="translate-y-full opacity-0"
-     class="xl:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
+     x-transition:enter="transition-opacity ease-out duration-150"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-in duration-100"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="xl:hidden mobile-bottom-bar-fixed bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-xl border-t border-zinc-200/80 dark:border-white/10 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)]"
      aria-label="Navigasi Bawah">
     
     <div class="flex items-center justify-around h-14 sm:h-16 md:h-16 landscape:h-13 md:landscape:h-16 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto px-1.5 sm:px-3 relative">

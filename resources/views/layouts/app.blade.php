@@ -90,8 +90,10 @@
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-[max(6rem,calc(5rem+env(safe-area-inset-bottom)))] xl:pb-[max(2rem,calc(1.5rem+env(safe-area-inset-bottom)))]">
+                <main class="app-main-layout flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pb-28 sm:pb-32 xl:pb-8">
                     {{ $slot }}
+                    <!-- Bottom spacer to prevent mobile bottom tab bar from obscuring content -->
+                    <div class="xl:hidden h-14 sm:h-16 pointer-events-none" aria-hidden="true"></div>
                 </main>
             </div>
 
@@ -112,7 +114,7 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-y-0 opacity-100"
              x-transition:leave-end="translate-y-8 opacity-0"
-             class="fixed bottom-20 xl:bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border"
+             class="fixed bottom-24 xl:bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border"
              :class="isOnline ? 'bg-emerald-800 text-emerald-100 border-emerald-600' : 'bg-red-800 text-red-100 border-red-600'"
              style="display: none;">
             <template x-if="isOnline">
