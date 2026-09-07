@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Update users table names and emails
+        // 1. Update users table names and optional emails
         if (Schema::hasTable('users')) {
             DB::table('users')->where('name', 'like', '%IMS%')->get()->each(function ($user) {
                 $newName = str_replace(
@@ -19,10 +19,12 @@ return new class extends Migration
                 DB::table('users')->where('id', $user->id)->update(['name' => $newName]);
             });
 
-            DB::table('users')->where('email', 'like', '%@ims.test%')->get()->each(function ($user) {
-                $newEmail = str_replace('@ims.test', '@tad.test', $user->email);
-                DB::table('users')->where('id', $user->id)->update(['email' => $newEmail]);
-            });
+            if (Schema::hasColumn('users', 'email')) {
+                DB::table('users')->where('email', 'like', '%@ims.test%')->get()->each(function ($user) {
+                    $newEmail = str_replace('@ims.test', '@tad.test', $user->email);
+                    DB::table('users')->where('id', $user->id)->update(['email' => $newEmail]);
+                });
+            }
         }
 
         // 2. Update students table names
@@ -37,11 +39,11 @@ return new class extends Migration
             });
         }
 
-        // 3. Update parents table
-        if (Schema::hasTable('parents')) {
-            DB::table('parents')->where('address', 'like', '%IMS%')->get()->each(function ($parent) {
+        // 3. Update parent_profiles table
+        if (Schema::hasTable('parent_profiles')) {
+            DB::table('parent_profiles')->where('address', 'like', '%IMS%')->get()->each(function ($parent) {
                 $newAddress = str_replace('IMS', 'TAD', $parent->address);
-                DB::table('parents')->where('id', $parent->id)->update(['address' => $newAddress]);
+                DB::table('parent_profiles')->where('id', $parent->id)->update(['address' => $newAddress]);
             });
         }
 
