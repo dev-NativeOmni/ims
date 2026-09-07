@@ -63,8 +63,6 @@ html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
-    overflow-x: hidden;
-    max-width: 100vw;
 }
 
 body {
@@ -72,9 +70,6 @@ body {
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overscroll-behavior-y: none;
-    overflow-x: hidden;
-    max-width: 100vw;
 }
 
 /* Touch manipulation to eliminate 300ms tap delay on iOS */

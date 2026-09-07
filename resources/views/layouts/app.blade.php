@@ -48,7 +48,7 @@
         $bgSetting = \App\Models\Setting::get('background');
         $bgUrl = $bgSetting ? asset('storage/' . $bgSetting) : (file_exists(public_path('images/school_sunset_bg.jpg')) ? asset('images/school_sunset_bg.jpg') : null);
     @endphp
-    <body class="font-sans antialiased bg-[#f8fafc] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white min-h-screen min-h-[100dvh] overflow-x-hidden"
+    <body class="font-sans antialiased bg-[#f8fafc] text-zinc-800 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 selection:bg-orange-500 selection:text-white min-h-screen min-h-[100dvh]"
           x-data="{ sidebarOpen: false, dark: document.documentElement.classList.contains('dark'), toggleTheme() { this.dark = !this.dark; if (this.dark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); } } }">
         <!-- Ambient Sunset & Gradient Background Layer -->
         <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-cover bg-center bg-no-repeat transition-all duration-300"
