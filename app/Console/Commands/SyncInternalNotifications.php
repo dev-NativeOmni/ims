@@ -7,7 +7,9 @@ use Illuminate\Console\Command;
 
 class SyncInternalNotifications extends Command
 {
-    protected $signature = 'ims:sync-notifications';
+    protected $signature = 'tad:sync-notifications';
+
+    protected $aliases = ['ims:sync-notifications'];
 
     protected $description = 'Sinkronkan notifikasi internal TAD untuk target terlambat, hafalan follow-up, dan murajaah follow-up.';
 

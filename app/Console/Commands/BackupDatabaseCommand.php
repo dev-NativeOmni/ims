@@ -8,7 +8,9 @@ use Symfony\Component\Process\Process;
 
 class BackupDatabaseCommand extends Command
 {
-    protected $signature = 'ims:backup-database {--prune : Hapus backup lama setelah backup berhasil}';
+    protected $signature = 'tad:backup-database {--prune : Hapus backup lama setelah backup berhasil}';
+
+    protected $aliases = ['ims:backup-database'];
 
     protected $description = 'Membuat backup database MySQL TAD dalam format SQL.';
 
