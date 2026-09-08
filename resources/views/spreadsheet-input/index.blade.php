@@ -106,12 +106,69 @@
 
                     this.$nextTick(() => {
                         let isReady = true;
+                        this.checkDraft();
                         this.$watch('gridData', () => {
                             if (isReady) {
                                 this.isDirty = true;
+                                window._hasUnsavedDraft = true;
+                                this.saveDraftDebounced();
                             }
                         }, { deep: true });
                     });
+                },
+                draftKey: 'tad_draft_spreadsheet_{{ $selectedClassId }}_{{ $selectedMonth }}',
+                hasDraftAvailable: false,
+                draftTimestamp: '',
+                saveDraftTimer: null,
+
+                saveDraftDebounced() {
+                    clearTimeout(this.saveDraftTimer);
+                    this.saveDraftTimer = setTimeout(() => {
+                        try {
+                            const payload = {
+                                timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                                rawTime: Date.now(),
+                                gridData: this.gridData,
+                                tab: this.tab
+                            };
+                            localStorage.setItem(this.draftKey, JSON.stringify(payload));
+                        } catch (e) {}
+                    }, 1000);
+                },
+
+                checkDraft() {
+                    try {
+                        const raw = localStorage.getItem(this.draftKey);
+                        if (!raw) return;
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.gridData && (Date.now() - (parsed.rawTime || 0) < 7 * 24 * 60 * 60 * 1000)) {
+                            this.hasDraftAvailable = true;
+                            this.draftTimestamp = parsed.timestamp || 'sebelumnya';
+                        }
+                    } catch (e) {}
+                },
+
+                restoreDraft() {
+                    try {
+                        const raw = localStorage.getItem(this.draftKey);
+                        if (!raw) return;
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.gridData) {
+                            this.gridData = parsed.gridData;
+                            if (parsed.tab) this.tab = parsed.tab;
+                            this.isDirty = true;
+                            window._hasUnsavedDraft = true;
+                            this.hasDraftAvailable = false;
+                            alert('Data draf berhasil dipulihkan ke formulir spreadsheet!');
+                        }
+                    } catch (e) {
+                        alert('Gagal memulihkan draf.');
+                    }
+                },
+
+                dismissDraft() {
+                    localStorage.removeItem(this.draftKey);
+                    this.hasDraftAvailable = false;
                 },
                 getNextHafalan(studentId, cellHafalans = []) {
                     let validPrevious = (cellHafalans || []).filter(h => h.surah_id && h.ayah_end);
@@ -201,6 +258,8 @@
                     if (this.isSaving) return;
                     this.isSaving = true;
                     this.isDirty = false;
+                    window._hasUnsavedDraft = false;
+                    localStorage.removeItem(this.draftKey);
 
                     this.$nextTick(() => {
                         const form = document.getElementById('spreadsheet-form');
@@ -297,6 +356,36 @@
                     </div>
                 </div>
                 @endif
+            </div>
+
+            <!-- DRAFT RECOVERY BANNER -->
+            <div x-show="hasDraftAvailable"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 class="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
+                 style="display: none;">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-amber-900 dark:text-amber-200">Ditemukan Draf Belum Tersimpan</h4>
+                        <p class="text-[11px] text-amber-700 dark:text-amber-300/80">Ada perubahan nilai / presensi dari sesi sebelumnya (<span x-text="draftTimestamp" class="font-bold"></span>) yang belum tersimpan ke server. Pulihkan data ini?</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" @click="restoreDraft()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5">
+                        <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
+                        <span>Pulihkan Data Draf</span>
+                    </button>
+                    <button type="button" @click="dismissDraft()" class="px-3.5 py-1.5 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-semibold transition cursor-pointer">
+                        Abaikan
+                    </button>
+                </div>
             </div>
 
             <!-- TABS & SAVE ACTION -->
