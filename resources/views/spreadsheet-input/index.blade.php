@@ -18,7 +18,9 @@
                 tab: 'hafalan',
                 selectedClass: '{{ $selectedClassId }}',
                 selectedMonth: '{{ $selectedMonth }}',
-                selectedMobileDate: '{{ $dates[0] ?? '' }}',
+                todayDate: '{{ now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString() }}',
+                currentMonth: '{{ now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->format('Y-m') }}',
+                selectedMobileDate: '{{ in_array(now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString(), $dates) ? now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString() : ($dates[0] ?? '') }}',
                 students: @json($students),
                 surahs: @json($surahs),
                 dates: @json($dates),
@@ -114,6 +116,16 @@
                                 this.saveDraftDebounced();
                             }
                         }, { deep: true });
+
+                        // Auto-scroll to today's column on initial view if present
+                        if (this.dates.includes(this.todayDate)) {
+                            setTimeout(() => {
+                                const col = document.getElementById('col-header-' + this.todayDate);
+                                if (col) {
+                                    col.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                                }
+                            }, 200);
+                        }
                     });
                 },
                 draftKey: 'tad_draft_spreadsheet_{{ $selectedClassId }}_{{ $selectedMonth }}',
@@ -254,6 +266,32 @@
                         });
                     }
                 },
+                jumpToToday() {
+                    if (this.dates.includes(this.todayDate)) {
+                        this.scrollToColumn(this.todayDate);
+                    } else {
+                        if (confirm('Tanggal hari ini (' + this.formatDateIndo(this.todayDate) + ') tidak ada dalam filter aktif saat ini. Buka lembar kerja bulan ini?')) {
+                            window.location.href = "{{ route('spreadsheet-input.index') }}?class_room_id=" + this.selectedClass + "&month=" + this.currentMonth + "&week=all";
+                        }
+                    }
+                },
+                scrollToColumn(dateStr) {
+                    this.selectedMobileDate = dateStr;
+                    this.$nextTick(() => {
+                        const col = document.getElementById('col-header-' + dateStr);
+                        if (col) {
+                            col.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                            col.classList.add('ring-2', 'ring-teal-500');
+                            setTimeout(() => col.classList.remove('ring-2', 'ring-teal-500'), 1500);
+                        }
+                    });
+                },
+                formatDateIndo(dateStr) {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('-');
+                    if (parts.length !== 3) return dateStr;
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                },
                 submitForm() {
                     if (this.isSaving) return;
                     this.isSaving = true;
@@ -326,14 +364,28 @@
 
                 <!-- Active Dates Number Toggles -->
                 @if (!$isWeekly && count($dates) > 0)
+                @php
+                    $todayDate = now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString();
+                @endphp
                 <div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
-                            <x-heroicon-o-calendar class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                            <span>Tanggal Aktif ({{ $selectedWeek === 'all' ? 'Semua Pekan' : 'Pekan ' . $selectedWeek }}):</span>
-                        </label>
-                        <span class="text-[11px] text-gray-500 dark:text-zinc-400">
-                            Klik nomor tanggal untuk melompat/fokus ke tanggal tersebut
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">
+                                <x-heroicon-o-calendar class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                                <span>Tanggal Aktif ({{ $selectedWeek === 'all' ? 'Semua Pekan' : 'Pekan ' . $selectedWeek }}):</span>
+                            </label>
+                            <button
+                                type="button"
+                                @click="jumpToToday()"
+                                title="Lompat ke tanggal hari ini"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/50 dark:hover:bg-teal-900/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-700/60 rounded-xl text-[11px] font-bold shadow-xs transition cursor-pointer active:scale-95"
+                            >
+                                <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+                                <span>Lompat ke Hari Ini</span>
+                            </button>
+                        </div>
+                        <span class="text-[11px] text-gray-500 dark:text-zinc-400 hidden sm:inline">
+                            Klik tanggal untuk fokus ke kolom/hari tersebut
                         </span>
                     </div>
 
@@ -342,15 +394,20 @@
                             @php
                                 $dDayNum = date('j', strtotime($d));
                                 $dDayName = \Carbon\Carbon::parse($d)->translatedFormat('D');
+                                $isToday = ($d === $todayDate);
                             @endphp
                             <button
                                 type="button"
-                                @click="selectedMobileDate = '{{ $d }}'"
-                                :class="selectedMobileDate === '{{ $d }}' ? 'bg-indigo-600 text-white font-black ring-2 ring-indigo-500 scale-105 shadow-sm' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700/60'"
-                                class="px-2.5 py-1 rounded-xl text-xs transition cursor-pointer flex items-center gap-1 min-w-[40px] justify-center"
+                                @click="scrollToColumn('{{ $d }}')"
+                                :class="selectedMobileDate === '{{ $d }}' ? 'bg-indigo-600 text-white font-black ring-2 ring-indigo-500 scale-105 shadow-sm' : '{{ $isToday ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 font-bold border-2 border-teal-400 dark:border-teal-600' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700/60' }}'"
+                                class="px-2.5 py-1 rounded-xl text-xs transition cursor-pointer flex items-center gap-1 min-w-[40px] justify-center relative"
+                                title="{{ $isToday ? 'Hari Ini (' . $dDayNum . ' ' . $dDayName . ')' : '' }}"
                             >
                                 <span class="font-bold text-xs">{{ $dDayNum }}</span>
                                 <span class="text-[9px] opacity-75 uppercase">{{ $dDayName }}</span>
+                                @if ($isToday)
+                                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-teal-500 rounded-full border-2 border-white dark:border-zinc-900" title="Hari Ini"></span>
+                                @endif
                             </button>
                         @endforeach
                     </div>
@@ -400,8 +457,18 @@
                     </button>
                 </div>
 
-                <!-- Submit Button -->
-                <div class="w-full sm:w-auto">
+                <!-- Actions -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                        type="button"
+                        @click="jumpToToday()"
+                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-gray-100 hover:bg-teal-50 dark:bg-zinc-800 dark:hover:bg-teal-950/40 text-gray-700 hover:text-teal-700 dark:text-zinc-300 dark:hover:text-teal-300 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-bold transition cursor-pointer min-h-[42px] active:scale-95"
+                        title="Fokus / Lompat ke kolom hari ini"
+                    >
+                        <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+                        <x-heroicon-o-calendar class="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        <span>Hari Ini</span>
+                    </button>
                     <button type="button" @click="submitForm()" :disabled="isSaving" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:bg-gray-400 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 transition cursor-pointer gap-2 min-h-[42px]">
                         <template x-if="!isSaving">
                             <span class="inline-flex items-center gap-2">
@@ -440,29 +507,43 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 table-fixed border-collapse">
                             <thead class="sticky top-0 z-30 bg-gray-100 dark:bg-zinc-800 shadow-sm">
                                 <tr>
-                                    <th class="sticky top-0 left-0 z-40 bg-gray-100 dark:bg-zinc-800 px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider w-48 border-r border-b border-gray-200 dark:border-zinc-700">
+                                    <th class="sticky top-0 left-0 z-40 bg-gray-100 dark:bg-zinc-800 px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider w-48 border-r-2 border-b border-gray-300 dark:border-zinc-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)] dark:shadow-[4px_0_8px_-2px_rgba(0,0,0,0.4)]">
                                         Nama Murid
                                     </th>
                                     <template x-for="col in columns" :key="col.date">
-                                        <th class="sticky top-0 z-30 bg-gray-100 dark:bg-zinc-800 px-4 py-3 text-center text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider w-64 border-r border-b border-gray-200 dark:border-zinc-700">
-                                            <span x-text="col.label" class="block"></span>
-                                            <span x-text="col.sub_label" class="block text-[10px] text-gray-400 font-medium normal-case mt-0.5"></span>
+                                        <th
+                                            :id="'col-header-' + col.date"
+                                            class="sticky top-0 z-30 px-4 py-3 text-center text-xs font-bold uppercase tracking-wider w-64 border-r border-b transition-colors"
+                                            :class="col.date === todayDate ? 'bg-teal-100/90 dark:bg-teal-950/80 text-teal-900 dark:text-teal-200 border-teal-300 dark:border-teal-700' : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700'"
+                                        >
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <span x-text="col.label" class="block"></span>
+                                                <template x-if="col.date === todayDate">
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-600 text-white shadow-xs tracking-normal">
+                                                        HARI INI
+                                                    </span>
+                                                </template>
+                                            </div>
+                                            <span x-text="col.sub_label" class="block text-[10px] font-medium normal-case mt-0.5" :class="col.date === todayDate ? 'text-teal-700 dark:text-teal-300 font-bold' : 'text-gray-400'"></span>
                                         </th>
                                     </template>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                                 <template x-for="student in students" :key="student.id">
-                                    <tr class="hover:bg-gray-50/30 dark:hover:bg-zinc-850/10">
-                                        <!-- Sticky Name Column -->
-                                        <td class="sticky left-0 z-10 bg-white dark:bg-zinc-900 px-4 py-3 border-r dark:border-zinc-800 font-bold text-xs text-gray-900 dark:text-zinc-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                    <tr class="group hover:bg-gray-50/60 dark:hover:bg-zinc-850/40 transition-colors">
+                                        <!-- Sticky Name Column with Distinct Freeze Line & Shadow -->
+                                        <td class="sticky left-0 z-20 bg-white dark:bg-zinc-900 group-hover:bg-gray-50 dark:group-hover:bg-zinc-850 px-4 py-3 border-r-2 border-b border-gray-300 dark:border-zinc-700 font-bold text-xs text-gray-900 dark:text-zinc-200 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)] dark:shadow-[4px_0_8px_-2px_rgba(0,0,0,0.4)] transition-colors">
                                             <span x-text="student.name"></span>
                                             <span class="block text-[10px] text-gray-400 font-medium mt-0.5" x-text="student.tahfizh_level === 'ummi' ? 'Level: UMMI' : 'Level: ' + student.tahfizh_level"></span>
                                         </td>
 
                                         <!-- Date Columns -->
                                         <template x-for="date in dates" :key="date">
-                                            <td class="p-3 border-r dark:border-zinc-800 align-top">
+                                            <td
+                                                class="p-3 border-r border-b dark:border-zinc-800 align-top transition-colors"
+                                                :class="date === todayDate ? 'bg-teal-50/25 dark:bg-teal-950/15' : ''"
+                                            >
                                                 <div class="space-y-2" x-data="{ cell: gridData[student.id].dates[date] }">
                                                     <!-- PRESENSI PILLS (ATAS) -->
                                                     <div class="flex items-center justify-between border-b dark:border-zinc-800 pb-2">
