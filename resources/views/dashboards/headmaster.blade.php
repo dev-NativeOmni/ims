@@ -271,10 +271,18 @@
     </div>
 
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof Chart === 'undefined') return;
+        if (typeof Chart === 'undefined') {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+            document.head.appendChild(s);
+        }
+
+        function initHeadmasterCharts() {
+            if (typeof Chart === 'undefined') {
+                setTimeout(initHeadmasterCharts, 100);
+                return;
+            }
 
             const isDark = document.documentElement.classList.contains('dark');
             const gridColor = isDark ? 'rgba(63,63,70,0.4)' : 'rgba(228,228,231,0.8)';
@@ -385,7 +393,13 @@
                     }
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHeadmasterCharts);
+        } else {
+            initHeadmasterCharts();
+        }
     </script>
     @endpush
 </x-app-layout>

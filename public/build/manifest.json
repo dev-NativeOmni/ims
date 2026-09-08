@@ -7,6 +7,10 @@
     "file": "assets/vendor-axios-DcNlVx-A.js",
     "name": "vendor-axios"
   },
+  "_vendor-core-DPkL8UBR.js": {
+    "file": "assets/vendor-core-DPkL8UBR.js",
+    "name": "vendor-core"
+  },
   "resources/css/app.css": {
     "file": "assets/app-DJ-7xiIY.css",
     "src": "resources/css/app.css",
@@ -17,11 +21,12 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-ChCClhLi.js",
+    "file": "assets/app-BQWEVwAZ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
+      "_vendor-core-DPkL8UBR.js",
       "_vendor-axios-DcNlVx-A.js",
       "_vendor-alpine-DLuZkmyn.js"
     ]

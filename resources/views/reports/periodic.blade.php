@@ -460,10 +460,20 @@
     </div>
 
     @if ($selectedClass)
-        <!-- ChartJS & DataLabels script & html-to-image -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+        @push('scripts')
+        <!-- Fallback CDN in case local bundle is delayed or blocked -->
+        <script>
+            if (typeof Chart === 'undefined') {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                document.head.appendChild(s);
+            }
+            if (typeof htmlToImage === 'undefined') {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
+                document.head.appendChild(s);
+            }
+        </script>
         <script>
             function downloadUmmiCard() {
                 const cardEl = document.getElementById('ummiGrade10ReportCard');
@@ -520,6 +530,7 @@
             // Global functions for download and print
             function downloadChart(chartId, title) {
                 const canvas = document.getElementById(chartId);
+                if (!canvas) return;
                 const tempCanvas = document.createElement('canvas');
 
                 const bannerHeight = 70;
@@ -564,6 +575,7 @@
 
             function printChart(chartId, title) {
                 const canvas = document.getElementById(chartId);
+                if (!canvas) return;
                 
                 // Draw on a temp white canvas with 2x resolution
                 const tempCanvas = document.createElement('canvas');
@@ -629,12 +641,23 @@
                 win.document.close();
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof Chart === 'undefined') return;
+            // Expose action handlers to window for inline onclick attributes
+            window.downloadUmmiCard = downloadUmmiCard;
+            window.printUmmiCard = printUmmiCard;
+            window.downloadChart = downloadChart;
+            window.printChart = printChart;
+
+            function initPeriodicCharts() {
+                if (typeof Chart === 'undefined') {
+                    setTimeout(initPeriodicCharts, 100);
+                    return;
+                }
 
                 // Register datalabels plugin if loaded
                 if (typeof ChartDataLabels !== 'undefined') {
-                    Chart.register(ChartDataLabels);
+                    try {
+                        Chart.register(ChartDataLabels);
+                    } catch (e) {}
                 }
 
                 const isDark = document.documentElement.classList.contains('dark');
@@ -646,143 +669,144 @@
                 if (capaianCanvas) {
                     const capaianCtx = capaianCanvas.getContext('2d');
 
-                // Create sleek vertical gradient for bars
-                const barGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
-                barGradient.addColorStop(0, '#0ea5e9'); // Sky / Cyan top
-                barGradient.addColorStop(1, '#0284c7'); // Ocean Blue bottom
+                    // Create sleek vertical gradient for bars
+                    const barGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
+                    barGradient.addColorStop(0, '#0ea5e9'); // Sky / Cyan top
+                    barGradient.addColorStop(1, '#0284c7'); // Ocean Blue bottom
 
-                // Subtle orange amber area glow for target curve
-                const targetAreaGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
-                targetAreaGradient.addColorStop(0, 'rgba(249, 115, 22, 0.2)');
-                targetAreaGradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+                    // Subtle orange amber area glow for target curve
+                    const targetAreaGradient = capaianCtx.createLinearGradient(0, 0, 0, 350);
+                    targetAreaGradient.addColorStop(0, 'rgba(249, 115, 22, 0.2)');
+                    targetAreaGradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
 
-                new Chart(capaianCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: @json($names),
-                        datasets: [
-                            {
-                                label: 'CAPAIAN BARIS',
-                                type: 'bar',
-                                data: @json($capaians),
-                                backgroundColor: barGradient,
-                                hoverBackgroundColor: '#38bdf8',
-                                borderWidth: 0,
-                                borderRadius: {
-                                    topLeft: 8,
-                                    topRight: 8,
-                                    bottomLeft: 0,
-                                    bottomRight: 0
+                    new Chart(capaianCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: @json($names),
+                            datasets: [
+                                {
+                                    label: 'CAPAIAN BARIS',
+                                    type: 'bar',
+                                    data: @json($capaians),
+                                    backgroundColor: barGradient,
+                                    hoverBackgroundColor: '#38bdf8',
+                                    borderWidth: 0,
+                                    borderRadius: {
+                                        topLeft: 8,
+                                        topRight: 8,
+                                        bottomLeft: 0,
+                                        bottomRight: 0
+                                    },
+                                    borderSkipped: 'bottom',
+                                    barPercentage: 0.65,
+                                    categoryPercentage: 0.85,
+                                    order: 2,
+                                    datalabels: {
+                                        anchor: 'end',
+                                        align: 'top',
+                                        offset: 2,
+                                        color: isDark ? '#38bdf8' : '#0284c7',
+                                        font: {
+                                            family: 'Outfit, Inter, sans-serif',
+                                            weight: 'bold',
+                                            size: 10
+                                        }
+                                    }
                                 },
-                                borderSkipped: 'bottom',
-                                barPercentage: 0.65,
-                                categoryPercentage: 0.85,
-                                order: 2,
-                                datalabels: {
-                                    anchor: 'end',
-                                    align: 'top',
-                                    offset: 2,
-                                    color: isDark ? '#38bdf8' : '#0284c7',
-                                    font: {
+                                {
+                                    label: 'TARGET BARIS',
+                                    type: 'line',
+                                    data: @json($targets),
+                                    borderColor: '#f97316', // Sunset Amber
+                                    borderWidth: 3,
+                                    tension: 0.38, // Smooth spline bezier curve
+                                    pointBackgroundColor: '#ffffff',
+                                    pointBorderColor: '#ea580c',
+                                    pointBorderWidth: 2.5,
+                                    pointRadius: 4.5,
+                                    pointHoverRadius: 7,
+                                    pointHoverBackgroundColor: '#ea580c',
+                                    pointHoverBorderColor: '#ffffff',
+                                    pointHoverBorderWidth: 2,
+                                    fill: true,
+                                    backgroundColor: targetAreaGradient,
+                                    order: 1,
+                                    datalabels: {
+                                        display: false
+                                    }
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        usePointStyle: true,
+                                        pointStyle: 'circle',
+                                        boxWidth: 8,
+                                        padding: 20,
+                                        color: labelColor,
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            weight: 'bold',
+                                            size: 11
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                    titleColor: isDark ? '#ffffff' : '#0f172a',
+                                    bodyColor: isDark ? '#cbd5e1' : '#334155',
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    boxPadding: 6,
+                                    usePointStyle: true,
+                                    titleFont: {
                                         family: 'Outfit, Inter, sans-serif',
                                         weight: 'bold',
-                                        size: 10
+                                        size: 12
                                     }
                                 }
                             },
-                            {
-                                label: 'TARGET BARIS',
-                                type: 'line',
-                                data: @json($targets),
-                                borderColor: '#f97316', // Sunset Amber
-                                borderWidth: 3,
-                                tension: 0.38, // Smooth spline bezier curve
-                                pointBackgroundColor: '#ffffff',
-                                pointBorderColor: '#ea580c',
-                                pointBorderWidth: 2.5,
-                                pointRadius: 4.5,
-                                pointHoverRadius: 7,
-                                pointHoverBackgroundColor: '#ea580c',
-                                pointHoverBorderColor: '#ffffff',
-                                pointHoverBorderWidth: 2,
-                                fill: true,
-                                backgroundColor: targetAreaGradient,
-                                order: 1,
-                                datalabels: {
-                                    display: false
-                                }
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: 'circle',
-                                    boxWidth: 8,
-                                    padding: 20,
-                                    color: labelColor,
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        weight: 'bold',
-                                        size: 11
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                                titleColor: isDark ? '#ffffff' : '#0f172a',
-                                bodyColor: isDark ? '#cbd5e1' : '#334155',
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                                borderWidth: 1,
-                                padding: 12,
-                                boxPadding: 6,
-                                usePointStyle: true,
-                                titleFont: {
-                                    family: 'Outfit, Inter, sans-serif',
-                                    weight: 'bold',
-                                    size: 12
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                grid: {
-                                    color: gridColor,
-                                    borderDash: [4, 4]
-                                },
-                                ticks: {
-                                    color: labelColor,
-                                    stepSize: 10,
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        size: 10
-                                    }
-                                },
-                                beginAtZero: true
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: labelColor,
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        size: 9,
-                                        weight: '600'
+                            scales: {
+                                y: {
+                                    grid: {
+                                        color: gridColor,
+                                        borderDash: [4, 4]
                                     },
-                                    minRotation: 90,
-                                    maxRotation: 90
+                                    ticks: {
+                                        color: labelColor,
+                                        stepSize: 10,
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 10
+                                        }
+                                    },
+                                    beginAtZero: true
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        color: labelColor,
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            size: 9,
+                                            weight: '600'
+                                        },
+                                        minRotation: 90,
+                                        maxRotation: 90
+                                    }
                                 }
                             }
                         }
@@ -794,72 +818,81 @@
                 if (ketuntasanCanvas) {
                     const ketuntasanCtx = ketuntasanCanvas.getContext('2d');
                     new Chart(ketuntasanCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['TUNTAS', 'BELUM TUNTAS'],
-                        datasets: [{
-                            data: [{{ $tuntasCount }}, {{ $tidakTuntasCount }}],
-                            backgroundColor: [
-                                '#0d9488', // Emerald Teal
-                                '#f43f5e'  // Coral Rose
-                            ],
-                            hoverBackgroundColor: [
-                                '#14b8a6',
-                                '#fb7185'
-                            ],
-                            borderWidth: 4,
-                            borderColor: isDark ? '#18181b' : '#ffffff',
-                            borderRadius: 6,
-                            spacing: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '74%', // Clean donut hole for central metric badge
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'bottom',
-                                labels: {
-                                    usePointStyle: true,
-                                    pointStyle: 'circle',
-                                    boxWidth: 8,
-                                    padding: 16,
-                                    color: labelColor,
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        weight: '600',
-                                        size: 11
+                        type: 'doughnut',
+                        data: {
+                            labels: ['TUNTAS', 'BELUM TUNTAS'],
+                            datasets: [{
+                                data: [{{ $tuntasCount }}, {{ $tidakTuntasCount }}],
+                                backgroundColor: [
+                                    '#0d9488', // Emerald Teal
+                                    '#f43f5e'  // Coral Rose
+                                ],
+                                hoverBackgroundColor: [
+                                    '#14b8a6',
+                                    '#fb7185'
+                                ],
+                                borderWidth: 4,
+                                borderColor: isDark ? '#18181b' : '#ffffff',
+                                borderRadius: 6,
+                                spacing: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '74%', // Clean donut hole for central metric badge
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        pointStyle: 'circle',
+                                        boxWidth: 8,
+                                        padding: 16,
+                                        color: labelColor,
+                                        font: {
+                                            family: 'Inter, sans-serif',
+                                            weight: '600',
+                                            size: 11
+                                        }
                                     }
-                                }
-                            },
-                            datalabels: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                                titleColor: isDark ? '#ffffff' : '#0f172a',
-                                bodyColor: isDark ? '#cbd5e1' : '#334155',
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                                borderWidth: 1,
-                                padding: 10,
-                                boxPadding: 4,
-                                usePointStyle: true,
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = {{ $tuntasCount + $tidakTuntasCount }};
-                                        const val = context.raw || 0;
-                                        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                        return ` ${context.label}: ${val} Murid (${pct}%)`;
+                                },
+                                datalabels: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                    titleColor: isDark ? '#ffffff' : '#0f172a',
+                                    bodyColor: isDark ? '#cbd5e1' : '#334155',
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                    borderWidth: 1,
+                                    padding: 10,
+                                    boxPadding: 4,
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = {{ $tuntasCount + $tidakTuntasCount }};
+                                            const val = context.raw || 0;
+                                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                            return ` ${context.label}: ${val} Murid (${pct}%)`;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
                 }
-            });
+            }
+
+            // Safe DOM Ready execution
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPeriodicCharts);
+            } else {
+                initPeriodicCharts();
+            }
         </script>
+        @endpush
     @endif
 </x-app-layout>
+

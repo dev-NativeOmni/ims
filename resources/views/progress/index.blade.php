@@ -413,105 +413,13 @@
     </div>
 
     @if ($progressRows->isNotEmpty())
-        <!-- ChartJS Script -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        @push('scripts')
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                if (typeof Chart === 'undefined') return;
-
-                const canvasEl = document.getElementById('progressChart');
-                if (!canvasEl) return;
-
-                const ctx = canvasEl.getContext('2d');
-                
-                const studentsData = @json($chartData ?? []);
-
-                const labels = studentsData.map(item => item.name);
-                const targets = studentsData.map(item => item.target);
-                const realized = studentsData.map(item => item.realized);
-
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Target Setoran',
-                                data: targets,
-                                backgroundColor: 'rgba(99, 102, 241, 0.85)', // Indigo-500
-                                borderColor: 'rgb(99, 102, 241)',
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                barThickness: 12,
-                            },
-                            {
-                                label: 'Terealisasi (Lulus)',
-                                data: realized,
-                                backgroundColor: 'rgba(16, 185, 129, 0.85)', // Emerald-500
-                                borderColor: 'rgb(16, 185, 129)',
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                barThickness: 12,
-                            }
-                        ]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                padding: 10,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` ${context.dataset.label}: ${context.raw} Target`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    color: 'rgba(243, 244, 246, 1)',
-                                    drawBorder: false,
-                                },
-                                ticks: {
-                                    precision: 0,
-                                    font: {
-                                        family: 'Inter, system-ui, sans-serif',
-                                        size: 11
-                                    }
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Target Setoran',
-                                    font: {
-                                        family: 'Inter, system-ui, sans-serif',
-                                        size: 11,
-                                        weight: '600'
-                                    }
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Inter, system-ui, sans-serif',
-                                        size: 11,
-                                        weight: '500'
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            });
+            if (typeof Chart === 'undefined') {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                document.head.appendChild(s);
+            }
 
             function downloadChartWithTitle() {
                 const originalCanvas = document.getElementById('progressChart');
@@ -527,22 +435,18 @@
                 tempCanvas.width = originalCanvas.width;
                 tempCanvas.height = originalCanvas.height + bannerHeight;
 
-                // Background
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-                // Title
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#111827';
                 ctx.font = 'bold 18px Inter, sans-serif';
                 ctx.fillText(titleText, tempCanvas.width / 2, 35);
 
-                // Subtitle
                 ctx.fillStyle = '#6B7280';
                 ctx.font = '13px Inter, sans-serif';
                 ctx.fillText("TAD-SMAIA7", tempCanvas.width / 2, 58);
 
-                // Line separator
                 ctx.strokeStyle = '#E5E7EB';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
@@ -550,15 +454,93 @@
                 ctx.lineTo(tempCanvas.width - 20, 72);
                 ctx.stroke();
 
-                // Draw original chart
                 ctx.drawImage(originalCanvas, 0, bannerHeight);
 
-                // Trigger Download
                 const a = document.createElement('a');
                 a.download = 'Grafik_Perkembangan_Hafalan.png';
                 a.href = tempCanvas.toDataURL('image/png');
                 a.click();
             }
+            window.downloadChartWithTitle = downloadChartWithTitle;
+
+            function initProgressChart() {
+                if (typeof Chart === 'undefined') {
+                    setTimeout(initProgressChart, 100);
+                    return;
+                }
+
+                const canvasEl = document.getElementById('progressChart');
+                if (!canvasEl) return;
+
+                const ctx = canvasEl.getContext('2d');
+                const studentsData = @json($chartData ?? []);
+
+                const labels = studentsData.map(item => item.name);
+                const targets = studentsData.map(item => item.target);
+                const realized = studentsData.map(item => item.realized);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Target Setoran',
+                                data: targets,
+                                backgroundColor: 'rgba(99, 102, 241, 0.85)',
+                                borderColor: 'rgb(99, 102, 241)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                barThickness: 12,
+                            },
+                            {
+                                label: 'Terealisasi (Lulus)',
+                                data: realized,
+                                backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                                borderColor: 'rgb(16, 185, 129)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                barThickness: 12,
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.dataset.label}: ${context.raw} Target`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(243, 244, 246, 1)', drawBorder: false },
+                                ticks: { precision: 0, font: { family: 'Inter, sans-serif', size: 11 } },
+                                title: { display: true, text: 'Jumlah Target Setoran', font: { family: 'Inter, sans-serif', size: 11, weight: '600' } }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter, sans-serif', size: 11, weight: '500' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initProgressChart);
+            } else {
+                initProgressChart();
+            }
         </script>
+        @endpush
     @endif
 </x-app-layout>

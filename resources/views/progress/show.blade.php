@@ -262,16 +262,24 @@
                 </div>
             </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            @push('scripts')
             <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    if (typeof Chart === 'undefined') return;
+                if (typeof Chart === 'undefined') {
+                    const s = document.createElement('script');
+                    s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                    document.head.appendChild(s);
+                }
+
+                function initStudentTrendChart() {
+                    if (typeof Chart === 'undefined') {
+                        setTimeout(initStudentTrendChart, 100);
+                        return;
+                    }
 
                     const canvasEl = document.getElementById('studentTrendChart');
                     if (!canvasEl) return;
 
                     const ctx = canvasEl.getContext('2d');
-                    
                     const activeTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
                     
                     const monthlyBgGradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -301,16 +309,16 @@
                                 {
                                     label: 'Total Akumulasi (Baris)',
                                     data: {!! json_encode($cumulativeValues) !!},
-                                    backgroundColor: cumulativeBgGradient,
                                     borderColor: 'rgb(79, 70, 229)',
-                                    borderWidth: 3.5,
+                                    backgroundColor: cumulativeBgGradient,
+                                    borderWidth: 3,
                                     fill: true,
                                     tension: 0.35,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
                                     pointBackgroundColor: 'rgb(79, 70, 229)',
                                     pointBorderColor: '#ffffff',
                                     pointBorderWidth: 2,
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6,
                                     yAxisID: 'yCumulative',
                                     type: 'line',
                                     order: 1
@@ -320,32 +328,36 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
                             plugins: {
                                 legend: {
                                     position: 'top',
                                     labels: {
                                         boxWidth: 12,
-                                        boxHeight: 12,
                                         usePointStyle: true,
+                                        color: activeTheme === 'dark' ? '#d4d4d8' : '#3f3f46',
                                         font: {
                                             family: 'Inter, sans-serif',
                                             size: 11,
-                                            weight: '600'
-                                        },
-                                        color: activeTheme === 'dark' ? '#d4d4d8' : '#3f3f46'
+                                            weight: '500'
+                                        }
                                     }
                                 },
                                 tooltip: {
-                                    backgroundColor: activeTheme === 'dark' ? '#18181b' : '#ffffff',
-                                    titleColor: activeTheme === 'dark' ? '#ffffff' : '#18181b',
-                                    bodyColor: activeTheme === 'dark' ? '#d4d4d8' : '#3f3f46',
-                                    borderColor: activeTheme === 'dark' ? '#27272a' : '#e4e4e7',
+                                    backgroundColor: activeTheme === 'dark' ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                                    titleColor: activeTheme === 'dark' ? '#ffffff' : '#0f172a',
+                                    bodyColor: activeTheme === 'dark' ? '#cbd5e1' : '#334155',
+                                    borderColor: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                                     borderWidth: 1,
-                                    padding: 12,
-                                    cornerRadius: 12,
+                                    padding: 10,
+                                    boxPadding: 4,
+                                    usePointStyle: true,
                                     titleFont: {
-                                        weight: 'bold',
-                                        family: 'Inter, sans-serif'
+                                        family: 'Inter, sans-serif',
+                                        weight: 'bold'
                                     },
                                     bodyFont: {
                                         family: 'Inter, sans-serif'
@@ -366,16 +378,10 @@
                             },
                             scales: {
                                 x: {
-                                    grid: {
-                                        display: false
-                                    },
+                                    grid: { display: false },
                                     ticks: {
                                         color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
-                                        font: {
-                                            family: 'Inter, sans-serif',
-                                            size: 10,
-                                            weight: '500'
-                                        }
+                                        font: { family: 'Inter, sans-serif', size: 10, weight: '500' }
                                     }
                                 },
                                 yMonthly: {
@@ -385,22 +391,10 @@
                                         display: true,
                                         text: 'Setoran Bulanan (Baris)',
                                         color: 'rgb(16, 185, 129)',
-                                        font: {
-                                            family: 'Inter, sans-serif',
-                                            size: 11,
-                                            weight: 'bold'
-                                        }
+                                        font: { family: 'Inter, sans-serif', size: 11, weight: 'bold' }
                                     },
-                                    grid: {
-                                        color: activeTheme === 'dark' ? 'rgba(39, 39, 42, 0.5)' : 'rgba(228, 228, 231, 0.5)'
-                                    },
-                                    ticks: {
-                                        color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
-                                        font: {
-                                            family: 'Inter, sans-serif',
-                                            size: 10
-                                        }
-                                    },
+                                    grid: { color: activeTheme === 'dark' ? 'rgba(39, 39, 42, 0.5)' : 'rgba(228, 228, 231, 0.5)' },
+                                    ticks: { color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a', font: { family: 'Inter, sans-serif', size: 10 } },
                                     min: 0
                                 },
                                 yCumulative: {
@@ -410,29 +404,24 @@
                                         display: true,
                                         text: 'Total Akumulasi (Baris)',
                                         color: 'rgb(79, 70, 229)',
-                                        font: {
-                                            family: 'Inter, sans-serif',
-                                            size: 11,
-                                            weight: 'bold'
-                                        }
+                                        font: { family: 'Inter, sans-serif', size: 11, weight: 'bold' }
                                     },
-                                    grid: {
-                                        drawOnChartArea: false
-                                    },
-                                    ticks: {
-                                        color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a',
-                                        font: {
-                                            family: 'Inter, sans-serif',
-                                            size: 10
-                                        }
-                                    },
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: activeTheme === 'dark' ? '#a1a1aa' : '#71717a', font: { family: 'Inter, sans-serif', size: 10 } },
                                     min: 0
                                 }
                             }
                         }
                     });
-                });
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initStudentTrendChart);
+                } else {
+                    initStudentTrendChart();
+                }
             </script>
+            @endpush
 
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-2">

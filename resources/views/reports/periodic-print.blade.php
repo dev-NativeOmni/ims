@@ -297,13 +297,36 @@
     </div>
 
     <!-- Chart rendering logic for non-Grade 10 -->
+    @php
+        $printNames = [];
+        $printTargets = [];
+        $printCompleted = [];
+        foreach ($studentReports as $rep) {
+            $parts = explode(' ', $rep['student']->name);
+            $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
+            $printNames[] = $shortName;
+            $printTargets[] = (int) $rep['target_baris'];
+            $printCompleted[] = (int) $rep['capaian_baris'];
+        }
+    @endphp
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        if (typeof Chart === 'undefined') {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            document.head.appendChild(s);
+        }
+
+        function initPrintCharts() {
+            if (typeof Chart === 'undefined') {
+                setTimeout(initPrintCharts, 100);
+                return;
+            }
+
             const barCtx = document.getElementById('studentCompletenessChart')?.getContext('2d');
             if (barCtx) {
-                const labels = {!! json_encode(array_column($studentReports, 'student_name')) !!};
-                const targets = {!! json_encode(array_column($studentReports, 'total_targets')) !!};
-                const completed = {!! json_encode(array_column($studentReports, 'completed_targets')) !!};
+                const labels = @json($printNames);
+                const targets = @json($printTargets);
+                const completed = @json($printCompleted);
 
                 new Chart(barCtx, {
                     type: 'bar',
@@ -418,7 +441,13 @@
                     }
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener("DOMContentLoaded", initPrintCharts);
+        } else {
+            initPrintCharts();
+        }
     </script>
 </body>
 </html>
