@@ -60,6 +60,113 @@
                     $statusLabel = data_get($progress, 'status_label', 'On-Track / Tuntas');
                 @endphp
 
+                {{-- ═══════════════ DAFTAR SURAH TERAKHIR YANG DIHAFAL (BAGIAN ATAS) ═══════════════ --}}
+                <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 relative overflow-hidden border border-emerald-500/25 shadow-sm bg-gradient-to-br from-emerald-500/[0.05] via-transparent to-teal-500/[0.03]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 shadow-xs">
+                                <x-heroicon-o-book-open class="w-6 h-6 sm:w-7 sm:h-7" />
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                    <span>Daftar Surah Terakhir yang Dihafal</span>
+                                    @if ($latestHafalanRecords->isNotEmpty())
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                            {{ $latestHafalanRecords->count() }} Terakhir
+                                        </span>
+                                    @endif
+                                </h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Daftar capaian surah terbaru yang berhasil disetorkan beserta keterangan tanggal setorannya.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('progress.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition shadow-2xs">
+                                <span>Lihat Semua Riwayat</span>
+                                <x-heroicon-o-arrow-right class="w-3.5 h-3.5" />
+                            </a>
+                        </div>
+                    </div>
+
+                    @if ($latestHafalanRecords->isNotEmpty())
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            @foreach ($latestHafalanRecords as $record)
+                                @php
+                                    $surahName = $record->surah?->name_latin ?? ($record->surah?->name ?? 'Surah');
+                                    $surahNumber = $record->surah?->number ?? null;
+                                    $submittedDate = $record->submitted_at ? \Carbon\Carbon::parse($record->submitted_at) : null;
+                                    $recordStatusLabel = match ($record->status) {
+                                        'passed' => 'Lulus',
+                                        'repeat' => 'Ulang',
+                                        'needs_improvement' => 'Perbaikan',
+                                        default => $record->status ?? 'Lulus',
+                                    };
+                                @endphp
+                                <div class="rounded-xl sm:rounded-2xl glass-liquid-inner p-3.5 sm:p-4 hover:border-emerald-500/40 transition flex flex-col justify-between gap-3 group relative overflow-hidden">
+                                    <div class="space-y-2">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                @if($surahNumber)
+                                                    <span class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
+                                                        {{ $surahNumber }}
+                                                    </span>
+                                                @else
+                                                    <span class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
+                                                        <x-heroicon-o-bookmark class="w-4 h-4" />
+                                                    </span>
+                                                @endif
+                                                <div class="min-w-0">
+                                                    <h4 class="font-bold text-sm sm:text-base text-zinc-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition" title="QS. {{ $surahName }}">
+                                                        QS. {{ $surahName }}
+                                                    </h4>
+                                                    <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                                                        Ayat {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                                {{ $recordStatusLabel }}
+                                            </span>
+                                        </div>
+
+                                        {{-- ─── KETERANGAN TANGGAL DI BAWAHNYA ─── --}}
+                                        <div class="pt-2 border-t border-zinc-200/50 dark:border-white/5 flex flex-col gap-1">
+                                            <div class="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                                <x-heroicon-o-calendar class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">
+                                                    {{ $submittedDate ? $submittedDate->locale('id')->translatedFormat('d F Y') : '-' }}
+                                                </span>
+                                            </div>
+                                            @if ($record->teacher?->user?->name)
+                                                <div class="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                                                    <x-heroicon-o-user class="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                    <span class="truncate">Disimak: {{ $record->teacher->user->name }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if ($record->score !== null)
+                                        <div class="flex items-center justify-between pt-1.5 border-t border-zinc-200/40 dark:border-white/5 text-xs">
+                                            <span class="text-zinc-500 dark:text-zinc-400 text-[11px]">Nilai:</span>
+                                            <span class="font-black text-emerald-600 dark:text-emerald-400">{{ number_format((float) $record->score, 1) }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="mt-4 p-6 sm:p-8 rounded-xl sm:rounded-2xl glass-liquid-inner text-center">
+                            <x-heroicon-o-book-open class="w-10 h-10 mx-auto text-zinc-400 dark:text-zinc-500 mb-2 opacity-60" />
+                            <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Belum ada riwayat setoran hafalan tercatat.</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Setoran hafalan terbaru Anda akan tampil di sini setelah disimak dan diverifikasi oleh guru pembimbing.</p>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- ═══════════════ TARGET & CAPAIAN PROGRAM HERO CARD ═══════════════ --}}
                 <div class="glass-liquid-card rounded-2xl sm:rounded-[1.75rem] p-3.5 sm:p-6 relative overflow-hidden">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/70 dark:border-white/10 pb-3 sm:pb-5">
@@ -415,13 +522,22 @@
                                             <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">
                                                 QS. {{ $record->surah?->name_latin ?? '-' }} : {{ $record->ayah_start }} - {{ $record->ayah_end }}
                                             </p>
-                                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                                {{ $record->submitted_at ? \Carbon\Carbon::parse($record->submitted_at)->format('d M Y') : '-' }}
+                                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-1">
+                                                <x-heroicon-o-calendar class="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                <span>{{ $record->submitted_at ? \Carbon\Carbon::parse($record->submitted_at)->locale('id')->translatedFormat('d F Y') : '-' }}</span>
                                             </p>
                                         </div>
                                         <div class="text-right shrink-0">
+                                            @php
+                                                $recHafalanStatus = match ($record->status) {
+                                                    'passed' => 'Lulus',
+                                                    'repeat' => 'Ulang',
+                                                    'needs_improvement' => 'Perbaikan',
+                                                    default => $record->status ?? 'Lulus',
+                                                };
+                                            @endphp
                                             <span class="px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                                                {{ $record->status ?? 'Lulus' }}
+                                                {{ $recHafalanStatus }}
                                             </span>
                                             @if ($record->score !== null)
                                                 <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1">Nilai: {{ number_format((float) $record->score, 1) }}</p>
@@ -451,13 +567,22 @@
                                             <p class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">
                                                 QS. {{ $record->surah?->name_latin ?? '-' }} : {{ $record->ayah_start }} - {{ $record->ayah_end }}
                                             </p>
-                                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                                {{ $record->reviewed_at ? \Carbon\Carbon::parse($record->reviewed_at)->format('d M Y') : '-' }}
+                                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-1">
+                                                <x-heroicon-o-calendar class="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                                                <span>{{ $record->reviewed_at ? \Carbon\Carbon::parse($record->reviewed_at)->locale('id')->translatedFormat('d F Y') : '-' }}</span>
                                             </p>
                                         </div>
                                         <div class="text-right shrink-0">
+                                            @php
+                                                $recMurajaahStatus = match ($record->status) {
+                                                    'passed' => 'Lulus',
+                                                    'repeat' => 'Ulang',
+                                                    'needs_improvement' => 'Perbaikan',
+                                                    default => $record->status ?? 'Lulus',
+                                                };
+                                            @endphp
                                             <span class="px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                                                {{ $record->status ?? 'Lulus' }}
+                                                {{ $recMurajaahStatus }}
                                             </span>
                                             @if ($record->overall_score !== null)
                                                 <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-1">Nilai: {{ number_format((float) $record->overall_score, 1) }}</p>

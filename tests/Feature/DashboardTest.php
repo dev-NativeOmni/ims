@@ -121,6 +121,53 @@ class DashboardTest extends TestCase
         $response->assertViewIs('dashboards.student');
     }
 
+    #[Test]
+    public function student_dashboard_displays_latest_memorized_surahs_at_top_with_dates(): void
+    {
+        \App\Models\HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 10,
+            'status' => 'passed',
+            'score' => 95.0,
+            'submitted_at' => '2026-09-08',
+        ]);
+
+        $response = $this->actingAs($this->studentUser)->get(route('student.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Surah Terakhir yang Dihafal');
+        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('Ayat 1 - 10');
+        $response->assertSee('08 September 2026');
+    }
+
+    #[Test]
+    public function student_dashboard_displays_ummi_memorized_surahs_at_top_when_hafalan_records_empty(): void
+    {
+        \App\Models\UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-09-07',
+            'hafalan_surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-15',
+            'ummi_jilid' => 'Jilid 1',
+            'ummi_halaman' => '10',
+            'nilai' => '90',
+        ]);
+
+        $response = $this->actingAs($this->studentUser)->get(route('student.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Surah Terakhir yang Dihafal');
+        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('Ayat 1 - 15');
+        $response->assertSee('07 September 2026');
+    }
+
     // =========================================================================
     // AKUN NONAKTIF
     // =========================================================================
