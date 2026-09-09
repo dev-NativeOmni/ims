@@ -15,6 +15,7 @@ use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -48,82 +49,82 @@ class DashboardService
                     'inactive_students' => Student::query()->where('status', 'inactive')->count(),
                     'graduated_students' => Student::query()->where('status', 'graduated')->count(),
 
-                'total_teachers' => TeacherProfile::query()->count(),
-                'total_parents' => ParentProfile::query()->count(),
-                'total_programs' => Program::query()->count(),
-                'total_class_rooms' => ClassRoom::query()->count(),
+                    'total_teachers' => TeacherProfile::query()->count(),
+                    'total_parents' => ParentProfile::query()->count(),
+                    'total_programs' => Program::query()->count(),
+                    'total_class_rooms' => ClassRoom::query()->count(),
 
-                'hafalan_today' => HafalanRecord::query()
-                    ->whereDate('submitted_at', $today)
-                    ->count(),
+                    'hafalan_today' => HafalanRecord::query()
+                        ->whereDate('submitted_at', $today)
+                        ->count(),
 
-                'murajaah_today' => MurajaahRecord::query()
-                    ->whereDate('reviewed_at', $today)
-                    ->count(),
+                    'murajaah_today' => MurajaahRecord::query()
+                        ->whereDate('reviewed_at', $today)
+                        ->count(),
 
-                'active_targets' => HafalanTarget::query()
-                    ->where('status', 'active')
-                    ->count(),
+                    'active_targets' => HafalanTarget::query()
+                        ->where('status', 'active')
+                        ->count(),
 
-                'overdue_targets' => HafalanTarget::query()
-                    ->where('status', 'active')
-                    ->whereDate('target_date', '<', $today)
-                    ->count(),
+                    'overdue_targets' => HafalanTarget::query()
+                        ->where('status', 'active')
+                        ->whereDate('target_date', '<', $today)
+                        ->count(),
 
-                'completed_targets' => HafalanTarget::query()
-                    ->where('status', 'completed')
-                    ->count(),
+                    'completed_targets' => HafalanTarget::query()
+                        ->where('status', 'completed')
+                        ->count(),
 
-                'hafalan_need_attention' => HafalanRecord::query()
-                    ->whereIn('status', [
-                        'repeat',
-                        'needs_improvement',
-                    ])
-                    ->count(),
+                    'hafalan_need_attention' => HafalanRecord::query()
+                        ->whereIn('status', [
+                            'repeat',
+                            'needs_improvement',
+                        ])
+                        ->count(),
 
-                'murajaah_need_attention' => MurajaahRecord::query()
-                    ->whereIn('status', [
-                        'repeat',
-                        'needs_improvement',
-                    ])
-                    ->count(),
+                    'murajaah_need_attention' => MurajaahRecord::query()
+                        ->whereIn('status', [
+                            'repeat',
+                            'needs_improvement',
+                        ])
+                        ->count(),
 
-                'latest_hafalan_records' => HafalanRecord::query()
-                    ->with([
-                        'student.classRoom.program',
-                        'teacher.user',
-                        'surah',
-                    ])
-                    ->latest('submitted_at')
-                    ->latest()
-                    ->limit(8)
-                    ->get(),
+                    'latest_hafalan_records' => HafalanRecord::query()
+                        ->with([
+                            'student.classRoom.program',
+                            'teacher.user',
+                            'surah',
+                        ])
+                        ->latest('submitted_at')
+                        ->latest()
+                        ->limit(8)
+                        ->get(),
 
-                'latest_murajaah_records' => MurajaahRecord::query()
-                    ->with([
-                        'student.classRoom.program',
-                        'teacher.user',
-                        'surah',
-                    ])
-                    ->latest('reviewed_at')
-                    ->latest()
-                    ->limit(8)
-                    ->get(),
+                    'latest_murajaah_records' => MurajaahRecord::query()
+                        ->with([
+                            'student.classRoom.program',
+                            'teacher.user',
+                            'surah',
+                        ])
+                        ->latest('reviewed_at')
+                        ->latest()
+                        ->limit(8)
+                        ->get(),
 
-                'latest_targets' => HafalanTarget::query()
-                    ->with([
-                        'student.classRoom.program',
-                        'teacher.user',
-                        'surah',
-                    ])
-                    ->orderBy('target_date')
-                    ->latest()
-                    ->limit(8)
-                    ->get(),
+                    'latest_targets' => HafalanTarget::query()
+                        ->with([
+                            'student.classRoom.program',
+                            'teacher.user',
+                            'surah',
+                        ])
+                        ->orderBy('target_date')
+                        ->latest()
+                        ->limit(8)
+                        ->get(),
 
-                'students_progress' => $this->studentsProgress($activeStudents)->take(10),
-            ];
-        });
+                    'students_progress' => $this->studentsProgress($activeStudents)->take(10),
+                ];
+            });
         } catch (\Throwable $e) {
             return [];
         }
@@ -139,7 +140,7 @@ class DashboardService
                 $teacher = TeacherProfile::query()
                     ->whereHas('user', function ($q) use ($user) {
                         $q->where('name', 'like', '%'.$user->name.'%')
-                          ->orWhere('username', $user->username);
+                            ->orWhere('username', $user->username);
                     })
                     ->first();
 
@@ -333,7 +334,7 @@ class DashboardService
                     $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
                     $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
 
-                    $rec = new HafalanRecord();
+                    $rec = new HafalanRecord;
                     $rec->id = $u->id;
                     $rec->student_id = $u->student_id;
                     $rec->teacher_id = $u->teacher_id;
@@ -351,7 +352,7 @@ class DashboardService
 
             if ($recentUmmiHafalan->isNotEmpty()) {
                 $recentHafalan = $recentHafalan->concat($recentUmmiHafalan)
-                    ->sortByDesc(fn ($item) => $item->submitted_at ? \Carbon\Carbon::parse($item->submitted_at)->timestamp : 0)
+                    ->sortByDesc(fn ($item) => $item->submitted_at ? Carbon::parse($item->submitted_at)->timestamp : 0)
                     ->take(6)
                     ->values();
             }
@@ -525,7 +526,7 @@ class DashboardService
                 $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
                 $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
 
-                $rec = new HafalanRecord();
+                $rec = new HafalanRecord;
                 $rec->id = $u->id;
                 $rec->student_id = $u->student_id;
                 $rec->teacher_id = $u->teacher_id;
@@ -543,7 +544,7 @@ class DashboardService
 
         if ($latestUmmiRecords->isNotEmpty()) {
             $latestHafalanRecords = $latestHafalanRecords->concat($latestUmmiRecords)
-                ->sortByDesc(fn ($item) => $item->submitted_at ? \Carbon\Carbon::parse($item->submitted_at)->timestamp : 0)
+                ->sortByDesc(fn ($item) => $item->submitted_at ? Carbon::parse($item->submitted_at)->timestamp : 0)
                 ->take(8)
                 ->values();
         }

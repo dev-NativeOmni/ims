@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\HafalanRecord;
+use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -115,7 +117,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function parent_dashboard_displays_child_latest_memorized_surahs_at_top_with_dates(): void
     {
-        \App\Models\HafalanRecord::create([
+        HafalanRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'surah_id' => $this->surah->id,
@@ -130,7 +132,7 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Daftar Surah Terakhir yang Dihafal Ananda');
-        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('QS. '.$this->surah->name_latin);
         $response->assertSee('Ayat 1 - 10');
         $response->assertSee('08 September 2026');
     }
@@ -147,7 +149,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function student_dashboard_displays_latest_memorized_surahs_at_top_with_dates(): void
     {
-        \App\Models\HafalanRecord::create([
+        HafalanRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'surah_id' => $this->surah->id,
@@ -162,7 +164,7 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Daftar Surah Terakhir yang Dihafal');
-        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('QS. '.$this->surah->name_latin);
         $response->assertSee('Ayat 1 - 10');
         $response->assertSee('08 September 2026');
     }
@@ -170,7 +172,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function student_dashboard_displays_ummi_memorized_surahs_at_top_when_hafalan_records_empty(): void
     {
-        \App\Models\UmmiRecord::create([
+        UmmiRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'tatap_muka' => 1,
@@ -186,7 +188,7 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Daftar Surah Terakhir yang Dihafal');
-        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('QS. '.$this->surah->name_latin);
         $response->assertSee('Ayat 1 - 15');
         $response->assertSee('07 September 2026');
     }

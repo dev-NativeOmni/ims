@@ -8,10 +8,12 @@ use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -893,13 +895,13 @@ class ReportController extends Controller
         $selectedClassLevel = $selectedClass?->level ?? '';
 
         $isGrade10 = (bool) (
-            (preg_match('/\bX\b/i', $selectedClassName) && !preg_match('/\b(XI|XII)\b/i', $selectedClassName))
+            (preg_match('/\bX\b/i', $selectedClassName) && ! preg_match('/\b(XI|XII)\b/i', $selectedClassName))
             || preg_match('/\b10\b/i', $selectedClassName)
             || preg_match('/^X[-_\s]?E/i', $selectedClassName)
             || preg_match('/kelas\s*(X|10)/i', $selectedClassName)
-            || (preg_match('/\bX\b/i', $selectedClassLevel) && !preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
+            || (preg_match('/\bX\b/i', $selectedClassLevel) && ! preg_match('/\b(XI|XII)\b/i', $selectedClassLevel))
             || preg_match('/\b10\b/i', $selectedClassLevel)
-        ) && !preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
+        ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
         // Detailed student list
         $studentReports = [];
@@ -934,14 +936,14 @@ class ReportController extends Controller
             ->groupBy('student_id');
 
         // Bulk fetch attendances for all students in scope
-        $allAttendances = \App\Models\Attendance::query()
+        $allAttendances = Attendance::query()
             ->whereIn('student_id', $studentIds)
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->get()
             ->groupBy('student_id');
 
         // Bulk fetch latest UmmiRecords for Grade 10 / Ummi students
-        $allUmmiRecords = \App\Models\UmmiRecord::query()
+        $allUmmiRecords = UmmiRecord::query()
             ->with('surah')
             ->whereIn('student_id', $studentIds)
             ->where('tanggal', '<=', $endDate)
@@ -1021,7 +1023,7 @@ class ReportController extends Controller
             preg_match('/(\d+)/', (string) $ummiJilidRaw, $mJilid);
             $ummiJilidNum = isset($mJilid[1]) ? $mJilid[1] : (is_numeric($ummiJilidRaw) ? $ummiJilidRaw : $ummiJilidRaw);
             $rawHalaman = $latestUmmi?->ummi_halaman ?: '-';
-            if ($rawHalaman !== '-' && !empty($rawHalaman)) {
+            if ($rawHalaman !== '-' && ! empty($rawHalaman)) {
                 $hParts = preg_split('/[-–—]/u', trim((string) $rawHalaman));
                 $lastHPart = trim(end($hParts));
                 $ummiHalaman = is_numeric($lastHPart) ? $lastHPart : $rawHalaman;
@@ -1032,7 +1034,7 @@ class ReportController extends Controller
 
             $ziyadahText = '-';
             if ($latestHafalanPassed && $latestHafalanPassed->surah) {
-                $ziyadahText = $latestHafalanPassed->surah->name_latin . ($latestHafalanPassed->ayah_end ? ' (' . $latestHafalanPassed->ayah_end . ')' : '');
+                $ziyadahText = $latestHafalanPassed->surah->name_latin.($latestHafalanPassed->ayah_end ? ' ('.$latestHafalanPassed->ayah_end.')' : '');
             }
 
             // Violations count during the period
@@ -1111,10 +1113,10 @@ class ReportController extends Controller
         $current = $startDate->copy()->startOfDay();
         $end = $endDate->copy()->endOfDay();
         $tahfizhDays = $classRoom->tahfizh_days;
-        
+
         $year = $startDate->year;
-        $holidays = \App\Models\Setting::getNationalHolidays($year);
-        $classHolidaysRaw = \App\Models\Setting::get("class_holidays_{$year}");
+        $holidays = Setting::getNationalHolidays($year);
+        $classHolidaysRaw = Setting::get("class_holidays_{$year}");
         $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
 
         if ($meetingFrequency === 'seminggu sekali') {
@@ -1123,10 +1125,10 @@ class ReportController extends Controller
                 $dayOfWeek = $current->dayOfWeek;
                 $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
                 $dateString = $current->toDateString();
-                
+
                 $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
 
-                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true) && !$isClassHoliday) {
+                if (in_array($isoDay, $tahfizhDays, true) && ! in_array($dateString, $holidays, true) && ! $isClassHoliday) {
                     $weekNum = $current->format('o-W');
                     $weeks[$weekNum] = true;
                 }
@@ -1141,7 +1143,7 @@ class ReportController extends Controller
 
                 $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
 
-                if (in_array($isoDay, $tahfizhDays, true) && !in_array($dateString, $holidays, true) && !$isClassHoliday) {
+                if (in_array($isoDay, $tahfizhDays, true) && ! in_array($dateString, $holidays, true) && ! $isClassHoliday) {
                     $meetings++;
                 }
                 $current->addDay();
@@ -1160,7 +1162,7 @@ class ReportController extends Controller
         }
 
         $path = public_path('quran_verse_lines.json');
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $path = storage_path('app/quran_verse_lines.json');
         }
 
@@ -1233,6 +1235,7 @@ class ReportController extends Controller
         if ($pageStart == $pageEnd) {
             // Same page: simply end_line - start_line + 1
             $lines = $lineEnd - $lineStart + 1;
+
             return (float) max(0, $lines);
         } else {
             // Start Page lines: from lineStart to the end of the start page
@@ -1296,19 +1299,19 @@ class ReportController extends Controller
         $studentIds = $students->pluck('id');
 
         // Fetch records for this date
-        $hafalanRecords = \App\Models\HafalanRecord::query()
+        $hafalanRecords = HafalanRecord::query()
             ->with(['surah'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('submitted_at', $selectedDate)
             ->get();
 
-        $murajaahRecords = \App\Models\MurajaahRecord::query()
+        $murajaahRecords = MurajaahRecord::query()
             ->with(['surah'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('reviewed_at', $selectedDate)
             ->get();
 
-        $ummiRecords = \App\Models\UmmiRecord::query()
+        $ummiRecords = UmmiRecord::query()
             ->with(['surah'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('tanggal', $selectedDate)
@@ -1321,7 +1324,7 @@ class ReportController extends Controller
         $classUmmiJilid = '';
         $classUmmiHalaman = '';
         $classUmmiHafalanSurah = '';
-        
+
         if ($hasUmmiRecords) {
             $firstUmmi = $ummiRecords->first();
             $classUmmiJilid = $firstUmmi->ummi_jilid;
@@ -1362,8 +1365,8 @@ class ReportController extends Controller
                 }
             }
 
-            if (!empty($murojaahParts)) {
-                $progressParts[] = "murojaah " . implode(', ', $murojaahParts);
+            if (! empty($murojaahParts)) {
+                $progressParts[] = 'murojaah '.implode(', ', $murojaahParts);
             }
 
             // Ummi progress
@@ -1422,6 +1425,7 @@ class ReportController extends Controller
             // Capaian tertinggi/terjauh di Juz 30 adalah rekor dengan nomor surah paling kecil (mendekati 78).
             $juz30Records = $records->filter(function ($r) {
                 $num = $r->surah?->number;
+
                 return $num >= 78 && $num <= 114;
             });
 
@@ -1434,6 +1438,7 @@ class ReportController extends Controller
                     }
                     $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
                     $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
+
                     return $dateB <=> $dateA;
                 })->first();
             }
