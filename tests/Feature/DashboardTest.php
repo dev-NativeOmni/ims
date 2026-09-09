@@ -113,6 +113,29 @@ class DashboardTest extends TestCase
     }
 
     #[Test]
+    public function parent_dashboard_displays_child_latest_memorized_surahs_at_top_with_dates(): void
+    {
+        \App\Models\HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 10,
+            'status' => 'passed',
+            'score' => 95.0,
+            'submitted_at' => '2026-09-08',
+        ]);
+
+        $response = $this->actingAs($this->parentUser)->get(route('parent.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Surah Terakhir yang Dihafal Ananda');
+        $response->assertSee('QS. ' . $this->surah->name_latin);
+        $response->assertSee('Ayat 1 - 10');
+        $response->assertSee('08 September 2026');
+    }
+
+    #[Test]
     public function student_dashboard_renders_successfully(): void
     {
         $response = $this->actingAs($this->studentUser)->get(route('student.dashboard'));

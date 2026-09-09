@@ -287,7 +287,111 @@
                             {{-- ═══════════════ DETAIL KONTEN SESUAI TAB AKTIF ═══════════════ --}}
 
                             {{-- 1. DETAIL TAHFIZH & TARGET --}}
-                            <div x-show="childTab === 'tahfizh'" x-transition class="space-y-2.5 sm:space-y-4">
+                            <div x-show="childTab === 'tahfizh'" x-transition class="space-y-3 sm:space-y-4">
+
+                                {{-- ═══════════════ DAFTAR SURAH TERAKHIR YANG DIHAFAL ANANDA (BAGIAN ATAS) ═══════════════ --}}
+                                <div class="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/[0.06] via-white to-teal-500/[0.03] dark:from-emerald-950/30 dark:via-zinc-900 dark:to-teal-950/20 p-3.5 sm:p-5 shadow-xs space-y-3">
+                                    <div class="flex items-center justify-between gap-2 border-b border-zinc-200/70 dark:border-white/10 pb-2.5 sm:pb-3">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 shadow-2xs">
+                                                <x-heroicon-o-book-open class="w-4 h-4 sm:w-5 sm:h-5" />
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                                    <span>Daftar Surah Terakhir yang Dihafal Ananda</span>
+                                                    @if ($studentHafalan->isNotEmpty())
+                                                        <span class="inline-flex items-center px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                                            {{ $studentHafalan->count() }} Terakhir
+                                                        </span>
+                                                    @endif
+                                                </h4>
+                                                <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                                                    Rekam jejak capaian hafalan Al-Qur'an terbaru beserta keterangan tanggal setorannya.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <a href="{{ route('progress.show', $student) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:underline shrink-0">
+                                            <span>Detail Rapor</span>
+                                            <x-heroicon-o-arrow-right class="w-3.5 h-3.5" />
+                                        </a>
+                                    </div>
+
+                                    @if ($studentHafalan->isNotEmpty())
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                                            @foreach ($studentHafalan as $h)
+                                                @php
+                                                    $surahName = $h->surah?->name_latin ?? ($h->surah?->name ?? 'Surah');
+                                                    $surahNumber = $h->surah?->number ?? null;
+                                                    $submittedDate = $h->submitted_at ? \Carbon\Carbon::parse($h->submitted_at) : null;
+                                                    $hStatusLabel = match ($h->status) {
+                                                        'passed' => 'Lulus',
+                                                        'repeat' => 'Ulang',
+                                                        'needs_improvement' => 'Perbaikan',
+                                                        default => $h->status ?? 'Lulus',
+                                                    };
+                                                @endphp
+                                                <div class="rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 p-3 hover:border-emerald-500/40 transition flex flex-col justify-between gap-2 shadow-2xs group">
+                                                    <div class="space-y-1.5">
+                                                        <div class="flex items-start justify-between gap-2">
+                                                            <div class="flex items-center gap-2 min-w-0">
+                                                                @if($surahNumber)
+                                                                    <span class="w-6 h-6 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
+                                                                        {{ $surahNumber }}
+                                                                    </span>
+                                                                @else
+                                                                    <span class="w-6 h-6 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-emerald-500/20">
+                                                                        <x-heroicon-o-bookmark class="w-3.5 h-3.5" />
+                                                                    </span>
+                                                                @endif
+                                                                <div class="min-w-0">
+                                                                    <h5 class="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition" title="QS. {{ $surahName }}">
+                                                                        QS. {{ $surahName }}
+                                                                    </h5>
+                                                                    <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                                                        Ayat {{ $h->ayah_start }} - {{ $h->ayah_end }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold {{ $h->status === 'passed' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/20' }}">
+                                                                {{ $hStatusLabel }}
+                                                            </span>
+                                                        </div>
+
+                                                        {{-- KETERANGAN TANGGAL DI BAWAHNYA --}}
+                                                        <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-col gap-0.5">
+                                                            <div class="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                                                <x-heroicon-o-calendar class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">
+                                                                    {{ $submittedDate ? $submittedDate->locale('id')->translatedFormat('d F Y') : '-' }}
+                                                                </span>
+                                                            </div>
+                                                            @if ($h->teacher?->user?->name)
+                                                                <div class="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                                                                    <x-heroicon-o-user class="w-3 h-3 text-zinc-400 shrink-0" />
+                                                                    <span class="truncate">Disimak: {{ $h->teacher->user->name }}</span>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+
+                                                    @if ($h->score !== null)
+                                                        <div class="flex items-center justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[11px]">
+                                                            <span class="text-zinc-500 dark:text-zinc-400">Nilai:</span>
+                                                            <span class="font-black text-emerald-600 dark:text-emerald-400">{{ number_format((float) $h->score, 1) }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="py-4 px-3 text-center text-xs text-zinc-500 dark:text-zinc-400 bg-white/50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+                                            Belum ada rekam jejak hafalan yang disetorkan ananda.
+                                        </div>
+                                    @endif
+                                </div>
+
                                 @if ($isUmmi)
                                     <div class="grid grid-cols-3 gap-2">
                                         <div class="rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200/70 dark:border-zinc-800/80 p-2.5 sm:p-3 shadow-xs">
@@ -372,11 +476,17 @@
                                         </h4>
                                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
                                             @forelse ($studentHafalan as $h)
-                                                <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between gap-1">
-                                                    <span class="font-semibold text-zinc-900 dark:text-white truncate">
-                                                        {{ $h->surah?->name_latin }} ({{ $h->ayah_start }}-{{ $h->ayah_end }})
-                                                    </span>
-                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold {{ $h->status === 'passed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-50 text-rose-700' }} shrink-0">
+                                                <div class="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-1.5">
+                                                    <div class="min-w-0">
+                                                        <span class="font-bold text-xs text-zinc-900 dark:text-white truncate block">
+                                                            {{ $h->surah?->name_latin }} ({{ $h->ayah_start }}-{{ $h->ayah_end }})
+                                                        </span>
+                                                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                                                            <x-heroicon-o-calendar class="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                                                            <span>{{ $h->submitted_at ? \Carbon\Carbon::parse($h->submitted_at)->locale('id')->translatedFormat('d F Y') : '-' }}</span>
+                                                        </p>
+                                                    </div>
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $h->status === 'passed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-50 text-rose-700' }} shrink-0">
                                                         {{ $h->status === 'passed' ? 'Lulus' : 'Ulang' }}
                                                     </span>
                                                 </div>
@@ -392,11 +502,17 @@
                                         </h4>
                                         <div class="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
                                             @forelse ($studentMurajaah as $m)
-                                                <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between gap-1">
-                                                    <span class="font-semibold text-zinc-900 dark:text-white truncate">
-                                                        {{ $m->surah?->name_latin }} ({{ $m->ayah_start }}-{{ $m->ayah_end }})
-                                                    </span>
-                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0">
+                                                <div class="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-1.5">
+                                                    <div class="min-w-0">
+                                                        <span class="font-bold text-xs text-zinc-900 dark:text-white truncate block">
+                                                            {{ $m->surah?->name_latin }} ({{ $m->ayah_start }}-{{ $m->ayah_end }})
+                                                        </span>
+                                                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                                                            <x-heroicon-o-calendar class="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                                                            <span>{{ $m->reviewed_at ? \Carbon\Carbon::parse($m->reviewed_at)->locale('id')->translatedFormat('d F Y') : '-' }}</span>
+                                                        </p>
+                                                    </div>
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shrink-0">
                                                         {{ $m->overall_score ?? '-' }}
                                                     </span>
                                                 </div>

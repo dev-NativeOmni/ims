@@ -313,11 +313,48 @@ class DashboardService
                 ->get();
 
             // Recent Hafalan & Murajaah for this student specifically
-            $recentHafalan = HafalanRecord::with('surah')
+            $recentHafalan = HafalanRecord::with(['surah', 'teacher.user'])
                 ->where('student_id', $student->id)
                 ->latest('submitted_at')
-                ->take(5)
+                ->latest()
+                ->take(6)
                 ->get();
+
+            $recentUmmiHafalan = UmmiRecord::query()
+                ->with(['teacher.user', 'surah'])
+                ->where('student_id', $student->id)
+                ->whereNotNull('hafalan_surah_id')
+                ->latest('tanggal')
+                ->latest()
+                ->take(6)
+                ->get()
+                ->map(function ($u) {
+                    $parts = explode('-', str_replace(' ', '', (string) $u->hafalan_ayah));
+                    $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
+                    $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
+
+                    $rec = new HafalanRecord();
+                    $rec->id = $u->id;
+                    $rec->student_id = $u->student_id;
+                    $rec->teacher_id = $u->teacher_id;
+                    $rec->surah_id = $u->hafalan_surah_id;
+                    $rec->ayah_start = $start;
+                    $rec->ayah_end = $end;
+                    $rec->submitted_at = $u->tanggal;
+                    $rec->status = $u->nilai ? 'Lulus (Nilai: '.$u->nilai.')' : 'passed';
+                    $rec->score = is_numeric($u->nilai) ? (float) $u->nilai : null;
+                    $rec->setRelation('surah', $u->surah);
+                    $rec->setRelation('teacher', $u->teacher);
+
+                    return $rec;
+                });
+
+            if ($recentUmmiHafalan->isNotEmpty()) {
+                $recentHafalan = $recentHafalan->concat($recentUmmiHafalan)
+                    ->sortByDesc(fn ($item) => $item->submitted_at ? \Carbon\Carbon::parse($item->submitted_at)->timestamp : 0)
+                    ->take(6)
+                    ->values();
+            }
 
             $recentMurajaah = MurajaahRecord::with('surah')
                 ->where('student_id', $student->id)
