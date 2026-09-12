@@ -745,7 +745,7 @@
                                 </template>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-4">
                                 <div>
                                     <label for="ummi_tatap_muka" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                         Tatap Muka (Ke-)
@@ -860,7 +860,7 @@
                                 </template>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-4">
                                 <div>
                                     <label for="ummi_jilid" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                         UMMI (Jilid)
@@ -900,7 +900,7 @@
                                        class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-4">
                                 <div>
                                     <label for="ummi_nilai" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                         Nilai Evaluasi
@@ -921,7 +921,7 @@
                                     </select>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div>
                                         <label for="ummi_disimak_guru" class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                             Simak Guru

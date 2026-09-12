@@ -320,7 +320,7 @@
                                     </div>
                                 </div>
                                 <div class="relative w-full flex justify-center items-center" style="height: 380px;">
-                                    <div style="width: 280px; height: 280px;" class="relative flex items-center justify-center">
+                                    <div style="width: min(280px, 100%); aspect-ratio: 1 / 1;" class="relative flex items-center justify-center">
                                         <canvas id="ketuntasanChart"></canvas>
                                         <!-- Center Metric Summary Overlay inside Donut Hole -->
                                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center pb-4">

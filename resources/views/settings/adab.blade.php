@@ -130,7 +130,7 @@
                     <p class="text-xs text-zinc-600 dark:text-zinc-400">
                         Penilaian adab murid dihitung dari <strong>Kerajinan Pengisian Kuisioner (40%)</strong> pada Hari Kerja Efektif (Senin-Jumat, menyesuaikan tanggal merah) dan <strong>Nilai Pendamping Adab (60%)</strong>.
                     </p>
-                    <div class="grid grid-cols-5 gap-3 text-center text-xs pt-2">
+                    <div class="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-3 text-center text-xs pt-2">
                         @foreach (['A'=>['90–100%','bg-emerald-100 text-emerald-700'], 'B'=>['80–89%','bg-teal-100 text-teal-700'], 'C'=>['70–79%','bg-amber-100 text-amber-700'], 'D'=>['60–69%','bg-orange-100 text-orange-700'], 'E'=>['0–59%','bg-rose-100 text-rose-700']] as $g => [$range, $cls])
                             <div class="rounded-lg p-3 {{ $cls }} dark:opacity-80">
                                 <div class="text-2xl font-black">{{ $g }}</div>

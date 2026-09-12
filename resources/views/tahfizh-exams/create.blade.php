@@ -206,7 +206,7 @@
                         <div class="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-3">
                             <h4 class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Penilaian 5 Pertanyaan (Skala 0-100)</h4>
                             
-                            <div class="grid grid-cols-5 gap-2">
+                            <div class="grid grid-cols-3 xs:grid-cols-5 gap-2">
                                 @foreach ([1,2,3,4,5] as $qi)
                                 <div>
                                     <label for="q{{ $qi }}" class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 text-center uppercase mb-0.5">Soal {{ $qi }}</label>
