@@ -454,7 +454,7 @@ class QuarterlyReportController extends Controller
                     $studentHafalan = $latestHafalans->get($student->id)?->first();
 
                     $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
-                    $targetAyat = $studentTarget ? "{$studentTarget->ayah_start}-{$studentTarget->ayah_end}" : '-';
+                    $targetAyat = $studentTarget ? $studentTarget->ayah_range : '-';
 
                     $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
                     $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';
@@ -528,7 +528,7 @@ class QuarterlyReportController extends Controller
                     $studentHafalan = $latestHafalans->get($student->id)?->first();
 
                     $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
-                    $targetAyat = $studentTarget ? "{$studentTarget->ayah_start}-{$studentTarget->ayah_end}" : '-';
+                    $targetAyat = $studentTarget ? $studentTarget->ayah_range : '-';
 
                     $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
                     $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';

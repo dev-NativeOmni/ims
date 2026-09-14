@@ -283,4 +283,49 @@ class SettingController extends Controller
             ->route('settings.hafalan-targets')
             ->with('success', 'Konfigurasi target progres hafalan berhasil di-reset ke standar default.');
     }
+
+    public function tahfizhScoringIndex()
+    {
+        return view('settings.tahfizh-scoring', [
+            'config' => Setting::getTahfizhScoringConfig(),
+        ]);
+    }
+
+    public function tahfizhScoringUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'target_weight' => ['required', 'integer', 'min:0', 'max:100'],
+            'exam_weight' => ['required', 'integer', 'min:0', 'max:100'],
+            'target_incomplete_score' => ['required', 'integer', 'min:0'],
+        ]);
+
+        if ($validated['target_weight'] + $validated['exam_weight'] !== 100) {
+            return redirect()
+                ->route('settings.tahfizh-scoring')
+                ->withErrors(['target_weight' => 'Total bobot ketuntasan target dan ujian harus sama dengan 100.'])
+                ->withInput();
+        }
+
+        if ($validated['target_incomplete_score'] > $validated['target_weight']) {
+            return redirect()
+                ->route('settings.tahfizh-scoring')
+                ->withErrors(['target_incomplete_score' => 'Nilai target belum tuntas tidak boleh melebihi bobot ketuntasan target.'])
+                ->withInput();
+        }
+
+        Setting::set('tahfizh_scoring_config', json_encode($validated));
+
+        return redirect()
+            ->route('settings.tahfizh-scoring')
+            ->with('success', 'Pengaturan penilaian tahfizh berhasil disimpan.');
+    }
+
+    public function tahfizhScoringReset()
+    {
+        Setting::set('tahfizh_scoring_config', null);
+
+        return redirect()
+            ->route('settings.tahfizh-scoring')
+            ->with('success', 'Pengaturan penilaian tahfizh berhasil di-reset ke standar default.');
+    }
 }

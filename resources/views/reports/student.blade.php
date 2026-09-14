@@ -230,7 +230,7 @@
                                         {{ $target->surah?->name_latin ?? $target->surah?->name ?? '-' }}
                                     </td>
                                     <td class="whitespace-nowrap px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
-                                        {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                        {{ $target->ayah_range }}
                                     </td>
                                     <td class="whitespace-nowrap px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
                                         {{ \Illuminate\Support\Str::headline($target->status ?? '-') }}

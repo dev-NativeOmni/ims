@@ -834,7 +834,7 @@
                                     </td>
 
                                     <td class="whitespace-nowrap px-5 py-3 text-gray-700">
-                                        {{ $target->ayah_start }} - {{ $target->ayah_end }}
+                                        {{ $target->ayah_range }}
                                     </td>
 
                                     <td class="whitespace-nowrap px-5 py-3">

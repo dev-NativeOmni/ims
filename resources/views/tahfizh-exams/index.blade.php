@@ -125,8 +125,7 @@
                             <th class="px-5 py-3.5">Tanggal</th>
                             <th class="px-5 py-3.5">Murid</th>
                             <th class="px-5 py-3.5">Materi Ujian</th>
-                            <th class="px-5 py-3.5 text-center">Soal 1-5</th>
-                            <th class="px-5 py-3.5 text-center">Nilai Akhir</th>
+                            <th class="px-5 py-3.5 text-center">Nilai Ujian</th>
                             <th class="px-5 py-3.5">Penguji</th>
                             <th class="px-5 py-3.5">Keterangan</th>
                             <th class="px-5 py-3.5 text-right">Aksi</th>
@@ -150,19 +149,9 @@
                                 <td class="px-5 py-4 font-medium text-zinc-800 dark:text-zinc-200 text-sm">
                                     {{ $exam->exam_range }}
                                 </td>
-                                <td class="px-5 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-1 flex-wrap">
-                                        @foreach ([1,2,3,4,5] as $qi)
-                                            @php $qval = 'q'.$qi; @endphp
-                                            <span class="inline-block bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-md px-1.5 py-0.5 text-[10px] font-semibold border border-zinc-200 dark:border-zinc-700" title="Pertanyaan {{ $qi }}">
-                                                Q{{ $qi }}: {{ $exam->$qval }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                </td>
                                 <td class="px-5 py-4 text-center whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $exam->total_score >= 75 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800' }}">
-                                        {{ round($exam->total_score) }}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $exam->total_score >= $passThreshold ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800' }}">
+                                        {{ rtrim(rtrim(number_format((float) $exam->total_score, 1), '0'), '.') }} / {{ $maxScore }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-4 text-zinc-600 dark:text-zinc-400 text-sm">

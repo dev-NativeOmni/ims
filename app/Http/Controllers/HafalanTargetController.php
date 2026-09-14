@@ -214,15 +214,14 @@ class HafalanTargetController extends Controller
             'targets' => ['required', 'array'],
             'targets.*.student_id' => ['required', 'integer', 'exists:students,id'],
             'targets.*.surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
-            'targets.*.ayah_start' => ['nullable', 'integer', 'min:1'],
-            'targets.*.ayah_end' => ['nullable', 'integer', 'min:1'],
+            'targets.*.ayah' => ['nullable', 'integer', 'min:1'],
             'targets.*.target_date' => ['nullable', 'date'],
             'targets.*.notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $count = 0;
         foreach ($validated['targets'] as $row) {
-            if (empty($row['surah_id']) || empty($row['ayah_start']) || empty($row['ayah_end'])) {
+            if (empty($row['surah_id']) || empty($row['ayah'])) {
                 continue;
             }
 
@@ -242,8 +241,7 @@ class HafalanTargetController extends Controller
                 'student_id' => $student->id,
                 'teacher_id' => $teacherId,
                 'surah_id' => $row['surah_id'],
-                'ayah_start' => $row['ayah_start'],
-                'ayah_end' => $row['ayah_end'],
+                'ayah' => $row['ayah'],
                 'target_date' => $row['target_date'] ?: now()->addWeeks(2)->toDateString(),
                 'notes' => $row['notes'] ?? null,
                 'status' => $this->defaultOpenTargetStatus(),
@@ -310,8 +308,7 @@ class HafalanTargetController extends Controller
                 'halaman_peraga' => $validated['halaman_peraga'] ?? null,
                 'halaman_buku' => $validated['halaman_buku'] ?? null,
                 'surah_id' => $validated['surah_id'] ?? null,
-                'ayah_start' => null,
-                'ayah_end' => null,
+                'ayah' => null,
                 'target_date' => $validated['target_date'],
                 'notes' => $validated['notes'] ?? null,
                 'status' => $this->defaultOpenTargetStatus(),
@@ -569,8 +566,7 @@ class HafalanTargetController extends Controller
         $validator = Validator::make($request->all(), [
             'student_id' => ['required', 'integer', 'exists:students,id'],
             'surah_id' => ['required', 'integer', 'exists:surahs,id'],
-            'ayah_start' => ['required', 'integer', 'min:1'],
-            'ayah_end' => ['required', 'integer', 'min:1', 'gte:ayah_start'],
+            'ayah' => ['required', 'integer', 'min:1'],
             'target_date' => ['required', 'date'],
             'status' => ['nullable', Rule::in($statuses)],
             'notes' => ['nullable', 'string', 'max:2000'],
@@ -589,10 +585,10 @@ class HafalanTargetController extends Controller
             $surah = Surah::query()->find($request->input('surah_id'));
 
             if ($surah && isset($surah->total_ayah)) {
-                if ((int) $request->input('ayah_end') > (int) $surah->total_ayah) {
+                if ((int) $request->input('ayah') > (int) $surah->total_ayah) {
                     $validator->errors()->add(
-                        'ayah_end',
-                        'Ayat akhir tidak boleh melebihi jumlah ayat surah.'
+                        'ayah',
+                        'Ayat tidak boleh melebihi jumlah ayat surah.'
                     );
                 }
             }

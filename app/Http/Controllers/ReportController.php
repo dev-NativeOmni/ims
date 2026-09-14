@@ -1008,7 +1008,7 @@ class ReportController extends Controller
             $latestTarget = $allLatestTargets->get($student->id, collect())->first();
 
             $targetSurah = $latestTarget?->surah?->name_latin ?? '-';
-            $targetAyat = $latestTarget?->ayah_end ?? '-';
+            $targetAyat = $latestTarget?->ayah ?? '-';
 
             // Capaian Surah and Ayat (latest passed setoran submitted_at <= $endDate)
             $studentPassedRecords = $allPassedHafalan->get($student->id, collect());

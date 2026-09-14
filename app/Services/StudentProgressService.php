@@ -981,7 +981,7 @@ class StudentProgressService
                                 $tStr .= ' · Surah '.$firstTarget->surah->name_latin;
                             }
                         } else {
-                            $tStr = '📘 '.($firstTarget->surah?->name_latin ?? 'Target Reguler').' (Ayat '.$firstTarget->ayah_start.'-'.$firstTarget->ayah_end.')';
+                            $tStr = '📘 '.($firstTarget->surah?->name_latin ?? 'Target Reguler').' (Ayat '.$firstTarget->ayah_range.')';
                         }
 
                         $termTarget = [

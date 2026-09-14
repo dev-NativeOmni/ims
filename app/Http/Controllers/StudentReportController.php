@@ -11,7 +11,6 @@ use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
-use App\Models\TahfizhExam;
 use App\Models\UmmiRecord;
 use App\Services\StudentProgressService;
 use Illuminate\Http\Request;
@@ -179,12 +178,6 @@ class StudentReportController extends Controller
                 ->orderBy('target_date', 'asc')
                 ->get()
                 ->groupBy('student_id'),
-            'tahfizhExams' => TahfizhExam::with('surah')
-                ->whereIn('student_id', $visibleStudentIds)
-                ->latest('exam_date')
-                ->latest()
-                ->get()
-                ->groupBy('student_id'),
             'ummiRecords' => UmmiRecord::with('surah')
                 ->whereIn('student_id', $visibleStudentIds)
                 ->latest('tanggal')
@@ -226,7 +219,6 @@ class StudentReportController extends Controller
             $hafalanRecords = $studentHafalanAll->take(5);
             $murajaahRecords = $batch['murajaahRecords']->get($student->id, collect())->take(5);
             $targetRecords = $batch['targetRecords']->get($student->id, collect())->take(5);
-            $tahfizhExams = $batch['tahfizhExams']->get($student->id, collect())->take(5);
             $report = $batch['reports']->get($student->id);
             $studentUmmiAll = $batch['ummiRecords']->get($student->id, collect());
             $adabRecords = $batch['adabRecords']->get($student->id, collect());
@@ -237,7 +229,6 @@ class StudentReportController extends Controller
             $hafalanRecords = $studentHafalanAll->take(5);
             $murajaahRecords = MurajaahRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest('reviewed_at')->latest()->limit(5)->get();
             $targetRecords = HafalanTarget::with('surah')->where('student_id', $student->id)->orderBy('target_date', 'asc')->limit(5)->get();
-            $tahfizhExams = TahfizhExam::with('surah')->where('student_id', $student->id)->latest('exam_date')->latest()->limit(5)->get();
             $report = StudentReport::where([
                 'student_id' => $student->id,
                 'academic_year' => $academicYear,
@@ -252,8 +243,7 @@ class StudentReportController extends Controller
         foreach ($targetRecords as $target) {
             $matchingRecord = $studentHafalanAll
                 ->where('surah_id', $target->surah_id)
-                ->where('ayah_start', '<=', $target->ayah_start)
-                ->where('ayah_end', '>=', $target->ayah_end)
+                ->where('ayah_end', '>=', $target->ayah)
                 ->first();
 
             if (! $matchingRecord) {
@@ -264,6 +254,8 @@ class StudentReportController extends Controller
 
             $target->matching_record = $matchingRecord;
         }
+
+        $tahfizhScore = Setting::calculateTahfizhScore($student);
 
         // Compute Tahfizh Level and targets
         $tahfizhLevelLabel = $student->tahfizh_level_label;
@@ -447,7 +439,7 @@ class StudentReportController extends Controller
             'hafalanRecords',
             'murajaahRecords',
             'targetRecords',
-            'tahfizhExams',
+            'tahfizhScore',
             'tahfizhLevelLabel',
             'termTargetText',
             'latestCapaianText',

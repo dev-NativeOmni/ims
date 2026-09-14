@@ -92,8 +92,7 @@
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 w-12">#</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Nama Murid</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Surah Target</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat Awal</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat Akhir</th>
+                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[160px]">Deadline Target</th>
                                             <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[180px]">Catatan</th>
                                         </tr>
@@ -118,10 +117,7 @@
                                                     </select>
                                                 </td>
                                                 <td class="px-4 py-3">
-                                                    <input type="number" min="1" name="targets[{{ $idx }}][ayah_start]" placeholder="1" class="w-full rounded-lg border-gray-300 text-xs font-semibold text-center focus:ring-indigo-500">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <input type="number" min="1" name="targets[{{ $idx }}][ayah_end]" placeholder="40" class="w-full rounded-lg border-gray-300 text-xs font-semibold text-center focus:ring-indigo-500">
+                                                    <input type="number" min="1" name="targets[{{ $idx }}][ayah]" placeholder="40" class="w-full rounded-lg border-gray-300 text-xs font-semibold text-center focus:ring-indigo-500">
                                                 </td>
                                                 <td class="px-4 py-3">
                                                     <input type="date" name="targets[{{ $idx }}][target_date]" value="{{ now()->addWeeks(2)->toDateString() }}" class="w-full rounded-lg border-gray-300 text-xs font-semibold focus:ring-indigo-500">

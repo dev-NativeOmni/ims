@@ -18,8 +18,7 @@ class HafalanTarget extends Model
         'halaman_peraga',
         'halaman_buku',
         'surah_id',
-        'ayah_start',
-        'ayah_end',
+        'ayah',
         'target_date',
         'status',
         'completed_at',
@@ -32,8 +31,7 @@ class HafalanTarget extends Model
             'student_id' => 'integer',
             'teacher_id' => 'integer',
             'surah_id' => 'integer',
-            'ayah_start' => 'integer',
-            'ayah_end' => 'integer',
+            'ayah' => 'integer',
             'target_date' => 'date',
             'completed_at' => 'datetime',
         ];
@@ -56,7 +54,7 @@ class HafalanTarget extends Model
 
     public function getAyahRangeAttribute(): string
     {
-        return $this->ayah_start.' - '.$this->ayah_end;
+        return $this->ayah ? '1 - '.$this->ayah : '-';
     }
 
     public function getStatusLabelAttribute(): string

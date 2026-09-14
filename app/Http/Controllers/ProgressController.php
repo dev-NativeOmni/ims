@@ -479,7 +479,7 @@ class ProgressController extends Controller
                     'type' => 'target',
                     'label' => 'Target',
                     'title' => $target->surah?->name_latin ?? '-',
-                    'range' => $target->ayah_start.' - '.$target->ayah_end,
+                    'range' => $target->ayah_range,
                     'status' => $target->status,
                     'score' => null,
                     'teacher' => $target->teacher?->user?->name,

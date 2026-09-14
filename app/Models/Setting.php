@@ -367,4 +367,78 @@ class Setting extends Model
 
         return is_array($decoded) ? array_replace_recursive($default, $decoded) : $default;
     }
+
+    /**
+     * Get tahfizh final-grade scoring configuration: how much of the
+     * combined score (max 100) comes from target completion vs the exam,
+     * and how many points an incomplete target still earns.
+     */
+    public static function getTahfizhScoringConfig(): array
+    {
+        $default = [
+            'target_weight' => 50,
+            'exam_weight' => 50,
+            'target_incomplete_score' => 40,
+        ];
+
+        $val = self::get('tahfizh_scoring_config');
+        if (! $val) {
+            return $default;
+        }
+
+        $decoded = is_string($val) ? json_decode($val, true) : $val;
+
+        return is_array($decoded) ? array_replace_recursive($default, $decoded) : $default;
+    }
+
+    /**
+     * Combine a student's latest target-completion status with their
+     * latest exam score into the final tahfizh grade (max 100) shown on
+     * the report card.
+     */
+    public static function calculateTahfizhScore(Student $student): array
+    {
+        $config = self::getTahfizhScoringConfig();
+
+        $latestTarget = HafalanTarget::query()
+            ->where('student_id', $student->id)
+            ->whereNotNull('surah_id')
+            ->orderByDesc('target_date')
+            ->orderByDesc('id')
+            ->first();
+
+        $targetScore = null;
+        if ($latestTarget) {
+            $targetScore = $latestTarget->status === 'completed'
+                ? $config['target_weight']
+                : $config['target_incomplete_score'];
+            $targetScore = min($targetScore, $config['target_weight']);
+        }
+
+        $latestExam = TahfizhExam::query()
+            ->where('student_id', $student->id)
+            ->orderByDesc('exam_date')
+            ->orderByDesc('id')
+            ->first();
+
+        $examScore = null;
+        if ($latestExam) {
+            // Defensive cap: exams recorded before the scoring simplification
+            // may still hold a legacy 0-100 average-of-5 value.
+            $examScore = min((float) $latestExam->total_score, $config['exam_weight']);
+        }
+
+        return [
+            'target_score' => $targetScore,
+            'target_weight' => $config['target_weight'],
+            'target_status' => $latestTarget?->status,
+            'target_label' => $latestTarget ? ($latestTarget->status === 'completed' ? 'Tuntas' : 'Belum Tuntas') : null,
+            'exam_score' => $examScore,
+            'exam_weight' => $config['exam_weight'],
+            'exam_date' => $latestExam?->exam_date,
+            'has_target' => (bool) $latestTarget,
+            'has_exam' => (bool) $latestExam,
+            'final_score' => round(($targetScore ?? 0) + ($examScore ?? 0), 1),
+        ];
+    }
 }

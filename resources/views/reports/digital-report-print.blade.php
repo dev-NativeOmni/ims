@@ -182,7 +182,7 @@
                         <tr class="border-b border-black">
                             <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
                             <td class="p-1.5 border-r border-black align-middle font-semibold">
-                                QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_start }}-{{ $target->ayah_end }})
+                                QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_range }})
                             </td>
                             <td class="p-1.5 border-r border-black align-middle font-semibold">
                                 @if($target->matching_record)
@@ -206,31 +206,19 @@
                 </tbody>
             </table>
 
-            <!-- Table 2: Nilai Ujian (Recent Exams) -->
-            <table class="w-full table-fixed border border-black text-xs text-left mt-4">
-                <thead>
-                    <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                        <th class="p-1.5 border-r border-black w-[8%]">No.</th>
-                        <th class="p-1.5 border-r border-black w-[35%]">NILAI UJIAN</th>
-                        <th class="p-1.5 border-r border-black w-[20%]">KETERANGAN</th>
-                        <th class="p-1.5 w-[37%]">Deskripsi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($tahfizhExams as $idx => $exam)
-                        <tr class="border-b border-black">
-                            <td class="p-1.5 border-r border-black text-center">{{ $idx + 1 }}</td>
-                            <td class="p-1.5 border-r border-black font-semibold">{{ $exam->exam_range }}</td>
-                            <td class="p-1.5 border-r border-black text-center font-bold text-indigo-750">Skor: {{ round($exam->total_score) }}</td>
-                            <td class="p-1.5 text-gray-600">{{ $exam->notes ?: 'Lulus ujian tahfizh' }}</td>
-                        </tr>
-                    @empty
-                        <tr class="border-b border-black">
-                            <td colspan="4" class="p-3 text-center text-gray-500 italic">Belum ada data nilai ujian tahfizh.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+            <!-- Nilai Akhir Tahfizh (Ketuntasan Target + Ujian) -->
+            <div class="border border-black rounded p-3 mt-4 flex items-center justify-between bg-gray-50">
+                <div>
+                    <div class="text-xs font-black uppercase">Nilai Akhir Tahfizh</div>
+                    <div class="text-[10px] text-gray-600 mt-0.5">
+                        Ketuntasan Target: {{ $tahfizhScore['target_score'] ?? '-' }}/{{ $tahfizhScore['target_weight'] }}
+                        ({{ $tahfizhScore['target_label'] ?? 'Belum ada target' }})
+                        &middot;
+                        Ujian Tahfizh: {{ $tahfizhScore['exam_score'] ?? '-' }}/{{ $tahfizhScore['exam_weight'] }}
+                    </div>
+                </div>
+                <div class="text-2xl font-black">{{ $tahfizhScore['final_score'] }}<span class="text-xs font-semibold"> / 100</span></div>
+            </div>
         </div>
 
         <!-- II. PENILAIAN ADAB -->

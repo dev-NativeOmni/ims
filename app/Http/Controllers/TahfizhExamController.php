@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClassRoom;
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TahfizhExam;
@@ -61,6 +62,8 @@ class TahfizhExamController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $maxScore = Setting::getTahfizhScoringConfig()['exam_weight'];
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'teacher_id' => 'required|exists:teacher_profiles,id',
@@ -69,33 +72,16 @@ class TahfizhExamController extends Controller
             'surah_id' => 'required_if:type,surah|nullable|exists:surahs,id',
             'ayah_start' => 'required_if:type,surah|nullable|integer|min:1',
             'ayah_end' => 'required_if:type,surah|nullable|integer|gte:ayah_start',
-            'q1' => 'required|integer|between:0,100',
-            'q2' => 'required|integer|between:0,100',
-            'q3' => 'required|integer|between:0,100',
-            'q4' => 'required|integer|between:0,100',
-            'q5' => 'required|integer|between:0,100',
+            'score' => "required|numeric|between:0,{$maxScore}",
             'notes' => 'nullable|string',
             'exam_date' => 'required|date',
         ]);
 
-        // Calculate total_score as average
-        $q1 = (int) $validated['q1'];
-        $q2 = (int) $validated['q2'];
-        $q3 = (int) $validated['q3'];
-        $q4 = (int) $validated['q4'];
-        $q5 = (int) $validated['q5'];
-        $total = ($q1 + $q2 + $q3 + $q4 + $q5) / 5;
-
         $data = [
             'student_id' => $validated['student_id'],
             'teacher_id' => $validated['teacher_id'],
-            'q1' => $q1,
-            'q2' => $q2,
-            'q3' => $q3,
-            'q4' => $q4,
-            'q5' => $q5,
-            'total_score' => $total,
-            'notes' => $validated['notes'],
+            'total_score' => $validated['score'],
+            'notes' => $validated['notes'] ?? null,
             'exam_date' => $validated['exam_date'],
         ];
 
@@ -130,6 +116,8 @@ class TahfizhExamController extends Controller
 
     public function update(Request $request, TahfizhExam $tahfizhExam): RedirectResponse
     {
+        $maxScore = Setting::getTahfizhScoringConfig()['exam_weight'];
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'teacher_id' => 'required|exists:teacher_profiles,id',
@@ -138,32 +126,16 @@ class TahfizhExamController extends Controller
             'surah_id' => 'required_if:type,surah|nullable|exists:surahs,id',
             'ayah_start' => 'required_if:type,surah|nullable|integer|min:1',
             'ayah_end' => 'required_if:type,surah|nullable|integer|gte:ayah_start',
-            'q1' => 'required|integer|between:0,100',
-            'q2' => 'required|integer|between:0,100',
-            'q3' => 'required|integer|between:0,100',
-            'q4' => 'required|integer|between:0,100',
-            'q5' => 'required|integer|between:0,100',
+            'score' => "required|numeric|between:0,{$maxScore}",
             'notes' => 'nullable|string',
             'exam_date' => 'required|date',
         ]);
 
-        $q1 = (int) $validated['q1'];
-        $q2 = (int) $validated['q2'];
-        $q3 = (int) $validated['q3'];
-        $q4 = (int) $validated['q4'];
-        $q5 = (int) $validated['q5'];
-        $total = ($q1 + $q2 + $q3 + $q4 + $q5) / 5;
-
         $data = [
             'student_id' => $validated['student_id'],
             'teacher_id' => $validated['teacher_id'],
-            'q1' => $q1,
-            'q2' => $q2,
-            'q3' => $q3,
-            'q4' => $q4,
-            'q5' => $q5,
-            'total_score' => $total,
-            'notes' => $validated['notes'],
+            'total_score' => $validated['score'],
+            'notes' => $validated['notes'] ?? null,
             'exam_date' => $validated['exam_date'],
         ];
 
@@ -228,11 +200,15 @@ class TahfizhExamController extends Controller
             ->orderBy('name')
             ->get();
 
+        $maxScore = Setting::getTahfizhScoringConfig()['exam_weight'];
+
         return [
             'students' => $students,
             'teachers' => $teachers,
             'surahs' => $surahs,
             'classRooms' => $classRooms,
+            'maxScore' => $maxScore,
+            'passThreshold' => round($maxScore * 0.7, 1),
         ];
     }
 }

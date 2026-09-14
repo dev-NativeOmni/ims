@@ -262,6 +262,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
     });
 
+    Route::middleware(['role:super_admin,admin'])->group(function () {
+        Route::get('/pengaturan-penilaian-tahfizh', [SettingController::class, 'tahfizhScoringIndex'])->name('settings.tahfizh-scoring');
+        Route::post('/pengaturan-penilaian-tahfizh', [SettingController::class, 'tahfizhScoringUpdate'])->name('settings.tahfizh-scoring.update');
+        Route::post('/pengaturan-penilaian-tahfizh/reset', [SettingController::class, 'tahfizhScoringReset'])->name('settings.tahfizh-scoring.reset');
+    });
+
     // Super Admin user management routes
     Route::prefix('superadmin')->name('superadmin.')->middleware(['role:super_admin'])->group(function () {
         Route::get('users', [UserManagementController::class, 'index'])->name('users.index');

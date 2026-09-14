@@ -202,28 +202,25 @@
                             </div>
                         </div>
 
-                        <!-- Assessment Scores -->
+                        <!-- Assessment Score -->
                         <div class="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-3">
-                            <h4 class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Penilaian 5 Pertanyaan (Skala 0-100)</h4>
-                            
-                            <div class="grid grid-cols-3 xs:grid-cols-5 gap-2">
-                                @foreach ([1,2,3,4,5] as $qi)
-                                <div>
-                                    <label for="q{{ $qi }}" class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 text-center uppercase mb-0.5">Soal {{ $qi }}</label>
-                                    <input type="number" id="q{{ $qi }}" name="q{{ $qi }}" x-model.number="q{{ $qi }}" min="0" max="100" required class="block w-full text-center rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-bold focus:border-indigo-500 focus:ring-indigo-500 transition" />
-                                </div>
-                                @endforeach
-                            </div>
+                            <h4 class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Nilai Ujian Tahfizh (Skala 0-{{ $maxScore }})</h4>
 
-                            <!-- Real-time Score Preview -->
+                            <input type="number" id="score" name="score" x-model.number="score" min="0" max="{{ $maxScore }}" step="0.5" required
+                                   class="block w-full text-center text-2xl font-black rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 transition" />
+                            @error('score')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+
+                            <!-- Contribution Preview -->
                             <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl flex items-center justify-between mt-3">
                                 <div>
-                                    <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">Nilai Akhir (Konversi Skala 1-100)</div>
-                                    <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Ditentukan dari rata-rata kelima pertanyaan</div>
+                                    <div class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">Kontribusi ke Nilai Akhir Tahfizh</div>
+                                    <div class="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Digabung dengan nilai ketuntasan target hafalan di rapor</div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-3xl font-black transition-colors" :class="averageScore >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" x-text="averageScore"></span>
-                                    <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">/ 100</span>
+                                    <span class="text-3xl font-black transition-colors" :class="score >= passThreshold ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'" x-text="score"></span>
+                                    <span class="text-xs font-semibold text-zinc-400 dark:text-zinc-500">/ {{ $maxScore }}</span>
                                 </div>
                             </div>
                         </div>
@@ -267,16 +264,8 @@
 
                 // Exam Form state
                 examType: 'juz',
-                q1: 0,
-                q2: 0,
-                q3: 0,
-                q4: 0,
-                q5: 0,
-
-                get averageScore() {
-                    const avg = (this.q1 + this.q2 + this.q3 + this.q4 + this.q5) / 5;
-                    return isNaN(avg) ? 0 : Math.round(avg);
-                },
+                score: 0,
+                passThreshold: {{ $passThreshold }},
 
                 initApp() {
                     this.loadSurahList()

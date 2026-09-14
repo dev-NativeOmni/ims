@@ -162,7 +162,9 @@ class DashboardController extends Controller
                 'active_targets' => HafalanTarget::where('status', 'in_progress')->count(),
                 'completed_targets' => HafalanTarget::where('status', 'completed')->count(),
                 'exams_this_month' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->count(),
-                'passed_exams' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])->where('total_score', '>=', 70)->count(),
+                'passed_exams' => TahfizhExam::whereBetween('exam_date', [$startOfMonth, $endOfMonth])
+                    ->where('total_score', '>=', round(Setting::getTahfizhScoringConfig()['exam_weight'] * 0.7, 1))
+                    ->count(),
             ];
 
             $recentHafalan = HafalanRecord::with(['student', 'surah'])

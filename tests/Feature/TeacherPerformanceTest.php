@@ -160,8 +160,7 @@ class TeacherPerformanceTest extends TestCase
                 'student_id' => $student->id,
                 'teacher_id' => $teacherProfile->id,
                 'surah_id' => $surah->id,
-                'ayah_start' => 1,
-                'ayah_end' => 7,
+                'ayah' => 7,
                 'status' => 'completed',
                 'target_date' => now(),
             ]);
@@ -170,8 +169,7 @@ class TeacherPerformanceTest extends TestCase
             'student_id' => $student->id,
             'teacher_id' => $teacherProfile->id,
             'surah_id' => $surah->id,
-            'ayah_start' => 1,
-            'ayah_end' => 7,
+            'ayah' => 7,
             'status' => 'active',
             'target_date' => now(),
         ]);

@@ -42,7 +42,7 @@ class InternalNotificationSyncService
                 foreach ($targets as $target) {
                     $studentName = $target->student?->name ?? 'Murid';
                     $surahName = $target->surah?->name_latin ?? 'Surah';
-                    $ayahRange = $target->ayah_range ?? ($target->ayah_start.' - '.$target->ayah_end);
+                    $ayahRange = $target->ayah_range;
                     $targetDate = $target->target_date?->format('d M Y') ?? '-';
 
                     $users = $this->usersForStudentAndTeacher(
