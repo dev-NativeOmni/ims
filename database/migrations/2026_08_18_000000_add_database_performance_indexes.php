@@ -52,7 +52,7 @@ return new class extends Migration
         if (Schema::hasTable('murajaah_records')) {
             try {
                 Schema::table('murajaah_records', function (Blueprint $table) {
-                    $table->index(['student_id', 'submitted_at'], 'idx_murajaah_std_subdate');
+                    $table->index(['student_id', 'reviewed_at'], 'idx_murajaah_std_subdate');
                 });
             } catch (Throwable $e) {
                 // Index already exists, ignore
