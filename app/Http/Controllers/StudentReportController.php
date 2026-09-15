@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Setting;
@@ -70,7 +71,7 @@ class StudentReportController extends Controller
         $data = $this->getReportData($student, $academicYear, $semester);
         $data['report'] = $report;
 
-        $totalSetoran = HafalanRecord::where('student_id', $student->id)->where('status', 'passed')->count();
+        $totalSetoran = HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))->where('status', 'passed')->count();
         $totalMurajaah = MurajaahRecord::where('student_id', $student->id)->where('status', 'passed')->count();
 
         $canEditNotes = $user->hasAnyRole(['super_admin', 'admin', 'teacher']) && $report->status !== 'locked';

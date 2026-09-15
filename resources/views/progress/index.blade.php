@@ -197,7 +197,12 @@
                                 $st = $r['student'] ?? null;
                                 $ziyadahName = '-';
                                 if ($st instanceof \App\Models\Student) {
-                                    $ziyadahName = $st->hafalanRecords()->where('status', 'passed')->latest('submitted_at')->first()?->surah?->name_latin ?? '-';
+                                    $latestPassedHeader = $st->hafalanRecords()
+                                        ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                                        ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                                        ->latest('submitted_at')
+                                        ->first();
+                                    $ziyadahName = $latestPassedHeader?->surahs->last()?->surah?->name_latin ?? '-';
                                 }
                                 return [
                                     'student' => $st,
