@@ -33,7 +33,9 @@ class HafalanRecordController extends Controller
                     'surahs.surah',
                 ])
                 ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                    $query->where('teacher_id', $user->teacherProfile?->id);
+                    $query->whereHas('student', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->teacherProfile?->id);
+                    });
                 })
                 ->when($request->filled('class_room_id'), function ($query) use ($request) {
                     $query->whereHas('student', function ($q) use ($request) {
@@ -76,7 +78,9 @@ class HafalanRecordController extends Controller
                     'surah',
                 ])
                 ->when($user->hasRole('teacher'), function ($query) use ($user) {
-                    $query->where('teacher_id', $user->teacherProfile?->id);
+                    $query->whereHas('student', function ($q) use ($user) {
+                        $q->where('teacher_id', $user->teacherProfile?->id);
+                    });
                 })
                 ->when($request->filled('class_room_id'), function ($query) use ($request) {
                     $query->whereHas('student', function ($q) use ($request) {

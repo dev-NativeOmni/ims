@@ -92,4 +92,56 @@ class RoleSwitchRecordIdentityTest extends TestCase
         $record = HafalanRecord::where('student_id', $this->student->id)->firstOrFail();
         $indexResponse->assertSee($record->surah->name_latin);
     }
+
+    #[Test]
+    public function real_musyrif_still_sees_setoran_entered_by_another_teacher_acting_as_admin(): void
+    {
+        // $this->student is guided by $this->teacherProfile ($this->teacherUser).
+        $actingTeacherUser = User::factory()->create([
+            'role_id' => Role::where('name', 'teacher')->first()->id,
+            'name' => 'Guru Kedua (Aktor)',
+            'status' => 'active',
+        ]);
+        TeacherProfile::create([
+            'user_id' => $actingTeacherUser->id,
+            'employee_number' => 'TEST-GURU-003',
+            'phone' => '081100003333',
+        ]);
+
+        $adminRole = Role::where('name', 'admin')->first();
+        $actingTeacherUser->roles()->sync([
+            Role::where('name', 'teacher')->first()->id,
+            $adminRole->id,
+        ]);
+
+        $this->actingAs($actingTeacherUser)
+            ->post(route('role.switch'), ['role_id' => $adminRole->id])
+            ->assertRedirect(route('dashboard'));
+
+        // Sambil aktif sebagai admin, guru kedua input setoran untuk murid
+        // yang musyrif aslinya adalah $this->teacherProfile.
+        $this->post(route('hafalan-records.store'), [
+            'student_id' => $this->student->id,
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'submission_type' => 'new',
+            'score' => 90,
+            'status' => 'passed',
+            'submitted_at' => now()->toDateString(),
+        ])->assertRedirect(route('hafalan-records.index'));
+
+        $record = HafalanRecord::where('student_id', $this->student->id)->firstOrFail();
+        $this->assertNotEquals($this->teacherProfile->id, $record->teacher_id);
+
+        // Musyrif ASLI murid ini ($this->teacherUser) harus tetap melihat setoran
+        // tersebut di daftar "store hafalan"-nya, walau bukan dia yang menginput.
+        // Dicek lewat data view-nya langsung (bukan assertSee) karena nama surah
+        // juga selalu muncul di dropdown filter terlepas dari isi daftarnya.
+        $indexResponse = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index'));
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertViewHas('hafalanRecords', function ($records) use ($record) {
+            return $records->contains('id', $record->id);
+        });
+    }
 }
