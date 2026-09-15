@@ -184,19 +184,112 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
         $response->assertSessionHas('success');
 
-        $this->assertDatabaseHas('ummi_records', [
-            'student_id' => $this->studentUmmi->id,
-            'tatap_muka' => 6,
-            'hafalan_surah_id' => $this->surah->id,
+        // Both surahs must be attached to a single UmmiRecord "header" row for this session.
+        $this->assertEquals(1, UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 6)->count());
+
+        $ummiRecord = UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 6)->firstOrFail();
+
+        $this->assertDatabaseHas('ummi_record_surahs', [
+            'ummi_record_id' => $ummiRecord->id,
+            'surah_id' => $this->surah->id,
             'hafalan_ayah' => '1-7',
         ]);
 
-        $this->assertDatabaseHas('ummi_records', [
-            'student_id' => $this->studentUmmi->id,
-            'tatap_muka' => 6,
-            'hafalan_surah_id' => $surah2->id,
+        $this->assertDatabaseHas('ummi_record_surahs', [
+            'ummi_record_id' => $ummiRecord->id,
+            'surah_id' => $surah2->id,
             'hafalan_ayah' => '1-5',
         ]);
+    }
+
+    public function test_teacher_can_edit_ummi_record_surahs_inline()
+    {
+        $surah2 = Surah::create([
+            'number' => 2,
+            'name_arabic' => 'البقرة',
+            'name_latin' => 'Al-Baqarah',
+            'total_ayah' => 286,
+            'revelation_type' => 'medinan',
+        ]);
+
+        $ummiRecord = UmmiRecord::create([
+            'student_id' => $this->studentUmmi->id,
+            'teacher_id' => $this->teacher->id,
+            'tatap_muka' => 7,
+            'tanggal' => now(),
+            'ummi_jilid' => 'Jilid 1',
+            'nilai' => 'B',
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Tidak',
+        ]);
+
+        $ummiRecord->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-3',
+        ]);
+
+        // The list page (which now edits inline) must render an editable form for this record,
+        // not a link to a separate edit page.
+        $indexResponse = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee('ummi-inline-edit-'.$ummiRecord->id, false);
+
+        // Editing replaces the surah lines (not append) and updates header fields.
+        $updateResponse = $this->actingAs($this->teacherUser)->put(route('ummi-records.update', $ummiRecord), [
+            'student_id' => $this->studentUmmi->id,
+            'tanggal' => now()->toDateString(),
+            'tatap_muka' => 7,
+            'ummi_jilid' => 'Jilid 2',
+            'nilai' => 'A',
+            'hafalan_surah_ids' => [$surah2->id],
+            'hafalan_ayahs' => ['1-10'],
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Ya',
+            'catatan' => 'Catatan hasil edit inline.',
+        ]);
+
+        $updateResponse->assertSessionHas('success');
+
+        $ummiRecord->refresh();
+        $this->assertEquals('Jilid 2', $ummiRecord->ummi_jilid);
+        $this->assertEquals('Catatan hasil edit inline.', $ummiRecord->keterangan);
+        $this->assertCount(1, $ummiRecord->surahs);
+        $this->assertEquals($surah2->id, $ummiRecord->surahs->first()->surah_id);
+    }
+
+    public function test_ummi_index_displays_multiple_surahs_in_a_single_row()
+    {
+        $surah2 = Surah::create([
+            'number' => 2,
+            'name_arabic' => 'البقرة',
+            'name_latin' => 'Al-Baqarah',
+            'total_ayah' => 286,
+            'revelation_type' => 'medinan',
+        ]);
+
+        $this->actingAs($this->teacherUser)->post(route('ummi-records.store'), [
+            'student_id' => $this->studentUmmi->id,
+            'tatap_muka' => 9,
+            'tanggal' => now()->toDateString(),
+            'hafalan_surah_ids' => [$this->surah->id, $surah2->id],
+            'hafalan_ayahs' => ['1-7', '1-5'],
+            'ummi_jilid' => 'Jilid 2',
+            'ummi_halaman' => '1',
+            'nilai' => 'A',
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Ya',
+        ]);
+
+        $response = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+
+        $response->assertStatus(200);
+        $response->assertSee('Al-Fatihah');
+        $response->assertSee('Al-Baqarah');
+
+        // The page renders both a desktop table row and a mobile card for this record (2 markers
+        // total). Before the fix, saving 2 surahs in one session produced 2 separate DB rows, which
+        // would have doubled this to 4 (2 desktop + 2 mobile) instead of 2.
+        $this->assertEquals(2, substr_count($response->getContent(), 'TM-9'));
     }
 
     public function test_can_update_tahfizh_target_term_in_student_report()
@@ -412,16 +505,19 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'teacher_id' => $this->teacher->id,
             'tatap_muka' => 1,
             'tanggal' => now(),
-            'hafalan_surah_id' => $this->surah->id,
-            'hafalan_ayah' => '1-7',
             'ummi_jilid' => 'Jilid 1',
             'nilai' => 'A',
             'disimak_guru' => 'Ya',
             'disimak_ortu' => 'Tidak',
+        ]);
+
+        $ummiRecord->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-7',
             'baris' => 5.25,
         ]);
 
-        $this->assertEquals(5.25, $ummiRecord->lines_count);
+        $this->assertEquals(5.25, $ummiRecord->fresh()->lines_count);
     }
 
     public function test_ummi_category_filters_out_non_grade_10_classes()

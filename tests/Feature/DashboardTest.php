@@ -172,16 +172,19 @@ class DashboardTest extends TestCase
     #[Test]
     public function student_dashboard_displays_ummi_memorized_surahs_at_top_when_hafalan_records_empty(): void
     {
-        UmmiRecord::create([
+        $ummiRecord = UmmiRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'tatap_muka' => 1,
             'tanggal' => '2026-09-07',
-            'hafalan_surah_id' => $this->surah->id,
-            'hafalan_ayah' => '1-15',
             'ummi_jilid' => 'Jilid 1',
             'ummi_halaman' => '10',
             'nilai' => '90',
+        ]);
+
+        $ummiRecord->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'hafalan_ayah' => '1-15',
         ]);
 
         $response = $this->actingAs($this->studentUser)->get(route('student.dashboard'));

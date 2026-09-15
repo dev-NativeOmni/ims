@@ -944,7 +944,7 @@ class ReportController extends Controller
 
         // Bulk fetch latest UmmiRecords for Grade 10 / Ummi students
         $allUmmiRecords = UmmiRecord::query()
-            ->with('surah')
+            ->with('surahs.surah')
             ->whereIn('student_id', $studentIds)
             ->where('tanggal', '<=', $endDate)
             ->orderBy('tanggal', 'desc')
@@ -1030,7 +1030,9 @@ class ReportController extends Controller
             } else {
                 $ummiHalaman = '-';
             }
-            $ummiCapaian = $latestUmmi?->surah?->name_latin ?? ($latestUmmi?->materi ?? '-');
+            $ummiCapaian = ($latestUmmi && $latestUmmi->surahs->isNotEmpty())
+                ? $latestUmmi->surahs_label
+                : ($latestUmmi?->materi ?? '-');
 
             $ziyadahText = '-';
             if ($latestHafalanPassed && $latestHafalanPassed->surah) {
@@ -1312,7 +1314,7 @@ class ReportController extends Controller
             ->get();
 
         $ummiRecords = UmmiRecord::query()
-            ->with(['surah'])
+            ->with(['surahs.surah'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('tanggal', $selectedDate)
             ->get();
@@ -1329,8 +1331,8 @@ class ReportController extends Controller
             $firstUmmi = $ummiRecords->first();
             $classUmmiJilid = $firstUmmi->ummi_jilid;
             $classUmmiHalaman = $firstUmmi->ummi_halaman;
-            if ($firstUmmi->surah) {
-                $classUmmiHafalanSurah = $firstUmmi->surah->name_latin;
+            if ($firstUmmi->surahs->isNotEmpty()) {
+                $classUmmiHafalanSurah = $firstUmmi->surahs_label;
             }
         }
 

@@ -322,32 +322,34 @@ class DashboardService
                 ->get();
 
             $recentUmmiHafalan = UmmiRecord::query()
-                ->with(['teacher.user', 'surah'])
+                ->with(['teacher.user', 'surahs.surah'])
                 ->where('student_id', $student->id)
-                ->whereNotNull('hafalan_surah_id')
+                ->whereHas('surahs')
                 ->latest('tanggal')
                 ->latest()
                 ->take(6)
                 ->get()
-                ->map(function ($u) {
-                    $parts = explode('-', str_replace(' ', '', (string) $u->hafalan_ayah));
-                    $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
-                    $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
+                ->flatMap(function ($u) {
+                    return $u->surahs->map(function ($surahEntry) use ($u) {
+                        $parts = explode('-', str_replace(' ', '', (string) $surahEntry->hafalan_ayah));
+                        $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
+                        $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
 
-                    $rec = new HafalanRecord;
-                    $rec->id = $u->id;
-                    $rec->student_id = $u->student_id;
-                    $rec->teacher_id = $u->teacher_id;
-                    $rec->surah_id = $u->hafalan_surah_id;
-                    $rec->ayah_start = $start;
-                    $rec->ayah_end = $end;
-                    $rec->submitted_at = $u->tanggal;
-                    $rec->status = $u->nilai ? 'Lulus (Nilai: '.$u->nilai.')' : 'passed';
-                    $rec->score = is_numeric($u->nilai) ? (float) $u->nilai : null;
-                    $rec->setRelation('surah', $u->surah);
-                    $rec->setRelation('teacher', $u->teacher);
+                        $rec = new HafalanRecord;
+                        $rec->id = $surahEntry->id;
+                        $rec->student_id = $u->student_id;
+                        $rec->teacher_id = $u->teacher_id;
+                        $rec->surah_id = $surahEntry->surah_id;
+                        $rec->ayah_start = $start;
+                        $rec->ayah_end = $end;
+                        $rec->submitted_at = $u->tanggal;
+                        $rec->status = $u->nilai ? 'Lulus (Nilai: '.$u->nilai.')' : 'passed';
+                        $rec->score = is_numeric($u->nilai) ? (float) $u->nilai : null;
+                        $rec->setRelation('surah', $surahEntry->surah);
+                        $rec->setRelation('teacher', $u->teacher);
 
-                    return $rec;
+                        return $rec;
+                    });
                 });
 
             if ($recentUmmiHafalan->isNotEmpty()) {
@@ -514,32 +516,34 @@ class DashboardService
             ->get();
 
         $latestUmmiRecords = UmmiRecord::query()
-            ->with(['teacher.user', 'surah'])
+            ->with(['teacher.user', 'surahs.surah'])
             ->where('student_id', $student->id)
-            ->whereNotNull('hafalan_surah_id')
+            ->whereHas('surahs')
             ->latest('tanggal')
             ->latest()
             ->limit(8)
             ->get()
-            ->map(function ($u) {
-                $parts = explode('-', str_replace(' ', '', (string) $u->hafalan_ayah));
-                $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
-                $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
+            ->flatMap(function ($u) {
+                return $u->surahs->map(function ($surahEntry) use ($u) {
+                    $parts = explode('-', str_replace(' ', '', (string) $surahEntry->hafalan_ayah));
+                    $start = isset($parts[0]) && is_numeric($parts[0]) ? (int) $parts[0] : 1;
+                    $end = isset($parts[1]) && is_numeric($parts[1]) ? (int) $parts[1] : $start;
 
-                $rec = new HafalanRecord;
-                $rec->id = $u->id;
-                $rec->student_id = $u->student_id;
-                $rec->teacher_id = $u->teacher_id;
-                $rec->surah_id = $u->hafalan_surah_id;
-                $rec->ayah_start = $start;
-                $rec->ayah_end = $end;
-                $rec->submitted_at = $u->tanggal;
-                $rec->status = $u->nilai ? 'Lulus (Nilai: '.$u->nilai.')' : 'Lulus';
-                $rec->score = is_numeric($u->nilai) ? (float) $u->nilai : null;
-                $rec->setRelation('surah', $u->surah);
-                $rec->setRelation('teacher', $u->teacher);
+                    $rec = new HafalanRecord;
+                    $rec->id = $surahEntry->id;
+                    $rec->student_id = $u->student_id;
+                    $rec->teacher_id = $u->teacher_id;
+                    $rec->surah_id = $surahEntry->surah_id;
+                    $rec->ayah_start = $start;
+                    $rec->ayah_end = $end;
+                    $rec->submitted_at = $u->tanggal;
+                    $rec->status = $u->nilai ? 'Lulus (Nilai: '.$u->nilai.')' : 'Lulus';
+                    $rec->score = is_numeric($u->nilai) ? (float) $u->nilai : null;
+                    $rec->setRelation('surah', $surahEntry->surah);
+                    $rec->setRelation('teacher', $u->teacher);
 
-                return $rec;
+                    return $rec;
+                });
             });
 
         if ($latestUmmiRecords->isNotEmpty()) {

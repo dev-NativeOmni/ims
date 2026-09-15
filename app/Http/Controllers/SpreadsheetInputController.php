@@ -226,6 +226,7 @@ class SpreadsheetInputController extends Controller
 
             // Load UmmiRecords
             $ummiRecords = UmmiRecord::query()
+                ->with('surahs')
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('tanggal', [$startDate, $endDate])
                 ->get();
@@ -248,11 +249,11 @@ class SpreadsheetInputController extends Controller
                     $attendancesMap[$record->student_id][$dateStr] = 'hadir';
                 }
 
-                if ($record->hafalan_surah_id) {
+                foreach ($record->surahs as $surahEntry) {
                     $ummiRecordsMap[$record->student_id][$dateStr]['hafalans'][] = [
-                        'id' => $record->id,
-                        'surah_id' => (string) $record->hafalan_surah_id,
-                        'ayah' => $record->hafalan_ayah,
+                        'id' => $surahEntry->id,
+                        'surah_id' => (string) $surahEntry->surah_id,
+                        'ayah' => $surahEntry->hafalan_ayah,
                     ];
                 }
             }
@@ -575,10 +576,8 @@ class SpreadsheetInputController extends Controller
     {
         $existingRecords = UmmiRecord::where('student_id', $studentId)
             ->whereIn('tanggal', $targetDates)
+            ->orderBy('id')
             ->get();
-
-        $existingRecordIds = $existingRecords->pluck('id')->toArray();
-        $processedRecordIds = [];
 
         $ummiJilid = filled($cellData['ummi_jilid'] ?? null) ? $cellData['ummi_jilid'] : null;
         $ummiHalaman = filled($cellData['ummi_halaman'] ?? null) ? $cellData['ummi_halaman'] : null;
@@ -589,7 +588,7 @@ class SpreadsheetInputController extends Controller
         $hasUmmiFields = filled($ummiJilid) || filled($ummiHalaman) || filled($materi) || filled($nilai);
         $rawHafalans = $cellData['hafalans'] ?? [];
         $hafalansList = array_values(array_filter($rawHafalans, function ($h) {
-            return ! empty($h['surah_id']) || ! empty($h['ayah']);
+            return ! empty($h['surah_id']);
         }));
 
         if (! $hasUmmiFields && empty($hafalansList)) {
@@ -600,97 +599,83 @@ class SpreadsheetInputController extends Controller
             return;
         }
 
-        if (empty($hafalansList)) {
-            $dataToSave = [
-                'student_id' => $studentId,
-                'teacher_id' => $teacherId,
-                'tatap_muka' => $tatapMuka,
-                'tanggal' => $date,
-                'hafalan_surah_id' => null,
-                'hafalan_ayah' => null,
-                'baris' => null,
-                'ummi_jilid' => $ummiJilid,
-                'ummi_halaman' => $ummiHalaman,
-                'materi' => $materi,
-                'nilai' => $nilai,
-                'disimak_guru' => 'Ya',
-                'disimak_ortu' => 'Ya',
+        // Keep a single header row per date; any older duplicate headers get merged away.
+        $header = $existingRecords->first();
+        $headerData = [
+            'student_id' => $studentId,
+            'teacher_id' => $teacherId,
+            'tatap_muka' => $tatapMuka,
+            'tanggal' => $date,
+            'ummi_jilid' => $ummiJilid,
+            'ummi_halaman' => $ummiHalaman,
+            'materi' => $materi,
+            'nilai' => $nilai,
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Ya',
+        ];
+
+        if ($header) {
+            $header->update($headerData);
+        } else {
+            $header = UmmiRecord::create($headerData);
+        }
+
+        $duplicateHeaderIds = $existingRecords->pluck('id')->reject(fn ($id) => $id === $header->id);
+        if ($duplicateHeaderIds->isNotEmpty()) {
+            UmmiRecord::whereIn('id', $duplicateHeaderIds)->delete();
+        }
+
+        $existingSurahIds = $header->surahs()->pluck('id')->all();
+        $processedSurahIds = [];
+
+        foreach ($hafalansList as $sortOrder => $hafalanData) {
+            $surah = Surah::find($hafalanData['surah_id']);
+            if (! $surah) {
+                continue;
+            }
+
+            $baris = 0.0;
+            if (! empty($hafalanData['ayah'])) {
+                $clean = str_replace(' ', '', $hafalanData['ayah']);
+                if (str_contains($clean, '-')) {
+                    $parts = explode('-', $clean);
+                    $start = (int) $parts[0];
+                    $end = (int) $parts[1];
+                } else {
+                    $start = (int) $clean;
+                    $end = (int) $clean;
+                }
+                if ($start > 0 && $end >= $start) {
+                    $baris = ReportController::calculateLines(
+                        $surah->number,
+                        $start,
+                        $end,
+                        $surah->total_ayah
+                    );
+                }
+            }
+
+            $lineData = [
+                'surah_id' => $surah->id,
+                'hafalan_ayah' => $hafalanData['ayah'] ?? null,
+                'baris' => $baris,
+                'sort_order' => $sortOrder,
             ];
 
-            if (! empty($existingRecordIds)) {
-                $firstId = $existingRecordIds[0];
-                UmmiRecord::where('id', $firstId)->update($dataToSave);
-                $processedRecordIds[] = $firstId;
+            $lineId = ! empty($hafalanData['id']) ? (int) $hafalanData['id'] : null;
+
+            if ($lineId && in_array($lineId, $existingSurahIds, true)) {
+                $header->surahs()->where('id', $lineId)->update($lineData);
+                $processedSurahIds[] = $lineId;
             } else {
-                $newRec = UmmiRecord::create($dataToSave);
-                $processedRecordIds[] = $newRec->id;
-            }
-        } else {
-            foreach ($hafalansList as $hafalanData) {
-                if (empty($hafalanData['surah_id']) && empty($hafalanData['ayah'])) {
-                    continue;
-                }
-
-                $surah = ! empty($hafalanData['surah_id']) ? Surah::find($hafalanData['surah_id']) : null;
-                $baris = 0.0;
-                if ($surah && ! empty($hafalanData['ayah'])) {
-                    $clean = str_replace(' ', '', $hafalanData['ayah']);
-                    if (str_contains($clean, '-')) {
-                        $parts = explode('-', $clean);
-                        $start = (int) $parts[0];
-                        $end = (int) $parts[1];
-                    } else {
-                        $start = (int) $clean;
-                        $end = (int) $clean;
-                    }
-                    if ($start > 0 && $end >= $start) {
-                        $baris = ReportController::calculateLines(
-                            $surah->number,
-                            $start,
-                            $end,
-                            $surah->total_ayah
-                        );
-                    }
-                }
-
-                $dataToSave = [
-                    'student_id' => $studentId,
-                    'teacher_id' => $teacherId,
-                    'tatap_muka' => $tatapMuka,
-                    'tanggal' => $date,
-                    'hafalan_surah_id' => $hafalanData['surah_id'] ?? null,
-                    'hafalan_ayah' => $hafalanData['ayah'] ?? null,
-                    'baris' => $baris,
-                    'ummi_jilid' => $ummiJilid,
-                    'ummi_halaman' => $ummiHalaman,
-                    'materi' => $materi,
-                    'nilai' => $nilai,
-                    'disimak_guru' => 'Ya',
-                    'disimak_ortu' => 'Ya',
-                ];
-
-                $recordId = ! empty($hafalanData['id']) ? (int) $hafalanData['id'] : null;
-
-                if ($recordId && (in_array($recordId, $existingRecordIds) || UmmiRecord::where('id', $recordId)->exists())) {
-                    UmmiRecord::where('id', $recordId)->update($dataToSave);
-                    $processedRecordIds[] = $recordId;
-                } else {
-                    $unprocessedIds = array_diff($existingRecordIds, $processedRecordIds);
-                    if (! empty($unprocessedIds)) {
-                        $reuseId = array_shift($unprocessedIds);
-                        UmmiRecord::where('id', $reuseId)->update($dataToSave);
-                        $processedRecordIds[] = $reuseId;
-                    } else {
-                        $newRec = UmmiRecord::create($dataToSave);
-                        $processedRecordIds[] = $newRec->id;
-                    }
-                }
+                $newLine = $header->surahs()->create($lineData);
+                $processedSurahIds[] = $newLine->id;
             }
         }
 
-        $toDeleteIds = array_diff($existingRecordIds, $processedRecordIds);
-        if (! empty($toDeleteIds)) {
-            UmmiRecord::whereIn('id', $toDeleteIds)->delete();
+        $toDeleteSurahIds = array_diff($existingSurahIds, $processedSurahIds);
+        if (! empty($toDeleteSurahIds)) {
+            $header->surahs()->whereIn('id', $toDeleteSurahIds)->delete();
         }
     }
 

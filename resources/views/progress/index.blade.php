@@ -203,7 +203,9 @@
                                     'student' => $st,
                                     'ummi_jilid' => $r['ummi_jilid_num'] ?? '-',
                                     'ummi_halaman' => $r['ummi_halaman'] ?? '-',
-                                    'ummi_capaian' => $r['ummi_record']?->surah?->name_latin ?? ($r['ummi_record']?->materi ?? '-'),
+                                    'ummi_capaian' => ($r['ummi_record'] && $r['ummi_record']->surahs->isNotEmpty())
+                                        ? $r['ummi_record']->surahs_label
+                                        : ($r['ummi_record']?->materi ?? '-'),
                                     'ziyadah' => $ziyadahName,
                                 ];
                             });

@@ -30,7 +30,7 @@ class HafalanRecordController extends Controller
                 ->with([
                     'student.classRoom.program',
                     'teacher.user',
-                    'surah',
+                    'surahs.surah',
                 ])
                 ->when($user->hasRole('teacher'), function ($query) use ($user) {
                     $query->where('teacher_id', $user->teacherProfile?->id);
@@ -44,7 +44,9 @@ class HafalanRecordController extends Controller
                     $query->where('student_id', $request->integer('student_id'));
                 })
                 ->when($request->filled('surah_id'), function ($query) use ($request) {
-                    $query->where('hafalan_surah_id', $request->integer('surah_id'));
+                    $query->whereHas('surahs', function ($q) use ($request) {
+                        $q->where('surah_id', $request->integer('surah_id'));
+                    });
                 })
                 ->when($request->filled('date'), function ($query) use ($request) {
                     $query->whereDate('tanggal', $request->input('date'));
@@ -55,7 +57,7 @@ class HafalanRecordController extends Controller
                         $q->whereHas('student', function ($sub) use ($search) {
                             $sub->where('name', 'like', "%{$search}%");
                         })
-                            ->orWhereHas('surah', function ($sub) use ($search) {
+                            ->orWhereHas('surahs.surah', function ($sub) use ($search) {
                                 $sub->where('name_latin', 'like', "%{$search}%");
                             })
                             ->orWhere('ummi_jilid', 'like', "%{$search}%")
@@ -231,18 +233,6 @@ class HafalanRecordController extends Controller
             ->with('success', 'Data hafalan berhasil dihapus.');
     }
 
-    public function editUmmi(Request $request, UmmiRecord $ummiRecord): View
-    {
-        $this->authorize('create', HafalanRecord::class);
-
-        return view('hafalan-records.edit-ummi', array_merge(
-            [
-                'ummiRecord' => $ummiRecord,
-            ],
-            $this->formData($request->user())
-        ));
-    }
-
     public function updateUmmi(Request $request, UmmiRecord $ummiRecord): RedirectResponse
     {
         $this->authorize('create', HafalanRecord::class);
@@ -251,21 +241,56 @@ class HafalanRecordController extends Controller
             'student_id' => ['required', 'integer', 'exists:students,id'],
             'tanggal' => ['required', 'date'],
             'tatap_muka' => ['nullable', 'integer', 'min:1'],
-            'ummi_jilid' => ['nullable', 'string', 'max:50'],
-            'ummi_halaman' => ['nullable', 'string', 'max:50'],
+            'ummi_jilid' => ['nullable', 'string', 'max:150'],
+            'ummi_halaman' => ['nullable', 'string', 'max:100'],
             'materi' => ['nullable', 'string', 'max:255'],
-            'nilai' => ['nullable', 'string', 'max:10'],
-            'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
-            'hafalan_ayah' => ['nullable', 'string', 'max:50'],
+            'nilai' => ['nullable', 'string', 'max:50'],
+            'hafalan_surah_ids' => ['nullable', 'array'],
+            'hafalan_surah_ids.*' => ['nullable', 'integer', 'exists:surahs,id'],
+            'hafalan_ayahs' => ['nullable', 'array'],
+            'hafalan_ayahs.*' => ['nullable', 'string', 'max:100'],
+            'hafalan_baris' => ['nullable', 'array'],
+            'hafalan_baris.*' => ['nullable', 'numeric', 'min:0'],
             'disimak_guru' => ['required', Rule::in(['Ya', 'Tidak'])],
             'disimak_ortu' => ['required', Rule::in(['Ya', 'Tidak'])],
             'catatan' => ['nullable', 'string'],
         ]);
 
-        $ummiRecord->update($validated);
+        DB::transaction(function () use ($ummiRecord, $validated) {
+            $ummiRecord->update([
+                'student_id' => $validated['student_id'],
+                'tanggal' => $validated['tanggal'],
+                'tatap_muka' => $validated['tatap_muka'] ?? $ummiRecord->tatap_muka,
+                'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                'materi' => $validated['materi'] ?? null,
+                'nilai' => $validated['nilai'] ?? null,
+                'disimak_guru' => $validated['disimak_guru'],
+                'disimak_ortu' => $validated['disimak_ortu'],
+                'keterangan' => $validated['catatan'] ?? null,
+            ]);
 
-        return redirect()
-            ->route('hafalan-records.index', ['category' => 'ummi'])
+            $ummiRecord->surahs()->delete();
+
+            $surahIds = $validated['hafalan_surah_ids'] ?? [];
+            $ayahs = $validated['hafalan_ayahs'] ?? [];
+            $baris = $validated['hafalan_baris'] ?? [];
+
+            foreach ($surahIds as $idx => $surahId) {
+                if (empty($surahId)) {
+                    continue;
+                }
+
+                $ummiRecord->surahs()->create([
+                    'surah_id' => (int) $surahId,
+                    'hafalan_ayah' => $ayahs[$idx] ?? null,
+                    'baris' => isset($baris[$idx]) && $baris[$idx] !== '' ? (float) $baris[$idx] : null,
+                    'sort_order' => $idx,
+                ]);
+            }
+        });
+
+        return back()
             ->with('success', 'Data progres UMMI berhasil diperbarui.');
     }
 
@@ -408,7 +433,7 @@ class HafalanRecordController extends Controller
             'teacher.user',
         ]);
 
-        $records = UmmiRecord::with('surah')
+        $records = UmmiRecord::with('surahs.surah')
             ->where('student_id', $student->id)
             ->orderBy('tanggal')
             ->orderBy('tatap_muka')

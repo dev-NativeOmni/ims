@@ -178,7 +178,7 @@ class StudentReportController extends Controller
                 ->orderBy('target_date', 'asc')
                 ->get()
                 ->groupBy('student_id'),
-            'ummiRecords' => UmmiRecord::with('surah')
+            'ummiRecords' => UmmiRecord::with('surahs.surah')
                 ->whereIn('student_id', $visibleStudentIds)
                 ->latest('tanggal')
                 ->latest()
@@ -234,7 +234,7 @@ class StudentReportController extends Controller
                 'academic_year' => $academicYear,
                 'semester' => $semester,
             ])->first();
-            $studentUmmiAll = UmmiRecord::with('surah')->where('student_id', $student->id)->latest('tanggal')->latest()->get();
+            $studentUmmiAll = UmmiRecord::with('surahs.surah')->where('student_id', $student->id)->latest('tanggal')->latest()->get();
             $adabRecords = AdabRecord::where('student_id', $student->id)->get();
             $violations = StudentPoint::violations()->where('student_id', $student->id)->get();
             $rewards = StudentPoint::where('student_id', $student->id)->where('type', 'reward')->get();
@@ -311,31 +311,24 @@ class StudentReportController extends Controller
             $latestUmmiRecord = $studentUmmiAll->first();
 
             if ($latestUmmiRecord) {
-                $rawTanggal = $latestUmmiRecord->getRawOriginal('tanggal');
-                $latestUmmiRecords = $studentUmmiAll
-                    ->filter(fn ($rec) => $rec->getRawOriginal('tanggal') === $rawTanggal && $rec->tatap_muka == $latestUmmiRecord->tatap_muka);
-
                 $parts = [];
-                $firstRec = $latestUmmiRecords->first();
-                if ($firstRec && $firstRec->ummi_jilid) {
-                    $parts[] = $firstRec->ummi_jilid.($firstRec->ummi_halaman ? ' Hal. '.$firstRec->ummi_halaman : '');
+                if ($latestUmmiRecord->ummi_jilid) {
+                    $parts[] = $latestUmmiRecord->ummi_jilid.($latestUmmiRecord->ummi_halaman ? ' Hal. '.$latestUmmiRecord->ummi_halaman : '');
                 }
 
                 $surahParts = [];
-                foreach ($latestUmmiRecords as $rec) {
-                    if ($rec->hafalan_surah_id) {
-                        $surahParts[] = 'Hafalan QS. '.($rec->surah?->name_latin ?? '').($rec->hafalan_ayah ? ' Ayat '.$rec->hafalan_ayah : '');
-                    }
+                foreach ($latestUmmiRecord->surahs as $surahEntry) {
+                    $surahParts[] = 'Hafalan QS. '.($surahEntry->surah?->name_latin ?? '').($surahEntry->hafalan_ayah ? ' Ayat '.$surahEntry->hafalan_ayah : '');
                 }
                 if (! empty($surahParts)) {
                     $parts[] = implode(', ', $surahParts);
                 }
 
                 $latestCapaianText = implode(', ', $parts);
-                if ($firstRec && $firstRec->nilai) {
-                    $latestCapaianText .= ' [Nilai: '.$firstRec->nilai.']';
+                if ($latestUmmiRecord->nilai) {
+                    $latestCapaianText .= ' [Nilai: '.$latestUmmiRecord->nilai.']';
                 }
-                $latestCapaianNotes = $latestUmmiRecords->pluck('keterangan')->filter()->unique()->implode('; ');
+                $latestCapaianNotes = (string) $latestUmmiRecord->keterangan;
             } else {
                 $latestCapaianText = 'Belum ada catatan UMMI.';
             }

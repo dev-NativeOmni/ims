@@ -512,7 +512,7 @@ class ClassRoomController extends Controller
 
         $studentsData = [];
         foreach ($students as $student) {
-            $records = UmmiRecord::with('surah')
+            $records = UmmiRecord::with('surahs.surah')
                 ->where('student_id', $student->id)
                 ->orderBy('tanggal')
                 ->orderBy('tatap_muka')

@@ -163,8 +163,8 @@
                                     <tr>
                                         <td class="text-center font-semibold">{{ $record->tatap_muka }}</td>
                                         <td class="text-center">{{ $record->tanggal?->format('d/m/y') }}</td>
-                                        <td class="whitespace-nowrap overflow-hidden text-ellipsis">{{ $record->surah?->name_latin ?? '-' }}</td>
-                                        <td class="text-center">{{ $record->hafalan_ayah ?? '-' }}</td>
+                                        <td class="whitespace-nowrap overflow-hidden text-ellipsis">{{ $record->surahs->map(fn ($s) => $s->surah?->name_latin ?? '-')->implode(', ') ?: '-' }}</td>
+                                        <td class="text-center">{{ $record->surahs->pluck('hafalan_ayah')->filter()->implode(', ') ?: '-' }}</td>
                                         <td class="whitespace-nowrap overflow-hidden text-ellipsis">{{ $record->ummi_jilid ?? '-' }}</td>
                                         <td class="text-center">{{ $record->ummi_halaman ?? '-' }}</td>
                                         <td class="whitespace-nowrap overflow-hidden text-ellipsis">{{ $record->materi ?? '-' }}</td>

@@ -138,7 +138,7 @@ class SpreadsheetInputTest extends TestCase
             'status' => 'hadir',
         ]);
 
-        // Assert UmmiRecord was saved
+        // Assert UmmiRecord header was saved
         $this->assertDatabaseHas('ummi_records', [
             'student_id' => $this->student->id,
             'tatap_muka' => 3,
@@ -147,7 +147,13 @@ class SpreadsheetInputTest extends TestCase
             'ummi_halaman' => '25',
             'materi' => 'Ghoroib',
             'nilai' => 'A',
-            'hafalan_surah_id' => $this->surah->id,
+        ]);
+
+        $ummiRecord = UmmiRecord::where('student_id', $this->student->id)->whereDate('tanggal', $date)->firstOrFail();
+
+        $this->assertDatabaseHas('ummi_record_surahs', [
+            'ummi_record_id' => $ummiRecord->id,
+            'surah_id' => $this->surah->id,
             'hafalan_ayah' => '1-5',
         ]);
     }

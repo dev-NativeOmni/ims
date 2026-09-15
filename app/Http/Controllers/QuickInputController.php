@@ -69,7 +69,7 @@ class QuickInputController extends Controller
             ->with([
                 'student.classRoom.program',
                 'teacher.user',
-                'surah',
+                'surahs.surah',
             ])
             ->whereIn('student_id', $visibleStudentIds)
             ->latest('tanggal')
@@ -482,42 +482,27 @@ class QuickInputController extends Controller
                 $individualScore = ! empty($studentScores[$student->id]) ? $studentScores[$student->id] : ($validated['nilai'] ?? null);
                 $individualNote = ! empty($studentNotes[$student->id]) ? $studentNotes[$student->id] : ($validated['keterangan'] ?? null);
 
-                if (empty($hafalans)) {
-                    UmmiRecord::query()->create([
-                        'student_id' => $student->id,
-                        'teacher_id' => $teacherId,
-                        'tatap_muka' => $validated['tatap_muka'],
-                        'tanggal' => $validated['tanggal'],
-                        'hafalan_surah_id' => null,
-                        'hafalan_ayah' => null,
-                        'baris' => null,
-                        'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                        'ummi_halaman' => $validated['ummi_halaman'] ?? null,
-                        'materi' => $validated['materi'] ?? null,
-                        'nilai' => $individualScore,
-                        'disimak_guru' => $validated['disimak_guru'],
-                        'disimak_ortu' => $validated['disimak_ortu'],
-                        'keterangan' => $individualNote,
+                $ummiRecord = UmmiRecord::query()->create([
+                    'student_id' => $student->id,
+                    'teacher_id' => $teacherId,
+                    'tatap_muka' => $validated['tatap_muka'],
+                    'tanggal' => $validated['tanggal'],
+                    'ummi_jilid' => $validated['ummi_jilid'] ?? null,
+                    'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                    'materi' => $validated['materi'] ?? null,
+                    'nilai' => $individualScore,
+                    'disimak_guru' => $validated['disimak_guru'],
+                    'disimak_ortu' => $validated['disimak_ortu'],
+                    'keterangan' => $individualNote,
+                ]);
+
+                foreach ($hafalans as $sortOrder => $hafalan) {
+                    $ummiRecord->surahs()->create([
+                        'surah_id' => $hafalan['surah_id'],
+                        'hafalan_ayah' => $hafalan['ayah'],
+                        'baris' => $hafalan['baris'],
+                        'sort_order' => $sortOrder,
                     ]);
-                } else {
-                    foreach ($hafalans as $hafalan) {
-                        UmmiRecord::query()->create([
-                            'student_id' => $student->id,
-                            'teacher_id' => $teacherId,
-                            'tatap_muka' => $validated['tatap_muka'],
-                            'tanggal' => $validated['tanggal'],
-                            'hafalan_surah_id' => $hafalan['surah_id'],
-                            'hafalan_ayah' => $hafalan['ayah'],
-                            'baris' => $hafalan['baris'],
-                            'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                            'ummi_halaman' => $validated['ummi_halaman'] ?? null,
-                            'materi' => $validated['materi'] ?? null,
-                            'nilai' => $individualScore,
-                            'disimak_guru' => $validated['disimak_guru'],
-                            'disimak_ortu' => $validated['disimak_ortu'],
-                            'keterangan' => $individualNote,
-                        ]);
-                    }
                 }
             }
         });
