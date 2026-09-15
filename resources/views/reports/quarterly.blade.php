@@ -415,7 +415,12 @@
                                                         @else
                                                             <td class="px-2 py-2.5 border-r dark:border-zinc-700 text-left">
                                                                 <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $dayLog['surah'] }}</span>
-                                                                <span class="block text-[8px] text-gray-400 mt-0.5">{{ $dayLog['ayat_start'] }}-{{ $dayLog['ayat_end'] }} ({{ $dayLog['baris'] }} Brs)</span>
+                                                                <span class="block text-[8px] text-gray-400 mt-0.5">
+                                                                    @if ($dayLog['ayat_start'] !== '')
+                                                                        {{ $dayLog['ayat_start'] }}-{{ $dayLog['ayat_end'] }}
+                                                                    @endif
+                                                                    ({{ $dayLog['baris'] }} Brs)
+                                                                </span>
                                                             </td>
                                                             <td class="px-1.5 py-2.5 border-r dark:border-zinc-700 font-bold text-gray-700 dark:text-zinc-300 text-center">{{ $dayLog['nilai'] }}</td>
                                                         @endif

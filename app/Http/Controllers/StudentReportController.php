@@ -159,13 +159,14 @@ class StudentReportController extends Controller
                 ->where('semester', $semester)
                 ->get()
                 ->keyBy('student_id'),
-            'hafalanRecords' => HafalanRecord::with('surah')
-                ->whereIn('student_id', $visibleStudentIds)
-                ->where('status', 'passed')
-                ->latest('submitted_at')
-                ->latest()
-                ->get()
-                ->groupBy('student_id'),
+            'hafalanRecords' => HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->whereIn('student_id', $visibleStudentIds)
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->latest('submitted_at')
+                    ->latest()
+                    ->get()
+            )->groupBy('student_id'),
             'murajaahRecords' => MurajaahRecord::with('surah')
                 ->whereIn('student_id', $visibleStudentIds)
                 ->where('status', 'passed')
@@ -225,7 +226,14 @@ class StudentReportController extends Controller
             $violations = $batch['violations']->get($student->id, collect());
             $rewards = $batch['rewards']->get($student->id, collect());
         } else {
-            $studentHafalanAll = HafalanRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest('submitted_at')->latest()->get();
+            $studentHafalanAll = HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->where('student_id', $student->id)
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->latest('submitted_at')
+                    ->latest()
+                    ->get()
+            );
             $hafalanRecords = $studentHafalanAll->take(5);
             $murajaahRecords = MurajaahRecord::with('surah')->where('student_id', $student->id)->where('status', 'passed')->latest('reviewed_at')->latest()->limit(5)->get();
             $targetRecords = HafalanTarget::with('surah')->where('student_id', $student->id)->orderBy('target_date', 'asc')->limit(5)->get();

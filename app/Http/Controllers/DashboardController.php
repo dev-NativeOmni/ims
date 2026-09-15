@@ -6,6 +6,7 @@ use App\Models\AdabMaterial;
 use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Setting;
@@ -155,8 +156,8 @@ class DashboardController extends Controller
             $endOfMonth = now()->endOfMonth();
 
             $stats = [
-                'hafalan_this_month' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])->count(),
-                'hafalan_today' => HafalanRecord::whereDate('submitted_at', $today)->count(),
+                'hafalan_this_month' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereBetween('submitted_at', [$startOfMonth, $endOfMonth]))->count(),
+                'hafalan_today' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereDate('submitted_at', $today))->count(),
                 'murajaah_this_month' => MurajaahRecord::whereBetween('reviewed_at', [$startOfMonth, $endOfMonth])->count(),
                 'murajaah_today' => MurajaahRecord::whereDate('reviewed_at', $today)->count(),
                 'active_targets' => HafalanTarget::where('status', 'in_progress')->count(),
@@ -167,10 +168,12 @@ class DashboardController extends Controller
                     ->count(),
             ];
 
-            $recentHafalan = HafalanRecord::with(['student', 'surah'])
-                ->latest('submitted_at')
-                ->take(5)
-                ->get();
+            $recentHafalan = HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['student', 'surahs.surah'])
+                    ->latest('submitted_at')
+                    ->take(5)
+                    ->get()
+            );
         } catch (\Throwable $e) {
             $stats = [
                 'hafalan_this_month' => 0,
@@ -297,8 +300,8 @@ class DashboardController extends Controller
 
         // ─── Tahfizh Summary ───────────────────────────────────────────
         try {
-            $hafalanThisMonth = HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])->count();
-            $hafalanToday = HafalanRecord::whereDate('submitted_at', $today)->count();
+            $hafalanThisMonth = HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereBetween('submitted_at', [$startOfMonth, $endOfMonth]))->count();
+            $hafalanToday = HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereDate('submitted_at', $today))->count();
             $activeTargets = HafalanTarget::where('status', 'in_progress')->count();
             $completedTargets = HafalanTarget::where('status', 'completed')->count();
             $totalTargets = $activeTargets + $completedTargets;
@@ -306,12 +309,12 @@ class DashboardController extends Controller
 
             // Monthly hafalan per class-level (X, XI, XII)
             $tahfizhByLevel = [
-                'X' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
-                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'X %')->where('name', 'not like', 'XI%'))->count(),
-                'XI' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
-                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'XI %')->where('name', 'not like', 'XII%'))->count(),
-                'XII' => HafalanRecord::whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
-                    ->whereHas('student.classRoom', fn ($q) => $q->where('name', 'like', 'XII %'))->count(),
+                'X' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($cq) => $cq->where('name', 'like', 'X %')->where('name', 'not like', 'XI%')))->count(),
+                'XI' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($cq) => $cq->where('name', 'like', 'XI %')->where('name', 'not like', 'XII%')))->count(),
+                'XII' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->whereHas('student.classRoom', fn ($cq) => $cq->where('name', 'like', 'XII %')))->count(),
             ];
         } catch (\Throwable) {
             $hafalanThisMonth = 0;

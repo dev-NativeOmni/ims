@@ -24,6 +24,26 @@ class StudentProgressServiceTest extends TestCase
         $this->service = $this->app->make(StudentProgressService::class);
     }
 
+    private function createHafalanRecord(array $overrides = []): HafalanRecord
+    {
+        $record = HafalanRecord::create([
+            'student_id' => $overrides['student_id'] ?? $this->student->id,
+            'teacher_id' => $overrides['teacher_id'] ?? $this->teacherProfile->id,
+            'submitted_at' => $overrides['submitted_at'] ?? now(),
+        ]);
+
+        $record->surahs()->create([
+            'surah_id' => $overrides['surah_id'] ?? $this->surah->id,
+            'ayah_start' => $overrides['ayah_start'] ?? 1,
+            'ayah_end' => $overrides['ayah_end'] ?? 7,
+            'submission_type' => $overrides['submission_type'] ?? 'new',
+            'status' => $overrides['status'] ?? 'passed',
+            'score' => $overrides['score'] ?? null,
+        ]);
+
+        return $record;
+    }
+
     #[Test]
     public function it_returns_zero_progress_when_no_records_exist(): void
     {
@@ -40,10 +60,7 @@ class StudentProgressServiceTest extends TestCase
     #[Test]
     public function it_correctly_calculates_memorized_ayahs_for_single_non_overlapping_record(): void
     {
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 3,
             'status' => 'passed',
@@ -62,10 +79,7 @@ class StudentProgressServiceTest extends TestCase
     public function it_merges_overlapping_ayah_ranges_in_same_surah(): void
     {
         // Setoran 1: Ayat 1 - 3
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 3,
             'status' => 'passed',
@@ -74,10 +88,7 @@ class StudentProgressServiceTest extends TestCase
         ]);
 
         // Setoran 2: Ayat 2 - 5 (overlapping dengan setoran 1)
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 2,
             'ayah_end' => 5,
             'status' => 'passed',
@@ -97,10 +108,7 @@ class StudentProgressServiceTest extends TestCase
     public function it_does_not_count_non_passed_records_for_progress(): void
     {
         // Setoran 1: Ayat 1 - 3, status repeat (gagal)
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 3,
             'status' => 'repeat',
@@ -109,10 +117,7 @@ class StudentProgressServiceTest extends TestCase
         ]);
 
         // Setoran 2: Ayat 4 - 7, status passed
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 4,
             'ayah_end' => 7,
             'status' => 'passed',
@@ -132,10 +137,7 @@ class StudentProgressServiceTest extends TestCase
     public function it_calculates_progress_across_multiple_surahs(): void
     {
         // Surah 1 (Al-Fatihah, total 7 ayat): Ayat 1 - 7 (lulus)
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 7,
             'status' => 'passed',
@@ -154,9 +156,7 @@ class StudentProgressServiceTest extends TestCase
         ]);
 
         // Setoran Surah 2: Ayat 1 - 10 (lulus)
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
+        $this->createHafalanRecord([
             'surah_id' => $surah2->id,
             'ayah_start' => 1,
             'ayah_end' => 10,

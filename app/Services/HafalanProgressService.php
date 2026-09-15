@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\HafalanRecordSurah;
 use App\Models\Student;
 use App\Models\Surah;
 use Illuminate\Support\Collection;
@@ -17,7 +18,8 @@ class HafalanProgressService
 
     public function memorizedAyahCount(Student $student): int
     {
-        $recordsBySurah = $student->hafalanRecords()
+        $recordsBySurah = HafalanRecordSurah::query()
+            ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
             ->where('status', 'passed')
             ->select([
                 'surah_id',
@@ -58,7 +60,7 @@ class HafalanProgressService
             'total_murajaah_records' => $student->murajaahRecords()->count(),
             'latest_hafalan' => $student->hafalanRecords()
                 ->with([
-                    'surah',
+                    'surahs.surah',
                     'teacher.user',
                 ])
                 ->latest('submitted_at')

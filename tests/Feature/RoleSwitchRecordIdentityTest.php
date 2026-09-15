@@ -90,7 +90,7 @@ class RoleSwitchRecordIdentityTest extends TestCase
         $indexResponse->assertStatus(200);
 
         $record = HafalanRecord::where('student_id', $this->student->id)->firstOrFail();
-        $indexResponse->assertSee($record->surah->name_latin);
+        $indexResponse->assertSee($record->surahs->first()->surah->name_latin);
     }
 
     #[Test]

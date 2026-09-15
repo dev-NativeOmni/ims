@@ -285,28 +285,33 @@
                                         <span>{{ $record->submitted_at?->format('d M Y') }}</span>
                                     </div>
                                 </div>
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0
-                                    {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
-                                    {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
-                                    {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
-                                ">
-                                    {{ $record->status_label }}
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400">
+                                    {{ $record->lines_count }} Baris
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div>
-                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Surah & Ayat</span>
-                                    <span class="font-bold text-zinc-800 dark:text-zinc-200">
-                                        {{ $record->surah?->number }}. {{ $record->surah?->name_latin }} ({{ $record->ayah_start }}-{{ $record->ayah_end }}) ({{ $record->lines_count }} Baris)
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jenis & Nilai</span>
-                                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">
-                                        {{ $record->submission_type_label }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->score_letter ?? '-' }}</strong>
-                                    </span>
-                                </div>
+                            <div class="space-y-2 text-xs">
+                                @forelse ($record->surahs as $surahEntry)
+                                    <div class="flex items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg p-2">
+                                        <div>
+                                            <span class="font-bold text-zinc-800 dark:text-zinc-200 block">
+                                                {{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->ayah_start }}-{{ $surahEntry->ayah_end }})
+                                            </span>
+                                            <span class="text-zinc-500 dark:text-zinc-400">
+                                                {{ $surahEntry->submission_type_label }} · Nilai <strong class="text-indigo-600 dark:text-indigo-400">{{ $surahEntry->score_letter ?? '-' }}</strong>
+                                            </span>
+                                        </div>
+                                        <span class="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold
+                                            {{ $surahEntry->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                            {{ $surahEntry->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                            {{ $surahEntry->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                                        ">
+                                            {{ $surahEntry->status_label }}
+                                        </span>
+                                    </div>
+                                @empty
+                                    <span class="text-zinc-400">Belum ada surah tercatat.</span>
+                                @endforelse
                             </div>
 
                             <!-- Action Bar Mobile -->
@@ -514,11 +519,17 @@
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                            {{ $record->surah?->number }}. {{ $record->surah?->name_latin }}
+                                            @forelse ($record->surahs as $surahEntry)
+                                                <div class="whitespace-nowrap">{{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }}</div>
+                                            @empty
+                                                -
+                                            @endforelse
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
-                                            {{ $record->ayah_start }} - {{ $record->ayah_end }}
+                                            @foreach ($record->surahs as $surahEntry)
+                                                <div>{{ $surahEntry->ayah_start }} - {{ $surahEntry->ayah_end }}</div>
+                                            @endforeach
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
@@ -526,21 +537,27 @@
                                         </td>
 
                                         <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
-                                            {{ $record->submission_type_label }}
+                                            @foreach ($record->surahs as $surahEntry)
+                                                <div class="whitespace-nowrap">{{ $surahEntry->submission_type_label }}</div>
+                                            @endforeach
                                         </td>
 
                                         <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
-                                            {{ $record->score_letter ?? '-' }}
+                                            @foreach ($record->surahs as $surahEntry)
+                                                <div>{{ $surahEntry->score_letter ?? '-' }}</div>
+                                            @endforeach
                                         </td>
 
                                         <td class="px-4 py-3.5">
-                                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
-                                                {{ $record->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
-                                                {{ $record->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
-                                                {{ $record->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
-                                            ">
-                                                {{ $record->status_label }}
-                                            </span>
+                                            @foreach ($record->surahs as $surahEntry)
+                                                <span class="px-2.5 py-1 mb-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
+                                                    {{ $surahEntry->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                                    {{ $surahEntry->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                                    {{ $surahEntry->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                                                ">
+                                                    {{ $surahEntry->status_label }}
+                                                </span>
+                                            @endforeach
                                         </td>
 
                                         <td class="px-4 py-3.5">

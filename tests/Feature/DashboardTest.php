@@ -19,6 +19,25 @@ class DashboardTest extends TestCase
         $this->setUpHafizPlusData();
     }
 
+    private function createHafalanRecord(array $overrides = []): HafalanRecord
+    {
+        $record = HafalanRecord::create([
+            'student_id' => $overrides['student_id'] ?? $this->student->id,
+            'teacher_id' => $overrides['teacher_id'] ?? $this->teacherProfile->id,
+            'submitted_at' => $overrides['submitted_at'] ?? now(),
+        ]);
+
+        $record->surahs()->create([
+            'surah_id' => $overrides['surah_id'] ?? $this->surah->id,
+            'ayah_start' => $overrides['ayah_start'] ?? 1,
+            'ayah_end' => $overrides['ayah_end'] ?? 7,
+            'status' => $overrides['status'] ?? 'passed',
+            'score' => $overrides['score'] ?? null,
+        ]);
+
+        return $record;
+    }
+
     // =========================================================================
     // AKSES DASHBOARD — GUEST
     // =========================================================================
@@ -117,10 +136,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function parent_dashboard_displays_child_latest_memorized_surahs_at_top_with_dates(): void
     {
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 10,
             'status' => 'passed',
@@ -149,10 +165,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function student_dashboard_displays_latest_memorized_surahs_at_top_with_dates(): void
     {
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 10,
             'status' => 'passed',

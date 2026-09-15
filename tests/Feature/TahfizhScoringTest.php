@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Setting;
 use App\Models\TahfizhExam;
@@ -20,6 +21,24 @@ class TahfizhScoringTest extends TestCase
     {
         parent::setUp();
         $this->setUpHafizPlusData();
+    }
+
+    private function createHafalanRecord(array $overrides = []): HafalanRecordSurah
+    {
+        $record = HafalanRecord::create([
+            'student_id' => $overrides['student_id'] ?? $this->student->id,
+            'teacher_id' => $overrides['teacher_id'] ?? $this->teacherProfile->id,
+            'submitted_at' => $overrides['submitted_at'] ?? now(),
+        ]);
+
+        return $record->surahs()->create([
+            'surah_id' => $overrides['surah_id'] ?? $this->surah->id,
+            'ayah_start' => $overrides['ayah_start'] ?? 1,
+            'ayah_end' => $overrides['ayah_end'] ?? 7,
+            'submission_type' => $overrides['submission_type'] ?? 'new',
+            'status' => $overrides['status'] ?? 'passed',
+            'score' => $overrides['score'] ?? null,
+        ]);
     }
 
     // =========================================================================
@@ -263,10 +282,7 @@ class TahfizhScoringTest extends TestCase
 
         // Setoran murid untuk sesi ini mencakup ayat 3-7 (tidak mulai dari ayat 1),
         // tapi tetap mencakup sampai ayat target (5).
-        $record = HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $record = $this->createHafalanRecord([
             'ayah_start' => 3,
             'ayah_end' => 7,
             'status' => 'passed',
@@ -292,10 +308,7 @@ class TahfizhScoringTest extends TestCase
             'status' => 'active',
         ]);
 
-        HafalanRecord::create([
-            'student_id' => $this->student->id,
-            'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 5,
             'status' => 'passed',

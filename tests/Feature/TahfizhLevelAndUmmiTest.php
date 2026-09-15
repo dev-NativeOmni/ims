@@ -96,6 +96,28 @@ class TahfizhLevelAndUmmiTest extends TestCase
         ]);
     }
 
+    private function createHafalanRecord(array $overrides = []): HafalanRecord
+    {
+        $record = HafalanRecord::create([
+            'student_id' => $overrides['student_id'] ?? $this->studentReguler->id,
+            'teacher_id' => $overrides['teacher_id'] ?? $this->teacher->id,
+            'notes' => $overrides['notes'] ?? null,
+            'submitted_at' => $overrides['submitted_at'] ?? now(),
+        ]);
+
+        $record->surahs()->create([
+            'surah_id' => $overrides['surah_id'] ?? $this->surah->id,
+            'ayah_start' => $overrides['ayah_start'] ?? 1,
+            'ayah_end' => $overrides['ayah_end'] ?? 7,
+            'submission_type' => $overrides['submission_type'] ?? 'new',
+            'status' => $overrides['status'] ?? 'passed',
+            'score' => $overrides['score'] ?? null,
+            'baris' => $overrides['baris'] ?? null,
+        ]);
+
+        return $record;
+    }
+
     public function test_auto_defaults_level_to_ummi_for_grade_10_classroom()
     {
         $role = Role::firstOrCreate(['name' => 'super_admin'], ['display_name' => 'Super Admin']);
@@ -342,13 +364,9 @@ class TahfizhLevelAndUmmiTest extends TestCase
     public function test_report_computes_correct_latest_achievement_for_reguler()
     {
         // Add passed Hafalan Record
-        HafalanRecord::create([
-            'student_id' => $this->studentReguler->id,
-            'teacher_id' => $this->teacher->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 7,
-            'submission_type' => 'new',
             'score' => 95,
             'status' => 'passed',
             'submitted_at' => now(),
@@ -398,13 +416,9 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $this->assertEquals('Belum ada Juz lengkap', $progress['completed_juz_list']);
 
         // Set student to pass all 7 ayahs of Al-Fatihah
-        HafalanRecord::create([
-            'student_id' => $this->studentReguler->id,
-            'teacher_id' => $this->teacher->id,
-            'surah_id' => $this->surah->id,
+        $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 7,
-            'submission_type' => 'new',
             'score' => 95,
             'status' => 'passed',
             'submitted_at' => now(),
@@ -448,13 +462,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $prop2->setValue(null, null);
 
         // Complete 1 out of 3 ayahs for dummySurah
-        HafalanRecord::create([
-            'student_id' => $this->studentReguler->id,
-            'teacher_id' => $this->teacher->id,
+        $this->createHafalanRecord([
             'surah_id' => $dummySurah->id,
             'ayah_start' => 1,
             'ayah_end' => 1,
-            'submission_type' => 'new',
             'score' => 90,
             'status' => 'passed',
             'submitted_at' => now(),
@@ -464,13 +475,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $this->assertEquals(0, $progress3['completed_juz_count']);
 
         // Complete remaining 2 ayahs
-        HafalanRecord::create([
-            'student_id' => $this->studentReguler->id,
-            'teacher_id' => $this->teacher->id,
+        $this->createHafalanRecord([
             'surah_id' => $dummySurah->id,
             'ayah_start' => 2,
             'ayah_end' => 3,
-            'submission_type' => 'new',
             'score' => 90,
             'status' => 'passed',
             'submitted_at' => now(),
@@ -484,20 +492,16 @@ class TahfizhLevelAndUmmiTest extends TestCase
     public function test_baris_manual_saving_and_lines_count_attributes()
     {
         // Store reguler record with manual baris count
-        $record = HafalanRecord::create([
-            'student_id' => $this->studentReguler->id,
-            'teacher_id' => $this->teacher->id,
-            'surah_id' => $this->surah->id,
+        $record = $this->createHafalanRecord([
             'ayah_start' => 1,
             'ayah_end' => 7,
-            'submission_type' => 'new',
             'score' => 90,
             'status' => 'passed',
             'submitted_at' => now(),
             'baris' => 12.50,
         ]);
 
-        $this->assertEquals(12.50, $record->lines_count);
+        $this->assertEquals(12.50, $record->fresh()->lines_count);
 
         // Store ummi record with manual baris count
         $ummiRecord = UmmiRecord::create([

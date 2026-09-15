@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
@@ -55,12 +56,12 @@ class ReportController extends Controller
         $murajaahQuery = $this->filteredMurajaahQuery($request, $visibleStudentIds);
         $targetQuery = $this->filteredTargetQuery($request, $visibleStudentIds);
 
-        $hafalanAgg = (clone $hafalanQuery)
+        $hafalanAgg = $this->filteredHafalanSurahQuery($request, $visibleStudentIds)
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) as passed_cnt,
-                SUM(CASE WHEN status IN ('repeat', 'needs_improvement') THEN 1 ELSE 0 END) as repeat_cnt,
-                AVG(score) as avg_score
+                SUM(CASE WHEN hafalan_record_surahs.status = 'passed' THEN 1 ELSE 0 END) as passed_cnt,
+                SUM(CASE WHEN hafalan_record_surahs.status IN ('repeat', 'needs_improvement') THEN 1 ELSE 0 END) as repeat_cnt,
+                AVG(hafalan_record_surahs.score) as avg_score
             ")
             ->first();
 
@@ -98,17 +99,19 @@ class ReportController extends Controller
             'average_murajaah_score' => round((float) ($murajaahAgg?->avg_score ?? 0), 2),
         ];
 
-        $hafalanRecords = (clone $hafalanQuery)
+        $hafalanRecords = $this->filteredHafalanSurahQuery($request, $visibleStudentIds)
+            ->select('hafalan_record_surahs.*')
             ->with([
-                'student.classRoom.program',
-                'student.teacher.user',
                 'surah',
-                'teacher.user',
+                'hafalanRecord.student.classRoom.program',
+                'hafalanRecord.student.teacher.user',
+                'hafalanRecord.teacher.user',
             ])
-            ->latest('submitted_at')
-            ->latest()
+            ->orderByDesc('hafalan_records.submitted_at')
+            ->orderByDesc('hafalan_record_surahs.id')
             ->paginate(20, ['*'], 'hafalan_page')
             ->withQueryString();
+        $hafalanRecords->getCollection()->transform(fn (HafalanRecordSurah $r) => $r->applyHeaderOverlay());
 
         $murajaahRecords = (clone $murajaahQuery)
             ->with([
@@ -171,13 +174,15 @@ class ReportController extends Controller
             'parents.user',
         ]);
 
-        $hafalanRecords = HafalanRecord::query()
-            ->with(['surah', 'teacher.user'])
-            ->where('student_id', $student->id)
-            ->latest('submitted_at')
-            ->latest()
-            ->limit(500)
-            ->get();
+        $hafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs.surah', 'teacher.user'])
+                ->where('student_id', $student->id)
+                ->latest('submitted_at')
+                ->latest()
+                ->limit(500)
+                ->get()
+        );
 
         $murajaahRecords = MurajaahRecord::query()
             ->with(['surah', 'teacher.user'])
@@ -236,7 +241,7 @@ class ReportController extends Controller
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         $hafalanQuery = $this->filteredHafalanQuery($request, $visibleStudentIds)
-            ->with(['student.classRoom.program', 'surah', 'teacher.user'])
+            ->with(['student.classRoom.program', 'surahs.surah', 'teacher.user'])
             ->latest('submitted_at')
             ->latest();
 
@@ -268,21 +273,23 @@ class ReportController extends Controller
                 'Catatan',
             ]);
 
-            foreach ($hafalanQuery->cursor() as $record) {
-                fputcsv($handle, [
-                    'Hafalan',
-                    $record->student?->name,
-                    $record->student?->classRoom?->name,
-                    $record->student?->classRoom?->program?->name,
-                    $record->surah?->name_latin ?? $record->surah?->name,
-                    $record->ayah_start,
-                    $record->ayah_end,
-                    $record->status,
-                    $record->score,
-                    $this->formatDateForCsv($record->submitted_at),
-                    $record->teacher?->user?->name,
-                    $record->notes,
-                ]);
+            foreach ($hafalanQuery->cursor() as $header) {
+                foreach ($header->surahs as $record) {
+                    fputcsv($handle, [
+                        'Hafalan',
+                        $header->student?->name,
+                        $header->student?->classRoom?->name,
+                        $header->student?->classRoom?->program?->name,
+                        $record->surah?->name_latin ?? $record->surah?->name,
+                        $record->ayah_start,
+                        $record->ayah_end,
+                        $record->status,
+                        $record->score,
+                        $this->formatDateForCsv($header->submitted_at),
+                        $header->teacher?->user?->name,
+                        $header->notes,
+                    ]);
+                }
             }
 
             foreach ($murajaahQuery->cursor() as $record) {
@@ -327,8 +334,63 @@ class ReportController extends Controller
     {
         $query = HafalanRecord::query();
 
-        $this->applyCommonFilters($query, $request, $visibleStudentIds);
+        $this->applyCommonFilters($query, $request, $visibleStudentIds, allowStatusFilter: true, filterViaSurahs: true);
         $this->applyDateFilters($query, $request, 'submitted_at');
+
+        return $query;
+    }
+
+    /**
+     * Same filters as filteredHafalanQuery(), but scoped to hafalan_record_surahs
+     * rows directly (joined to their header) for raw aggregate queries where
+     * per-surah status/score must be counted at the child-row granularity, not
+     * "does this header have any matching child".
+     */
+    /**
+     * Base filtered query joining hafalan_record_surahs to their header, scoped to
+     * the given student ids. No SELECT clause is applied here — the join means a
+     * bare "SELECT *" would collide on columns both tables share (id, created_at,
+     * ...), so every caller must specify its own select() or selectRaw().
+     */
+    private function filteredHafalanSurahQuery(Request $request, Collection $visibleStudentIds): Builder
+    {
+        $query = HafalanRecordSurah::query()
+            ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+            ->whereNull('hafalan_records.deleted_at')
+            ->whereIn('hafalan_records.student_id', $visibleStudentIds);
+
+        $studentId = $request->integer('student_id');
+        if ($studentId > 0) {
+            abort_unless($visibleStudentIds->contains($studentId), 403);
+            $query->where('hafalan_records.student_id', $studentId);
+        }
+
+        if ($request->filled('class_room_id')) {
+            $classRoomId = $request->integer('class_room_id');
+            $query->whereIn('hafalan_records.student_id', function ($sub) use ($classRoomId) {
+                $sub->select('id')->from('students')->where('class_room_id', $classRoomId);
+            });
+        }
+
+        if ($request->filled('teacher_id')) {
+            $query->where('hafalan_records.teacher_id', $request->integer('teacher_id'));
+        }
+
+        if ($request->filled('surah_id')) {
+            $query->where('hafalan_record_surahs.surah_id', $request->integer('surah_id'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('hafalan_record_surahs.status', $request->string('status')->toString());
+        }
+
+        if ($request->filled('from')) {
+            $query->whereDate('hafalan_records.submitted_at', '>=', $request->date('from')->toDateString());
+        }
+
+        if ($request->filled('to')) {
+            $query->whereDate('hafalan_records.submitted_at', '<=', $request->date('to')->toDateString());
+        }
 
         return $query;
     }
@@ -357,7 +419,8 @@ class ReportController extends Controller
         Builder $query,
         Request $request,
         Collection $visibleStudentIds,
-        bool $allowStatusFilter = true
+        bool $allowStatusFilter = true,
+        bool $filterViaSurahs = false
     ): void {
         $query->whereIn('student_id', $visibleStudentIds);
 
@@ -377,6 +440,23 @@ class ReportController extends Controller
 
         if ($request->filled('teacher_id')) {
             $query->where('teacher_id', $request->integer('teacher_id'));
+        }
+
+        // HafalanRecord moved surah_id/status onto its `surahs` child rows, so those
+        // filters need to go through whereHas instead of a direct column match.
+        if ($filterViaSurahs) {
+            if ($request->filled('surah_id') || ($allowStatusFilter && $request->filled('status'))) {
+                $query->whereHas('surahs', function (Builder $surahQuery) use ($request, $allowStatusFilter) {
+                    if ($request->filled('surah_id')) {
+                        $surahQuery->where('surah_id', $request->integer('surah_id'));
+                    }
+                    if ($allowStatusFilter && $request->filled('status')) {
+                        $surahQuery->where('status', $request->string('status')->toString());
+                    }
+                });
+            }
+
+            return;
         }
 
         if ($request->filled('surah_id')) {
@@ -524,10 +604,13 @@ class ReportController extends Controller
         $performanceData = [];
 
         foreach ($teachers as $teacher) {
-            // Count total hafalan inputs
-            $totalHafalan = HafalanRecord::where('teacher_id', $teacher->id)
-                ->whereYear('submitted_at', $year)
-                ->whereMonth('submitted_at', $month)
+            // Count total hafalan inputs (per surah submitted, matching historical semantics)
+            $totalHafalan = DB::table('hafalan_record_surahs')
+                ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+                ->whereNull('hafalan_records.deleted_at')
+                ->where('hafalan_records.teacher_id', $teacher->id)
+                ->whereYear('hafalan_records.submitted_at', $year)
+                ->whereMonth('hafalan_records.submitted_at', $month)
                 ->count();
 
             // Count total murajaah inputs
@@ -549,11 +632,14 @@ class ReportController extends Controller
                 ->count();
 
             // Average student scores
-            $avgHafalan = HafalanRecord::where('teacher_id', $teacher->id)
-                ->whereYear('submitted_at', $year)
-                ->whereMonth('submitted_at', $month)
-                ->whereNotNull('score')
-                ->avg('score');
+            $avgHafalan = DB::table('hafalan_record_surahs')
+                ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+                ->whereNull('hafalan_records.deleted_at')
+                ->where('hafalan_records.teacher_id', $teacher->id)
+                ->whereYear('hafalan_records.submitted_at', $year)
+                ->whereMonth('hafalan_records.submitted_at', $month)
+                ->whereNotNull('hafalan_record_surahs.score')
+                ->avg('hafalan_record_surahs.score');
 
             $avgMurajaah = MurajaahRecord::where('teacher_id', $teacher->id)
                 ->whereYear('reviewed_at', $year)
@@ -775,12 +861,14 @@ class ReportController extends Controller
         $studentIds = $students->pluck('id');
 
         // Fetch records
-        $hafalanRecords = HafalanRecord::query()
-            ->with(['surah', 'student'])
-            ->whereIn('student_id', $studentIds)
-            ->where('status', 'passed')
-            ->whereBetween('submitted_at', [$startDate, $endDate])
-            ->get();
+        $hafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah'), 'student'])
+                ->whereIn('student_id', $studentIds)
+                ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                ->whereBetween('submitted_at', [$startDate, $endDate])
+                ->get()
+        );
 
         $murajaahRecords = MurajaahRecord::query()
             ->with(['surah', 'student'])
@@ -918,14 +1006,15 @@ class ReportController extends Controller
             ->groupBy('student_id');
 
         // Bulk fetch latest passed hafalan records for all students in scope
-        $allPassedHafalan = HafalanRecord::query()
-            ->with('surah')
-            ->whereIn('student_id', $studentIds)
-            ->where('status', 'passed')
-            ->where('submitted_at', '<=', $endDate)
-            ->orderBy('submitted_at', 'desc')
-            ->get()
-            ->groupBy('student_id');
+        $allPassedHafalan = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                ->whereIn('student_id', $studentIds)
+                ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                ->where('submitted_at', '<=', $endDate)
+                ->orderBy('submitted_at', 'desc')
+                ->get()
+        )->groupBy('student_id');
 
         // Bulk fetch violations for all students in scope
         $allViolations = StudentPoint::query()
@@ -1301,11 +1390,13 @@ class ReportController extends Controller
         $studentIds = $students->pluck('id');
 
         // Fetch records for this date
-        $hafalanRecords = HafalanRecord::query()
-            ->with(['surah'])
-            ->whereIn('student_id', $studentIds)
-            ->whereDate('submitted_at', $selectedDate)
-            ->get();
+        $hafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs.surah'])
+                ->whereIn('student_id', $studentIds)
+                ->whereDate('submitted_at', $selectedDate)
+                ->get()
+        );
 
         $murajaahRecords = MurajaahRecord::query()
             ->with(['surah'])

@@ -132,11 +132,13 @@ class ClassRoomController extends Controller
         $allStudents = $classRoom->students()->with(['teacher.user'])->orderBy('name')->get();
 
         foreach ($allStudents as $index => $std) {
-            $records = HafalanRecord::with('surah')
-                ->where('student_id', $std->id)
-                ->whereBetween('submitted_at', [$startDate, $endDate])
-                ->where('status', 'passed')
-                ->get();
+            $records = HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->where('student_id', $std->id)
+                    ->whereBetween('submitted_at', [$startDate, $endDate])
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->get()
+            );
 
             $surahNames = [];
             $ayatRanges = [];
@@ -222,11 +224,13 @@ class ClassRoomController extends Controller
         $allStudents = $classRoom->students()->with(['teacher.user'])->orderBy('name')->get();
 
         foreach ($allStudents as $index => $std) {
-            $records = HafalanRecord::with('surah')
-                ->where('student_id', $std->id)
-                ->whereBetween('submitted_at', [$startDate, $endDate])
-                ->where('status', 'passed')
-                ->get();
+            $records = HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->where('student_id', $std->id)
+                    ->whereBetween('submitted_at', [$startDate, $endDate])
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->get()
+            );
 
             $surahNames = [];
             $ayatRanges = [];

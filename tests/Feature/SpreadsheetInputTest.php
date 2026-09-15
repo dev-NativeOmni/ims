@@ -82,15 +82,23 @@ class SpreadsheetInputTest extends TestCase
             'status' => 'hadir',
         ]);
 
-        // Assert HafalanRecord was saved
+        // Assert HafalanRecord header + child line were saved
         $this->assertDatabaseHas('hafalan_records', [
             'student_id' => $this->student->id,
+            'submitted_at' => $date.' 00:00:00',
+        ]);
+
+        $hafalanRecord = HafalanRecord::where('student_id', $this->student->id)
+            ->whereDate('submitted_at', $date)
+            ->firstOrFail();
+
+        $this->assertDatabaseHas('hafalan_record_surahs', [
+            'hafalan_record_id' => $hafalanRecord->id,
             'surah_id' => $this->surah->id,
             'ayah_start' => 1,
             'ayah_end' => 5,
             'score' => 95,
             'status' => 'passed',
-            'submitted_at' => $date.' 00:00:00',
         ]);
     }
 
@@ -300,8 +308,9 @@ class SpreadsheetInputTest extends TestCase
 
         $this->assertEquals(1, HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date.' 00:00:00')->count());
         $record = HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date.' 00:00:00')->first();
+        $surahLine = $record->surahs()->first();
 
-        // 2. Second Save (submit with the created record ID)
+        // 2. Second Save (submit with the created surah line ID)
         $payload2 = [
             'class_room_id' => $classRoom->id,
             'month' => '2026-08',
@@ -313,7 +322,7 @@ class SpreadsheetInputTest extends TestCase
                             'attendance' => 'hadir',
                             'hafalans' => [
                                 [
-                                    'id' => $record->id,
+                                    'id' => $surahLine->id,
                                     'surah_id' => $this->surah->id,
                                     'ayah_start' => 1,
                                     'ayah_end' => 5,

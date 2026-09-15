@@ -88,7 +88,7 @@ class StudentController extends Controller
 
         $hafalanRecords = $student->hafalanRecords()
             ->with([
-                'surah',
+                'surahs.surah',
                 'teacher.user',
             ])
             ->latest('submitted_at')

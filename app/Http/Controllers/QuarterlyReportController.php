@@ -143,12 +143,14 @@ class QuarterlyReportController extends Controller
             ->whereBetween('tanggal', [$startDate, $endDate])
             ->get();
 
-        $hafalanRecords = HafalanRecord::query()
-            ->with('surah')
-            ->whereIn('student_id', $studentIds)
-            ->whereBetween('submitted_at', [$startDate, $endDate])
-            ->orderBy('submitted_at')
-            ->get();
+        $hafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with('surahs.surah')
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('submitted_at', [$startDate, $endDate])
+                ->orderBy('submitted_at')
+                ->get()
+        );
 
         $violations = StudentPoint::query()
             ->whereIn('student_id', $studentIds)
@@ -157,11 +159,13 @@ class QuarterlyReportController extends Controller
             ->get();
 
         // 2. Fetch real term-wide data
-        $termHafalanRecords = HafalanRecord::query()
-            ->with('surah')
-            ->whereIn('student_id', $studentIds)
-            ->whereBetween('submitted_at', [$termStartDate, $termEndDate])
-            ->get();
+        $termHafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with('surahs.surah')
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('submitted_at', [$termStartDate, $termEndDate])
+                ->get()
+        );
 
         $termAttendances = Attendance::query()
             ->whereIn('student_id', $studentIds)
@@ -182,14 +186,15 @@ class QuarterlyReportController extends Controller
             ->get()
             ->groupBy('student_id');
 
-        $latestHafalans = HafalanRecord::query()
-            ->with('surah')
-            ->whereIn('student_id', $studentIds)
-            ->where('status', 'passed')
-            ->where('submitted_at', '<=', $termEndDate)
-            ->orderBy('submitted_at', 'desc')
-            ->get()
-            ->groupBy('student_id');
+        $latestHafalans = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                ->whereIn('student_id', $studentIds)
+                ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                ->where('submitted_at', '<=', $termEndDate)
+                ->orderBy('submitted_at', 'desc')
+                ->get()
+        )->groupBy('student_id');
 
         // Group students by their Musyrif
         $studentsByHalaqah = $students->groupBy(function ($student) {
@@ -385,20 +390,24 @@ class QuarterlyReportController extends Controller
                         $dayMap = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat'];
 
                         foreach ($days as $dayName) {
-                            $record = $pRecords->first(function ($r) use ($dayName, $dayMap) {
+                            $dayRecords = $pRecords->filter(function ($r) use ($dayName, $dayMap) {
                                 $wDay = (int) date('w', strtotime($r->submitted_at));
 
                                 return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
-                            });
+                            })->filter(fn ($r) => $r->surah);
 
-                            if ($record && $record->surah) {
-                                $lines = $record->lines_count;
+                            if ($dayRecords->isNotEmpty()) {
+                                $lines = $dayRecords->sum('lines_count');
+                                $surahLabel = $dayRecords
+                                    ->map(fn ($r) => "{$r->surah->name_latin} ({$r->ayah_start}-{$r->ayah_end})")
+                                    ->implode(', ');
+                                $avgScore = $dayRecords->whereNotNull('score')->avg('score');
                                 $dailyLogs[$dayName] = [
-                                    'surah' => $record->surah->name_latin,
-                                    'ayat_start' => $record->ayah_start,
-                                    'ayat_end' => $record->ayah_end,
+                                    'surah' => $surahLabel,
+                                    'ayat_start' => '',
+                                    'ayat_end' => '',
                                     'baris' => $lines,
-                                    'nilai' => self::mapScoreToGrade($record->score),
+                                    'nilai' => self::mapScoreToGrade($avgScore),
                                 ];
                                 $weekLines += $lines;
                             } else {
@@ -485,19 +494,20 @@ class QuarterlyReportController extends Controller
                         $pStart = 1 + ($p - 1) * 7;
                         $pEnd = $p === 5 ? 31 : $p * 7;
 
-                        $record = $sHaf->first(function ($h) use ($pStart, $pEnd) {
+                        $weekRecords = $sHaf->filter(function ($h) use ($pStart, $pEnd) {
                             $dayNum = (int) $h->submitted_at->format('d');
 
                             return $dayNum >= $pStart && $dayNum <= $pEnd;
-                        });
+                        })->filter(fn ($h) => $h->surah);
 
-                        if ($record && $record->surah) {
-                            $lines = $record->lines_count;
+                        if ($weekRecords->isNotEmpty()) {
+                            $lines = $weekRecords->sum('lines_count');
+                            $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                             $pekanRecords[$p] = [
-                                'surah' => $record->surah->name_latin,
-                                'ayat' => "{$record->ayah_start}-{$record->ayah_end}",
+                                'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
+                                'ayat' => $weekRecords->map(fn ($h) => "{$h->ayah_start}-{$h->ayah_end}")->implode(', '),
                                 'baris' => $lines,
-                                'nilai' => self::mapScoreToGrade($record->score),
+                                'nilai' => self::mapScoreToGrade($avgScore),
                                 'kehadiran' => 'Hadir',
                             ];
                             $totalCapaianLines += $lines;

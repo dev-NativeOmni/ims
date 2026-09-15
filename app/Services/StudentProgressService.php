@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
@@ -150,20 +151,25 @@ class StudentProgressService
             $isUmmiProgram = $isGrade10 || $tahfizhLevel === 'ummi';
             $programCategory = $isUmmiProgram ? 'ummi' : 'reguler';
 
-            $latestHafalan = (clone $hafalanRecordsQuery)
-                ->with('surah')
+            $latestHafalanHeader = (clone $hafalanRecordsQuery)
+                ->with('surahs.surah')
                 ->latest('submitted_at')
                 ->latest()
                 ->first();
+            $latestHafalan = $latestHafalanHeader
+                ? HafalanRecord::flattenSurahs(collect([$latestHafalanHeader]))->last()
+                : null;
 
             if ($isUmmiProgram) {
-                $passedJuz30 = (clone $hafalanRecordsQuery)
-                    ->with('surah')
-                    ->where('status', 'passed')
-                    ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114]))
-                    ->get()
-                    ->sortBy(fn ($r) => $r->surah?->number ?? 114)
-                    ->first();
+                $passedJuz30 = HafalanRecord::flattenSurahs(
+                    (clone $hafalanRecordsQuery)
+                        ->with(['surahs' => fn ($q) => $q->where('status', 'passed')
+                            ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114]))
+                            ->with('surah')])
+                        ->whereHas('surahs', fn ($q) => $q->where('status', 'passed')
+                            ->whereHas('surah', fn ($sq) => $sq->whereBetween('number', [78, 114])))
+                        ->get()
+                )->sortBy(fn ($r) => $r->surah?->number ?? 114)->first();
 
                 if ($passedJuz30) {
                     $latestHafalan = $passedJuz30;
@@ -293,11 +299,13 @@ class StudentProgressService
             $startOfMonth = now()->startOfMonth()->toDateString();
             $endOfMonth = now()->endOfMonth()->toDateString();
 
-            $passedRecordsThisMonth = HafalanRecord::with('surah')
-                ->where('student_id', $student->id)
-                ->where('status', 'passed')
-                ->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
-                ->get();
+            $passedRecordsThisMonth = HafalanRecord::flattenSurahs(
+                HafalanRecord::with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->where('student_id', $student->id)
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->whereBetween('submitted_at', [$startOfMonth, $endOfMonth])
+                    ->get()
+            );
 
             $capaianBarisMonth = $passedRecordsThisMonth->sum(fn ($r) => $r->lines_count);
             $regulerBarisPercent = $targetBarisMonth > 0 ? min(100.0, round(($capaianBarisMonth / $targetBarisMonth) * 100, 1)) : 0;
@@ -379,16 +387,17 @@ class StudentProgressService
                     ? 'Juz '.implode(', ', $juzStats['completed_juz'])
                     : 'Belum ada Juz lengkap',
 
-                'total_hafalan_records' => (clone $hafalanRecordsQuery)->count() + UmmiRecordSurah::whereHas('ummiRecord', fn ($q) => $q->where('student_id', $student->id))->count(),
-                'passed_hafalan_records' => (clone $hafalanRecordsQuery)
+                'total_hafalan_records' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))->count()
+                    + UmmiRecordSurah::whereHas('ummiRecord', fn ($q) => $q->where('student_id', $student->id))->count(),
+                'passed_hafalan_records' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
                     ->where('status', 'passed')
                     ->count() + UmmiRecordSurah::whereHas('ummiRecord', fn ($q) => $q->where('student_id', $student->id))->count(),
-                'repeat_hafalan_records' => (clone $hafalanRecordsQuery)
+                'repeat_hafalan_records' => HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
                     ->whereIn('status', ['repeat', 'needs_improvement'])
                     ->count(),
 
                 'total_murajaah_records' => (clone $murajaahRecordsQuery)->count(),
-                'average_hafalan_score' => round((float) (clone $hafalanRecordsQuery)->avg('score'), 2),
+                'average_hafalan_score' => round((float) HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))->avg('score'), 2),
                 'average_murajaah_score' => $this->averageMurajaahScore($student),
 
                 'total_targets' => (clone $targetQuery)->count(),
@@ -547,9 +556,9 @@ class StudentProgressService
             }
         }
 
-        $passedRecords = HafalanRecord::where('student_id', $student->id)
+        $passedRecords = HafalanRecordSurah::query()
+            ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
             ->where('status', 'passed')
-            ->whereNotNull('surah_id')
             ->whereNotNull('ayah_start')
             ->whereNotNull('ayah_end')
             ->get(['surah_id', 'ayah_start', 'ayah_end']);
@@ -646,10 +655,9 @@ class StudentProgressService
 
     private function memorizedAyahCount(Student $student): int
     {
-        $records = HafalanRecord::query()
-            ->where('student_id', $student->id)
+        $records = HafalanRecordSurah::query()
+            ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
             ->where('status', 'passed')
-            ->whereNotNull('surah_id')
             ->whereNotNull('ayah_start')
             ->whereNotNull('ayah_end')
             ->get(['surah_id', 'ayah_start', 'ayah_end']);
@@ -786,15 +794,16 @@ class StudentProgressService
     public function getTermMilestones(Student $student): array
     {
         try {
-            $firstHafalan = HafalanRecord::query()
-                ->with('surah')
-                ->where('student_id', $student->id)
-                ->where(function ($q) {
-                    $q->where('status', 'passed')->orWhereNull('status');
-                })
-                ->orderBy('submitted_at', 'asc')
-                ->orderBy('id', 'asc')
-                ->first();
+            $firstHafalan = HafalanRecord::flattenSurahs(
+                HafalanRecord::query()
+                    ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                    ->where('student_id', $student->id)
+                    ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                    ->orderBy('submitted_at', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->limit(1)
+                    ->get()
+            )->first();
 
             $firstUmmi = UmmiRecord::query()
                 ->with('surahs.surah')
@@ -888,16 +897,16 @@ class StudentProgressService
                     $tEnd = $tInfo['end'];
                     $isCurrent = ($todayStr >= $tStart && $todayStr <= $tEnd);
 
-                    $hafalanInTerm = HafalanRecord::query()
-                        ->with('surah')
-                        ->where('student_id', $student->id)
-                        ->where(function ($q) {
-                            $q->where('status', 'passed')->orWhereNull('status');
-                        })
-                        ->whereDate('submitted_at', '>=', $tStart)
-                        ->whereDate('submitted_at', '<=', $tEnd)
-                        ->orderBy('submitted_at', 'asc')
-                        ->get();
+                    $hafalanInTerm = HafalanRecord::flattenSurahs(
+                        HafalanRecord::query()
+                            ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                            ->where('student_id', $student->id)
+                            ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                            ->whereDate('submitted_at', '>=', $tStart)
+                            ->whereDate('submitted_at', '<=', $tEnd)
+                            ->orderBy('submitted_at', 'asc')
+                            ->get()
+                    );
 
                     $ummiInTerm = UmmiRecord::query()
                         ->with('surahs.surah')

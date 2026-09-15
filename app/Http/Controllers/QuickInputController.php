@@ -41,17 +41,19 @@ class QuickInputController extends Controller
             ->orderBy('number')
             ->get();
 
-        $latestHafalanRecords = HafalanRecord::query()
-            ->with([
-                'student.classRoom.program',
-                'teacher.user',
-                'surah',
-            ])
-            ->whereIn('student_id', $visibleStudentIds)
-            ->latest('submitted_at')
-            ->latest()
-            ->limit(5)
-            ->get();
+        $latestHafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with([
+                    'student.classRoom.program',
+                    'teacher.user',
+                    'surahs.surah',
+                ])
+                ->whereIn('student_id', $visibleStudentIds)
+                ->latest('submitted_at')
+                ->latest()
+                ->limit(5)
+                ->get()
+        );
 
         $latestMurajaahRecords = MurajaahRecord::query()
             ->with([
@@ -167,17 +169,20 @@ class QuickInputController extends Controller
         $surahEndId = (int) ($validated['surah_end_id'] ?? $surahStartId);
 
         if ($surahStartId === $surahEndId) {
-            HafalanRecord::query()->create([
+            $hafalanRecord = HafalanRecord::query()->create([
                 'student_id' => $student->id,
                 'teacher_id' => $teacherId,
+                'submitted_at' => $validated['submitted_at'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            $hafalanRecord->surahs()->create([
                 'surah_id' => $validated['surah_id'],
                 'ayah_start' => $validated['ayah_start'],
                 'ayah_end' => $validated['ayah_end'],
                 'submission_type' => $validated['submission_type'],
                 'score' => $validated['score'] ?? null,
                 'status' => $validated['status'],
-                'submitted_at' => $validated['submitted_at'],
-                'notes' => $validated['notes'] ?? null,
             ]);
         } else {
             $surahStart = Surah::findOrFail($surahStartId);
@@ -188,30 +193,34 @@ class QuickInputController extends Controller
                 ->get();
 
             DB::transaction(function () use ($surahs, $surahStart, $surahEnd, $validated, $student, $teacherId) {
-                foreach ($surahs as $surah) {
-                    $recordData = [
-                        'student_id' => $student->id,
-                        'teacher_id' => $teacherId,
+                $hafalanRecord = HafalanRecord::query()->create([
+                    'student_id' => $student->id,
+                    'teacher_id' => $teacherId,
+                    'submitted_at' => $validated['submitted_at'],
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+
+                foreach ($surahs as $sortOrder => $surah) {
+                    $lineData = [
                         'surah_id' => $surah->id,
                         'submission_type' => $validated['submission_type'],
                         'score' => $validated['score'] ?? null,
                         'status' => $validated['status'],
-                        'submitted_at' => $validated['submitted_at'],
-                        'notes' => $validated['notes'] ?? null,
+                        'sort_order' => $sortOrder,
                     ];
 
                     if ($surah->id === $surahStart->id) {
-                        $recordData['ayah_start'] = $validated['ayah_start'];
-                        $recordData['ayah_end'] = $surah->total_ayah;
+                        $lineData['ayah_start'] = $validated['ayah_start'];
+                        $lineData['ayah_end'] = $surah->total_ayah;
                     } elseif ($surah->id === $surahEnd->id) {
-                        $recordData['ayah_start'] = 1;
-                        $recordData['ayah_end'] = $validated['ayah_end'];
+                        $lineData['ayah_start'] = 1;
+                        $lineData['ayah_end'] = $validated['ayah_end'];
                     } else {
-                        $recordData['ayah_start'] = 1;
-                        $recordData['ayah_end'] = $surah->total_ayah;
+                        $lineData['ayah_start'] = 1;
+                        $lineData['ayah_end'] = $surah->total_ayah;
                     }
 
-                    HafalanRecord::query()->create($recordData);
+                    $hafalanRecord->surahs()->create($lineData);
                 }
             });
         }

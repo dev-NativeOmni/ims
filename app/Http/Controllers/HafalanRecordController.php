@@ -75,7 +75,7 @@ class HafalanRecordController extends Controller
                 ->with([
                     'student.classRoom.program',
                     'teacher.user',
-                    'surah',
+                    'surahs.surah',
                 ])
                 ->when($user->hasRole('teacher'), function ($query) use ($user) {
                     $query->whereHas('student', function ($q) use ($user) {
@@ -91,10 +91,15 @@ class HafalanRecordController extends Controller
                     $query->where('student_id', $request->integer('student_id'));
                 })
                 ->when($request->filled('surah_id'), function ($query) use ($request) {
-                    $query->where('surah_id', $request->integer('surah_id'));
+                    $query->whereHas('surahs', function ($q) use ($request) {
+                        $q->where('surah_id', $request->integer('surah_id'));
+                    });
                 })
                 ->when($request->filled('status'), function ($query) use ($request) {
-                    $query->where('status', $request->string('status')->toString());
+                    $status = $request->string('status')->toString();
+                    $query->whereHas('surahs', function ($q) use ($status) {
+                        $q->where('status', $status);
+                    });
                 })
                 ->when($request->filled('date'), function ($query) use ($request) {
                     $query->whereDate('submitted_at', $request->input('date'));
@@ -105,7 +110,7 @@ class HafalanRecordController extends Controller
                         $q->whereHas('student', function ($sub) use ($search) {
                             $sub->where('name', 'like', "%{$search}%");
                         })
-                            ->orWhereHas('surah', function ($sub) use ($search) {
+                            ->orWhereHas('surahs.surah', function ($sub) use ($search) {
                                 $sub->where('name_latin', 'like', "%{$search}%");
                             });
                     });
@@ -162,23 +167,27 @@ class HafalanRecordController extends Controller
             $statuses,
             $baris
         ) {
+            $hafalanRecord = HafalanRecord::query()->create([
+                'student_id' => $studentId,
+                'teacher_id' => $teacherId,
+                'notes' => $notes,
+                'submitted_at' => $submittedAt,
+            ]);
+
             foreach ($surahIds as $idx => $surahId) {
                 if (empty($surahId)) {
                     continue;
                 }
 
-                HafalanRecord::query()->create([
-                    'student_id' => $studentId,
-                    'teacher_id' => $teacherId,
+                $hafalanRecord->surahs()->create([
                     'surah_id' => (int) $surahId,
                     'ayah_start' => (int) ($ayahStarts[$idx] ?? 1),
                     'ayah_end' => (int) ($ayahEnds[$idx] ?? 1),
                     'submission_type' => $submissionTypes[$idx] ?? 'new',
                     'score' => isset($scores[$idx]) && $scores[$idx] !== '' ? $scores[$idx] : null,
                     'status' => $statuses[$idx] ?? 'passed',
-                    'notes' => $notes,
-                    'submitted_at' => $submittedAt,
                     'baris' => isset($baris[$idx]) && $baris[$idx] !== '' ? (float) $baris[$idx] : null,
+                    'sort_order' => $idx,
                 ]);
             }
         });
@@ -195,7 +204,7 @@ class HafalanRecordController extends Controller
         $hafalanRecord->load([
             'student.classRoom.program',
             'teacher.user',
-            'surah',
+            'surahs.surah',
         ]);
 
         return view('hafalan-records.show', [
@@ -206,6 +215,8 @@ class HafalanRecordController extends Controller
     public function edit(Request $request, HafalanRecord $hafalanRecord): View
     {
         $this->authorize('update', $hafalanRecord);
+
+        $hafalanRecord->load('surahs.surah');
 
         return view('hafalan-records.edit', array_merge(
             [
@@ -219,7 +230,43 @@ class HafalanRecordController extends Controller
     {
         $this->authorize('update', $hafalanRecord);
 
-        $hafalanRecord->update($request->validated());
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($hafalanRecord, $validated) {
+            $hafalanRecord->update([
+                'student_id' => $validated['student_id'],
+                'teacher_id' => $validated['teacher_id'] ?? $hafalanRecord->teacher_id,
+                'notes' => $validated['notes'] ?? null,
+                'submitted_at' => $validated['submitted_at'],
+            ]);
+
+            $hafalanRecord->surahs()->delete();
+
+            $surahIds = $validated['surah_ids'] ?? [];
+            $ayahStarts = $validated['ayah_starts'] ?? [];
+            $ayahEnds = $validated['ayah_ends'] ?? [];
+            $submissionTypes = $validated['submission_types'] ?? [];
+            $scores = $validated['scores'] ?? [];
+            $statuses = $validated['statuses'] ?? [];
+            $baris = $validated['baris'] ?? [];
+
+            foreach ($surahIds as $idx => $surahId) {
+                if (empty($surahId)) {
+                    continue;
+                }
+
+                $hafalanRecord->surahs()->create([
+                    'surah_id' => (int) $surahId,
+                    'ayah_start' => (int) ($ayahStarts[$idx] ?? 1),
+                    'ayah_end' => (int) ($ayahEnds[$idx] ?? 1),
+                    'submission_type' => $submissionTypes[$idx] ?? 'new',
+                    'score' => isset($scores[$idx]) && $scores[$idx] !== '' ? $scores[$idx] : null,
+                    'status' => $statuses[$idx] ?? 'passed',
+                    'baris' => isset($baris[$idx]) && $baris[$idx] !== '' ? (float) $baris[$idx] : null,
+                    'sort_order' => $idx,
+                ]);
+            }
+        });
 
         return redirect()
             ->route('hafalan-records.index')
