@@ -25,68 +25,107 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $rows = DB::table('hafalan_records')->orderBy('id')->get();
+        // Idempotency guard: if hafalan_record_surahs already has rows, the data
+        // half of this migration already ran successfully in a previous attempt
+        // (e.g. one interrupted by the MySQL FK/index ordering issue fixed below)
+        // -- re-running it would duplicate every child row. Skip straight to the
+        // schema changes in that case.
+        $alreadyMigratedData = Schema::hasTable('hafalan_record_surahs')
+            && DB::table('hafalan_record_surahs')->exists();
 
-        $groups = [];
-        foreach ($rows as $row) {
-            $key = implode("\x1F", [
-                $row->student_id,
-                $row->teacher_id,
-                $row->notes ?? '\0',
-                $row->submitted_at,
-                $row->deleted_at ?? '\0',
-            ]);
+        if (! $alreadyMigratedData && Schema::hasColumn('hafalan_records', 'surah_id')) {
+            $rows = DB::table('hafalan_records')->orderBy('id')->get();
 
-            $groups[$key][] = $row;
-        }
+            $groups = [];
+            foreach ($rows as $row) {
+                $key = implode("\x1F", [
+                    $row->student_id,
+                    $row->teacher_id,
+                    $row->notes ?? '\0',
+                    $row->submitted_at,
+                    $row->deleted_at ?? '\0',
+                ]);
 
-        $childRows = [];
-        $idsToDelete = [];
+                $groups[$key][] = $row;
+            }
 
-        foreach ($groups as $groupRows) {
-            $header = $groupRows[0];
-            $sortOrder = 0;
+            $childRows = [];
+            $idsToDelete = [];
 
-            foreach ($groupRows as $row) {
-                if ($row->id !== $header->id) {
-                    $idsToDelete[] = $row->id;
+            foreach ($groups as $groupRows) {
+                $header = $groupRows[0];
+                $sortOrder = 0;
+
+                foreach ($groupRows as $row) {
+                    if ($row->id !== $header->id) {
+                        $idsToDelete[] = $row->id;
+                    }
+
+                    $childRows[] = [
+                        'hafalan_record_id' => $header->id,
+                        'surah_id' => $row->surah_id,
+                        'ayah_start' => $row->ayah_start,
+                        'ayah_end' => $row->ayah_end,
+                        'submission_type' => $row->submission_type,
+                        'score' => $row->score,
+                        'status' => $row->status,
+                        'baris' => $row->baris,
+                        'sort_order' => $sortOrder++,
+                        'created_at' => $row->created_at,
+                        'updated_at' => $row->updated_at,
+                    ];
                 }
+            }
 
-                $childRows[] = [
-                    'hafalan_record_id' => $header->id,
-                    'surah_id' => $row->surah_id,
-                    'ayah_start' => $row->ayah_start,
-                    'ayah_end' => $row->ayah_end,
-                    'submission_type' => $row->submission_type,
-                    'score' => $row->score,
-                    'status' => $row->status,
-                    'baris' => $row->baris,
-                    'sort_order' => $sortOrder++,
-                    'created_at' => $row->created_at,
-                    'updated_at' => $row->updated_at,
-                ];
+            foreach (array_chunk($childRows, 500) as $chunk) {
+                DB::table('hafalan_record_surahs')->insert($chunk);
+            }
+
+            foreach (array_chunk($idsToDelete, 500) as $chunk) {
+                DB::table('hafalan_records')->whereIn('id', $chunk)->delete();
             }
         }
 
-        foreach (array_chunk($childRows, 500) as $chunk) {
-            DB::table('hafalan_record_surahs')->insert($chunk);
+        // Drop the foreign key constraint BEFORE the composite index: on MySQL,
+        // ['surah_id', 'ayah_start', 'ayah_end'] is the only index backing the
+        // surah_id FK, so dropping the index first fails with error 1553.
+        // SQLite (used in tests) has no such restriction, so this ordering issue
+        // only surfaces on production MySQL.
+        if (Schema::hasColumn('hafalan_records', 'surah_id')) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropForeign(['surah_id']);
+            });
         }
 
-        foreach (array_chunk($idsToDelete, 500) as $chunk) {
-            DB::table('hafalan_records')->whereIn('id', $chunk)->delete();
+        if (Schema::hasIndex('hafalan_records', ['surah_id', 'ayah_start', 'ayah_end'])) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropIndex(['surah_id', 'ayah_start', 'ayah_end']);
+            });
         }
 
-        Schema::table('hafalan_records', function (Blueprint $table) {
-            $table->dropIndex(['surah_id', 'ayah_start', 'ayah_end']);
-            $table->dropIndex(['status', 'submission_type']);
-            $table->dropIndex('idx_hafalan_student_status_date');
-            $table->dropIndex('idx_hafalan_date_status');
-        });
+        if (Schema::hasIndex('hafalan_records', ['status', 'submission_type'])) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropIndex(['status', 'submission_type']);
+            });
+        }
 
-        Schema::table('hafalan_records', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('surah_id');
-            $table->dropColumn(['ayah_start', 'ayah_end', 'submission_type', 'score', 'status', 'baris']);
-        });
+        if (Schema::hasIndex('hafalan_records', 'idx_hafalan_student_status_date')) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropIndex('idx_hafalan_student_status_date');
+            });
+        }
+
+        if (Schema::hasIndex('hafalan_records', 'idx_hafalan_date_status')) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropIndex('idx_hafalan_date_status');
+            });
+        }
+
+        if (Schema::hasColumn('hafalan_records', 'surah_id')) {
+            Schema::table('hafalan_records', function (Blueprint $table) {
+                $table->dropColumn(['surah_id', 'ayah_start', 'ayah_end', 'submission_type', 'score', 'status', 'baris']);
+            });
+        }
     }
 
     public function down(): void
