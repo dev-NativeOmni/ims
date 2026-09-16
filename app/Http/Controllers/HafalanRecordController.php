@@ -11,7 +11,10 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Services\AcademicCalendarService;
 use App\Services\StudentProgressService;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -452,18 +455,31 @@ class HafalanRecordController extends Controller
             })->values();
         }
 
-        $latestTatapMukaPerStudent = DB::table('ummi_records')
-            ->select('student_id', DB::raw('MAX(tatap_muka) as max_tatap_muka'))
-            ->groupBy('student_id')
-            ->pluck('max_tatap_muka', 'student_id');
-
         return [
             'students' => $students,
             'teachers' => $teachers,
             'surahs' => $surahs,
             'classRooms' => $classRooms,
-            'latestTatapMukaPerStudent' => $latestTatapMukaPerStudent,
         ];
+    }
+
+    /**
+     * Saran nomor Tatap Muka (TM) untuk kelas & tanggal tertentu, dihitung
+     * dari kalender hari efektif kelas (bukan riwayat TM murid) -- lihat
+     * AcademicCalendarService::tatapMukaNumber().
+     */
+    public function suggestTatapMuka(Request $request, AcademicCalendarService $calendar): JsonResponse
+    {
+        $validated = $request->validate([
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
+            'date' => ['required', 'date'],
+        ]);
+
+        $classRoom = ClassRoom::query()->with('program')->findOrFail($validated['class_room_id']);
+
+        return response()->json([
+            'tatap_muka' => $calendar->tatapMukaNumber($classRoom, Carbon::parse($validated['date'])),
+        ]);
     }
 
     public function ummiCard(Request $request, Student $student): View

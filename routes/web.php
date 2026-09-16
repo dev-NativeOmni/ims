@@ -309,6 +309,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 
+        Route::get('/ummi-records/tatap-muka-suggestion', [HafalanRecordController::class, 'suggestTatapMuka'])
+            ->name('ummi-records.tatap-muka-suggestion');
         Route::post('/ummi-records', [QuickInputController::class, 'storeUmmi'])
             ->name('ummi-records.store');
         Route::put('/ummi-records/{ummiRecord}', [HafalanRecordController::class, 'updateUmmi'])

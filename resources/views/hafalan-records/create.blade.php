@@ -11,17 +11,28 @@
         </div>
     </x-slot>
 
-    <script>
-        window.latestTatapMukaPerStudent = @json($latestTatapMukaPerStudent ?? []);
-    </script>
-
     <div class="py-8" x-data="{
         method: '{{ old('method', request('method', 'reguler')) }}',
         selectedClass: '',
         selectedStudent: '{{ old('student_id') }}',
         selectedDate: '{{ now()->format('Y-m-d') }}',
         tatapMuka: {{ old('tatap_muka', 1) }},
-        latestTatapMukaPerStudent: window.latestTatapMukaPerStudent || {},
+        tatapMukaLoading: false,
+        refreshTatapMuka() {
+            if (!this.selectedClass || !this.selectedDate) {
+                return;
+            }
+            this.tatapMukaLoading = true;
+            fetch(`{{ route('ummi-records.tatap-muka-suggestion') }}?class_room_id=${this.selectedClass}&date=${this.selectedDate}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (typeof data.tatap_muka === 'number') {
+                        this.tatapMuka = data.tatap_muka;
+                    }
+                })
+                .catch(err => console.error('Gagal memuat saran Tatap Muka:', err))
+                .finally(() => { this.tatapMukaLoading = false; });
+        },
         attendances: {},
         isLoadingAttendance: false,
         fetchAttendances() {
@@ -252,29 +263,22 @@
             let s = allStudents.find(x => x.id == selectedStudent);
             if (s) {
                 selectedClass = s.classId;
-                tatapMuka = (latestTatapMukaPerStudent[selectedStudent] || 0) + 1;
             }
         }
+        this.refreshTatapMuka();
 
         $watch('selectedStudent', (val) => {
             if (val) {
-                tatapMuka = (latestTatapMukaPerStudent[val] || 0) + 1;
+                let s = allStudents.find(x => x.id == val);
+                if (s) {
+                    selectedClass = s.classId;
+                }
             }
         });
 
         $watch('selectedClass', (val) => {
             fetchAttendances();
-            if (val && !selectedStudent) {
-                let classStudents = allStudents.filter(s => s.classId == val);
-                let maxTatap = 0;
-                classStudents.forEach(s => {
-                    let studentTatap = latestTatapMukaPerStudent[s.id] || 0;
-                    if (studentTatap > maxTatap) {
-                        maxTatap = studentTatap;
-                    }
-                });
-                tatapMuka = maxTatap + 1;
-            }
+            this.refreshTatapMuka();
         });
 
         $watch('hafalans', (val) => {
@@ -299,6 +303,7 @@
 
         $watch('selectedDate', (val) => {
             fetchAttendances();
+            this.refreshTatapMuka();
         });
 
         if (selectedClass) {
@@ -749,6 +754,7 @@
                                 <div>
                                     <label for="ummi_tatap_muka" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                         Tatap Muka (Ke-)
+                                        <span x-show="tatapMukaLoading" class="text-xs text-gray-400 font-normal">(menghitung...)</span>
                                     </label>
                                     <input id="ummi_tatap_muka"
                                            type="number"
@@ -757,6 +763,7 @@
                                            required
                                            x-model.number="tatapMuka"
                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                    <p class="mt-1 text-[11px] text-gray-400 dark:text-zinc-500">Otomatis dihitung dari hari efektif kelas, bisa diubah manual bila perlu.</p>
                                 </div>
                                 <div>
                                     <label for="ummi_tanggal" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
