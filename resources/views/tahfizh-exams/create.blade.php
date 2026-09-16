@@ -106,13 +106,27 @@
                     <form action="{{ route('tahfizh-exams.store') }}" method="POST" class="space-y-4" @submit="validateForm($event)">
                         @csrf
 
+                        <!-- Class Filter -->
+                        <div>
+                            <label for="class_room_filter" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Filter Kelas</label>
+                            <select id="class_room_filter" x-model="classFilter" class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                                <option value="">Semua Kelas</option>
+                                @foreach ($classRooms as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- Student Selector -->
                         <div>
                             <label for="student_id" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Murid yang Diuji *</label>
-                            <select id="student_id" name="student_id" required class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                            <select id="student_id" name="student_id" required x-model="selectedStudent" class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
                                 <option value="">-- Pilih Murid --</option>
                                 @foreach ($students as $student)
-                                    <option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>
+                                    <option value="{{ $student->id }}"
+                                        data-class-id="{{ $student->class_room_id }}"
+                                        :hidden="classFilter && String(classFilter) !== '{{ $student->class_room_id }}'"
+                                        @selected(old('student_id') == $student->id)>
                                         {{ $student->name }} (Kelas: {{ $student->classRoom?->name ?: '-' }})
                                     </option>
                                 @endforeach
@@ -266,6 +280,8 @@
                 examType: 'juz',
                 score: 0,
                 passThreshold: {{ $passThreshold }},
+                classFilter: '',
+                selectedStudent: '{{ old('student_id') }}',
 
                 initApp() {
                     this.loadSurahList()
@@ -274,6 +290,16 @@
                             this.page = lastPage ? parseInt(lastPage) : 1;
                             this.pageChanged();
                         });
+
+                    this.$watch('classFilter', () => {
+                        const selectedOption = this.selectedStudent
+                            ? document.querySelector(`#student_id option[value="${this.selectedStudent}"]`)
+                            : null;
+
+                        if (selectedOption && this.classFilter && selectedOption.dataset.classId !== String(this.classFilter)) {
+                            this.selectedStudent = '';
+                        }
+                    });
                 },
 
                 loadSurahList() {
