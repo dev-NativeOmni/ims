@@ -122,14 +122,9 @@
                             <label for="student_id" class="block text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase mb-1.5">Murid yang Diuji *</label>
                             <select id="student_id" name="student_id" required x-model="selectedStudent" class="block w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
                                 <option value="">-- Pilih Murid --</option>
-                                @foreach ($students as $student)
-                                    <option value="{{ $student->id }}"
-                                        data-class-id="{{ $student->class_room_id }}"
-                                        :hidden="classFilter && String(classFilter) !== '{{ $student->class_room_id }}'"
-                                        @selected(old('student_id') == $student->id)>
-                                        {{ $student->name }} (Kelas: {{ $student->classRoom?->name ?: '-' }})
-                                    </option>
-                                @endforeach
+                                <template x-for="student in filteredStudents" :key="student.id">
+                                    <option :value="student.id" x-text="student.label"></option>
+                                </template>
                             </select>
                             @error('student_id')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -282,6 +277,17 @@
                 passThreshold: {{ $passThreshold }},
                 classFilter: '',
                 selectedStudent: '{{ old('student_id') }}',
+                students: @js($students->map(fn ($student) => [
+                    'id' => (string) $student->id,
+                    'classRoomId' => (string) $student->class_room_id,
+                    'label' => $student->name.' (Kelas: '.($student->classRoom?->name ?: '-').')',
+                ])->values()),
+
+                get filteredStudents() {
+                    return this.classFilter
+                        ? this.students.filter((student) => student.classRoomId === String(this.classFilter))
+                        : this.students;
+                },
 
                 initApp() {
                     this.loadSurahList()
@@ -292,11 +298,10 @@
                         });
 
                     this.$watch('classFilter', () => {
-                        const selectedOption = this.selectedStudent
-                            ? document.querySelector(`#student_id option[value="${this.selectedStudent}"]`)
-                            : null;
+                        const stillVisible = this.selectedStudent
+                            && this.filteredStudents.some((student) => student.id === this.selectedStudent);
 
-                        if (selectedOption && this.classFilter && selectedOption.dataset.classId !== String(this.classFilter)) {
+                        if (this.selectedStudent && !stillVisible) {
                             this.selectedStudent = '';
                         }
                     });
