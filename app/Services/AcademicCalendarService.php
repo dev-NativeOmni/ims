@@ -15,6 +15,13 @@ use Carbon\Carbon;
 class AcademicCalendarService
 {
     /**
+     * Hari efektif UMMI: Senin-Kamis saja. Jumat tetap hari aktif kelas
+     * (tahfizh_days) untuk tahfizh mandiri, tapi bukan bagian UMMI --
+     * jadi tidak menambah hitungan TM UMMI walau kelasnya aktif hari itu.
+     */
+    private const UMMI_DAYS = [1, 2, 3, 4];
+
+    /**
      * Tanggal mulai term (semester) yang memuat tanggal ini.
      * Term 1: Juli-September, Term 2: Oktober-Desember,
      * Term 3: Januari-Maret, Term 4: April-Juni.
@@ -37,13 +44,17 @@ class AcademicCalendarService
     /**
      * Apakah tanggal ini hari efektif untuk kelas: sesuai hari kelas
      * (tahfizh_days), bukan libur nasional, dan bukan libur khusus kelas
-     * ini ("libur sebagian").
+     * ini ("libur sebagian"). Untuk UMMI ($forUmmi), hari kelas dipersempit
+     * ke Senin-Kamis saja, terlepas dari tahfizh_days kelasnya.
      */
-    public function isEffectiveDay(ClassRoom $classRoom, Carbon $date): bool
+    public function isEffectiveDay(ClassRoom $classRoom, Carbon $date, bool $forUmmi = false): bool
     {
         $dayOfWeek = (int) $date->format('N');
+        $allowedDays = $forUmmi
+            ? array_intersect($classRoom->tahfizh_days, self::UMMI_DAYS)
+            : $classRoom->tahfizh_days;
 
-        if (! in_array($dayOfWeek, $classRoom->tahfizh_days, true)) {
+        if (! in_array($dayOfWeek, $allowedDays, true)) {
             return false;
         }
 
@@ -73,9 +84,11 @@ class AcademicCalendarService
      * memang sedang dicatat setoran di tanggal itu), sekalipun jatuh di luar
      * hari efektif normal (mis. pertemuan susulan). Program dengan frekuensi
      * "seminggu sekali" hanya menghitung maksimal satu pertemuan per pekan
-     * kalender.
+     * kalender. Untuk UMMI ($forUmmi), hanya Senin-Kamis yang dihitung --
+     * Jumat dipakai untuk tahfizh mandiri dan tidak termasuk UMMI, sekalipun
+     * kelasnya tetap aktif hari itu (tahfizh_days).
      */
-    public function tatapMukaNumber(ClassRoom $classRoom, Carbon $date): int
+    public function tatapMukaNumber(ClassRoom $classRoom, Carbon $date, bool $forUmmi = false): int
     {
         $isWeekly = $classRoom->program?->meeting_frequency === 'seminggu sekali';
         $targetDateString = $date->toDateString();
@@ -87,7 +100,7 @@ class AcademicCalendarService
         while ($cursor->lte($date)) {
             $isTarget = $cursor->toDateString() === $targetDateString;
 
-            if ($isTarget || $this->isEffectiveDay($classRoom, $cursor)) {
+            if ($isTarget || $this->isEffectiveDay($classRoom, $cursor, $forUmmi)) {
                 if ($isWeekly) {
                     $weekKey = $cursor->format('o-W');
                     if (! isset($countedWeeks[$weekKey])) {

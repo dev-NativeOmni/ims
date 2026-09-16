@@ -32,7 +32,10 @@ class UmmiTatapMukaTest extends TestCase
             'program_id' => $program->id,
             'name' => 'Kelas X UMMI',
             'level' => 'X',
-            'tahfizh_days' => [1, 2, 3, 4],
+            // Hari aktif kelas Senin-Jumat (Jumat dipakai tahfizh mandiri,
+            // bukan UMMI) -- endpoint & backfill harus tetap mengecualikan
+            // Jumat khusus untuk hitungan TM UMMI.
+            'tahfizh_days' => [1, 2, 3, 4, 5],
         ]);
     }
 
@@ -43,7 +46,7 @@ class UmmiTatapMukaTest extends TestCase
 
         $response = $this->actingAs($this->teacherUser)->get(route('ummi-records.tatap-muka-suggestion', [
             'class_room_id' => $classRoom->id,
-            'date' => '2026-07-06', // Senin pekan ke-2 term 1, pertemuan ke-3 (lihat AcademicCalendarServiceTest).
+            'date' => '2026-07-06', // Senin pekan ke-2 term 1, pertemuan ke-3 (Jumat 07-03 dilewati).
         ]));
 
         $response->assertStatus(200);

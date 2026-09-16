@@ -478,7 +478,7 @@ class HafalanRecordController extends Controller
         $classRoom = ClassRoom::query()->with('program')->findOrFail($validated['class_room_id']);
 
         return response()->json([
-            'tatap_muka' => $calendar->tatapMukaNumber($classRoom, Carbon::parse($validated['date'])),
+            'tatap_muka' => $calendar->tatapMukaNumber($classRoom, Carbon::parse($validated['date']), forUmmi: true),
         ]);
     }
 

@@ -38,7 +38,7 @@ return new class extends Migration
                     return;
                 }
 
-                $newTatapMuka = $calendar->tatapMukaNumber($classRoom, Carbon::parse($record->tanggal));
+                $newTatapMuka = $calendar->tatapMukaNumber($classRoom, Carbon::parse($record->tanggal), forUmmi: true);
 
                 DB::table('ummi_records')->where('id', $record->id)->update([
                     'tatap_muka' => $newTatapMuka,

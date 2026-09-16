@@ -65,6 +65,32 @@ class AcademicCalendarServiceTest extends TestCase
     }
 
     #[Test]
+    public function ummi_excludes_friday_even_when_class_is_active_that_day(): void
+    {
+        $program = Program::create(['name' => 'Tahfizh Kelas 10', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X UMMI',
+            'level' => 'X',
+            // Hari aktif kelas Senin-Jumat (Jumat dipakai tahfizh mandiri, non-UMMI).
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+
+        // Jumat, 2026-07-03: hari aktif kelas, tapi BUKAN hari efektif UMMI.
+        $this->assertTrue($this->service->isEffectiveDay($classRoom, Carbon::parse('2026-07-03')));
+        $this->assertFalse($this->service->isEffectiveDay($classRoom, Carbon::parse('2026-07-03'), forUmmi: true));
+
+        // Term mulai Rabu 07-01: hari efektif UMMI di pekan pertama cuma Rabu &
+        // Kamis (07-01, 07-02) -- Jumat (07-03) dilewati, jadi Senin berikutnya
+        // (07-06) tetap pertemuan UMMI ke-3, bukan ke-4.
+        $this->assertSame(3, $this->service->tatapMukaNumber($classRoom, Carbon::parse('2026-07-06'), forUmmi: true));
+
+        // Tanpa forUmmi (mis. dipakai program lain), Jumat tetap dihitung
+        // sebagai hari aktif kelas: Senin (07-06) jadi pertemuan ke-4.
+        $this->assertSame(4, $this->service->tatapMukaNumber($classRoom, Carbon::parse('2026-07-06')));
+    }
+
+    #[Test]
     public function class_specific_holiday_is_skipped_only_for_that_class(): void
     {
         $program = Program::create(['name' => 'Tahfizh Kelas 10', 'status' => 'active']);
