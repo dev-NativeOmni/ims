@@ -251,8 +251,10 @@
                                                                 <span class="text-blue-500 font-extrabold text-[9px]">S</span>
                                                             @elseif($status === 'I')
                                                                 <span class="text-amber-500 font-extrabold text-[9px]">I</span>
-                                                            @else
+                                                            @elseif($status === 'A')
                                                                 <span class="text-rose-500 font-extrabold text-[9px]">A</span>
+                                                            @else
+                                                                <span class="text-gray-300 dark:text-zinc-700 font-extrabold text-[9px]">-</span>
                                                             @endif
                                                         </td>
                                                     @endfor
@@ -302,8 +304,10 @@
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-semibold border border-amber-250/50 dark:border-amber-900/30">Izin</span>
                                                         @elseif ($sPres['pekan'][$p] === 'Sakit')
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 font-semibold border border-blue-200/50 dark:border-blue-900/30">Sakit</span>
-                                                        @else
+                                                        @elseif ($sPres['pekan'][$p] === 'Alpa')
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 font-semibold border border-rose-250/50 dark:border-rose-900/30">Alpa</span>
+                                                        @else
+                                                            <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 font-semibold border border-gray-200/50 dark:border-zinc-700/50">Belum Ada</span>
                                                         @endif
                                                     </td>
                                                 @endfor
@@ -482,6 +486,8 @@
                                                         @if ($pRec['kehadiran'] === 'Hadir')
                                                             <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
                                                             <span class="block text-[8px] text-gray-400 mt-0.5">{{ $pRec['baris'] }} Brs · Nilai: {{ $pRec['nilai'] }}</span>
+                                                        @elseif ($pRec['kehadiran'] === '-')
+                                                            <span class="text-gray-300 dark:text-zinc-600 text-[8px] tracking-wider block text-center py-1">Belum Ada</span>
                                                         @else
                                                             <span class="text-amber-500 font-extrabold uppercase text-[8px] tracking-wider block text-center py-1 bg-amber-500/5 rounded">{{ $pRec['kehadiran'] }}</span>
                                                         @endif
@@ -517,6 +523,14 @@
                                         $total = $halaqah['total_students'];
                                         $tPercent = $total > 0 ? round(($tCount / $total) * 100) : 0;
                                         $btPercent = 100 - $tPercent;
+
+                                        $graphRecords = $isTahfizhProgram ? $halaqah['tahfizh_records'] : $halaqah['reguler_records'];
+                                        $targetRange = collect($graphRecords)->pluck('target_lines')->filter(fn ($t) => $t > 0);
+                                        $targetLabel = $targetRange->isEmpty()
+                                            ? 'Belum ada pertemuan bulan ini'
+                                            : ($targetRange->min() === $targetRange->max()
+                                                ? "{$targetRange->min()} Baris/Bulan"
+                                                : "{$targetRange->min()} - {$targetRange->max()} Baris/Bulan");
                                     @endphp
                                     <div>
                                         <div class="flex justify-between text-xs font-semibold mb-1">
@@ -541,7 +555,7 @@
                                 <div class="p-4 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl space-y-2 text-xs">
                                     <div class="flex justify-between border-b dark:border-zinc-800 pb-2">
                                         <span class="text-gray-500">Target Ketuntasan</span>
-                                        <span class="font-bold text-gray-800 dark:text-zinc-200">{{ $isTahfizhProgram ? '120 - 150 Baris/Bulan' : '40 Baris/Bulan' }}</span>
+                                        <span class="font-bold text-gray-800 dark:text-zinc-200">{{ $targetLabel }}</span>
                                     </div>
                                     <div class="flex justify-between pt-1">
                                         <span class="text-gray-500">Halaqoh Ratio</span>

@@ -226,6 +226,15 @@ class QuarterlyReportController extends Controller
             $gAttendances = $attendances->whereIn('student_id', $gStudentIds);
             $gHafalanRecords = $hafalanRecords->whereIn('student_id', $gStudentIds);
 
+            // Jumlah pertemuan aktif bulan ini untuk halaqoh ini (tanggal unik yang
+            // punya presensi atau setoran nyata) -- dipakai sebagai pengali target
+            // baris per bulan, bukan asumsi jumlah pertemuan tetap.
+            $gActiveMeetings = $gAttendances->pluck('tanggal')
+                ->map(fn ($d) => $d instanceof Carbon ? $d->toDateString() : Carbon::parse($d)->toDateString())
+                ->merge($gHafalanRecords->pluck('submitted_at')->map(fn ($d) => $d instanceof Carbon ? $d->toDateString() : Carbon::parse($d)->toDateString()))
+                ->unique()
+                ->count();
+
             // A. Presensi & Setoran Mapping
             if ($isTahfizhProgram) {
                 // Tahfizh: 3 months grid
@@ -266,7 +275,7 @@ class QuarterlyReportController extends Controller
                                     };
                                 } else {
                                     $hasSetoran = $mHaf->contains(fn ($h) => $h->submitted_at->toDateString() === $date);
-                                    $mDays[$i] = $hasSetoran ? 'H' : 'H';
+                                    $mDays[$i] = $hasSetoran ? 'H' : '-';
                                 }
                             } else {
                                 $mDays[$i] = '-';
@@ -313,13 +322,16 @@ class QuarterlyReportController extends Controller
 
                                 return $dayNum >= $pStart && $dayNum <= $pEnd;
                             });
-                            $pekan[$p] = $hasSetoran ? 'Hadir' : 'Hadir';
+                            // Tidak ada presensi tercatat untuk pekan ini: anggap hadir
+                            // hanya kalau memang ada setoran nyata, selain itu artinya
+                            // belum ada pertemuan di pekan tsb -- bukan otomatis hadir.
+                            $pekan[$p] = $hasSetoran ? 'Hadir' : '-';
                         }
                     }
 
                     $presensiData[$student->id] = [
                         'pekan' => $pekan,
-                        'hadir' => $sAtt->where('status', 'hadir')->count() ?: 5,
+                        'hadir' => collect($pekan)->filter(fn ($status) => $status === 'Hadir')->count(),
                         'sakit' => $sAtt->where('status', 'sakit')->count(),
                         'izin' => $sAtt->where('status', 'izin')->count(),
                         'alpa' => $sAtt->where('status', 'alpa')->count(),
@@ -455,7 +467,7 @@ class QuarterlyReportController extends Controller
                         'ummi' => null,
                         default => 5,
                     };
-                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * 20);
+                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * $gActiveMeetings);
                     $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
                     $pCount = $violations->where('student_id', $student->id)->count();
 
@@ -530,7 +542,7 @@ class QuarterlyReportController extends Controller
                         'ummi' => null,
                         default => 5,
                     };
-                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * 4);
+                    $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * $gActiveMeetings);
                     $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
                     $pCount = $violations->where('student_id', $student->id)->count();
 
