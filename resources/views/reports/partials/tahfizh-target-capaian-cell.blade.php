@@ -8,21 +8,34 @@
 --}}
 @php
     $isUmmiTarget = ! empty($target->ummi_jilid);
+
+    // Halaman disimpan bebas oleh guru (kadang berupa rentang "24-25") --
+    // rapor cukup menampilkan angka halaman terakhirnya saja.
+    $lastPageNumber = function (?string $value) {
+        if (! $value) {
+            return $value;
+        }
+        $parts = preg_split('/[-–—]/', $value);
+
+        return trim(end($parts));
+    };
 @endphp
 @if ($isUmmiTarget)
     @if ($mode === 'target')
         {{-- ummi_jilid sudah berupa label lengkap ("Jilid 2", "Gharib", dst), tidak perlu prefix "Jilid" lagi. --}}
-        <div>Ummi : {{ $target->ummi_jilid }}{{ ($target->halaman_buku ?: $target->halaman_peraga) ? ' Hal '.($target->halaman_buku ?: $target->halaman_peraga) : '' }}</div>
+        @php $targetHalaman = $lastPageNumber($target->halaman_buku ?: $target->halaman_peraga); @endphp
+        <div>Ummi : {{ $target->ummi_jilid }}{{ $targetHalaman ? ' Hal '.$targetHalaman : '' }}</div>
         @if ($target->surah)
             <div>Tahfizh : Surah {{ $target->surah->name_latin }}{{ $target->ayah ? ' Ayat '.$target->ayah : '' }}</div>
         @endif
     @else
-        <div>Ummi : {{ $latestUmmiJilid ?: '-' }}{{ $latestUmmiHalaman ? ' Hal '.$latestUmmiHalaman : '' }}</div>
+        @php $capaianHalaman = $lastPageNumber($latestUmmiHalaman); @endphp
+        <div>Ummi : {{ $latestUmmiJilid ?: '-' }}{{ $capaianHalaman ? ' Hal '.$capaianHalaman : '' }}</div>
         @php
             $tahfizhCapaian = $target->matching_record ?: ($latestJuz30Hafalan ?? null);
         @endphp
         @if ($tahfizhCapaian && $tahfizhCapaian->surah)
-            <div>Tahfizh : Surah {{ $tahfizhCapaian->surah->name_latin }} Ayat {{ $tahfizhCapaian->ayah_start }}-{{ $tahfizhCapaian->ayah_end }}</div>
+            <div>Tahfizh : Surah {{ $tahfizhCapaian->surah->name_latin }} Ayat {{ $tahfizhCapaian->ayah_end }}</div>
         @endif
     @endif
 @elseif ($mode === 'target')

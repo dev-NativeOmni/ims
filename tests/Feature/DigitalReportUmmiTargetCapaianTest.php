@@ -80,8 +80,12 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             ->get(route('digital-reports.print', $this->student));
 
         $response->assertStatus(200);
-        $response->assertSee('Ummi : Jilid 2 Hal 24-25', false);
-        $response->assertSee('Tahfizh : Surah '.$this->surah->name_latin, false);
+        // Halaman disimpan sebagai rentang ("24-25") tapi rapor cukup
+        // menampilkan angka halaman terakhirnya saja.
+        $response->assertSee('Ummi : Jilid 2 Hal 25', false);
+        // Baris Tahfizh capaian cukup menampilkan ayat terakhir (9), bukan rentang (1-9).
+        $response->assertSee('Tahfizh : Surah '.$this->surah->name_latin.' Ayat 9', false);
+        $response->assertDontSee('Ayat 1-9', false);
     }
 
     #[Test]
