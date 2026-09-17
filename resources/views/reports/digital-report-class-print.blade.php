@@ -107,6 +107,7 @@
             $latestCapaianNotes = $data['latestCapaianNotes'];
             $latestUmmiJilid = $data['latestUmmiJilid'] ?? null;
             $latestUmmiHalaman = $data['latestUmmiHalaman'] ?? null;
+            $latestUmmiSurahEntry = $data['latestUmmiSurahEntry'] ?? null;
             $latestJuz30Hafalan = $data['latestJuz30Hafalan'] ?? null;
             $adabCategories = $data['adabCategories'] ?? \App\Models\Setting::getAdabQuestions();
             $adabCategoryScores = $data['adabCategoryScores'] ?? [];

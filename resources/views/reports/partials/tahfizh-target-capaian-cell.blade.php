@@ -2,9 +2,14 @@
     Isi sel kolom Target/Capaian tahfizh di rapor cetak.
     $target: baris HafalanTarget yang sedang dirender.
     $mode: 'target' atau 'capaian'.
-    UMMI dan Reguler khusus digunakan pada target yang dibuat lewat alur
-    UMMI (target->ummi_jilid terisi) -- target Reguler murni tetap
-    memakai format satu baris "QS. Surah (Ayat X)" seperti sebelumnya.
+    Format 2/3 baris khusus dipakai pada target yang dibuat lewat alur UMMI
+    (target->ummi_jilid terisi) -- target Reguler murni tetap memakai
+    format satu baris "QS. Surah (Ayat X)" seperti sebelumnya.
+    - Target: "Ummi : ..." + "Tahfizh : ..." (dari target itu sendiri).
+    - Capaian: "Ummi : ..." + "Tahfizh Ummi : ..." (hafalan di dalam sesi
+      UMMI) + "Tahfizh Mandiri : ..." (setoran hafalan terpisah) --
+      ditampilkan berdampingan karena murid Kelas 10 punya dua jalur
+      hafalan yang berbeda.
 --}}
 @php
     $isUmmiTarget = ! empty($target->ummi_jilid);
@@ -31,11 +36,16 @@
     @else
         @php $capaianHalaman = $lastPageNumber($latestUmmiHalaman); @endphp
         <div>Ummi : {{ $latestUmmiJilid ?: '-' }}{{ $capaianHalaman ? ' Hal '.$capaianHalaman : '' }}</div>
-        @php
-            $tahfizhCapaian = $target->matching_record ?: ($latestJuz30Hafalan ?? null);
-        @endphp
-        @if ($tahfizhCapaian && $tahfizhCapaian->surah)
-            <div>Tahfizh : Surah {{ $tahfizhCapaian->surah->name_latin }} Ayat {{ $tahfizhCapaian->ayah_end }}</div>
+
+        {{-- Tahfizh Ummi: hafalan yang dicatat di dalam sesi UMMI itu sendiri. --}}
+        @php $ummiSurahAyah = $latestUmmiSurahEntry?->hafalan_ayah ? $lastPageNumber($latestUmmiSurahEntry->hafalan_ayah) : null; @endphp
+        @if ($latestUmmiSurahEntry && $latestUmmiSurahEntry->surah)
+            <div>Tahfizh Ummi : Surah {{ $latestUmmiSurahEntry->surah->name_latin }}{{ $ummiSurahAyah ? ' Ayat '.$ummiSurahAyah : '' }}</div>
+        @endif
+
+        {{-- Tahfizh Mandiri: setoran hafalan terpisah/mandiri (hafalan_records), di luar sesi UMMI. --}}
+        @if (($latestJuz30Hafalan ?? null) && $latestJuz30Hafalan->surah)
+            <div>Tahfizh Mandiri : Surah {{ $latestJuz30Hafalan->surah->name_latin }} Ayat {{ $latestJuz30Hafalan->ayah_end }}</div>
         @endif
     @endif
 @elseif ($mode === 'target')

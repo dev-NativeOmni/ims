@@ -362,12 +362,17 @@ class StudentReportController extends Controller
             }
         }
 
-        // Nilai mentah untuk baris "Ummi :" / "Tahfizh :" terpisah di kolom
-        // Target & Capaian rapor (khusus target yang dibuat lewat alur UMMI,
-        // ditandai dengan target->ummi_jilid terisi -- lihat
-        // reports/partials/tahfizh-target-capaian-cell.blade.php).
+        // Nilai mentah untuk baris "Ummi :" / "Tahfizh Ummi :" / "Tahfizh
+        // Mandiri :" di kolom Target & Capaian rapor (khusus target yang
+        // dibuat lewat alur UMMI, ditandai dengan target->ummi_jilid terisi
+        // -- lihat reports/partials/tahfizh-target-capaian-cell.blade.php).
+        // "Tahfizh Ummi" = hafalan yang dicatat di dalam sesi UMMI itu
+        // sendiri (ummi_record_surahs). "Tahfizh Mandiri" = setoran hafalan
+        // terpisah/mandiri (hafalan_records), keduanya ditampilkan sekaligus
+        // karena murid Kelas 10 punya dua jalur hafalan yang berbeda.
         $latestUmmiJilid = $studentUmmiAll->first()?->ummi_jilid;
         $latestUmmiHalaman = $studentUmmiAll->first()?->ummi_halaman;
+        $latestUmmiSurahEntry = $studentUmmiAll->first()?->surahs->last();
         $latestJuz30Hafalan = $studentHafalanAll
             ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
             ->sortBy(fn ($r) => $r->surah?->number ?? 114)
@@ -459,6 +464,7 @@ class StudentReportController extends Controller
             'latestCapaianNotes',
             'latestUmmiJilid',
             'latestUmmiHalaman',
+            'latestUmmiSurahEntry',
             'latestJuz30Hafalan',
             'adabCategories',
             'adabCategoryScores',

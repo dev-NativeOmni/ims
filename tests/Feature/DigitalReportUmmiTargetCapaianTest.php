@@ -6,6 +6,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Program;
+use App\Models\Surah;
 use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -14,9 +15,12 @@ use Tests\TestCase;
 
 /**
  * Kolom Target & Capaian di rapor cetak murid UMMI (Kelas 10) harus
- * menampilkan dua baris terpisah "Ummi : Jilid X Hal Y" dan
- * "Tahfizh : Surah X Ayat Y", bukan format "QS. X (Ayat Y)" tunggal yang
- * dipakai untuk target Reguler murni.
+ * menampilkan format khusus:
+ * - Target: "Ummi : Jilid X Hal Y" + "Tahfizh : Surah X Ayat Y"
+ * - Capaian: "Ummi : ..." + "Tahfizh Ummi : ..." (hafalan di dalam sesi
+ *   UMMI) + "Tahfizh Mandiri : ..." (setoran hafalan terpisah)
+ * bukan format "QS. X (Ayat Y)" tunggal yang dipakai untuk target Reguler
+ * murni.
  */
 class DigitalReportUmmiTargetCapaianTest extends TestCase
 {
@@ -53,7 +57,12 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             'status' => 'active',
         ]);
 
-        UmmiRecord::create([
+        // Hafalan yang dicatat di dalam sesi UMMI itu sendiri ("Tahfizh Ummi").
+        $anNaba = Surah::firstOrCreate(
+            ['number' => 78],
+            ['name_ar' => 'النبأ', 'name_latin' => 'An-Naba', 'total_ayah' => 40, 'juz_start' => 30, 'juz_end' => 30]
+        );
+        $ummiRecord = UmmiRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'tanggal' => now(),
@@ -62,16 +71,25 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             'ummi_halaman' => '24-25',
             'nilai' => 'B',
         ]);
+        $ummiRecord->surahs()->create([
+            'surah_id' => $anNaba->id,
+            'hafalan_ayah' => '1-5',
+        ]);
 
+        // Setoran hafalan mandiri/terpisah dari sesi UMMI ("Tahfizh Mandiri").
+        $anNas = Surah::firstOrCreate(
+            ['number' => 114],
+            ['name_ar' => 'الناس', 'name_latin' => 'An-Nas', 'total_ayah' => 6, 'juz_start' => 30, 'juz_end' => 30]
+        );
         $record = HafalanRecord::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'submitted_at' => now(),
         ]);
         $record->surahs()->create([
-            'surah_id' => $this->surah->id,
+            'surah_id' => $anNas->id,
             'ayah_start' => 1,
-            'ayah_end' => 9,
+            'ayah_end' => 6,
             'submission_type' => 'new',
             'status' => 'passed',
         ]);
@@ -80,12 +98,14 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             ->get(route('digital-reports.print', $this->student));
 
         $response->assertStatus(200);
-        // Halaman disimpan sebagai rentang ("24-25") tapi rapor cukup
-        // menampilkan angka halaman terakhirnya saja.
+        // Target: halaman disimpan sebagai rentang ("24-25") tapi rapor
+        // cukup menampilkan angka halaman terakhirnya saja.
         $response->assertSee('Ummi : Jilid 2 Hal 25', false);
-        // Baris Tahfizh capaian cukup menampilkan ayat terakhir (9), bukan rentang (1-9).
-        $response->assertSee('Tahfizh : Surah '.$this->surah->name_latin.' Ayat 9', false);
-        $response->assertDontSee('Ayat 1-9', false);
+        $response->assertSee('Tahfizh : Surah '.$this->surah->name_latin, false);
+
+        // Capaian: tiga baris terpisah, Ummi + Tahfizh Ummi + Tahfizh Mandiri.
+        $response->assertSee('Tahfizh Ummi : Surah An-Naba Ayat 5', false);
+        $response->assertSee('Tahfizh Mandiri : Surah An-Nas Ayat 6', false);
     }
 
     #[Test]
