@@ -362,6 +362,17 @@ class StudentReportController extends Controller
             }
         }
 
+        // Nilai mentah untuk baris "Ummi :" / "Tahfizh :" terpisah di kolom
+        // Target & Capaian rapor (khusus target yang dibuat lewat alur UMMI,
+        // ditandai dengan target->ummi_jilid terisi -- lihat
+        // reports/partials/tahfizh-target-capaian-cell.blade.php).
+        $latestUmmiJilid = $studentUmmiAll->first()?->ummi_jilid;
+        $latestUmmiHalaman = $studentUmmiAll->first()?->ummi_halaman;
+        $latestJuz30Hafalan = $studentHafalanAll
+            ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
+            ->sortBy(fn ($r) => $r->surah?->number ?? 114)
+            ->first() ?? $studentHafalanAll->first();
+
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();
         $adabCategoryScores = [];
@@ -446,6 +457,9 @@ class StudentReportController extends Controller
             'termTargetText',
             'latestCapaianText',
             'latestCapaianNotes',
+            'latestUmmiJilid',
+            'latestUmmiHalaman',
+            'latestJuz30Hafalan',
             'adabCategories',
             'adabCategoryScores',
             'avgAttendanceRate',

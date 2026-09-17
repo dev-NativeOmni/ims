@@ -105,6 +105,9 @@
             $termTargetText = $data['termTargetText'];
             $latestCapaianText = $data['latestCapaianText'];
             $latestCapaianNotes = $data['latestCapaianNotes'];
+            $latestUmmiJilid = $data['latestUmmiJilid'] ?? null;
+            $latestUmmiHalaman = $data['latestUmmiHalaman'] ?? null;
+            $latestJuz30Hafalan = $data['latestJuz30Hafalan'] ?? null;
             $adabCategories = $data['adabCategories'] ?? \App\Models\Setting::getAdabQuestions();
             $adabCategoryScores = $data['adabCategoryScores'] ?? [];
             $avgAttendanceRate = $data['avgAttendanceRate'] ?? 0;
@@ -206,14 +209,10 @@
                             <tr class="border-b border-black">
                                 <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
                                 <td class="p-1.5 border-r border-black align-middle">
-                                    QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_range }})
+                                    @include('reports.partials.tahfizh-target-capaian-cell', ['target' => $target, 'mode' => 'target'])
                                 </td>
                                 <td class="p-1.5 border-r border-black align-middle">
-                                    @if($target->matching_record)
-                                        QS. {{ $target->matching_record->surah?->name_latin ?? '-' }} (Ayat {{ $target->matching_record->ayah_start }}-{{ $target->matching_record->ayah_end }})
-                                    @else
-                                        -
-                                    @endif
+                                    @include('reports.partials.tahfizh-target-capaian-cell', ['target' => $target, 'mode' => 'capaian'])
                                 </td>
                                 <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $target->status === 'completed' ? 'text-green-700' : 'text-red-650' }}">
                                     {{ $target->status === 'completed' ? 'Tuntas' : 'Tidak Tuntas' }}

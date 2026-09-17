@@ -182,14 +182,10 @@
                         <tr class="border-b border-black">
                             <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
                             <td class="p-1.5 border-r border-black align-middle font-semibold">
-                                QS. {{ $target->surah?->name_latin ?? '-' }} (Ayat {{ $target->ayah_range }})
+                                @include('reports.partials.tahfizh-target-capaian-cell', ['target' => $target, 'mode' => 'target'])
                             </td>
                             <td class="p-1.5 border-r border-black align-middle font-semibold">
-                                @if($target->matching_record)
-                                    QS. {{ $target->matching_record->surah?->name_latin ?? '-' }} (Ayat {{ $target->matching_record->ayah_start }}-{{ $target->matching_record->ayah_end }})
-                                @else
-                                    {{ $latestCapaianText ?: '-' }}
-                                @endif
+                                @include('reports.partials.tahfizh-target-capaian-cell', ['target' => $target, 'mode' => 'capaian'])
                             </td>
                             <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $target->status === 'completed' ? 'text-green-700' : 'text-amber-700' }}">
                                 {{ $target->status === 'completed' ? 'Tuntas' : 'Dalam Proses' }}
