@@ -202,17 +202,9 @@
                 </tbody>
             </table>
 
-            <!-- Nilai Akhir Tahfizh (Ketuntasan Target + Ujian) -->
+            <!-- Nilai Akhir Tahfizh -->
             <div class="border border-black rounded p-3 mt-4 flex items-center justify-between bg-gray-50">
-                <div>
-                    <div class="text-xs font-black uppercase">Nilai Akhir Tahfizh</div>
-                    <div class="text-[10px] text-gray-600 mt-0.5">
-                        Ketuntasan Target: {{ $tahfizhScore['target_score'] ?? '-' }}/{{ $tahfizhScore['target_weight'] }}
-                        ({{ $tahfizhScore['target_label'] ?? 'Belum ada target' }})
-                        &middot;
-                        Ujian Tahfizh: {{ $tahfizhScore['exam_score'] ?? '-' }}/{{ $tahfizhScore['exam_weight'] }}
-                    </div>
-                </div>
+                <div class="text-xs font-black uppercase">Nilai Akhir Tahfizh</div>
                 <div class="text-2xl font-black">{{ $tahfizhScore['final_score'] }}<span class="text-xs font-semibold"> / 100</span></div>
             </div>
         </div>
