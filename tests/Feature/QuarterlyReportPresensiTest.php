@@ -17,7 +17,7 @@ use Tests\TestCase;
  * selalu menampilkan "Hadir" walau tidak ada pertemuan nyata di pekan itu
  * (bug ternary `$hasSetoran ? 'Hadir' : 'Hadir'`), dan target baris bulanan
  * memakai pengali pertemuan tetap (4 atau 20) alih-alih jumlah pertemuan
- * aktif sungguhan bulan tsb, sehingga capaian vs target tidak sinkron.
+ * terjadwal bulan tsb menurut kalender & jadwal kelas, sehingga capaian vs target tidak sinkron.
  */
 class QuarterlyReportPresensiTest extends TestCase
 {
@@ -125,19 +125,27 @@ class QuarterlyReportPresensiTest extends TestCase
                 return false;
             }
 
-            // Target baris = level (reguler=5) x jumlah pertemuan aktif (2),
-            // bukan pengali tetap (4 atau 20).
+            // Target baris = level (reguler=5) x jumlah pertemuan terjadwal bulan itu
+            // (Rabu 2, 16, 23, 30 September; 9 September libur) = 4, walau hanya
+            // 2 pertemuan yang sudah diinput musyrif.
             $regulerRow = collect($september['reguler_records'])
                 ->firstWhere('student_id', $this->student->id);
 
-            if ($regulerRow['target_lines'] !== 10) {
+            if ($regulerRow['target_lines'] !== 20) {
                 return false;
             }
 
-            // Rekap term menjumlahkan semua bulan: Juli & Agustus kosong, September 10 baris target.
+            // Juli & Agustus belum ada input sama sekali, tapi tetap punya target dari
+            // kalender: Rabu Juli = 5, Agustus = 4 (masing-masing x 5 baris).
+            if ($halaqah['monthly']['07']['reguler_records'][0]['target_lines'] !== 25
+                || $halaqah['monthly']['08']['reguler_records'][0]['target_lines'] !== 20) {
+                return false;
+            }
+
+            // Rekap term menjumlahkan target semua bulan.
             $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
 
-            return $termRow['target_lines'] === 10 && $termRow['total_lines'] > 0;
+            return $termRow['target_lines'] === 65 && $termRow['total_lines'] > 0;
         });
     }
 

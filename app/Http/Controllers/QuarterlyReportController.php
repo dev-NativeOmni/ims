@@ -339,15 +339,6 @@ class QuarterlyReportController extends Controller
             ->values()
             ->toArray();
 
-        // Jumlah pertemuan aktif bulan ini untuk halaqoh ini (tanggal unik yang
-        // punya presensi atau setoran nyata) -- dipakai sebagai pengali target
-        // baris per bulan, bukan asumsi jumlah pertemuan tetap.
-        $gActiveMeetings = $gAttendances->pluck('tanggal')
-            ->map(fn ($d) => $this->dateString($d))
-            ->merge($gHafalanRecords->pluck('submitted_at')->map(fn ($d) => $this->dateString($d)))
-            ->unique()
-            ->count();
-
         // Hari efektif kelas di bulan ini (jadwal kelas, libur nasional, libur kelas):
         // membedakan "Libur" (tidak ada pertemuan) dari "Belum di input" (ada pertemuan
         // tapi musyrif belum mengisi).
@@ -376,6 +367,26 @@ class QuarterlyReportController extends Controller
 
             return '-';
         };
+
+        // Jumlah pertemuan terjadwal bulan ini menurut kalender akademik & jadwal kelas
+        // (bukan dari data yang sudah diinput musyrif) -- pengali target baris per bulan.
+        // Program "seminggu sekali" dihitung maksimal satu pertemuan per pekan kalender.
+        $isWeeklyProgram = $context['classRoom']?->program?->meeting_frequency === 'seminggu sekali';
+        $scheduledMeetings = 0;
+        $countedWeeks = [];
+        foreach ($effectiveByDay as $day => $isEffective) {
+            if (! $isEffective) {
+                continue;
+            }
+            if ($isWeeklyProgram) {
+                $weekKey = $monthStart->copy()->day($day)->format('o-W');
+                if (isset($countedWeeks[$weekKey])) {
+                    continue;
+                }
+                $countedWeeks[$weekKey] = true;
+            }
+            $scheduledMeetings++;
+        }
 
         // A. Presensi mingguan (Reguler)
         $presensiData = [];
@@ -571,7 +582,7 @@ class QuarterlyReportController extends Controller
                 'ummi' => null,
                 default => 5,
             };
-            $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * $gActiveMeetings);
+            $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * $scheduledMeetings);
             $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
 
             $studentTarget = $latestTargets->get($student->id)?->first();
