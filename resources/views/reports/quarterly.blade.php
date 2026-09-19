@@ -93,7 +93,7 @@
 
             <!-- Filter Panel -->
             <div class="no-print bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm sm:rounded-xl p-5">
-                <form method="GET" action="{{ route('reports.quarterly') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <form method="GET" action="{{ route('reports.quarterly') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                     <div>
                         <label for="class_room_id" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
                             Pilih Kelas Halaqoh
@@ -129,16 +129,6 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="month" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
-                            Pilih Bulan Laporan
-                        </label>
-                        <select name="month" id="month" class="block w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white" onchange="this.form.submit()">
-                            @foreach ($monthsMap as $mCode => $mName)
-                                <option value="{{ $mCode }}" @selected($selectedMonth == $mCode) class="dark:bg-zinc-900">{{ $mName }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                 </form>
             </div>
 
@@ -146,7 +136,7 @@
             <div class="no-print flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
                 <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-center gap-1.5">
                     <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama bulan terpilih.</span>
+                    <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
                 </span>
                 <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
                     <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
@@ -269,6 +259,9 @@
                             </div>
                         @else
                             <!-- PRESENSI FORMAT REGULER (Pekan 1-5 grid) -->
+@foreach ($halaqah['monthly'] as $mCode => $month)
+<div class="space-y-2">
+    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                             <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -292,7 +285,7 @@
                                     </thead>
                                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                         @foreach ($halaqah['students'] as $idx => $student)
-                                            @php $sPres = $halaqah['presensi'][$student->id]; @endphp
+                                            @php $sPres = $month['presensi'][$student->id]; @endphp
                                             <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $student->name }}</td>
@@ -320,11 +313,16 @@
                                     </tbody>
                                 </table>
                             </div>
+</div>
+@endforeach
                         @endif
                     </div>
 
                     <!-- 2. JURNAL PEMBELAJARAN -->
                     <div x-show="activeTab === 'jurnal'" class="space-y-4" style="display: none;">
+@foreach ($halaqah['monthly'] as $mCode => $month)
+<div class="space-y-3">
+    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -337,7 +335,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
-                                    @foreach ($halaqah['jurnal'] as $jIdx => $jurnal)
+                                    @foreach ($month['jurnal'] as $jIdx => $jurnal)
                                         <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $jIdx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-700 dark:text-zinc-300">{{ $jurnal['tanggal'] }}</td>
@@ -349,10 +347,15 @@
                                 </tbody>
                             </table>
                         </div>
+</div>
+@endforeach
                     </div>
 
                     <!-- 3. CAPAIAN HAFALAN (SETORAN) -->
                     <div x-show="activeTab === 'setoran'" class="space-y-4" style="display: none;">
+@foreach ($halaqah['monthly'] as $mCode => $month)
+<div class="space-y-3 pb-4" x-data="{ pekanTab: 1 }">
+    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         @if ($isTahfizhProgram)
                             <!-- TAHFIZH SETORAN: DAILY TABS (Senin - Jumat) -->
                             <div class="flex items-center justify-between gap-3 bg-gray-50 dark:bg-zinc-950 p-2.5 rounded-xl border dark:border-zinc-800">
@@ -404,7 +407,7 @@
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
-                                            @foreach ($halaqah['tahfizh_records'] as $idx => $row)
+                                            @foreach ($month['tahfizh_records'] as $idx => $row)
                                                 @php $wRecord = $row['pekan'][$p]; @endphp
                                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                     <td class="px-3 py-2.5 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
@@ -472,8 +475,8 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
-                                        @foreach ($halaqah['reguler_records'] as $idx => $row)
-                                            @php $sPres = $halaqah['presensi'][$row['student_id']]; @endphp
+                                        @foreach ($month['reguler_records'] as $idx => $row)
+                                            @php $sPres = $month['presensi'][$row['student_id']]; @endphp
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
@@ -506,10 +509,15 @@
                                 </table>
                             </div>
                         @endif
+</div>
+@endforeach
                     </div>
 
                     <!-- 4. GRAFIK AKHIR BULAN -->
                     <div x-show="activeTab === 'grafik'" class="space-y-6" style="display: none;">
+@foreach ($halaqah['monthly'] as $mCode => $month)
+<div class="space-y-6 pb-4">
+    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         <!-- Completion Graph mockup with CSS bars -->
                         <div class="bg-gray-50/50 dark:bg-zinc-950 p-5 rounded-2xl border dark:border-zinc-800 space-y-4">
                             <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
@@ -519,12 +527,12 @@
                                 <!-- Bar Graph -->
                                 <div class="space-y-3">
                                     @php
-                                        $tCount = $halaqah['tuntas_count'];
+                                        $tCount = $month['tuntas_count'];
                                         $total = $halaqah['total_students'];
                                         $tPercent = $total > 0 ? round(($tCount / $total) * 100) : 0;
                                         $btPercent = 100 - $tPercent;
 
-                                        $graphRecords = $isTahfizhProgram ? $halaqah['tahfizh_records'] : $halaqah['reguler_records'];
+                                        $graphRecords = $isTahfizhProgram ? $month['tahfizh_records'] : $month['reguler_records'];
                                         $targetRange = collect($graphRecords)->pluck('target_lines')->filter(fn ($t) => $t > 0);
                                         $targetLabel = $targetRange->isEmpty()
                                             ? 'Belum ada pertemuan bulan ini'
@@ -579,7 +587,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
-                                    @php $records = $isTahfizhProgram ? $halaqah['tahfizh_records'] : $halaqah['reguler_records']; @endphp
+                                    @php $records = $isTahfizhProgram ? $month['tahfizh_records'] : $month['reguler_records']; @endphp
                                     @foreach ($records as $idx => $row)
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
@@ -605,6 +613,8 @@
                                 </tbody>
                             </table>
                         </div>
+</div>
+@endforeach
                     </div>
 
                     <!-- 5. TERM / INDEKS (DNS) -->
@@ -641,13 +651,12 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
-                                    @php $records = $isTahfizhProgram ? $halaqah['tahfizh_records'] : $halaqah['reguler_records']; @endphp
+                                    @php $records = $halaqah['term_records']; @endphp
                                     @foreach ($records as $idx => $row)
                                         @php
-                                            $sPres = $halaqah['presensi'][$row['student_id']];
-                                            $aSum = $isTahfizhProgram ? (collect($sPres)->sum('alpa')) : $sPres['alpa'];
-                                            $iSum = $isTahfizhProgram ? (collect($sPres)->sum('izin')) : $sPres['izin'];
-                                            $sSum = $isTahfizhProgram ? (collect($sPres)->sum('sakit')) : $sPres['sakit'];
+                                            $aSum = $row['alpa'];
+                                            $iSum = $row['izin'];
+                                            $sSum = $row['sakit'];
                                         @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
