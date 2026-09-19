@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanTarget;
 use App\Models\Program;
 use App\Models\Setting;
+use App\Models\Surah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -218,5 +220,72 @@ class QuarterlyReportPresensiTest extends TestCase
                 && collect($halaqah['term_records'])->firstWhere('student_id', $studentId)['total_lines']
                     == $monthLines('07') + $monthLines('09');
         });
+    }
+
+    #[Test]
+    public function term_target_is_computed_from_first_setoran_for_grade_11_12_but_not_grade_10(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $baqarah = Surah::firstOrCreate(
+            ['number' => 2],
+            ['name_ar' => 'البقرة', 'name_latin' => 'Al-Baqarah', 'total_ayah' => 286, 'juz_start' => 1, 'juz_end' => 3]
+        );
+
+        // Kelas 12: target semester otomatis. 14 Rabu di Jul-Sep 2026 x 5 baris = 70 baris.
+        $class12 = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas XII F3',
+            'level' => 'XII',
+            'tahfizh_days' => [3],
+        ]);
+        $this->student->update(['class_room_id' => $class12->id, 'tahfizh_level' => 'reguler']);
+
+        $record = HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-08',
+        ]);
+        $record->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'submission_type' => 'new',
+            'status' => 'passed',
+        ]);
+
+        $query = ['academic_year' => '2026/2027', 'term' => '1'];
+
+        $termRow = fn ($classId) => collect(
+            collect($this->actingAs($this->admin)
+                ->get(route('reports.quarterly', $query + ['class_room_id' => $classId]))
+                ->viewData('halaqahData'))->first()['term_records']
+        )->firstWhere('student_id', $this->student->id);
+
+        $row12 = $termRow($class12->id);
+        $this->assertSame(70, $row12['target_lines']);
+        // Al-Fatihah (7 baris) habis, sisanya berjalan ke Al-Baqarah dari ayat 1.
+        $this->assertSame('Al-Baqarah', $row12['target_surah']);
+        $this->assertStringStartsWith('1-', $row12['target_ayat']);
+
+        // Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru.
+        $class10 = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E1',
+            'level' => 'X',
+            'tahfizh_days' => [3],
+        ]);
+        $this->student->update(['class_room_id' => $class10->id]);
+        HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah' => 5,
+            'target_date' => '2026-09-15',
+            'status' => 'active',
+        ]);
+
+        $row10 = $termRow($class10->id);
+        $this->assertSame('Al-Fatihah', $row10['target_surah']);
+        $this->assertSame('1 - 5', $row10['target_ayat']);
     }
 }

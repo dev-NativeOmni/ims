@@ -632,7 +632,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>
-                                <strong class="font-semibold">Informasi:</strong> Target Semester otomatis diambil dari Target Hafalan terbaru yang dibuat Guru. Capaian Akhir otomatis diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik murid.
+                                <strong class="font-semibold">Informasi:</strong> Target Semester Kelas 11 &amp; 12 dihitung otomatis: mulai dari surah &amp; ayat pertama yang disetorkan di term ini, maju sejauh total baris target (jumlah pertemuan &times; baris per level murid). Kelas 10 (UMMI) memakai Target Hafalan terbaru yang dibuat Guru. Capaian Akhir diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik murid.
                             </span>
                         </div>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
