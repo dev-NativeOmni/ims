@@ -8,6 +8,7 @@ use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Program;
 use App\Models\Setting;
+use App\Models\Student;
 use App\Models\Surah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -223,7 +224,7 @@ class QuarterlyReportPresensiTest extends TestCase
     }
 
     #[Test]
-    public function term_target_is_computed_from_first_setoran_for_grade_11_12_but_not_grade_10(): void
+    public function term_target_is_filled_automatically_for_grade_11_12_but_not_grade_10(): void
     {
         $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
         $baqarah = Surah::firstOrCreate(
@@ -265,18 +266,39 @@ class QuarterlyReportPresensiTest extends TestCase
         $this->assertSame(70, $row12['target_lines']);
         // Al-Fatihah (7 baris) habis, sisanya berjalan ke Al-Baqarah dari ayat 1.
         $this->assertSame('Al-Baqarah', $row12['target_surah']);
-        $this->assertStringStartsWith('1-', $row12['target_ayat']);
+        $this->assertStringStartsWith('1 - ', $row12['target_ayat']);
 
-        // Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru.
+        // Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru, tanpa target otomatis.
         $class10 = ClassRoom::create([
             'program_id' => $program->id,
             'name' => 'Kelas X E1',
             'level' => 'X',
             'tahfizh_days' => [3],
         ]);
-        $this->student->update(['class_room_id' => $class10->id]);
+        $student10 = Student::create([
+            'class_room_id' => $class10->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'name' => 'Murid Kelas 10',
+            'student_number' => 'TEST-SNT-010',
+            'gender' => 'male',
+            'birth_date' => '2010-05-10',
+            'status' => 'active',
+            'tahfizh_level' => 'ummi',
+        ]);
+        $record10 = HafalanRecord::create([
+            'student_id' => $student10->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-08',
+        ]);
+        $record10->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 3,
+            'submission_type' => 'new',
+            'status' => 'passed',
+        ]);
         HafalanTarget::create([
-            'student_id' => $this->student->id,
+            'student_id' => $student10->id,
             'teacher_id' => $this->teacherProfile->id,
             'surah_id' => $this->surah->id,
             'ayah' => 5,
@@ -284,8 +306,12 @@ class QuarterlyReportPresensiTest extends TestCase
             'status' => 'active',
         ]);
 
-        $row10 = $termRow($class10->id);
+        $row10 = collect(collect($this->actingAs($this->admin)
+            ->get(route('reports.quarterly', $query + ['class_room_id' => $class10->id]))
+            ->viewData('halaqahData'))->first()['term_records'])->firstWhere('student_id', $student10->id);
+
         $this->assertSame('Al-Fatihah', $row10['target_surah']);
         $this->assertSame('1 - 5', $row10['target_ayat']);
+        $this->assertSame(0, HafalanTarget::query()->where('student_id', $student10->id)->whereNotNull('auto_month')->count());
     }
 }

@@ -47,6 +47,24 @@ class ClassRoom extends Model
         static::deleted(fn () => Cache::forget('all_class_rooms_cached'));
     }
 
+    /**
+     * Kelas 10 (metode UMMI): target hafalan dibuat guru, tidak dihitung otomatis.
+     */
+    public function isGradeTen(): bool
+    {
+        $name = (string) $this->name;
+        $level = (string) $this->level;
+
+        return (bool) (
+            (preg_match('/\bX\b/i', $name) && ! preg_match('/\b(XI|XII)\b/i', $name))
+            || preg_match('/\b10\b/i', $name)
+            || preg_match('/^X[-_\s]?E/i', $name)
+            || preg_match('/kelas\s*(X|10)/i', $name)
+            || (preg_match('/\bX\b/i', $level) && ! preg_match('/\b(XI|XII)\b/i', $level))
+            || preg_match('/\b10\b/i', $level)
+        ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $name);
+    }
+
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);

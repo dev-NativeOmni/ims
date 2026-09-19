@@ -23,6 +23,7 @@ class HafalanTarget extends Model
         'status',
         'completed_at',
         'notes',
+        'auto_month',
     ];
 
     protected function casts(): array
@@ -50,6 +51,11 @@ class HafalanTarget extends Model
     public function surah(): BelongsTo
     {
         return $this->belongsTo(Surah::class);
+    }
+
+    public function getIsAutoAttribute(): bool
+    {
+        return $this->auto_month !== null;
     }
 
     public function getAyahRangeAttribute(): string

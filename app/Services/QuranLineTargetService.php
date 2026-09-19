@@ -58,4 +58,17 @@ class QuranLineTargetService
 
         return null;
     }
+
+    /**
+     * Apakah capaian sudah sampai atau melewati target (urutan mushaf berjalan maju:
+     * nomor surah lebih besar = lebih jauh, lalu ayat).
+     */
+    public function hasReached(int $capaianSurahNumber, int $capaianAyah, int $targetSurahNumber, int $targetAyah): bool
+    {
+        if ($capaianSurahNumber !== $targetSurahNumber) {
+            return $capaianSurahNumber > $targetSurahNumber;
+        }
+
+        return $capaianAyah >= $targetAyah;
+    }
 }

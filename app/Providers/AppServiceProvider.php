@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
@@ -11,6 +12,7 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Observers\HafalanAutoTargetObserver;
 use App\Observers\HafalanRecordObserver;
 use App\Observers\ModelAuditObserver;
 use App\Policies\HafalanRecordPolicy;
@@ -64,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
         Student::observe(ModelAuditObserver::class);
         MurajaahRecord::observe(ModelAuditObserver::class);
         HafalanTarget::observe(ModelAuditObserver::class);
+
+        // Target hafalan otomatis mengikuti setoran (lihat AutoHafalanTargetService).
+        HafalanRecord::observe(HafalanAutoTargetObserver::class);
+        HafalanRecordSurah::observe(HafalanAutoTargetObserver::class);
 
         /*
         |--------------------------------------------------------------------------

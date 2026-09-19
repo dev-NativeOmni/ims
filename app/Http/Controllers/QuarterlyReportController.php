@@ -8,8 +8,8 @@ use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\StudentPoint;
-use App\Models\Surah;
 use App\Services\AcademicCalendarService;
+use App\Services\AutoHafalanTargetService;
 use App\Services\QuranLineTargetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -155,10 +155,20 @@ class QuarterlyReportController extends Controller
             ->whereBetween('date', [$termStartDate, $termEndDate])
             ->get();
 
+        // Segarkan target otomatis per bulan (kelas 11 & 12) sebelum dibaca; target buatan guru
+        // tetap menang. Kegagalan sinkron tidak boleh menghalangi laporan tampil.
+        if ($selectedClass && ! $selectedClass->isGradeTen()) {
+            try {
+                app(AutoHafalanTargetService::class)->syncClass($selectedClass, Carbon::parse($termStartDate));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         $latestTargets = HafalanTarget::query()
             ->with('surah')
             ->whereIn('student_id', $studentIds)
-            ->where('target_date', '<=', $termEndDate)
+            ->where('target_date', '<=', $termEndDate.' 23:59:59')
             ->orderBy('target_date', 'desc')
             ->get()
             ->groupBy('student_id');
@@ -168,7 +178,7 @@ class QuarterlyReportController extends Controller
                 ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
                 ->whereIn('student_id', $studentIds)
                 ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
-                ->where('submitted_at', '<=', $termEndDate)
+                ->where('submitted_at', '<=', $termEndDate.' 23:59:59')
                 ->orderBy('submitted_at', 'desc')
                 ->get()
         )->groupBy('student_id');
@@ -181,11 +191,9 @@ class QuarterlyReportController extends Controller
         $halaqahData = [];
         $calendar = new AcademicCalendarService;
 
-        // Target semester otomatis (dari setoran pertama term + baris target) hanya untuk
-        // kelas 11 & 12; Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru.
-        $autoTermTarget = ! $this->isGrade10Class($selectedClass);
-        $surahsByNumber = $autoTermTarget ? Surah::query()->get()->keyBy('number') : collect();
-        $targetService = new QuranLineTargetService;
+        // Kelas 10 (UMMI) tetap memakai target guru; kelas 11 & 12 juga dinilai dari posisi
+        // capaian vs target (capaian >= target otomatis tuntas), selain dari jumlah baris.
+        $positionCheck = ! ($selectedClass?->isGradeTen() ?? false) ? new QuranLineTargetService : null;
 
         foreach ($studentsByHalaqah as $musyrifName => $groupStudents) {
             $gStudentIds = $groupStudents->pluck('id')->toArray();
@@ -217,9 +225,9 @@ class QuarterlyReportController extends Controller
                 $groupStudents,
                 $gAttendances,
                 $gViolations,
-                $gHafalanRecords,
-                $autoTermTarget ? $targetService : null,
-                $surahsByNumber
+                $latestTargets,
+                $latestHafalans,
+                $positionCheck
             );
 
             $halaqahData[] = [
@@ -248,21 +256,6 @@ class QuarterlyReportController extends Controller
             'halaqahData' => $halaqahData,
             'months' => array_values($monthsMap),
         ]);
-    }
-
-    private function isGrade10Class(?ClassRoom $classRoom): bool
-    {
-        $name = $classRoom?->name ?? '';
-        $level = (string) ($classRoom?->level ?? '');
-
-        return (bool) (
-            (preg_match('/\bX\b/i', $name) && ! preg_match('/\b(XI|XII)\b/i', $name))
-            || preg_match('/\b10\b/i', $name)
-            || preg_match('/^X[-_\s]?E/i', $name)
-            || preg_match('/kelas\s*(X|10)/i', $name)
-            || (preg_match('/\bX\b/i', $level) && ! preg_match('/\b(XI|XII)\b/i', $level))
-            || preg_match('/\b10\b/i', $level)
-        ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $name);
     }
 
     private function dateString($value): string
@@ -658,7 +651,7 @@ class QuarterlyReportController extends Controller
     /**
      * Rekap satu term per murid: baris & target dijumlahkan dari semua bulan, absensi dan pelanggaran dihitung sepanjang term.
      */
-    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $gHafalanRecords, ?QuranLineTargetService $targetService, $surahsByNumber): array
+    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, ?QuranLineTargetService $positionCheck): array
     {
         $termRecords = [];
 
@@ -674,33 +667,31 @@ class QuarterlyReportController extends Controller
             $targetLines = $rows->sum('target_lines');
             $studentAtt = $gAttendances->where('student_id', $student->id);
 
-            $targetSurah = $first['target_surah'] ?? '-';
-            $targetAyat = $first['target_ayat'] ?? '-';
-
-            // Target semester otomatis: mulai dari surah & ayat pertama yang disetorkan di
-            // term ini, maju sejauh total baris target (pertemuan x level) menurut mushaf.
-            $firstSetoran = $targetService && $targetLines > 0
-                ? $gHafalanRecords->where('student_id', $student->id)->first(fn ($h) => $h->surah)
-                : null;
-            $position = $firstSetoran
-                ? $targetService->targetPosition((int) $firstSetoran->surah->number, (int) $firstSetoran->ayah_start, (float) $targetLines, $surahsByNumber)
-                : null;
-            if ($position) {
-                $targetSurah = $position['surah']->name_latin;
-                $targetAyat = "{$position['ayah_start']}-{$position['ayah_end']}";
-            }
+            // Ketercapaian: tuntas bila total baris memenuhi target, atau bila posisi capaian
+            // (surah & ayat terakhir yang lulus) sudah sampai/melewati posisi target.
+            $studentTarget = $latestTargets->get($student->id)?->first();
+            $studentCapaian = $latestHafalans->get($student->id)?->first();
+            $reachedByPosition = $positionCheck
+                && $studentTarget?->surah
+                && $studentCapaian?->surah
+                && $positionCheck->hasReached(
+                    (int) $studentCapaian->surah->number,
+                    (int) $studentCapaian->ayah_end,
+                    (int) $studentTarget->surah->number,
+                    (int) $studentTarget->ayah
+                );
 
             $termRecords[] = [
                 'student_id' => $student->id,
                 'name' => $student->name,
                 'level' => $first['level'] ?? ucfirst($student->tahfizh_level ?? 'reguler'),
-                'target_surah' => $targetSurah,
-                'target_ayat' => $targetAyat,
+                'target_surah' => $first['target_surah'] ?? '-',
+                'target_ayat' => $first['target_ayat'] ?? '-',
                 'capaian_surah' => $first['capaian_surah'] ?? '-',
                 'capaian_ayat' => $first['capaian_ayat'] ?? '-',
                 'total_lines' => $totalLines,
                 'target_lines' => $targetLines,
-                'is_tuntas' => $totalLines >= $targetLines,
+                'is_tuntas' => $totalLines >= $targetLines || $reachedByPosition,
                 'alpa' => $studentAtt->where('status', 'alpa')->count(),
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),

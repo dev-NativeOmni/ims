@@ -21,6 +21,12 @@ Schedule::command('tad:sync-completed-targets')
     ->dailyAt('01:00')
     ->withoutOverlapping();
 
+// Target hafalan otomatis (kelas 11 & 12): segarkan per hari supaya bulan baru/kalender
+// yang berubah ikut terhitung; perubahan setoran sudah disinkronkan langsung saat disimpan.
+Schedule::command('tad:sync-auto-targets')
+    ->dailyAt('00:30')
+    ->withoutOverlapping();
+
 // Backup database harian pukul 03:00 pagi dan hapus backup lama
 Schedule::command('tad:backup-database --prune')
     ->dailyAt('03:00')

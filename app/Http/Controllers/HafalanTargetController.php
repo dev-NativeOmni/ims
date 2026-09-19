@@ -506,6 +506,9 @@ class HafalanTargetController extends Controller
 
         $data['teacher_id'] = $this->resolveTeacherId($request, $student);
 
+        // Target otomatis yang diedit guru menjadi target guru: tidak ditimpa lagi oleh perhitungan otomatis.
+        $data['auto_month'] = null;
+
         $hafalanTarget->update($data);
 
         return redirect()

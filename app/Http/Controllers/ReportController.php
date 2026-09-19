@@ -16,6 +16,7 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Services\QuranLineTargetService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -1084,15 +1085,6 @@ class ReportController extends Controller
                 $targetBaris = $levelBaris * $meetings;
             }
 
-            // Check if student completed their target
-            $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
-
-            if ($isTuntas) {
-                $tuntasCount++;
-            } else {
-                $tidakTuntasCount++;
-            }
-
             // Target Surah and Ayat (latest target_date <= $endDate)
             $latestTarget = $allLatestTargets->get($student->id, collect())->first();
 
@@ -1105,6 +1097,29 @@ class ReportController extends Controller
 
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
+
+            // Check if student completed their target: baris terpenuhi, atau (kelas 11 & 12) posisi
+            // capaian sudah sampai/melewati posisi target -- capaian >= target otomatis tuntas.
+            $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
+
+            if (! $isTuntas
+                && ! $isGrade10
+                && $latestTarget?->surah
+                && $latestHafalanPassed?->surah
+                && app(QuranLineTargetService::class)->hasReached(
+                    (int) $latestHafalanPassed->surah->number,
+                    (int) $latestHafalanPassed->ayah_end,
+                    (int) $latestTarget->surah->number,
+                    (int) $latestTarget->ayah
+                )) {
+                $isTuntas = true;
+            }
+
+            if ($isTuntas) {
+                $tuntasCount++;
+            } else {
+                $tidakTuntasCount++;
+            }
 
             // Ummi Record Details
             $latestUmmi = $allUmmiRecords->get($student->id, collect())->first();

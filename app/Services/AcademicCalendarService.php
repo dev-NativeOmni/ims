@@ -117,4 +117,35 @@ class AcademicCalendarService
 
         return $count;
     }
+
+    /**
+     * Jumlah pertemuan terjadwal kelas dalam rentang tanggal (inklusif) menurut kalender:
+     * hari kelas, libur nasional, dan libur khusus kelas. Program "seminggu sekali"
+     * dihitung maksimal satu pertemuan per pekan kalender.
+     */
+    public function scheduledMeetings(ClassRoom $classRoom, Carbon $start, Carbon $end): int
+    {
+        $isWeekly = $classRoom->program?->meeting_frequency === 'seminggu sekali';
+        $count = 0;
+        $countedWeeks = [];
+        $cursor = $start->copy()->startOfDay();
+
+        while ($cursor->lte($end)) {
+            if ($this->isEffectiveDay($classRoom, $cursor)) {
+                if ($isWeekly) {
+                    $weekKey = $cursor->format('o-W');
+                    if (! isset($countedWeeks[$weekKey])) {
+                        $countedWeeks[$weekKey] = true;
+                        $count++;
+                    }
+                } else {
+                    $count++;
+                }
+            }
+
+            $cursor = $cursor->copy()->addDay();
+        }
+
+        return $count;
+    }
 }
