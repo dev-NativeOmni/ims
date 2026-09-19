@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Program;
+use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -40,7 +41,11 @@ class QuarterlyReportPresensiTest extends TestCase
             'program_id' => $program->id,
             'name' => 'Kelas Reguler Test',
             'level' => 'Menengah',
+            'tahfizh_days' => [3], // Rabu: 2, 9, 16, 23, 30 September 2026
         ]);
+
+        // 9 September (Rabu, pekan 2) libur nasional -> tidak ada pertemuan aktif di pekan itu.
+        Setting::set('national_holidays_2026', json_encode(['2026-09-09']));
 
         $this->student->update([
             'class_room_id' => $classRoom->id,
@@ -87,6 +92,9 @@ class QuarterlyReportPresensiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertDontSee('Pilih Bulan Laporan');
+        $response->assertSee('Belum di input');
+        $response->assertSee('Libur');
+        $response->assertDontSee('Belum Ada');
 
         $response->assertViewHas('halaqahData', function ($halaqahData) {
             $halaqah = collect($halaqahData)->first();
@@ -104,6 +112,12 @@ class QuarterlyReportPresensiTest extends TestCase
                 if ($pekan[$p] === 'Hadir') {
                     return false;
                 }
+            }
+
+            // Pekan 2 tidak punya hari efektif (libur), pekan 1 & 3 punya hari efektif
+            // tapi belum ada yang diinput musyrif.
+            if ($pekan[2] !== 'Libur' || $pekan[1] !== 'Belum di input' || $pekan[3] !== 'Belum di input') {
+                return false;
             }
 
             // Pekan 4 & 5: ada presensi/setoran nyata -> harus "Hadir".
@@ -137,6 +151,9 @@ class QuarterlyReportPresensiTest extends TestCase
             'level' => 'X',
         ]);
         $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        // Selasa 7 Juli libur nasional.
+        Setting::set('national_holidays_2026', json_encode(['2026-07-07']));
 
         // Setoran di Juli (07-06) dan September (09-08); Agustus kosong.
         foreach (['2026-07-06', '2026-09-08'] as $date) {
@@ -180,7 +197,12 @@ class QuarterlyReportPresensiTest extends TestCase
             $monthLines = fn ($code) => collect($halaqah['monthly'][$code]['tahfizh_records'])
                 ->firstWhere('student_id', $studentId)['total_lines'];
 
+            $julyDays = collect($halaqah['monthly']['07']['tahfizh_records'])
+                ->firstWhere('student_id', $studentId)['pekan'][1]['days'];
+
             return array_keys($halaqah['monthly']) === ['07', '08', '09']
+                && $julyDays['Selasa']['surah'] === 'Libur'
+                && $julyDays['Rabu']['surah'] === 'Belum di input'
                 && array_keys($halaqah['presensi'][$studentId]) === ['Juli', 'Agustus', 'September']
                 && $monthLines('07') > 0
                 && $monthLines('08') == 0

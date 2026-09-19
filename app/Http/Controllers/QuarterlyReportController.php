@@ -8,6 +8,7 @@ use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\StudentPoint;
+use App\Services\AcademicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -175,6 +176,7 @@ class QuarterlyReportController extends Controller
         });
 
         $halaqahData = [];
+        $calendar = new AcademicCalendarService;
 
         foreach ($studentsByHalaqah as $musyrifName => $groupStudents) {
             $gStudentIds = $groupStudents->pluck('id')->toArray();
@@ -183,6 +185,8 @@ class QuarterlyReportController extends Controller
             $gViolations = $termViolations->whereIn('student_id', $gStudentIds);
 
             $context = [
+                'classRoom' => $selectedClass,
+                'calendar' => $calendar,
                 'isTahfizhProgram' => $isTahfizhProgram,
                 'groupStudents' => $groupStudents,
                 'gAttendances' => $gAttendances,
@@ -344,6 +348,35 @@ class QuarterlyReportController extends Controller
             ->unique()
             ->count();
 
+        // Hari efektif kelas di bulan ini (jadwal kelas, libur nasional, libur kelas):
+        // membedakan "Libur" (tidak ada pertemuan) dari "Belum di input" (ada pertemuan
+        // tapi musyrif belum mengisi).
+        $monthStart = Carbon::parse($range['start']);
+        $daysInMonth = $monthStart->daysInMonth;
+        $effectiveByDay = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $effectiveByDay[$d] = $context['classRoom'] === null
+                || $context['calendar']->isEffectiveDay($context['classRoom'], $monthStart->copy()->day($d));
+        }
+        $emptyPekanState = function (int $pStart, int $pEnd) use ($effectiveByDay, $daysInMonth): string {
+            for ($d = $pStart; $d <= min($pEnd, $daysInMonth); $d++) {
+                if ($effectiveByDay[$d]) {
+                    return 'Belum di input';
+                }
+            }
+
+            return 'Libur';
+        };
+        $emptyDayState = function (int $isoWeekday, int $pStart, int $pEnd) use ($effectiveByDay, $daysInMonth, $monthStart): string {
+            for ($d = $pStart; $d <= min($pEnd, $daysInMonth); $d++) {
+                if ((int) $monthStart->copy()->day($d)->format('N') === $isoWeekday) {
+                    return $effectiveByDay[$d] ? 'Belum di input' : 'Libur';
+                }
+            }
+
+            return '-';
+        };
+
         // A. Presensi mingguan (Reguler)
         $presensiData = [];
         if (! $isTahfizhProgram) {
@@ -377,9 +410,10 @@ class QuarterlyReportController extends Controller
                             return $dayNum >= $pStart && $dayNum <= $pEnd;
                         });
                         // Tidak ada presensi tercatat untuk pekan ini: anggap hadir
-                        // hanya kalau memang ada setoran nyata, selain itu artinya
-                        // belum ada pertemuan di pekan tsb -- bukan otomatis hadir.
-                        $pekan[$p] = $hasSetoran ? 'Hadir' : '-';
+                        // hanya kalau memang ada setoran nyata. Selain itu, pekan tanpa
+                        // hari efektif = "Libur", pekan dengan hari efektif tapi belum
+                        // diisi = "Belum di input" -- bukan otomatis hadir.
+                        $pekan[$p] = $hasSetoran ? 'Hadir' : $emptyPekanState($pStart, $pEnd);
                     }
                 }
 
@@ -484,7 +518,9 @@ class QuarterlyReportController extends Controller
                             });
 
                             $dailyLogs[$dayName] = [
-                                'surah' => ($attRecord && $attRecord->status !== 'hadir') ? ucfirst($attRecord->status) : '-',
+                                'surah' => ($attRecord && $attRecord->status !== 'hadir')
+                                    ? ucfirst($attRecord->status)
+                                    : $emptyDayState(array_search($dayName, $dayMap), $pStart, $pEnd),
                                 'ayat_start' => '',
                                 'ayat_end' => '',
                                 'baris' => 0,

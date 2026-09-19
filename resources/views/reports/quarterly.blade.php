@@ -299,8 +299,10 @@
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 font-semibold border border-blue-200/50 dark:border-blue-900/30">Sakit</span>
                                                         @elseif ($sPres['pekan'][$p] === 'Alpa')
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 font-semibold border border-rose-250/50 dark:border-rose-900/30">Alpa</span>
+                                                        @elseif ($sPres['pekan'][$p] === 'Libur')
+                                                            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-semibold border border-slate-200 dark:border-zinc-700">Libur</span>
                                                         @else
-                                                            <span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 font-semibold border border-gray-200/50 dark:border-zinc-700/50">Belum Ada</span>
+                                                            <span class="px-2 py-0.5 rounded text-[10px] bg-yellow-50 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-500 font-semibold border border-yellow-200/60 dark:border-yellow-900/30">Belum di input</span>
                                                         @endif
                                                     </td>
                                                 @endfor
@@ -417,7 +419,11 @@
                                                     <!-- Days -->
                                                     @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] as $dayName)
                                                         @php $dayLog = $wRecord['days'][$dayName]; @endphp
-                                                        @if ($dayLog['surah'] === 'Tidak Masuk')
+                                                        @if ($dayLog['surah'] === 'Libur')
+                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 text-slate-400 dark:text-zinc-500 font-semibold text-[9px] text-center">Libur</td>
+                                                        @elseif ($dayLog['surah'] === 'Belum di input')
+                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-yellow-500/5 text-yellow-600 dark:text-yellow-500 font-semibold text-[9px] text-center">Belum di input</td>
+                                                        @elseif ($dayLog['surah'] === 'Tidak Masuk')
                                                             <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-amber-500/5 text-amber-500 font-bold uppercase tracking-wider text-[9px] text-center">Sakit</td>
                                                         @else
                                                             <td class="px-2 py-2.5 border-r dark:border-zinc-700 text-left">
@@ -489,8 +495,10 @@
                                                         @if ($pRec['kehadiran'] === 'Hadir')
                                                             <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
                                                             <span class="block text-[8px] text-gray-400 mt-0.5">{{ $pRec['baris'] }} Brs · Nilai: {{ $pRec['nilai'] }}</span>
-                                                        @elseif ($pRec['kehadiran'] === '-')
-                                                            <span class="text-gray-300 dark:text-zinc-600 text-[8px] tracking-wider block text-center py-1">Belum Ada</span>
+                                                        @elseif ($pRec['kehadiran'] === 'Libur')
+                                                            <span class="text-slate-400 dark:text-zinc-500 text-[8px] font-semibold tracking-wider block text-center py-1">Libur</span>
+                                                        @elseif ($pRec['kehadiran'] === 'Belum di input')
+                                                            <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">Belum di input</span>
                                                         @else
                                                             <span class="text-amber-500 font-extrabold uppercase text-[8px] tracking-wider block text-center py-1 bg-amber-500/5 rounded">{{ $pRec['kehadiran'] }}</span>
                                                         @endif
