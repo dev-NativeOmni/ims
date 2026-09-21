@@ -59,6 +59,11 @@ class Student extends Model
         return $this->hasMany(HafalanRecord::class);
     }
 
+    public function tahfizhExams(): HasMany
+    {
+        return $this->hasMany(TahfizhExam::class);
+    }
+
     public function murajaahRecords(): HasMany
     {
         return $this->hasMany(MurajaahRecord::class);

@@ -45,6 +45,16 @@
             <!-- Filter Panel -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
                 <form method="GET" action="{{ route('tahfizh-exams.index') }}" class="flex flex-wrap items-end gap-3">
+                    <!-- Status Ujian Triwulan -->
+                    <div class="flex-1 min-w-[180px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Status Ujian ({{ $termLabel }})</label>
+                        <select name="exam_status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">Semua</option>
+                            <option value="belum" @selected($examStatus === 'belum')>Belum ujian triwulan ini</option>
+                            <option value="sudah" @selected($examStatus === 'sudah')>Sudah ujian triwulan ini</option>
+                        </select>
+                    </div>
+
                     <!-- Kelas -->
                     <div class="flex-1 min-w-[140px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelas</label>
@@ -116,6 +126,61 @@
             </div>
         @endif
 
+        @if ($pendingStudents)
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Murid Belum Ujian Tahfizh</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Triwulan {{ $termLabel }}</p>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800">
+                        {{ $pendingStudents->total() }} murid
+                    </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
+                        <thead class="bg-zinc-50 dark:bg-zinc-900/50">
+                            <tr class="text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                <th class="px-5 py-3.5">No</th>
+                                <th class="px-5 py-3.5">Murid</th>
+                                <th class="px-5 py-3.5">Kelas</th>
+                                <th class="px-5 py-3.5">Level</th>
+                                <th class="px-5 py-3.5">Pembimbing</th>
+                                <th class="px-5 py-3.5 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            @forelse ($pendingStudents as $pending)
+                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.015] transition duration-150">
+                                    <td class="px-5 py-4 text-zinc-400 text-xs">{{ $pendingStudents->firstItem() + $loop->index }}</td>
+                                    <td class="px-5 py-4 font-semibold text-zinc-900 dark:text-white">{{ $pending->name }}</td>
+                                    <td class="px-5 py-4 text-zinc-600 dark:text-zinc-400">{{ $pending->classRoom?->name ?: '-' }}</td>
+                                    <td class="px-5 py-4 text-zinc-600 dark:text-zinc-400">{{ ucfirst($pending->tahfizh_level ?? 'reguler') }}</td>
+                                    <td class="px-5 py-4 text-zinc-600 dark:text-zinc-400">{{ $pending->teacher?->user?->name ?: '-' }}</td>
+                                    <td class="px-5 py-4 whitespace-nowrap text-right">
+                                        <a href="{{ route('tahfizh-exams.create', ['student_id' => $pending->id]) }}" class="inline-flex items-center px-2.5 py-1.5 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/30 rounded-md hover:bg-indigo-100 transition duration-150">
+                                            Mulai Ujian
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-5 py-12 text-center text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                        Semua murid sudah ujian tahfizh di triwulan ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if ($pendingStudents->hasPages())
+                    <div class="px-5 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                        {{ $pendingStudents->links() }}
+                    </div>
+                @endif
+            </div>
+        @else
         <!-- List Table -->
         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
@@ -202,5 +267,6 @@
                 </div>
             @endif
         </div>
+        @endif
     </div>
 </x-app-layout>

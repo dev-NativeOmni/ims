@@ -9,15 +9,57 @@ use App\Models\Surah;
 use App\Models\TahfizhExam;
 use App\Models\TeacherProfile;
 use App\Models\User;
+use App\Services\AcademicCalendarService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TahfizhExamController extends Controller
 {
-    public function index(Request $request): View
+    private const MONTH_NAMES = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+    ];
+
+    public function index(Request $request, AcademicCalendarService $calendar): View
     {
         $user = $request->user();
+
+        $months = $calendar->termMonths(Carbon::today());
+        $termStart = reset($months)['start'];
+        $termEnd = end($months)['end'];
+        $termLabel = self::MONTH_NAMES[$termStart->month].' - '.self::MONTH_NAMES[$termEnd->month].' '.$termEnd->year;
+
+        $examStatus = $request->input('exam_status');
+        $examStatus = in_array($examStatus, ['belum', 'sudah'], true) ? $examStatus : null;
+
+        if ($examStatus === 'belum') {
+            $pendingStudents = Student::query()
+                ->with(['classRoom.program', 'teacher.user'])
+                ->where('status', 'active')
+                ->when($user->hasRole('teacher'), fn ($q) => $q->where('teacher_id', $user->teacherProfile?->id))
+                ->when($request->filled('class_room_id'), fn ($q) => $q->where('class_room_id', $request->integer('class_room_id')))
+                ->when($request->filled('student_id'), fn ($q) => $q->where('id', $request->integer('student_id')))
+                ->whereDoesntHave('tahfizhExams', function ($q) use ($termStart, $termEnd) {
+                    $q->whereDate('exam_date', '>=', $termStart->toDateString())
+                        ->whereDate('exam_date', '<=', $termEnd->toDateString());
+                })
+                ->orderBy('class_room_id')
+                ->orderBy('name')
+                ->paginate(50)
+                ->withQueryString();
+
+            return view('tahfizh-exams.index', array_merge(
+                [
+                    'exams' => null,
+                    'pendingStudents' => $pendingStudents,
+                    'examStatus' => $examStatus,
+                    'termLabel' => $termLabel,
+                ],
+                $this->formData($user)
+            ));
+        }
 
         $exams = TahfizhExam::query()
             ->with([
@@ -42,6 +84,10 @@ class TahfizhExamController extends Controller
             ->when($request->filled('surah_id'), function ($query) use ($request) {
                 $query->where('surah_id', $request->integer('surah_id'));
             })
+            ->when($examStatus === 'sudah', function ($query) use ($termStart, $termEnd) {
+                $query->whereDate('exam_date', '>=', $termStart->toDateString())
+                    ->whereDate('exam_date', '<=', $termEnd->toDateString());
+            })
             ->latest('exam_date')
             ->latest()
             ->paginate(20)
@@ -50,6 +96,9 @@ class TahfizhExamController extends Controller
         return view('tahfizh-exams.index', array_merge(
             [
                 'exams' => $exams,
+                'pendingStudents' => null,
+                'examStatus' => $examStatus,
+                'termLabel' => $termLabel,
             ],
             $this->formData($user)
         ));

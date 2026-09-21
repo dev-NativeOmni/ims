@@ -276,7 +276,7 @@
                 score: 0,
                 passThreshold: {{ $passThreshold }},
                 classFilter: '',
-                selectedStudent: '{{ old('student_id') }}',
+                selectedStudent: '{{ old('student_id', request('student_id')) }}',
                 students: @js($students->map(fn ($student) => [
                     'id' => (string) $student->id,
                     'classRoomId' => (string) $student->class_room_id,
