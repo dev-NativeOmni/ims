@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
@@ -67,6 +68,16 @@ class StudentProgressService
             }
 
             return $query->where('teacher_id', $teacherId);
+        }
+
+        if ($this->userHasAnyRole($user, ['wali_kelas'])) {
+            $classRoomId = ClassRoom::query()->where('wali_kelas_user_id', $user->id)->value('id');
+
+            if (! $classRoomId) {
+                return $query->whereRaw('1 = 0');
+            }
+
+            return $query->where('class_room_id', $classRoomId);
         }
 
         if ($this->userHasAnyRole($user, ['parent'])) {

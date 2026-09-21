@@ -119,6 +119,28 @@ class AcademicCalendarService
     }
 
     /**
+     * Rentang 3 bulan (Y-m => start/end) term yang memuat tanggal ini, dipakai bersama
+     * termStartDate() untuk memecah satu term ke bulan-bulannya.
+     *
+     * @return array<string, array{start: Carbon, end: Carbon}>
+     */
+    public function termMonths(Carbon $date): array
+    {
+        $termStart = $this->termStartDate($date);
+        $months = [];
+
+        for ($i = 0; $i < 3; $i++) {
+            $start = $termStart->copy()->addMonthsNoOverflow($i)->startOfMonth();
+            $months[$start->format('Y-m')] = [
+                'start' => $start,
+                'end' => $start->copy()->endOfMonth()->startOfDay(),
+            ];
+        }
+
+        return $months;
+    }
+
+    /**
      * Jumlah pertemuan terjadwal kelas dalam rentang tanggal (inklusif) menurut kalender:
      * hari kelas, libur nasional, dan libur khusus kelas. Program "seminggu sekali"
      * dihitung maksimal satu pertemuan per pekan kalender.

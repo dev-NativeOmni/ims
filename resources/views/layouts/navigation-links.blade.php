@@ -264,6 +264,17 @@
             @endif
         @endif
 
+        @if (auth()->user()->hasRole('wali_kelas'))
+            @if ($hasRoute('wali-kelas.index'))
+                <a href="{{ route('wali-kelas.index') }}" class="{{ $getLinkClasses($routeIs('wali-kelas.index')) }}">
+                    <svg class="{{ $getIconClasses($routeIs('wali-kelas.index')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4 4 4 0 004 4z" />
+                    </svg>
+                    <span>Pemantauan Wali Kelas</span>
+                </a>
+            @endif
+        @endif
+
         @if ($canViewReportSettings && $hasRoute('digital-reports.settings') && !$isHeadmaster)
             <a href="{{ route('digital-reports.settings') }}" class="{{ $getLinkClasses($routeIs('digital-reports.settings')) }}">
                 <svg class="{{ $getIconClasses($routeIs('digital-reports.settings')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">

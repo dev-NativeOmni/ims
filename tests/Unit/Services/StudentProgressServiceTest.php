@@ -2,9 +2,14 @@
 
 namespace Tests\Unit\Services;
 
+use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\MurajaahRecord;
+use App\Models\Program;
+use App\Models\Role;
+use App\Models\Student;
 use App\Models\Surah;
+use App\Models\User;
 use App\Services\StudentProgressService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -211,5 +216,46 @@ class StudentProgressServiceTest extends TestCase
         // Rata-rata overall_score: (85 + 95) / 2 = 90
         $this->assertEquals(90, $progress['average_murajaah_score']);
         $this->assertEquals(2, $progress['total_murajaah_records']);
+    }
+
+    #[Test]
+    public function visible_student_query_scopes_wali_kelas_to_their_own_class_only(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'Kelas XII F1', 'level' => 'XII']);
+        $otherClass = ClassRoom::create(['program_id' => $program->id, 'name' => 'Kelas XII F2', 'level' => 'XII']);
+        $this->student->update(['class_room_id' => $classRoom->id]);
+
+        $otherStudent = Student::create([
+            'class_room_id' => $otherClass->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'name' => 'Murid Kelas Lain',
+            'student_number' => 'TEST-SNT-098',
+            'gender' => 'male',
+            'birth_date' => '2009-01-01',
+            'status' => 'active',
+        ]);
+
+        $waliKelasUser = User::factory()->create([
+            'role_id' => Role::where('name', 'wali_kelas')->firstOrFail()->id,
+            'status' => 'active',
+        ]);
+        $classRoom->update(['wali_kelas_user_id' => $waliKelasUser->id]);
+
+        $visibleIds = $this->service->visibleStudentQuery($waliKelasUser)->pluck('id')->all();
+
+        $this->assertSame([$this->student->id], $visibleIds);
+        $this->assertNotContains($otherStudent->id, $visibleIds);
+    }
+
+    #[Test]
+    public function visible_student_query_returns_nothing_for_wali_kelas_without_a_class(): void
+    {
+        $waliKelasUser = User::factory()->create([
+            'role_id' => Role::where('name', 'wali_kelas')->firstOrFail()->id,
+            'status' => 'active',
+        ]);
+
+        $this->assertCount(0, $this->service->visibleStudentQuery($waliKelasUser)->get());
     }
 }

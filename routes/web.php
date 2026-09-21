@@ -32,6 +32,7 @@ use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WaliKelasController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -349,7 +350,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,supervisor,coordinator_tahfizh'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,supervisor,coordinator_tahfizh,wali_kelas'])->group(function () {
         Route::get('/hafalan-records/student/{student}/ummi-card', [HafalanRecordController::class, 'ummiCard'])
             ->name('hafalan-records.student.ummi-card');
 
@@ -391,6 +392,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/reports/quarterly', [QuarterlyReportController::class, 'index'])
             ->middleware('role:super_admin,admin')
             ->name('reports.quarterly');
+
+        Route::get('/wali-kelas', [WaliKelasController::class, 'index'])
+            ->middleware('role:wali_kelas,super_admin,admin')
+            ->name('wali-kelas.index');
 
         Route::get('/reports/periodic/print', [ReportController::class, 'periodicProgressPrint'])
             ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor')

@@ -100,6 +100,11 @@ class User extends Authenticatable
         return $this->hasOne(ParentProfile::class);
     }
 
+    public function waliKelasClassRoom(): HasOne
+    {
+        return $this->hasOne(ClassRoom::class, 'wali_kelas_user_id');
+    }
+
     public function studentProfile(): HasOne
     {
         return $this->hasOne(Student::class);

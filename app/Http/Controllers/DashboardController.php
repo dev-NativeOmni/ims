@@ -55,6 +55,7 @@ class DashboardController extends Controller
             'tanse' => redirect()->route('tanse.dashboard'),
             'coordinator_tahfizh' => redirect()->route('coordinator-tahfizh.dashboard'),
             'pendamping_adab' => redirect()->route('pendamping-adab.dashboard'),
+            'wali_kelas' => redirect()->route('wali-kelas.index'),
             default => redirect()->route('admin.dashboard'),
         };
     }

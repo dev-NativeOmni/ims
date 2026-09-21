@@ -19,6 +19,7 @@ class ClassRoom extends Model
         'name',
         'level',
         'tahfizh_days',
+        'wali_kelas_user_id',
     ];
 
     protected $casts = [
@@ -68,6 +69,11 @@ class ClassRoom extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function waliKelas(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'wali_kelas_user_id');
     }
 
     public function pendampingAdab(): BelongsTo

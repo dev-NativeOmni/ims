@@ -78,6 +78,7 @@
                                 <th class="px-4 py-3">Program</th>
                                 <th class="px-4 py-3">Level</th>
                                 <th class="px-4 py-3">Pendamping Adab</th>
+                                <th class="px-4 py-3">Wali Kelas</th>
                                 <th class="px-4 py-3">Jumlah Murid</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>
@@ -112,6 +113,16 @@
                                                     </span>
                                                 @endforeach
                                             </div>
+                                        @else
+                                            <span class="text-gray-400 italic text-xs">Belum diatur</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-4 py-3 text-gray-700">
+                                        @if ($classRoom->waliKelas)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-sky-50 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                                {{ $classRoom->waliKelas->name }}
+                                            </span>
                                         @else
                                             <span class="text-gray-400 italic text-xs">Belum diatur</span>
                                         @endif

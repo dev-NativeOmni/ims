@@ -52,7 +52,7 @@ class AutoHafalanTargetService
         $student->loadMissing('classRoom.program');
         $classRoom = $student->classRoom;
         $termStart = $this->calendar->termStartDate($date);
-        $months = $this->termMonths($termStart);
+        $months = $this->calendar->termMonths($date);
         $termEnd = end($months)['end'];
 
         $desired = $this->desiredTargets($student, $classRoom, $months, $termStart, $termEnd);
@@ -144,20 +144,6 @@ class AutoHafalanTargetService
                 $student->setRelation('classRoom', $classRoom);
                 $this->syncStudent($student, $date);
             });
-    }
-
-    /**
-     * @return array<string, array{start: Carbon, end: Carbon}>
-     */
-    private function termMonths(Carbon $termStart): array
-    {
-        $months = [];
-        for ($i = 0; $i < 3; $i++) {
-            $start = $termStart->copy()->addMonthsNoOverflow($i)->startOfMonth();
-            $months[$start->format('Y-m')] = ['start' => $start, 'end' => $start->copy()->endOfMonth()->startOfDay()];
-        }
-
-        return $months;
     }
 
     /**

@@ -28,7 +28,7 @@ class ClassRoomController extends Controller
             ->get();
 
         $classRooms = ClassRoom::query()
-            ->with(['program', 'pendampingAdab', 'pendampingAdabList'])
+            ->with(['program', 'pendampingAdab', 'pendampingAdabList', 'waliKelas'])
             ->withCount('students')
             ->when($request->filled('program_id'), function ($query) use ($request) {
                 $query->where('program_id', $request->integer('program_id'));
@@ -56,7 +56,31 @@ class ClassRoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('class-rooms.create', compact('programs', 'pendampingList'));
+        $waliKelasList = $this->waliKelasCandidates();
+
+        return view('class-rooms.create', compact('programs', 'pendampingList', 'waliKelasList'));
+    }
+
+    /**
+     * User dengan role wali_kelas yang belum ditugaskan ke kelas lain (satu wali kelas
+     * cuma satu kelas), plus yang sedang ditugaskan ke kelas ini sendiri kalau ada.
+     */
+    private function waliKelasCandidates(?int $currentlyAssignedId = null)
+    {
+        return User::query()
+            ->where(function ($q) use ($currentlyAssignedId) {
+                $q->where(function ($sub) {
+                    $sub->whereHas('role', fn ($r) => $r->where('name', 'wali_kelas'))
+                        ->orWhereHas('roles', fn ($r) => $r->where('name', 'wali_kelas'));
+                })->whereDoesntHave('waliKelasClassRoom');
+
+                if ($currentlyAssignedId) {
+                    $q->orWhere('id', $currentlyAssignedId);
+                }
+            })
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
     }
 
     public function store(StoreClassRoomRequest $request): RedirectResponse
@@ -301,7 +325,9 @@ class ClassRoomController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('class-rooms.edit', compact('classRoom', 'programs', 'pendampingList'));
+        $waliKelasList = $this->waliKelasCandidates($classRoom->wali_kelas_user_id);
+
+        return view('class-rooms.edit', compact('classRoom', 'programs', 'pendampingList', 'waliKelasList'));
     }
 
     public function update(UpdateClassRoomRequest $request, ClassRoom $classRoom): RedirectResponse
