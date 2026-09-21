@@ -12,6 +12,8 @@ class Setting extends Model
 
     protected static array $holidaysCache = [];
 
+    protected static array $classHolidaysCache = [];
+
     protected static array $effectiveDatesSetCache = [];
 
     protected static array $effectiveDaysCountCache = [];
@@ -32,6 +34,7 @@ class Setting extends Model
         $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget("setting:{$key}");
         self::$holidaysCache = [];
+        self::$classHolidaysCache = [];
         self::$effectiveDatesSetCache = [];
         self::$effectiveDaysCountCache = [];
         self::$studentAdabScoreCache = [];
@@ -129,6 +132,23 @@ class Setting extends Model
             "{$year}-08-17", // Hari Kemerdekaan RI
             "{$year}-12-25", // Hari Natal
         ];
+    }
+
+    /**
+     * Get the class-specific holidays map ('Y-m-d' => [class_room_id, ...]) for a given
+     * year. Di-cache per request supaya kalkulasi kalender yang berulang per hari/per
+     * murid (mis. AcademicCalendarService::scheduledMeetings) tidak query ulang-ulang.
+     */
+    public static function getClassHolidays(int $year): array
+    {
+        if (isset(self::$classHolidaysCache[$year])) {
+            return self::$classHolidaysCache[$year];
+        }
+
+        $raw = self::get("class_holidays_{$year}");
+        $decoded = $raw ? json_decode($raw, true) : [];
+
+        return self::$classHolidaysCache[$year] = is_array($decoded) ? $decoded : [];
     }
 
     /**

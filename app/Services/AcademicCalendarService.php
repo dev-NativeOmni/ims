@@ -22,6 +22,14 @@ class AcademicCalendarService
     private const UMMI_DAYS = [1, 2, 3, 4];
 
     /**
+     * Cache per request: hasil scheduledMeetings() sama untuk seluruh murid satu kelas
+     * di rentang tanggal yang sama, jadi tidak perlu dihitung ulang per murid.
+     *
+     * @var array<string, int>
+     */
+    private static array $scheduledMeetingsCache = [];
+
+    /**
      * Tanggal mulai term (semester) yang memuat tanggal ini.
      * Term 1: Juli-September, Term 2: Oktober-Desember,
      * Term 3: Januari-Maret, Term 4: April-Juni.
@@ -65,12 +73,9 @@ class AcademicCalendarService
             return false;
         }
 
-        $classHolidaysRaw = Setting::get("class_holidays_{$year}");
-        $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
+        $classHolidays = Setting::getClassHolidays($year);
 
-        if (is_array($classHolidays)
-            && isset($classHolidays[$dateString])
-            && in_array($classRoom->id, $classHolidays[$dateString], true)) {
+        if (isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString], true)) {
             return false;
         }
 
@@ -147,6 +152,12 @@ class AcademicCalendarService
      */
     public function scheduledMeetings(ClassRoom $classRoom, Carbon $start, Carbon $end): int
     {
+        $cacheKey = $classRoom->id.'|'.$start->toDateString().'|'.$end->toDateString();
+
+        if (isset(self::$scheduledMeetingsCache[$cacheKey])) {
+            return self::$scheduledMeetingsCache[$cacheKey];
+        }
+
         $isWeekly = $classRoom->program?->meeting_frequency === 'seminggu sekali';
         $count = 0;
         $countedWeeks = [];
@@ -168,6 +179,6 @@ class AcademicCalendarService
             $cursor = $cursor->copy()->addDay();
         }
 
-        return $count;
+        return self::$scheduledMeetingsCache[$cacheKey] = $count;
     }
 }
