@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Controllers\ReportController;
 use App\Models\Surah;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -70,5 +71,37 @@ class QuranLineTargetService
         }
 
         return $capaianAyah >= $targetAyah;
+    }
+
+    /**
+     * Cari capaian terbaru dari kumpulan setoran (record dengan relasi `surah`).
+     * Jika beberapa setoran punya submitted_at yang sama (mis. beberapa surat disetorkan
+     * dalam satu sesi), yang dianggap capaian adalah yang posisinya paling jauh di mushaf
+     * (nomor surah terbesar, lalu ayat akhir terbesar) -- bukan sekadar entri pertama yang
+     * ter-load, karena urutan itu tidak menjamin urutan pengerjaan sebenarnya.
+     *
+     * @param  Collection<int, mixed>  $records
+     */
+    public function latestByPosition(Collection $records): mixed
+    {
+        if ($records->isEmpty()) {
+            return null;
+        }
+
+        return $records->sort(function ($a, $b) {
+            $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
+            $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
+            if ($dateA !== $dateB) {
+                return $dateB <=> $dateA;
+            }
+
+            $numA = (int) ($a->surah?->number ?? 0);
+            $numB = (int) ($b->surah?->number ?? 0);
+            if ($numA !== $numB) {
+                return $numB <=> $numA;
+            }
+
+            return ((int) ($b->ayah_end ?? 0)) <=> ((int) ($a->ayah_end ?? 0));
+        })->first();
     }
 }

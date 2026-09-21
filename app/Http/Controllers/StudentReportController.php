@@ -13,13 +13,15 @@ use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
 use App\Models\UmmiRecord;
+use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
 use Illuminate\Http\Request;
 
 class StudentReportController extends Controller
 {
     public function __construct(
-        protected StudentProgressService $progressService
+        protected StudentProgressService $progressService,
+        protected QuranLineTargetService $positionCheck
     ) {}
 
     public function index(Request $request)
@@ -351,7 +353,7 @@ class StudentReportController extends Controller
             }
 
             if (! $latestHafalan) {
-                $latestHafalan = $studentHafalanAll->first();
+                $latestHafalan = $this->positionCheck->latestByPosition($studentHafalanAll);
             }
 
             if ($latestHafalan) {
@@ -376,7 +378,7 @@ class StudentReportController extends Controller
         $latestJuz30Hafalan = $studentHafalanAll
             ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
             ->sortBy(fn ($r) => $r->surah?->number ?? 114)
-            ->first() ?? $studentHafalanAll->first();
+            ->first() ?? $this->positionCheck->latestByPosition($studentHafalanAll);
 
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();

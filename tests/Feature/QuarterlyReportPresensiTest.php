@@ -314,4 +314,69 @@ class QuarterlyReportPresensiTest extends TestCase
         $this->assertSame('1 - 5', $row10['target_ayat']);
         $this->assertSame(0, HafalanTarget::query()->where('student_id', $student10->id)->whereNotNull('auto_month')->count());
     }
+
+    #[Test]
+    public function capaian_uses_the_furthest_surah_when_two_are_submitted_on_the_same_date(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas XII F4 Test',
+            'level' => 'XII',
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        $alQamar = Surah::firstOrCreate(
+            ['number' => 54],
+            ['name_ar' => 'القمر', 'name_latin' => 'Al-Qamar', 'total_ayah' => 55, 'juz_start' => 27, 'juz_end' => 27]
+        );
+        $arRahman = Surah::firstOrCreate(
+            ['number' => 55],
+            ['name_ar' => 'الرحمن', 'name_latin' => 'Ar-Rahman', 'total_ayah' => 78, 'juz_start' => 27, 'juz_end' => 27]
+        );
+
+        // Satu sesi setoran (satu tanggal): musyrif input Al-Qamar dulu (menyelesaikannya),
+        // baru menambahkan Ar-Rahman lewat "+Tambah Surat" -- Ar-Rahman lebih jauh di mushaf
+        // dan seharusnya jadi capaian terakhir, bukan Al-Qamar walau di-input lebih dulu.
+        $record = HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-09-10',
+        ]);
+        $record->surahs()->create([
+            'surah_id' => $alQamar->id,
+            'ayah_start' => 50,
+            'ayah_end' => 55,
+            'submission_type' => 'new',
+            'status' => 'passed',
+            'score' => 90,
+        ]);
+        $record->surahs()->create([
+            'surah_id' => $arRahman->id,
+            'ayah_start' => 1,
+            'ayah_end' => 4,
+            'submission_type' => 'new',
+            'status' => 'passed',
+            'score' => 90,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', [
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('halaqahData', function ($halaqahData) {
+            $halaqah = collect($halaqahData)->first();
+            $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
+            $septRow = collect($halaqah['monthly']['09']['reguler_records'])->firstWhere('student_id', $this->student->id);
+
+            return $termRow['capaian_surah'] === 'Ar-Rahman'
+                && $termRow['capaian_ayat'] === '1-4'
+                && $septRow['capaian_surah'] === 'Ar-Rahman'
+                && $septRow['capaian_ayat'] === '1-4';
+        });
+    }
 }

@@ -79,4 +79,46 @@ class QuranLineTargetServiceTest extends TestCase
         $this->assertNull($this->service->targetPosition(1, 1, 0, $this->surahs));
         $this->assertNull($this->service->targetPosition(50, 1, 10, $this->surahs));
     }
+
+    #[Test]
+    public function latest_by_position_returns_null_for_empty_collection(): void
+    {
+        $this->assertNull($this->service->latestByPosition(collect()));
+    }
+
+    #[Test]
+    public function latest_by_position_prefers_the_furthest_surah_on_a_same_date_tie(): void
+    {
+        // Al-Qamar (54) di-input dulu, lalu Ar-Rahman (55) ditambahkan lewat "+Tambah
+        // Surat" di sesi/tanggal yang sama -- Ar-Rahman lebih jauh di mushaf dan harus
+        // dianggap capaian terakhir, walau bukan entri pertama yang ter-load.
+        $alQamar = (object) ['surah' => (object) ['number' => 54], 'ayah_end' => 55, 'submitted_at' => '2026-09-10'];
+        $arRahman = (object) ['surah' => (object) ['number' => 55], 'ayah_end' => 4, 'submitted_at' => '2026-09-10'];
+
+        $result = $this->service->latestByPosition(collect([$alQamar, $arRahman]));
+
+        $this->assertSame(55, $result->surah->number);
+    }
+
+    #[Test]
+    public function latest_by_position_still_prefers_a_later_date_over_a_further_surah(): void
+    {
+        $olderButFurther = (object) ['surah' => (object) ['number' => 90], 'ayah_end' => 1, 'submitted_at' => '2026-08-01'];
+        $newerButCloser = (object) ['surah' => (object) ['number' => 2], 'ayah_end' => 5, 'submitted_at' => '2026-09-10'];
+
+        $result = $this->service->latestByPosition(collect([$olderButFurther, $newerButCloser]));
+
+        $this->assertSame(2, $result->surah->number);
+    }
+
+    #[Test]
+    public function latest_by_position_breaks_a_same_surah_tie_by_ayah_end(): void
+    {
+        $partial = (object) ['surah' => (object) ['number' => 2], 'ayah_end' => 10, 'submitted_at' => '2026-09-10'];
+        $further = (object) ['surah' => (object) ['number' => 2], 'ayah_end' => 20, 'submitted_at' => '2026-09-10'];
+
+        $result = $this->service->latestByPosition(collect([$partial, $further]));
+
+        $this->assertSame(20, $result->ayah_end);
+    }
 }

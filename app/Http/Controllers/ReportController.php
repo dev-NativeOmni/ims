@@ -1047,7 +1047,7 @@ class ReportController extends Controller
             $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
 
             // Latest surah during the period
-            $latestHafalan = $studentHafalan->sortByDesc('submitted_at')->first();
+            $latestHafalan = app(QuranLineTargetService::class)->latestByPosition($studentHafalan);
             $latestMurajaah = $studentMurajaah->sortByDesc('reviewed_at')->first();
 
             $latestProgressText = '-';
@@ -1552,6 +1552,6 @@ class ReportController extends Controller
             }
         }
 
-        return $records->sortByDesc(fn ($r) => $r->submitted_at ? Carbon::parse($r->submitted_at)->timestamp : 0)->first();
+        return app(QuranLineTargetService::class)->latestByPosition($records);
     }
 }

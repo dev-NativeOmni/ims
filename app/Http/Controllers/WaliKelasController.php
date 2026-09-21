@@ -102,10 +102,10 @@ class WaliKelasController extends Controller
         $reachesTarget = function (Student $student, Carbon $cutoff) use ($termHafalan, $targetsByStudent, $positionCheck) {
             $target = $targetsByStudent->get($student->id, collect())
                 ->first(fn (HafalanTarget $t) => $t->target_date->lte($cutoff));
-            $capaian = $termHafalan->where('student_id', $student->id)
-                ->filter(fn ($h) => Carbon::parse($h->submitted_at)->lte($cutoff))
-                ->sortByDesc('submitted_at')
-                ->first();
+            $capaian = $positionCheck->latestByPosition(
+                $termHafalan->where('student_id', $student->id)
+                    ->filter(fn ($h) => Carbon::parse($h->submitted_at)->lte($cutoff))
+            );
 
             return $target?->surah && $capaian?->surah && $positionCheck->hasReached(
                 (int) $capaian->surah->number,

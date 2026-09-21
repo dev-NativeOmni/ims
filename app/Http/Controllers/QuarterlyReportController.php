@@ -611,7 +611,7 @@ class QuarterlyReportController extends Controller
             $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
 
             $studentTarget = $latestTargets->get($student->id)?->first();
-            $studentHafalan = $latestHafalans->get($student->id)?->first();
+            $studentHafalan = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()));
 
             $record = [
                 'student_id' => $student->id,
@@ -670,7 +670,7 @@ class QuarterlyReportController extends Controller
             // Ketercapaian: tuntas bila total baris memenuhi target, atau bila posisi capaian
             // (surah & ayat terakhir yang lulus) sudah sampai/melewati posisi target.
             $studentTarget = $latestTargets->get($student->id)?->first();
-            $studentCapaian = $latestHafalans->get($student->id)?->first();
+            $studentCapaian = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()));
             $reachedByPosition = $positionCheck
                 && $studentTarget?->surah
                 && $studentCapaian?->surah
