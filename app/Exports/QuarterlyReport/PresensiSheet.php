@@ -76,7 +76,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
                     $row++;
                 }
 
-                $rows[] = [];
+                $rows[] = [''];
                 $row++;
             }
         }
@@ -126,7 +126,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
                 $row++;
             }
 
-            $rows[] = [];
+            $rows[] = [''];
             $row++;
         }
 

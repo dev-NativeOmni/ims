@@ -75,7 +75,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
                     $row++;
                 }
 
-                $rows[] = [];
+                $rows[] = [''];
                 $row++;
             }
         }
@@ -122,7 +122,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
                         $row++;
                     }
 
-                    $rows[] = [];
+                    $rows[] = [''];
                     $row++;
                 }
             }

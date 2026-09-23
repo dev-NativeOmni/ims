@@ -67,7 +67,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
                 $row++;
             }
 
-            $rows[] = [];
+            $rows[] = [''];
             $row++;
         }
 

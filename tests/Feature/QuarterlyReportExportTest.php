@@ -13,6 +13,7 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -44,6 +45,26 @@ class QuarterlyReportExportTest extends TestCase
         file_put_contents($tmpPath, $response->streamedContent());
 
         $spreadsheet = IOFactory::load($tmpPath);
+        unlink($tmpPath);
+
+        return $spreadsheet;
+    }
+
+    /**
+     * Sama seperti downloadAndLoad(), tapi baca ulang dengan chart diaktifkan --
+     * reader PhpSpreadsheet defaultnya melewati chart demi performa.
+     */
+    private function downloadAndLoadWithCharts(array $query): Spreadsheet
+    {
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly.export', $query));
+        $response->assertStatus(200);
+
+        $tmpPath = tempnam(sys_get_temp_dir(), 'qrec').'.xlsx';
+        file_put_contents($tmpPath, $response->streamedContent());
+
+        $reader = new Xlsx;
+        $reader->setIncludeCharts(true);
+        $spreadsheet = $reader->load($tmpPath);
         unlink($tmpPath);
 
         return $spreadsheet;
@@ -196,5 +217,35 @@ class QuarterlyReportExportTest extends TestCase
     {
         $this->get(route('reports.quarterly.export'))->assertRedirect(route('login'));
         $this->actingAs($this->teacherUser)->get(route('reports.quarterly.export'))->assertStatus(403);
+    }
+
+    #[Test]
+    public function grafik_akhir_bulan_includes_a_donut_chart_per_month_with_the_tuntas_percentage(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas Donut Export',
+            'level' => 'XII',
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        $spreadsheet = $this->downloadAndLoadWithCharts([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]);
+
+        $sheet = $spreadsheet->getSheetByName('Grafik Akhir Bulan');
+        // Satu donat per bulan (Juli, Agustus, September) di dalam term ini.
+        $this->assertSame(3, $sheet->getChartCount());
+
+        $firstChart = $sheet->getChartCollection()[0];
+        $this->assertStringContainsString('Ketuntasan', $firstChart->getTitle()->getCaptionText());
+
+        // Data mentah donat (label berisi persentase) ada di kolom G/H, dibaca langsung oleh chart.
+        $cells = $this->flatten($sheet->toArray());
+        $this->assertTrue(collect($cells)->contains(fn ($v) => is_string($v) && str_contains($v, 'TUNTAS (') && str_contains($v, '%)')));
     }
 }
