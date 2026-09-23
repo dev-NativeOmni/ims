@@ -253,7 +253,7 @@
             </a>
         @endif
 
-        @if (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
+        @if (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin') || auth()->user()->hasRole('teacher'))
             @if ($hasRoute('reports.quarterly'))
                 <a href="{{ route('reports.quarterly') }}" class="{{ $getLinkClasses($routeIs('reports.quarterly')) }}">
                     <svg class="{{ $getIconClasses($routeIs('reports.quarterly')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">

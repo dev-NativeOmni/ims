@@ -104,4 +104,39 @@ class QuranLineTargetService
             return ((int) ($b->ayah_end ?? 0)) <=> ((int) ($a->ayah_end ?? 0));
         })->first();
     }
+
+    /**
+     * Cari capaian terjauh dari kumpulan setoran, dengan aturan khusus Kelas 10 / Metode
+     * Ummi: Ziyadah dimulai dari Juz 30 (Surah 114 An-Naas mundur ke 78 An-Naba'), jadi
+     * capaian terjauh adalah nomor surah TERKECIL di rentang itu -- kebalikan dari urutan
+     * mushaf normal yang dipakai kelas 11 & 12. Di luar Juz 30, tetap pakai urutan normal.
+     *
+     * @param  Collection<int, mixed>  $records
+     */
+    public function furthestRecord(Collection $records, bool $isGrade10Ummi = false): mixed
+    {
+        if ($records->isEmpty()) {
+            return null;
+        }
+
+        if ($isGrade10Ummi) {
+            $juz30Records = $records->filter(fn ($r) => ($r->surah?->number ?? 0) >= 78 && ($r->surah?->number ?? 0) <= 114);
+
+            if ($juz30Records->isNotEmpty()) {
+                return $juz30Records->sort(function ($a, $b) {
+                    $numA = $a->surah?->number ?? 114;
+                    $numB = $b->surah?->number ?? 114;
+                    if ($numA !== $numB) {
+                        return $numA <=> $numB;
+                    }
+                    $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
+                    $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
+
+                    return $dateB <=> $dateA;
+                })->first();
+            }
+        }
+
+        return $this->latestByPosition($records);
+    }
 }

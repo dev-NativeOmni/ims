@@ -10,21 +10,23 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Sheet "Jurnal": jurnal tatap muka per bulan per halaqah, sama dengan tab
- * "Jurnal" pada halaman Laporan Triwulan.
+ * Sheet "Grafik Akhir Bulan": ketuntasan capaian baris per murid per bulan
+ * (Capaian Baris vs Target Baris), sama dengan grafik "Grafik Capaian Bulan ..."
+ * di file template sekolah -- satu baris per murid per bulan, bukan grafik visual,
+ * supaya bisa difilter/di-pivot di Excel.
  */
-class JurnalSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
+class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     public function __construct(private readonly array $halaqahData) {}
 
     public function title(): string
     {
-        return 'Jurnal';
+        return 'Grafik Akhir Bulan';
     }
 
     public function headings(): array
     {
-        return ['Kelas', 'Halaqah (Musyrif)', 'Bulan', 'Tanggal / Pekan', 'Materi', 'Jumlah Murid Hadir', 'Paraf'];
+        return ['Kelas', 'Halaqah (Musyrif)', 'Bulan', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan'];
     }
 
     public function array(): array
@@ -32,16 +34,20 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
         $rows = [];
 
         foreach ($this->halaqahData as $halaqah) {
+            $className = $halaqah['class_room_name'] ?? '-';
+
             foreach ($halaqah['monthly'] as $month) {
-                foreach ($month['jurnal'] as $entry) {
+                $records = $month['tahfizh_records'] ?: $month['reguler_records'];
+
+                foreach ($records as $record) {
                     $rows[] = [
-                        $halaqah['class_room_name'] ?? '-',
+                        $className,
                         $halaqah['musyrif'],
                         $month['label'],
-                        $entry['tanggal'],
-                        $entry['materi'],
-                        $entry['jumlah_murid'],
-                        $entry['paraf'],
+                        $record['name'],
+                        $record['total_lines'],
+                        $record['target_lines'],
+                        $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
                     ];
                 }
             }

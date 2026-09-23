@@ -107,21 +107,21 @@ class QuarterlyReportExportTest extends TestCase
         ]);
 
         $sheetTitles = array_map(fn ($s) => $s->getTitle(), $spreadsheet->getAllSheets());
-        $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran'], $sheetTitles);
+        $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan', 'Indeks'], $sheetTitles);
 
         $termSheet = $spreadsheet->getSheetByName('Term-Indeks');
         $rows = $termSheet->toArray();
         $this->assertSame(
-            ['Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
+            ['Kelas', 'Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
             $rows[0]
         );
-        $studentNames = collect($rows)->skip(1)->pluck(2)->all();
+        $studentNames = collect($rows)->skip(1)->pluck(3)->all();
         $this->assertContains($this->student->name, $studentNames);
         $this->assertNotContains($otherStudent->name, $studentNames);
 
         // Pelanggaran murid muncul di kolom terakhir (Term-Indeks).
-        $studentRow = collect($rows)->skip(1)->firstWhere(2, $this->student->name);
-        $this->assertSame('1', (string) $studentRow[14]);
+        $studentRow = collect($rows)->skip(1)->firstWhere(3, $this->student->name);
+        $this->assertSame('1', (string) $studentRow[15]);
 
         $presensiSheet = $spreadsheet->getSheetByName('Presensi');
         $presensiRows = $presensiSheet->toArray();
@@ -129,7 +129,15 @@ class QuarterlyReportExportTest extends TestCase
 
         $setoranSheet = $spreadsheet->getSheetByName('Setoran');
         $setoranRows = collect($setoranSheet->toArray())->skip(1);
-        $this->assertTrue($setoranRows->contains(fn ($r) => str_contains((string) $r[6], 'Al-Fatihah')));
+        $this->assertTrue($setoranRows->contains(fn ($r) => str_contains((string) $r[7], 'Al-Fatihah')));
+
+        $grafikSheet = $spreadsheet->getSheetByName('Grafik Akhir Bulan');
+        $grafikRows = collect($grafikSheet->toArray())->skip(1);
+        $this->assertTrue($grafikRows->contains(fn ($r) => $r[3] === $this->student->name));
+
+        $indeksSheet = $spreadsheet->getSheetByName('Indeks');
+        $indeksRows = collect($indeksSheet->toArray())->skip(1);
+        $this->assertTrue($indeksRows->contains(fn ($r) => $r[1] === 'Al-Fatihah'));
     }
 
     #[Test]
@@ -169,12 +177,12 @@ class QuarterlyReportExportTest extends TestCase
 
         // Pastikan dua halaqoh benar-benar terbentuk sebelum diuji filternya.
         $fullSpreadsheet = $this->downloadAndLoad($query);
-        $fullNames = collect($fullSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(2);
+        $fullNames = collect($fullSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
         $this->assertContains('Murid Halaqoh Satu', $fullNames);
         $this->assertContains('Murid Halaqoh Dua', $fullNames);
 
         $filtered = $this->downloadAndLoad($query + ['musyrif' => $this->teacherUser->name]);
-        $filteredNames = collect($filtered->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(2);
+        $filteredNames = collect($filtered->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
         $this->assertContains('Murid Halaqoh Satu', $filteredNames);
         $this->assertNotContains('Murid Halaqoh Dua', $filteredNames);
     }

@@ -25,7 +25,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithHeadings, WithSty
     public function headings(): array
     {
         return [
-            'Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level',
+            'Kelas', 'Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level',
             'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat',
             'Capaian Baris', 'Target Baris', 'Ketercapaian',
             'Alpa', 'Izin', 'Sakit', 'Pelanggaran',
@@ -40,6 +40,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithHeadings, WithSty
             $no = 1;
             foreach ($halaqah['term_records'] as $row) {
                 $rows[] = [
+                    $halaqah['class_room_name'] ?? '-',
                     $halaqah['musyrif'],
                     $no++,
                     $row['name'],

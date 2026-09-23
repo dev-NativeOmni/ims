@@ -30,7 +30,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyl
 
     public function headings(): array
     {
-        return ['Halaqah (Musyrif)', 'Nama Murid', 'Bulan', 'Pertemuan', 'Status'];
+        return ['Kelas', 'Halaqah (Musyrif)', 'Nama Murid', 'Bulan', 'Pertemuan', 'Status'];
     }
 
     public function array(): array
@@ -38,11 +38,14 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyl
         $rows = [];
 
         foreach ($this->halaqahData as $halaqah) {
+            $className = $halaqah['class_room_name'] ?? '-';
+
             if ($this->isTahfizhProgram) {
                 foreach ($halaqah['students'] as $student) {
                     foreach ($halaqah['presensi'][$student->id] ?? [] as $monthLabel => $data) {
                         foreach ($data['days'] as $meetingNo => $code) {
                             $rows[] = [
+                                $className,
                                 $halaqah['musyrif'],
                                 $student->name,
                                 $monthLabel,
@@ -57,6 +60,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyl
                     foreach ($halaqah['students'] as $student) {
                         foreach ($month['presensi'][$student->id]['pekan'] ?? [] as $p => $status) {
                             $rows[] = [
+                                $className,
                                 $halaqah['musyrif'],
                                 $student->name,
                                 $month['label'],

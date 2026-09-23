@@ -9,11 +9,14 @@ use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\StudentPoint;
+use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
 use App\Services\QuranLineTargetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -50,6 +53,12 @@ class QuarterlyReportController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
+
+        if ($this->userHasAnyRole($user, ['teacher']) && ! $this->userHasAnyRole($user, ['super_admin', 'admin'])) {
+            return view('reports.quarterly-mine', $this->buildTeacherIndexData($request));
+        }
+
         return view('reports.quarterly', $this->buildReportData($request));
     }
 
@@ -75,16 +84,78 @@ class QuarterlyReportController extends Controller
     }
 
     /**
-     * Bangun seluruh data Laporan Triwulan (dipakai bersama oleh tampilan halaman & ekspor
-     * spreadsheet, supaya isi file yang di-download selalu sama persis dengan yang tampil di layar).
+     * Download laporan triwulan untuk guru yang login: kelas/halaqoh yang benar-benar
+     * dia ampu saja (program reguler ATAU tahfizh, dipilih lewat parameter `program`),
+     * dirangkum lintas semua kelas -- bukan satu kelas seperti export() di atas.
      */
-    private function buildReportData(Request $request): array
+    public function exportMine(Request $request): BinaryFileResponse|Response
     {
-        // Load all classrooms with their program
-        $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
-        $selectedClassId = $request->input('class_room_id', $classRooms->first()?->id);
-        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+        $user = $request->user();
+        $teacherProfile = $user?->teacherProfile;
 
+        if (! $teacherProfile) {
+            abort(403, 'Akun ini tidak terhubung ke profil guru.');
+        }
+
+        $isTahfizhProgram = $request->string('program')->toString() === 'tahfizh';
+        $data = $this->buildTeacherReportData($request, $teacherProfile, $isTahfizhProgram);
+
+        $teacherSlug = Str::slug($user->name);
+        $programSlug = $isTahfizhProgram ? 'tahfizh' : 'reguler';
+        $termSlug = 'term-'.$data['selectedTerm'].'-'.str_replace('/', '-', $data['academicYear']);
+        $fileName = "kelas-{$programSlug}-{$teacherSlug}-{$termSlug}.xlsx";
+
+        if (empty($data['halaqahData'])) {
+            return response(
+                "Tidak ada kelas program {$programSlug} yang diampu {$user->name} pada triwulan ini.",
+                404
+            );
+        }
+
+        return Excel::download(new QuarterlyReportExport($data), $fileName);
+    }
+
+    private function userHasAnyRole($user, array $roles): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        foreach ($roles as $role) {
+            if (method_exists($user, 'hasRole') && $user->hasRole($role)) {
+                return true;
+            }
+
+            if (($user->role?->name ?? null) === $role) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Data ringan untuk halaman "Laporan Triwulan" versi guru: cuma info konteks
+     * triwulan + dua tombol download (Reguler & Tahfizh), tanpa tabel data penuh
+     * seperti versi admin (guru sudah punya tampilan detail di menu Progres).
+     */
+    private function buildTeacherIndexData(Request $request): array
+    {
+        $context = $this->resolveTermContext($request);
+
+        return [
+            'academicYear' => $context['academicYear'],
+            'selectedTerm' => $context['selectedTerm'],
+            'months' => array_values($context['monthsMap']),
+        ];
+    }
+
+    /**
+     * Tahun ajaran, triwulan, dan rentang tanggal per bulan -- dipakai bersama oleh laporan
+     * per kelas (buildReportData) maupun laporan per guru lintas kelas (buildTeacherReportData).
+     */
+    private function resolveTermContext(Request $request): array
+    {
         // Auto-detect defaults from latest database record to ensure the dashboard works on seeded data
         $latestRecord = HafalanRecord::query()->latest('submitted_at')->first();
         $detectedYearString = '2025/2026';
@@ -143,6 +214,171 @@ class QuarterlyReportController extends Controller
         $termStartDate = reset($monthRanges)['start'];
         $termEndDate = end($monthRanges)['end'];
 
+        return compact('academicYear', 'selectedTerm', 'monthsMap', 'monthRanges', 'termStartDate', 'termEndDate');
+    }
+
+    /**
+     * Ambil seluruh data mentah satu triwulan sekali jalan (presensi, setoran, Ummi,
+     * pelanggaran, target & capaian terakhir) untuk sekelompok murid tertentu.
+     */
+    private function fetchTermData(array $studentIds, string $termStartDate, string $termEndDate): array
+    {
+        $termAttendances = Attendance::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('tanggal', [$termStartDate, $termEndDate])
+            ->get();
+
+        $termHafalanRecords = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with('surahs.surah')
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('submitted_at', [$termStartDate, $termEndDate])
+                ->orderBy('submitted_at')
+                ->orderBy('id')
+                ->get()
+        );
+
+        $termUmmiRecords = UmmiRecord::query()
+            ->with('surahs.surah')
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('tanggal', [$termStartDate, $termEndDate])
+            ->orderBy('tanggal')
+            ->orderBy('id')
+            ->get();
+
+        $termViolations = StudentPoint::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('type', 'violation')
+            ->whereBetween('date', [$termStartDate, $termEndDate])
+            ->get();
+
+        $latestTargets = HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('target_date', '<=', $termEndDate.' 23:59:59')
+            ->orderBy('target_date', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
+        $latestHafalans = HafalanRecord::flattenSurahs(
+            HafalanRecord::query()
+                ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
+                ->whereIn('student_id', $studentIds)
+                ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
+                ->where('submitted_at', '<=', $termEndDate.' 23:59:59')
+                ->orderBy('submitted_at', 'desc')
+                ->get()
+        )->groupBy('student_id');
+
+        $latestUmmiRecords = UmmiRecord::query()
+            ->with('surahs.surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('tanggal', '<=', $termEndDate)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy('student_id');
+
+        return [
+            'termAttendances' => $termAttendances,
+            'termHafalanRecords' => $termHafalanRecords,
+            'termUmmiRecords' => $termUmmiRecords,
+            'termViolations' => $termViolations,
+            'latestTargets' => $latestTargets,
+            'latestHafalans' => $latestHafalans,
+            'latestUmmiRecords' => $latestUmmiRecords,
+        ];
+    }
+
+    /**
+     * Bangun satu "kartu" halaqah/kelas (presensi, jurnal, capaian per pekan & rekap term)
+     * untuk sekelompok murid. Dipakai baik oleh laporan per kelas (satu kelas, banyak
+     * halaqah/musyrif) maupun laporan per guru (satu guru, banyak kelas).
+     */
+    private function buildHalaqahSection(
+        string $musyrifName,
+        $groupStudents,
+        ?ClassRoom $classRoom,
+        bool $isTahfizhProgram,
+        array $monthRanges,
+        array $monthsMap,
+        array $term,
+        AcademicCalendarService $calendar,
+        ?QuranLineTargetService $positionCheck
+    ): array {
+        $gStudentIds = $groupStudents->pluck('id')->toArray();
+        $gAttendances = $term['termAttendances']->whereIn('student_id', $gStudentIds);
+        $gHafalanRecords = $term['termHafalanRecords']->whereIn('student_id', $gStudentIds);
+        $gUmmiRecords = $term['termUmmiRecords']->whereIn('student_id', $gStudentIds);
+        $gViolations = $term['termViolations']->whereIn('student_id', $gStudentIds);
+
+        $context = [
+            'classRoom' => $classRoom,
+            'calendar' => $calendar,
+            'isTahfizhProgram' => $isTahfizhProgram,
+            'groupStudents' => $groupStudents,
+            'gAttendances' => $gAttendances,
+            'gHafalanRecords' => $gHafalanRecords,
+            'gUmmiRecords' => $gUmmiRecords,
+            'gViolations' => $gViolations,
+            'classAttendances' => $term['termAttendances'],
+            'classHafalanRecords' => $term['termHafalanRecords'],
+            'latestTargets' => $term['latestTargets'],
+            'latestHafalans' => $term['latestHafalans'],
+            'latestUmmiRecords' => $term['latestUmmiRecords'],
+        ];
+
+        $monthly = [];
+        foreach ($monthRanges as $mCode => $range) {
+            $monthly[$mCode] = $this->buildMonthReport($range, $context);
+        }
+
+        $termRecords = $this->buildTermRecords(
+            $monthly,
+            $groupStudents,
+            $gAttendances,
+            $gViolations,
+            $term['latestTargets'],
+            $term['latestHafalans'],
+            $positionCheck
+        );
+
+        return [
+            'musyrif' => $musyrifName,
+            'class_room_name' => $classRoom?->name ?? '-',
+            'students' => $groupStudents,
+            'is_tahfizh' => $isTahfizhProgram,
+            // Grid presensi 3 bulan (khusus program Tahfizh); Reguler memakai presensi per bulan di 'monthly'.
+            'presensi' => $isTahfizhProgram
+                ? $this->buildTahfizhPresensiGrid($monthRanges, $groupStudents, $term['termAttendances'], $term['termHafalanRecords'])
+                : [],
+            'monthly' => $monthly,
+            'term_records' => $termRecords,
+            'months' => array_values($monthsMap),
+            'total_students' => count($groupStudents),
+            'tuntas_count' => collect($termRecords)->where('is_tuntas', true)->count(),
+        ];
+    }
+
+    /**
+     * Bangun seluruh data Laporan Triwulan (dipakai bersama oleh tampilan halaman & ekspor
+     * spreadsheet, supaya isi file yang di-download selalu sama persis dengan yang tampil di layar).
+     */
+    private function buildReportData(Request $request): array
+    {
+        // Load all classrooms with their program
+        $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
+        $selectedClassId = $request->input('class_room_id', $classRooms->first()?->id);
+        $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+
+        $termContext = $this->resolveTermContext($request);
+        $academicYear = $termContext['academicYear'];
+        $selectedTerm = $termContext['selectedTerm'];
+        $monthsMap = $termContext['monthsMap'];
+        $monthRanges = $termContext['monthRanges'];
+        $termStartDate = $termContext['termStartDate'];
+        $termEndDate = $termContext['termEndDate'];
+
         // Detect program type
         $programName = strtolower($selectedClass?->program?->name ?? '');
         $isTahfizhProgram = str_contains($programName, 'tahfizh') || str_contains($programName, 'akselerasi');
@@ -167,30 +403,9 @@ class QuarterlyReportController extends Controller
 
         $studentIds = $students->pluck('id')->toArray();
 
-        // Fetch the whole term once; each month is sliced from these in memory.
-        $termAttendances = Attendance::query()
-            ->whereIn('student_id', $studentIds)
-            ->whereBetween('tanggal', [$termStartDate, $termEndDate])
-            ->get();
-
-        $termHafalanRecords = HafalanRecord::flattenSurahs(
-            HafalanRecord::query()
-                ->with('surahs.surah')
-                ->whereIn('student_id', $studentIds)
-                ->whereBetween('submitted_at', [$termStartDate, $termEndDate])
-                ->orderBy('submitted_at')
-                ->orderBy('id')
-                ->get()
-        );
-
-        $termViolations = StudentPoint::query()
-            ->whereIn('student_id', $studentIds)
-            ->where('type', 'violation')
-            ->whereBetween('date', [$termStartDate, $termEndDate])
-            ->get();
-
-        // Segarkan target otomatis per bulan (kelas 11 & 12) sebelum dibaca; target buatan guru
-        // tetap menang. Kegagalan sinkron tidak boleh menghalangi laporan tampil.
+        // Segarkan target otomatis per bulan (kelas 11 & 12) SEBELUM data term diambil, supaya
+        // target yang baru dibuat ikut terbaca oleh fetchTermData(); target buatan guru tetap
+        // menang. Kegagalan sinkron tidak boleh menghalangi laporan tampil.
         if ($selectedClass && ! $selectedClass->isGradeTen()) {
             try {
                 app(AutoHafalanTargetService::class)->syncClass($selectedClass, Carbon::parse($termStartDate));
@@ -199,23 +414,7 @@ class QuarterlyReportController extends Controller
             }
         }
 
-        $latestTargets = HafalanTarget::query()
-            ->with('surah')
-            ->whereIn('student_id', $studentIds)
-            ->where('target_date', '<=', $termEndDate.' 23:59:59')
-            ->orderBy('target_date', 'desc')
-            ->get()
-            ->groupBy('student_id');
-
-        $latestHafalans = HafalanRecord::flattenSurahs(
-            HafalanRecord::query()
-                ->with(['surahs' => fn ($q) => $q->where('status', 'passed')->with('surah')])
-                ->whereIn('student_id', $studentIds)
-                ->whereHas('surahs', fn ($q) => $q->where('status', 'passed'))
-                ->where('submitted_at', '<=', $termEndDate.' 23:59:59')
-                ->orderBy('submitted_at', 'desc')
-                ->get()
-        )->groupBy('student_id');
+        $term = $this->fetchTermData($studentIds, $termStartDate, $termEndDate);
 
         // Group students by their Musyrif
         $studentsByHalaqah = $students->groupBy(function ($student) {
@@ -230,54 +429,17 @@ class QuarterlyReportController extends Controller
         $positionCheck = ! ($selectedClass?->isGradeTen() ?? false) ? new QuranLineTargetService : null;
 
         foreach ($studentsByHalaqah as $musyrifName => $groupStudents) {
-            $gStudentIds = $groupStudents->pluck('id')->toArray();
-            $gAttendances = $termAttendances->whereIn('student_id', $gStudentIds);
-            $gHafalanRecords = $termHafalanRecords->whereIn('student_id', $gStudentIds);
-            $gViolations = $termViolations->whereIn('student_id', $gStudentIds);
-
-            $context = [
-                'classRoom' => $selectedClass,
-                'calendar' => $calendar,
-                'isTahfizhProgram' => $isTahfizhProgram,
-                'groupStudents' => $groupStudents,
-                'gAttendances' => $gAttendances,
-                'gHafalanRecords' => $gHafalanRecords,
-                'gViolations' => $gViolations,
-                'classAttendances' => $termAttendances,
-                'classHafalanRecords' => $termHafalanRecords,
-                'latestTargets' => $latestTargets,
-                'latestHafalans' => $latestHafalans,
-            ];
-
-            $monthly = [];
-            foreach ($monthRanges as $mCode => $range) {
-                $monthly[$mCode] = $this->buildMonthReport($range, $context);
-            }
-
-            $termRecords = $this->buildTermRecords(
-                $monthly,
+            $halaqahData[] = $this->buildHalaqahSection(
+                $musyrifName,
                 $groupStudents,
-                $gAttendances,
-                $gViolations,
-                $latestTargets,
-                $latestHafalans,
+                $selectedClass,
+                $isTahfizhProgram,
+                $monthRanges,
+                $monthsMap,
+                $term,
+                $calendar,
                 $positionCheck
             );
-
-            $halaqahData[] = [
-                'musyrif' => $musyrifName,
-                'students' => $groupStudents,
-                'is_tahfizh' => $isTahfizhProgram,
-                // Grid presensi 3 bulan (khusus program Tahfizh); Reguler memakai presensi per bulan di 'monthly'.
-                'presensi' => $isTahfizhProgram
-                    ? $this->buildTahfizhPresensiGrid($monthRanges, $groupStudents, $termAttendances, $termHafalanRecords)
-                    : [],
-                'monthly' => $monthly,
-                'term_records' => $termRecords,
-                'months' => array_values($monthsMap),
-                'total_students' => count($groupStudents),
-                'tuntas_count' => collect($termRecords)->where('is_tuntas', true)->count(),
-            ];
         }
 
         return [
@@ -286,6 +448,81 @@ class QuarterlyReportController extends Controller
             'isTahfizhProgram' => $isTahfizhProgram,
             'academicYear' => $academicYear,
             'selectedTerm' => $selectedTerm,
+            'monthsMap' => $monthsMap,
+            'halaqahData' => $halaqahData,
+            'months' => array_values($monthsMap),
+        ];
+    }
+
+    /**
+     * Bangun laporan lintas-kelas untuk satu guru: semua kelas program reguler ATAU
+     * tahfizh (tergantung $isTahfizhProgram) yang punya murid aktif diampu guru ini,
+     * masing-masing jadi satu "kartu" (bagian) di dalam halaqahData -- sama seperti
+     * per-halaqoh di buildReportData, hanya saja bagiannya per kelas, bukan per musyrif
+     * (musyrifnya sudah pasti guru yang sama).
+     */
+    private function buildTeacherReportData(Request $request, TeacherProfile $teacherProfile, bool $isTahfizhProgram): array
+    {
+        $termContext = $this->resolveTermContext($request);
+        $monthsMap = $termContext['monthsMap'];
+        $monthRanges = $termContext['monthRanges'];
+        $termStartDate = $termContext['termStartDate'];
+        $termEndDate = $termContext['termEndDate'];
+
+        $classRooms = ClassRoom::query()->with('program')->orderBy('level')->orderBy('name')->get()
+            ->filter(function (ClassRoom $classRoom) use ($isTahfizhProgram) {
+                $programName = strtolower($classRoom->program?->name ?? '');
+                $classIsTahfizh = str_contains($programName, 'tahfizh') || str_contains($programName, 'akselerasi');
+
+                return $classIsTahfizh === $isTahfizhProgram;
+            });
+
+        $musyrifName = $teacherProfile->user?->name ?? 'Guru';
+        $calendar = new AcademicCalendarService;
+        $halaqahData = [];
+
+        foreach ($classRooms as $classRoom) {
+            $groupStudents = $teacherProfile->students()
+                ->with(['classRoom', 'teacher.user'])
+                ->where('class_room_id', $classRoom->id)
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
+
+            if ($groupStudents->isEmpty()) {
+                continue;
+            }
+
+            $studentIds = $groupStudents->pluck('id')->toArray();
+
+            if (! $classRoom->isGradeTen()) {
+                try {
+                    app(AutoHafalanTargetService::class)->syncClass($classRoom, Carbon::parse($termStartDate));
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+
+            $term = $this->fetchTermData($studentIds, $termStartDate, $termEndDate);
+            $positionCheck = ! $classRoom->isGradeTen() ? new QuranLineTargetService : null;
+
+            $halaqahData[] = $this->buildHalaqahSection(
+                $musyrifName,
+                $groupStudents,
+                $classRoom,
+                $isTahfizhProgram,
+                $monthRanges,
+                $monthsMap,
+                $term,
+                $calendar,
+                $positionCheck
+            );
+        }
+
+        return [
+            'isTahfizhProgram' => $isTahfizhProgram,
+            'academicYear' => $termContext['academicYear'],
+            'selectedTerm' => $termContext['selectedTerm'],
             'monthsMap' => $monthsMap,
             'halaqahData' => $halaqahData,
             'months' => array_values($monthsMap),
@@ -379,9 +616,11 @@ class QuarterlyReportController extends Controller
         $groupStudents = $context['groupStudents'];
         $latestTargets = $context['latestTargets'];
         $latestHafalans = $context['latestHafalans'];
+        $latestUmmiRecords = $context['latestUmmiRecords'] ?? collect();
 
         $gAttendances = $context['gAttendances']->filter(fn ($a) => $this->inRange($a->tanggal, $range));
         $gHafalanRecords = $context['gHafalanRecords']->filter(fn ($h) => $this->inRange($h->submitted_at, $range));
+        $gUmmiRecords = ($context['gUmmiRecords'] ?? collect())->filter(fn ($u) => $this->inRange($u->tanggal, $range));
         $violations = $context['gViolations']->filter(fn ($v) => $this->inRange($v->date, $range));
 
         // Tanggal unik (presensi atau setoran) sekelas pada bulan ini -- dasar jurnal tatap muka.
@@ -534,6 +773,8 @@ class QuarterlyReportController extends Controller
         foreach ($groupStudents as $student) {
             $sHaf = $gHafalanRecords->where('student_id', $student->id);
             $sAttAll = $gAttendances->where('student_id', $student->id);
+            $sUmmi = $gUmmiRecords->where('student_id', $student->id);
+            $isUmmiStudent = $student->tahfizh_level === 'ummi';
             $pekanRecords = [];
             $totalCapaianLines = 0;
 
@@ -605,13 +846,31 @@ class QuarterlyReportController extends Controller
                     ];
                     $totalCapaianLines += $weekLines;
                 } else {
+                    $weekUmmi = $isUmmiStudent ? $sUmmi->filter(function ($u) use ($pStart, $pEnd) {
+                        $dayNum = (int) Carbon::parse($u->tanggal)->day;
+
+                        return $dayNum >= $pStart && $dayNum <= $pEnd;
+                    }) : collect();
+
                     $weekRecords = $sHaf->filter(function ($h) use ($pStart, $pEnd) {
                         $dayNum = (int) $h->submitted_at->format('d');
 
                         return $dayNum >= $pStart && $dayNum <= $pEnd;
                     })->filter(fn ($h) => $h->surah);
 
-                    if ($weekRecords->isNotEmpty()) {
+                    if ($isUmmiStudent && $weekUmmi->isNotEmpty()) {
+                        // Kelas 10 / Metode Ummi: setoran dicatat sebagai Jilid & Halaman, bukan Surah & Ayat.
+                        $lastUmmi = $weekUmmi->sortByDesc('tanggal')->first();
+                        $lines = (float) $weekUmmi->sum(fn ($u) => $u->lines_count);
+                        $pekanRecords[$p] = [
+                            'surah' => $lastUmmi->ummi_jilid ?: '-',
+                            'ayat' => $lastUmmi->ummi_halaman ?: '-',
+                            'baris' => $lines,
+                            'nilai' => $lastUmmi->nilai ?: '-',
+                            'kehadiran' => 'Hadir',
+                        ];
+                        $totalCapaianLines += $lines;
+                    } elseif ($weekRecords->isNotEmpty()) {
                         $lines = $weekRecords->sum('lines_count');
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                         $pekanRecords[$p] = [
@@ -647,6 +906,31 @@ class QuarterlyReportController extends Controller
             $studentTarget = $latestTargets->get($student->id)?->first();
             $studentHafalan = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()));
 
+            // Target: pakai Jilid/Halaman hanya kalau target guru memang dibuat lewat alur Ummi
+            // (ummi_jilid terisi) -- murid Ummi bisa juga punya target Ziyadah Surah/Ayat biasa.
+            if ($studentTarget?->ummi_jilid) {
+                $targetSurah = $studentTarget->ummi_jilid;
+                $targetAyat = trim('Peraga: '.($studentTarget->halaman_peraga ?: '-').' · Buku: '.($studentTarget->halaman_buku ?: '-'));
+            } else {
+                $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
+                $targetAyat = $studentTarget ? $studentTarget->ayah_range : '-';
+            }
+
+            // Capaian: pakai catatan Ummi terbaru kalau ada (Ziyadah, kalau ada, dihitung mundur
+            // dari Juz 30), selain itu tetap posisi Surah/Ayat terjauh seperti biasa.
+            $studentLatestUmmi = $isUmmiStudent ? $latestUmmiRecords->get($student->id, collect())->first() : null;
+            if ($studentLatestUmmi) {
+                $capaianSurah = $studentLatestUmmi->ummi_jilid ?: '-';
+                $capaianAyat = $studentLatestUmmi->ummi_halaman ?: '-';
+                $ziyadahRecord = app(QuranLineTargetService::class)->furthestRecord($latestHafalans->get($student->id, collect()), true);
+                if ($ziyadahRecord?->surah) {
+                    $capaianAyat .= ' (Ziyadah: '.$ziyadahRecord->surah->name_latin.' '.$ziyadahRecord->ayah_end.')';
+                }
+            } else {
+                $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
+                $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';
+            }
+
             $record = [
                 'student_id' => $student->id,
                 'name' => $student->name,
@@ -657,10 +941,10 @@ class QuarterlyReportController extends Controller
                 'total_lines' => $totalCapaianLines,
                 'is_tuntas' => $isTuntas,
                 'pelanggaran' => $violations->where('student_id', $student->id)->count(),
-                'target_surah' => $studentTarget?->surah?->name_latin ?? '-',
-                'target_ayat' => $studentTarget ? $studentTarget->ayah_range : '-',
-                'capaian_surah' => $studentHafalan?->surah?->name_latin ?? '-',
-                'capaian_ayat' => $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-',
+                'target_surah' => $targetSurah,
+                'target_ayat' => $targetAyat,
+                'capaian_surah' => $capaianSurah,
+                'capaian_ayat' => $capaianAyat,
             ];
 
             if ($isTahfizhProgram) {

@@ -45,7 +45,6 @@ class QuarterlyReportTest extends TestCase
 
     public function test_quarterly_report_forbidden_for_other_roles(): void
     {
-        $teacher = User::where('username', 'guru')->first();
         $student = User::where('username', 'santri')->first();
 
         $parentRole = Role::where('name', 'parent')->first();
@@ -54,8 +53,17 @@ class QuarterlyReportTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->actingAs($teacher)->get(route('reports.quarterly'))->assertStatus(403);
         $this->actingAs($student)->get(route('reports.quarterly'))->assertStatus(403);
         $this->actingAs($parent)->get(route('reports.quarterly'))->assertStatus(403);
+    }
+
+    public function test_quarterly_report_shows_download_mine_page_for_teacher(): void
+    {
+        $teacher = User::where('username', 'guru')->first();
+
+        $response = $this->actingAs($teacher)->get(route('reports.quarterly'));
+        $response->assertStatus(200);
+        $response->assertViewIs('reports.quarterly-mine');
+        $response->assertSee('Laporan Triwulan - Kelas Saya');
     }
 }

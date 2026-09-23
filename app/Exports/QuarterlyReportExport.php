@@ -2,6 +2,8 @@
 
 namespace App\Exports;
 
+use App\Exports\QuarterlyReport\GrafikAkhirBulanSheet;
+use App\Exports\QuarterlyReport\IndeksSheet;
 use App\Exports\QuarterlyReport\JurnalSheet;
 use App\Exports\QuarterlyReport\PresensiSheet;
 use App\Exports\QuarterlyReport\SetoranSheet;
@@ -10,9 +12,9 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 /**
  * Ekspor Laporan Triwulan ke satu file .xlsx, satu sheet per tab yang tampil di
- * layar (Term/Indeks, Presensi, Jurnal, Setoran) -- dibangun dari data yang sama
- * persis dengan yang dipakai untuk merender halaman (lihat
- * QuarterlyReportController::buildReportData()), supaya isinya selalu sinkron.
+ * layar (Term/Indeks, Presensi, Jurnal, Setoran, Grafik Akhir Bulan, Indeks Surah)
+ * -- dibangun dari data yang sama persis dengan yang dipakai untuk merender halaman
+ * (lihat QuarterlyReportController::buildReportData()), supaya isinya selalu sinkron.
  */
 class QuarterlyReportExport implements WithMultipleSheets
 {
@@ -25,6 +27,8 @@ class QuarterlyReportExport implements WithMultipleSheets
             new PresensiSheet($this->data['halaqahData'], $this->data['isTahfizhProgram']),
             new JurnalSheet($this->data['halaqahData']),
             new SetoranSheet($this->data['halaqahData'], $this->data['isTahfizhProgram']),
+            new GrafikAkhirBulanSheet($this->data['halaqahData']),
+            new IndeksSheet,
         ];
     }
 }

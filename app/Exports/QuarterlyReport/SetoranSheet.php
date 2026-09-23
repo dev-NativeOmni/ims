@@ -27,7 +27,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyle
 
     public function headings(): array
     {
-        return ['Halaqah (Musyrif)', 'Bulan', 'Nama Murid', 'Level', 'Pekan', 'Hari', 'Surah / Keterangan', 'Ayat', 'Baris', 'Nilai'];
+        return ['Kelas', 'Halaqah (Musyrif)', 'Bulan', 'Nama Murid', 'Level', 'Pekan', 'Hari', 'Surah / Keterangan', 'Ayat', 'Baris', 'Nilai'];
     }
 
     public function array(): array
@@ -35,6 +35,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyle
         $rows = [];
 
         foreach ($this->halaqahData as $halaqah) {
+            $className = $halaqah['class_room_name'] ?? '-';
+
             foreach ($halaqah['monthly'] as $month) {
                 $records = $this->isTahfizhProgram ? $month['tahfizh_records'] : $month['reguler_records'];
 
@@ -43,6 +45,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyle
                         if ($this->isTahfizhProgram) {
                             foreach ($pekanData['days'] as $dayName => $day) {
                                 $rows[] = [
+                                    $className,
                                     $halaqah['musyrif'],
                                     $month['label'],
                                     $record['name'],
@@ -57,6 +60,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyle
                             }
                         } else {
                             $rows[] = [
+                                $className,
                                 $halaqah['musyrif'],
                                 $month['label'],
                                 $record['name'],

@@ -390,12 +390,16 @@ Route::middleware(['auth'])->group(function () {
             ->name('attendances.save');
 
         Route::get('/admin/reports/quarterly', [QuarterlyReportController::class, 'index'])
-            ->middleware('role:super_admin,admin')
+            ->middleware('role:super_admin,admin,teacher')
             ->name('reports.quarterly');
 
         Route::get('/admin/reports/quarterly/export', [QuarterlyReportController::class, 'export'])
             ->middleware('role:super_admin,admin')
             ->name('reports.quarterly.export');
+
+        Route::get('/admin/reports/quarterly/export-mine', [QuarterlyReportController::class, 'exportMine'])
+            ->middleware('role:super_admin,admin,teacher')
+            ->name('reports.quarterly.export.mine');
 
         Route::get('/wali-kelas', [WaliKelasController::class, 'index'])
             ->middleware('role:wali_kelas,super_admin,admin')
