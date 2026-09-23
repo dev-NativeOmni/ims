@@ -107,7 +107,7 @@ class QuarterlyReportExportTest extends TestCase
         ]);
 
         $sheetTitles = array_map(fn ($s) => $s->getTitle(), $spreadsheet->getAllSheets());
-        $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan', 'Indeks'], $sheetTitles);
+        $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan'], $sheetTitles);
 
         $termSheet = $spreadsheet->getSheetByName('Term-Indeks');
         $rows = $termSheet->toArray();
@@ -134,10 +134,6 @@ class QuarterlyReportExportTest extends TestCase
         $grafikSheet = $spreadsheet->getSheetByName('Grafik Akhir Bulan');
         $grafikRows = collect($grafikSheet->toArray())->skip(1);
         $this->assertTrue($grafikRows->contains(fn ($r) => $r[3] === $this->student->name));
-
-        $indeksSheet = $spreadsheet->getSheetByName('Indeks');
-        $indeksRows = collect($indeksSheet->toArray())->skip(1);
-        $this->assertTrue($indeksRows->contains(fn ($r) => $r[1] === 'Al-Fatihah'));
     }
 
     #[Test]

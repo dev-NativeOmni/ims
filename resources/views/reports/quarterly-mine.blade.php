@@ -23,7 +23,7 @@
                 </div>
 
                 <p class="text-sm text-gray-600 dark:text-zinc-400 mb-6">
-                    Setiap file berisi rekap Presensi, Jurnal, Capaian Setoran per pekan, Grafik Ketuntasan Bulanan, Term/Indeks, dan Indeks Surah -- untuk semua kelas
+                    Setiap file berisi rekap Presensi, Jurnal, Capaian Setoran per pekan, Grafik Ketuntasan Bulanan, dan Term/Indeks -- untuk semua kelas
                     di program tersebut yang punya murid Anda ampu. Kelas 10 otomatis memakai data Jilid/Halaman Ummi.
                 </p>
 
