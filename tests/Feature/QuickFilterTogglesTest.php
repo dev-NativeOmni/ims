@@ -153,6 +153,27 @@ class QuickFilterTogglesTest extends TestCase
     }
 
     #[Test]
+    public function hafalan_target_class_filter_narrows_the_list(): void
+    {
+        $otherStudentTarget = HafalanTarget::create([
+            'student_id' => $this->secondStudent->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id, 'ayah' => 5, 'target_date' => now(), 'status' => 'active',
+        ]);
+        HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id, 'ayah' => 3, 'target_date' => now(), 'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('hafalan-targets.index', ['class_room_id' => $this->secondStudent->class_room_id]));
+
+        $response->assertStatus(200);
+        $rows = $response->viewData('targets');
+        $this->assertSame([$otherStudentTarget->id], $rows->pluck('id')->all());
+        $response->assertSee('hidden sm:flex', false);
+        $response->assertSee('sm:hidden w-full', false);
+    }
+
+    #[Test]
     public function tahfizh_exam_pass_status_filter_uses_the_scoring_threshold(): void
     {
         TahfizhExam::create([
