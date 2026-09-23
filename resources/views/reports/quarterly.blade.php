@@ -171,6 +171,10 @@
                             <div class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-900/30">
                                 Rasio: {{ $halaqah['total_students'] > 0 ? round(($halaqah['tuntas_count'] / $halaqah['total_students']) * 100, 1) : 0 }}%
                             </div>
+                            <a href="{{ route('reports.quarterly.export', array_merge(request()->only(['class_room_id', 'academic_year', 'term']), ['musyrif' => $halaqah['musyrif']])) }}" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">
+                                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
+                                <span>Download Halaqoh Ini</span>
+                            </a>
                         </div>
                     </div>
 

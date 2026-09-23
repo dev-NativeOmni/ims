@@ -6,8 +6,11 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Program;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\StudentPoint;
+use App\Models\TeacherProfile;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -127,6 +130,53 @@ class QuarterlyReportExportTest extends TestCase
         $setoranSheet = $spreadsheet->getSheetByName('Setoran');
         $setoranRows = collect($setoranSheet->toArray())->skip(1);
         $this->assertTrue($setoranRows->contains(fn ($r) => str_contains((string) $r[6], 'Al-Fatihah')));
+    }
+
+    #[Test]
+    public function export_can_be_narrowed_down_to_a_single_halaqoh(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas XII F5 Export',
+            'level' => 'XII',
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+        $this->student->update([
+            'class_room_id' => $classRoom->id,
+            'tahfizh_level' => 'reguler',
+            'name' => 'Murid Halaqoh Satu',
+        ]);
+
+        $secondTeacherRole = Role::where('name', 'teacher')->firstOrFail();
+        $secondTeacherUser = User::factory()->create(['role_id' => $secondTeacherRole->id, 'name' => 'Ust. Halaqoh Dua', 'status' => 'active']);
+        $secondTeacherProfile = TeacherProfile::create(['user_id' => $secondTeacherUser->id, 'employee_number' => 'TEST-GURU-002']);
+        $secondStudent = Student::create([
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $secondTeacherProfile->id,
+            'name' => 'Murid Halaqoh Dua',
+            'student_number' => 'TEST-SNT-902',
+            'gender' => 'male',
+            'birth_date' => '2009-01-01',
+            'status' => 'active',
+        ]);
+
+        $query = [
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ];
+
+        // Pastikan dua halaqoh benar-benar terbentuk sebelum diuji filternya.
+        $fullSpreadsheet = $this->downloadAndLoad($query);
+        $fullNames = collect($fullSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(2);
+        $this->assertContains('Murid Halaqoh Satu', $fullNames);
+        $this->assertContains('Murid Halaqoh Dua', $fullNames);
+
+        $filtered = $this->downloadAndLoad($query + ['musyrif' => $this->teacherUser->name]);
+        $filteredNames = collect($filtered->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(2);
+        $this->assertContains('Murid Halaqoh Satu', $filteredNames);
+        $this->assertNotContains('Murid Halaqoh Dua', $filteredNames);
     }
 
     #[Test]

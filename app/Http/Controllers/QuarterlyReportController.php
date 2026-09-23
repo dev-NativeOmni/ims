@@ -61,6 +61,16 @@ class QuarterlyReportController extends Controller
         $termSlug = 'term-'.$data['selectedTerm'].'-'.str_replace('/', '-', $data['academicYear']);
         $fileName = "laporan-triwulan-{$classSlug}-{$termSlug}.xlsx";
 
+        // Download per halaqoh: filter ke satu kelompok musyrif saja kalau diminta.
+        if ($request->filled('musyrif')) {
+            $data['halaqahData'] = array_values(array_filter(
+                $data['halaqahData'],
+                fn (array $halaqah) => $halaqah['musyrif'] === $request->string('musyrif')->toString()
+            ));
+
+            $fileName = "laporan-triwulan-{$classSlug}-".Str::slug($request->string('musyrif')->toString())."-{$termSlug}.xlsx";
+        }
+
         return Excel::download(new QuarterlyReportExport($data), $fileName);
     }
 
