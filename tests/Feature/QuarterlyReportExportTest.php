@@ -130,14 +130,15 @@ class QuarterlyReportExportTest extends TestCase
         $sheetTitles = array_map(fn ($s) => $s->getTitle(), $spreadsheet->getAllSheets());
         $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan'], $sheetTitles);
 
-        // Term-Indeks: dikelompokkan per halaqoh lewat baris judul bagian ("Kelas — Musyrif"),
-        // diikuti baris judul kolom, lalu satu baris per murid -- bukan tabel datar.
+        // Term-Indeks: dikelompokkan per tingkat kelas ("KELAS XII"), lalu per kelas/halaqoh
+        // ("Kelas: ... | Musyrif: ..."), diikuti baris judul kolom, lalu satu baris per murid.
         $termSheet = $spreadsheet->getSheetByName('Term-Indeks');
         $rows = $termSheet->toArray();
-        $this->assertSame('Kelas XII F4 Export — Guru Test', $rows[0][0]);
+        $this->assertSame('KELAS XII', $rows[0][0]);
+        $this->assertSame('Kelas: Kelas XII F4 Export  |  Musyrif: Guru Test', $rows[1][0]);
         $this->assertSame(
             ['No', 'Nama Murid', 'Level', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
-            $rows[1]
+            $rows[2]
         );
         $studentRow = collect($rows)->firstWhere(1, $this->student->name);
         $this->assertNotNull($studentRow);
@@ -220,7 +221,7 @@ class QuarterlyReportExportTest extends TestCase
     }
 
     #[Test]
-    public function grafik_akhir_bulan_includes_a_donut_chart_per_month_with_the_tuntas_percentage(): void
+    public function grafik_akhir_bulan_includes_a_pie_and_a_bar_line_chart_per_month_with_the_tuntas_percentage(): void
     {
         $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
         $classRoom = ClassRoom::create([
@@ -238,11 +239,22 @@ class QuarterlyReportExportTest extends TestCase
         ]);
 
         $sheet = $spreadsheet->getSheetByName('Grafik Akhir Bulan');
-        // Satu donat per bulan (Juli, Agustus, September) di dalam term ini.
-        $this->assertSame(3, $sheet->getChartCount());
+        // Dua chart per bulan (Juli, Agustus, September) di dalam term ini: batang+garis capaian, dan pie ketuntasan.
+        $this->assertSame(6, $sheet->getChartCount());
 
-        $firstChart = $sheet->getChartCollection()[0];
-        $this->assertStringContainsString('Ketuntasan', $firstChart->getTitle()->getCaptionText());
+        $titles = collect($sheet->getChartCollection())->map(fn ($c) => $c->getTitle()->getCaptionText());
+        $this->assertTrue($titles->contains(fn ($t) => str_contains($t, 'Ketuntasan')));
+        $this->assertTrue($titles->contains(fn ($t) => str_contains($t, 'Grafik Capaian')));
+
+        // Chart pie ketuntasan pakai DataSeries bertipe pieChart sungguhan.
+        $pieChart = collect($sheet->getChartCollection())->first(fn ($c) => str_contains($c->getTitle()->getCaptionText(), 'Ketuntasan'));
+        $this->assertSame('pieChart', $pieChart->getPlotArea()->getPlotGroup()[0]->getPlotType());
+
+        // Chart batang+garis benar-benar dua tipe series berbeda (kombinasi), bukan cuma satu.
+        $comboChart = collect($sheet->getChartCollection())->first(fn ($c) => str_contains($c->getTitle()->getCaptionText(), 'Grafik Capaian'));
+        $plotTypes = collect($comboChart->getPlotArea()->getPlotGroup())->map(fn ($s) => $s->getPlotType());
+        $this->assertContains('barChart', $plotTypes);
+        $this->assertContains('lineChart', $plotTypes);
 
         // Data mentah donat (label berisi persentase) ada di kolom G/H, dibaca langsung oleh chart.
         $cells = $this->flatten($sheet->toArray());

@@ -2,21 +2,31 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Sheet "Jurnal": jurnal tatap muka per bulan per halaqah, dikelompokkan dengan
- * baris judul bagian sama seperti tab "Jurnal" pada halaman Laporan Triwulan.
+ * Sheet "Jurnal": jurnal tatap muka per bulan > tingkat kelas > kelas/halaqoh,
+ * sama seperti sheet "JURNAL" di template sekolah.
  */
-class JurnalSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
+class JurnalSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison, WithStyles, WithTitle
 {
+    use GradeBanding;
+
     /** @var int[] */
-    private array $sectionRows = [];
+    private array $monthRows = [];
+
+    /** @var array<int, string> */
+    private array $gradeRows = [];
+
+    /** @var int[] */
+    private array $classRows = [];
 
     /** @var int[] */
     private array $headerRows = [];
@@ -32,30 +42,37 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
     {
         $rows = [];
         $row = 0;
+        $months = $this->halaqahData[0]['monthly'] ?? [];
 
-        foreach ($this->halaqahData as $halaqah) {
-            $className = $halaqah['class_room_name'] ?? '-';
+        foreach ($months as $mCode => $firstMonth) {
+            $rows[] = ["BULAN {$firstMonth['label']}"];
+            $this->monthRows[] = ++$row;
 
-            foreach ($halaqah['monthly'] as $month) {
-                $rows[] = ["{$className} — {$halaqah['musyrif']} — Bulan {$month['label']}"];
-                $this->sectionRows[] = ++$row;
+            foreach ($this->groupByGrade($this->halaqahData) as $grade => $halaqahs) {
+                $rows[] = ["KELAS {$grade}"];
+                $this->gradeRows[++$row] = $this->gradeColor($grade);
 
-                $rows[] = ['No', 'Hari / Tanggal', 'Materi', 'Jumlah Murid Hadir', 'Paraf'];
-                $this->headerRows[] = ++$row;
+                foreach ($halaqahs as $halaqah) {
+                    $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
+                    $this->classRows[] = ++$row;
 
-                foreach ($month['jurnal'] as $jIdx => $entry) {
-                    $rows[] = [
-                        $jIdx + 1,
-                        $entry['tanggal'],
-                        $entry['materi'],
-                        $entry['jumlah_murid'],
-                        $entry['paraf'],
-                    ];
+                    $rows[] = ['No', 'Hari / Tanggal', 'Materi', 'Jumlah Murid Hadir', 'Paraf'];
+                    $this->headerRows[] = ++$row;
+
+                    foreach ($halaqah['monthly'][$mCode]['jurnal'] as $jIdx => $entry) {
+                        $rows[] = [
+                            $jIdx + 1,
+                            $entry['tanggal'],
+                            $entry['materi'],
+                            $entry['jumlah_murid'],
+                            $entry['paraf'],
+                        ];
+                        $row++;
+                    }
+
+                    $rows[] = [''];
                     $row++;
                 }
-
-                $rows[] = [''];
-                $row++;
             }
         }
 
@@ -66,11 +83,22 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
     {
         $styles = [];
 
-        foreach ($this->sectionRows as $r) {
+        foreach ($this->monthRows as $r) {
             $styles[$r] = [
-                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '4F46E5']],
+                'font' => ['bold' => true, 'size' => 13, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '1E3A8A']],
             ];
+        }
+
+        foreach ($this->gradeRows as $r => $color) {
+            $styles[$r] = [
+                'font' => ['bold' => true, 'size' => 12],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $color]],
+            ];
+        }
+
+        foreach ($this->classRows as $r) {
+            $styles[$r] = ['font' => ['bold' => true, 'italic' => true]];
         }
 
         foreach ($this->headerRows as $r) {

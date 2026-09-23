@@ -2,9 +2,11 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCharts;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Chart\Chart;
@@ -17,21 +19,29 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Sheet "Grafik Akhir Bulan": ketuntasan capaian baris per murid per bulan
- * (Capaian Baris vs Target Baris), dikelompokkan dengan baris judul bagian sama
- * seperti tab "Grafik Akhir Bulan" di layar, plus diagram donat Tuntas/Belum
- * Tuntas per bulan (sama seperti donat "Ketuntasan" di Rapor Periodik).
+ * Sheet "Grafik Akhir Bulan": ketuntasan capaian baris per murid per bulan,
+ * dikelompokkan per tingkat kelas, dengan dua diagram per kelas per bulan --
+ * batang+garis (Capaian vs Target per murid) dan donat Ketuntasan -- sama
+ * seperti "GRAFIK CAPAIAN BULAN" & "KETUNTASAN BULAN" di template sekolah.
  */
-class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithStyles, WithTitle
+class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithStrictNullComparison, WithStyles, WithTitle
 {
+    use GradeBanding;
+
     /** @var int[] */
-    private array $sectionRows = [];
+    private array $monthRows = [];
+
+    /** @var array<int, string> */
+    private array $gradeRows = [];
+
+    /** @var int[] */
+    private array $classRows = [];
 
     /** @var int[] */
     private array $headerRows = [];
 
-    /** @var array<int, array{title: string, catRange: string, valRange: string}> */
-    private array $donutRanges = [];
+    /** @var array<int, array{title: string, catRange: string, valRange: string, studentCatRange: string, capaianRange: string, targetRange: string}> */
+    private array $chartRanges = [];
 
     public function __construct(private readonly array $halaqahData) {}
 
@@ -44,52 +54,69 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     {
         $rows = [];
         $row = 0;
+        $months = $this->halaqahData[0]['monthly'] ?? [];
 
-        foreach ($this->halaqahData as $halaqah) {
-            $className = $halaqah['class_room_name'] ?? '-';
+        foreach ($months as $mCode => $firstMonth) {
+            $rows[] = ["BULAN {$firstMonth['label']}"];
+            $this->monthRows[] = ++$row;
 
-            foreach ($halaqah['monthly'] as $month) {
-                $records = $month['tahfizh_records'] ?: $month['reguler_records'];
-                $tuntasCount = collect($records)->where('is_tuntas', true)->count();
-                $total = count($records);
-                $tidakCount = $total - $tuntasCount;
-                $tuntasPercent = $total > 0 ? round(($tuntasCount / $total) * 100) : 0;
-                $tidakPercent = $total > 0 ? 100 - $tuntasPercent : 0;
+            foreach ($this->groupByGrade($this->halaqahData) as $grade => $halaqahs) {
+                $rows[] = ["KELAS {$grade}"];
+                $this->gradeRows[++$row] = $this->gradeColor($grade);
 
-                // Kolom G/H (di luar kolom data utama A-E) menampung data mentah donat
-                // ketuntasan bulan ini, dibaca langsung oleh chart di charts() di bawah.
-                $bannerRow = array_pad(["{$className} — {$halaqah['musyrif']} — Bulan {$month['label']} ({$tuntasCount}/{$total} Tuntas, {$tuntasPercent}%)"], 6, '');
-                $bannerRow[] = "TUNTAS ({$tuntasPercent}%)";
-                $bannerRow[] = $tuntasCount;
-                $rows[] = $bannerRow;
-                $this->sectionRows[] = ++$row;
-                $donutTopRow = $row;
+                foreach ($halaqahs as $halaqah) {
+                    $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
+                    $this->classRows[] = ++$row;
 
-                $headerRow = array_pad(['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan'], 6, '');
-                $headerRow[] = "BELUM TUNTAS ({$tidakPercent}%)";
-                $headerRow[] = $tidakCount;
-                $rows[] = $headerRow;
-                $this->headerRows[] = ++$row;
+                    $month = $halaqah['monthly'][$mCode];
+                    $records = $month['tahfizh_records'] ?: $month['reguler_records'];
+                    $tuntasCount = collect($records)->where('is_tuntas', true)->count();
+                    $total = count($records);
+                    $tidakCount = $total - $tuntasCount;
+                    $tuntasPercent = $total > 0 ? round(($tuntasCount / $total) * 100) : 0;
+                    $tidakPercent = $total > 0 ? 100 - $tuntasPercent : 0;
 
-                $this->donutRanges[] = [
-                    'title' => "{$className} — {$month['label']}",
-                    'catRange' => "G{$donutTopRow}:G".($donutTopRow + 1),
-                    'valRange' => "H{$donutTopRow}:H".($donutTopRow + 1),
-                ];
+                    // Kolom G/H (di luar kolom data utama A-E) menampung data mentah donat
+                    // ketuntasan, dibaca langsung oleh chart di charts() di bawah.
+                    $headerRow = ['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
+                    $this->headerRows[] = ++$row;
+                    $dataTopRow = $row + 1;
+                    $rows[] = $headerRow;
 
-                foreach ($records as $idx => $record) {
-                    $rows[] = [
-                        $idx + 1,
-                        $record['name'],
-                        $record['total_lines'],
-                        $record['target_lines'],
-                        $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
-                    ];
+                    $donutTopRow = $row;
+
+                    foreach ($records as $idx => $record) {
+                        $line = [
+                            $idx + 1,
+                            $record['name'],
+                            $record['total_lines'],
+                            $record['target_lines'],
+                            $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
+                        ];
+                        if ($idx === 0) {
+                            $line[] = '';
+                            $line[] = "BELUM TUNTAS ({$tidakPercent}%)";
+                            $line[] = $tidakCount;
+                        }
+                        $rows[] = $line;
+                        $row++;
+                    }
+                    $dataBottomRow = $row;
+
+                    if ($total > 0) {
+                        $this->chartRanges[] = [
+                            'title' => "{$halaqah['class_room_name']} — {$month['label']}",
+                            'catRange' => "G{$donutTopRow}:G".($donutTopRow + 1),
+                            'valRange' => "H{$donutTopRow}:H".($donutTopRow + 1),
+                            'studentCatRange' => "B{$dataTopRow}:B{$dataBottomRow}",
+                            'capaianRange' => "C{$dataTopRow}:C{$dataBottomRow}",
+                            'targetRange' => "D{$dataTopRow}:D{$dataBottomRow}",
+                        ];
+                    }
+
+                    $rows[] = [''];
                     $row++;
                 }
-
-                $rows[] = [''];
-                $row++;
             }
         }
 
@@ -100,11 +127,22 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     {
         $styles = [];
 
-        foreach ($this->sectionRows as $r) {
+        foreach ($this->monthRows as $r) {
             $styles[$r] = [
-                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '4F46E5']],
+                'font' => ['bold' => true, 'size' => 13, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '1E3A8A']],
             ];
+        }
+
+        foreach ($this->gradeRows as $r => $color) {
+            $styles[$r] = [
+                'font' => ['bold' => true, 'size' => 12],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $color]],
+            ];
+        }
+
+        foreach ($this->classRows as $r) {
+            $styles[$r] = ['font' => ['bold' => true, 'italic' => true]];
         }
 
         foreach ($this->headerRows as $r) {
@@ -119,8 +157,9 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     }
 
     /**
-     * Satu diagram donat per bulan per halaqoh, ditumpuk vertikal di kolom J+ supaya
-     * tidak pernah bertabrakan satu sama lain berapa pun jumlah murid di tiap bagian.
+     * Dua diagram per kelas per bulan (batang+garis capaian/target, dan donat
+     * ketuntasan), ditumpuk vertikal di kolom J+ supaya tidak pernah bertabrakan
+     * satu sama lain berapa pun jumlah murid di tiap bagian.
      *
      * @return Chart[]
      */
@@ -128,33 +167,77 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     {
         $charts = [];
         $sheetTitle = $this->title();
+        $offset = 0;
 
-        foreach ($this->donutRanges as $i => $range) {
-            $categories = [new DataSeriesValues('String', "'{$sheetTitle}'!{$range['catRange']}", null, 2)];
-            $values = [new DataSeriesValues('Number', "'{$sheetTitle}'!{$range['valRange']}", null, 2)];
+        foreach ($this->chartRanges as $i => $range) {
+            $topRow = 2 + ($offset * 16);
 
-            $series = new DataSeries(
-                DataSeries::TYPE_DOUGHNUTCHART,
-                null,
-                [0],
-                [],
-                $categories,
-                $values
-            );
+            $charts[] = $this->buildCapaianChart($sheetTitle, $range, $topRow);
+            $charts[] = $this->buildDonutChart($sheetTitle, $range, $topRow);
 
-            $plotArea = new PlotArea(null, [$series]);
-            $legend = new Legend(Legend::POSITION_BOTTOM, null, false);
-            $title = new Title("Ketuntasan {$range['title']}");
-
-            $chart = new Chart("ketuntasan_{$i}", $title, $legend, $plotArea);
-
-            $topRow = 2 + ($i * 16);
-            $chart->setTopLeftPosition('J'.$topRow);
-            $chart->setBottomRightPosition('O'.($topRow + 14));
-
-            $charts[] = $chart;
+            $offset++;
         }
 
         return $charts;
+    }
+
+    private function buildCapaianChart(string $sheetTitle, array $range, int $topRow): Chart
+    {
+        $categories = [new DataSeriesValues('String', "'{$sheetTitle}'!{$range['studentCatRange']}", null, 20)];
+        $capaianValues = new DataSeriesValues('Number', "'{$sheetTitle}'!{$range['capaianRange']}", null, 20);
+        $targetValues = new DataSeriesValues('Number', "'{$sheetTitle}'!{$range['targetRange']}", null, 20);
+
+        $barSeries = new DataSeries(
+            DataSeries::TYPE_BARCHART,
+            DataSeries::GROUPING_CLUSTERED,
+            [0],
+            [new DataSeriesValues('String', null, null, 1, ['Capaian Baris'])],
+            $categories,
+            [$capaianValues]
+        );
+
+        $lineSeries = new DataSeries(
+            DataSeries::TYPE_LINECHART,
+            null,
+            [0],
+            [new DataSeriesValues('String', null, null, 1, ['Target'])],
+            $categories,
+            [$targetValues]
+        );
+
+        $plotArea = new PlotArea(null, [$barSeries, $lineSeries]);
+        $legend = new Legend(Legend::POSITION_BOTTOM, null, false);
+        $title = new Title("Grafik Capaian — {$range['title']}");
+
+        $chart = new Chart('capaian_'.md5($range['title']), $title, $legend, $plotArea);
+        $chart->setTopLeftPosition('J'.$topRow);
+        $chart->setBottomRightPosition('Q'.($topRow + 14));
+
+        return $chart;
+    }
+
+    private function buildDonutChart(string $sheetTitle, array $range, int $topRow): Chart
+    {
+        $categories = [new DataSeriesValues('String', "'{$sheetTitle}'!{$range['catRange']}", null, 2)];
+        $values = [new DataSeriesValues('Number', "'{$sheetTitle}'!{$range['valRange']}", null, 2)];
+
+        $series = new DataSeries(
+            DataSeries::TYPE_PIECHART,
+            null,
+            [0],
+            [],
+            $categories,
+            $values
+        );
+
+        $plotArea = new PlotArea(null, [$series]);
+        $legend = new Legend(Legend::POSITION_BOTTOM, null, false);
+        $title = new Title("Ketuntasan — {$range['title']}");
+
+        $chart = new Chart('ketuntasan_'.md5($range['title']), $title, $legend, $plotArea);
+        $chart->setTopLeftPosition('R'.$topRow);
+        $chart->setBottomRightPosition('W'.($topRow + 14));
+
+        return $chart;
     }
 }
