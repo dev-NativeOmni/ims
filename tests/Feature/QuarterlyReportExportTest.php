@@ -167,6 +167,35 @@ class QuarterlyReportExportTest extends TestCase
     }
 
     #[Test]
+    public function pekan_column_headers_show_the_real_meeting_day_and_date_not_just_a_generic_label(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas Tanggal Pertemuan',
+            'level' => 'XII',
+            'tahfizh_days' => [4], // kelas cuma tatap muka tiap Kamis.
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        $spreadsheet = $this->downloadAndLoad([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]);
+
+        $setoranHeader = $this->flatten($spreadsheet->getSheetByName('Setoran')->toArray());
+        $pekanCell = collect($setoranHeader)->first(fn ($v) => is_string($v) && str_starts_with($v, 'PEKAN 1 ('));
+        $this->assertNotNull($pekanCell, 'Header PEKAN 1 tidak ditemukan di sheet Setoran.');
+        $this->assertMatchesRegularExpression('/Kamis, \d{1,2} Jul/', $pekanCell);
+
+        $presensiHeader = $this->flatten($spreadsheet->getSheetByName('Presensi')->toArray());
+        $presensiPekanCell = collect($presensiHeader)->first(fn ($v) => is_string($v) && str_starts_with($v, 'PEKAN 1 ('));
+        $this->assertNotNull($presensiPekanCell, 'Header PEKAN 1 tidak ditemukan di sheet Presensi.');
+        $this->assertMatchesRegularExpression('/Kamis, \d{1,2} Jul/', $presensiPekanCell);
+    }
+
+    #[Test]
     public function export_can_be_narrowed_down_to_a_single_halaqoh(): void
     {
         $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
@@ -246,15 +275,22 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertTrue($titles->contains(fn ($t) => str_contains($t, 'Ketuntasan')));
         $this->assertTrue($titles->contains(fn ($t) => str_contains($t, 'Grafik Capaian')));
 
-        // Chart pie ketuntasan pakai DataSeries bertipe pieChart sungguhan.
+        // Chart pie ketuntasan pakai DataSeries bertipe pieChart sungguhan, dengan warna
+        // per-irisan teal/rose (sama seperti donat "Ketuntasan" di Rapor Periodik).
         $pieChart = collect($sheet->getChartCollection())->first(fn ($c) => str_contains($c->getTitle()->getCaptionText(), 'Ketuntasan'));
-        $this->assertSame('pieChart', $pieChart->getPlotArea()->getPlotGroup()[0]->getPlotType());
+        $pieSeries = $pieChart->getPlotArea()->getPlotGroup()[0];
+        $this->assertSame('pieChart', $pieSeries->getPlotType());
+        $this->assertSame(['0D9488', 'F43F5E'], $pieSeries->getPlotValues()[0]->getFillColor());
 
-        // Chart batang+garis benar-benar dua tipe series berbeda (kombinasi), bukan cuma satu.
+        // Chart batang+garis benar-benar dua tipe series berbeda (kombinasi), bukan cuma satu,
+        // dengan warna biru langit untuk batang (sama seperti chart "Capaian" di Rapor Periodik).
         $comboChart = collect($sheet->getChartCollection())->first(fn ($c) => str_contains($c->getTitle()->getCaptionText(), 'Grafik Capaian'));
-        $plotTypes = collect($comboChart->getPlotArea()->getPlotGroup())->map(fn ($s) => $s->getPlotType());
+        $comboSeries = collect($comboChart->getPlotArea()->getPlotGroup());
+        $plotTypes = $comboSeries->map(fn ($s) => $s->getPlotType());
         $this->assertContains('barChart', $plotTypes);
         $this->assertContains('lineChart', $plotTypes);
+        $barSeries = $comboSeries->first(fn ($s) => $s->getPlotType() === 'barChart');
+        $this->assertSame('0EA5E9', $barSeries->getPlotValues()[0]->getFillColor());
 
         // Data mentah donat (label berisi persentase) ada di kolom G/H, dibaca langsung oleh chart.
         $cells = $this->flatten($sheet->toArray());

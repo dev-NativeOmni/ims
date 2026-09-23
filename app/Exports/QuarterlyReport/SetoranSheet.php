@@ -3,6 +3,7 @@
 namespace App\Exports\QuarterlyReport;
 
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
+use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -22,7 +23,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding;
+    use GradeBanding, PekanLabeling;
 
     private const REGULER_SUBCOLS = ['Surah', 'Ayat', 'Jumlah Baris', 'Nilai', 'Kehadiran'];
 
@@ -78,7 +79,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                     $headerTopRow = ++$row;
                     $this->headerTopRows[] = $headerTopRow;
-                    $rows[] = $this->regulerHeaderTop();
+                    $rows[] = $this->regulerHeaderTop($halaqah['monthly'][$mCode]['pekan_dates'] ?? []);
                     $rows[] = $this->regulerHeaderSub();
                     $row++; // baris sub-header kedua
 
@@ -121,11 +122,11 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
         return $rows;
     }
 
-    private function regulerHeaderTop(): array
+    private function regulerHeaderTop(array $pekanDates): array
     {
         $row = ['No', 'Nama Murid', 'Level'];
         for ($p = 1; $p <= 5; $p++) {
-            $row = array_merge($row, ["PEKAN {$p}", '', '', '', '']);
+            $row = array_merge($row, [$this->pekanLabel($p, $pekanDates), '', '', '', '']);
         }
 
         return array_merge($row, ['REKAPAN AKHIR BULAN', '']);
@@ -159,10 +160,12 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                     $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
                     $this->classRows[] = ++$row;
 
+                    $pekanDatesForClass = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
+
                     for ($p = 1; $p <= 5; $p++) {
                         $headerTopRow = ++$row;
                         $this->headerTopRows[] = $headerTopRow;
-                        $rows[] = array_merge(['No', 'Nama Murid', 'Level', "PEKAN {$p}", '', '', '', '', 'Rekap'], ['']);
+                        $rows[] = array_merge(['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDatesForClass), '', '', '', '', 'Rekap'], ['']);
                         $rows[] = array_merge(['', '', ''], self::DAYS, ['Baris', 'Nilai']);
                         $row++;
 

@@ -3,6 +3,7 @@
 namespace App\Exports\QuarterlyReport;
 
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
+use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -22,7 +23,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding;
+    use GradeBanding, PekanLabeling;
 
     private const STATUS_MAP = ['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alpa', '-' => '-'];
 
@@ -77,10 +78,20 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrict
                     $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
                     $this->classRows[] = ++$row;
 
+                    $pekanDates = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
+
                     $headerTopRow = ++$row;
                     $this->headerTopRows[] = $headerTopRow;
                     $rows[] = ['No', 'Nama Murid', 'Tanggal Tatap Muka', '', '', '', '', 'Rekap Kehadiran', '', '', ''];
-                    $rows[] = ['', '', 'Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4', 'Pekan 5', 'Hadir', 'Izin', 'Sakit', 'Alpa'];
+                    $rows[] = [
+                        '', '',
+                        $this->pekanLabel(1, $pekanDates),
+                        $this->pekanLabel(2, $pekanDates),
+                        $this->pekanLabel(3, $pekanDates),
+                        $this->pekanLabel(4, $pekanDates),
+                        $this->pekanLabel(5, $pekanDates),
+                        'Hadir', 'Izin', 'Sakit', 'Alpa',
+                    ];
                     $row++;
 
                     $this->mergeRanges[] = 'A'.$headerTopRow.':A'.($headerTopRow + 1);

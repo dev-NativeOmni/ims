@@ -666,6 +666,24 @@ class QuarterlyReportController extends Controller
             return '-';
         };
 
+        // Tanggal & hari pertemuan aktif per pekan (jadwal kelas x kalender akademik),
+        // dipakai sebagai label kolom "Pekan N" di Presensi/Setoran supaya menunjukkan
+        // pertemuan sungguhan, bukan sekadar nomor pekan generik.
+        $dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $pekanDates = [];
+        for ($p = 1; $p <= 5; $p++) {
+            $pStart = 1 + ($p - 1) * 7;
+            $pEnd = min($p === 5 ? $daysInMonth : $p * 7, $daysInMonth);
+            $dates = [];
+            for ($d = $pStart; $d <= $pEnd; $d++) {
+                if ($effectiveByDay[$d] ?? false) {
+                    $date = $monthStart->copy()->day($d);
+                    $dates[] = $dayNames[$date->dayOfWeekIso - 1].', '.$date->format('j M');
+                }
+            }
+            $pekanDates[$p] = $dates;
+        }
+
         // Jumlah pertemuan terjadwal bulan ini menurut kalender akademik & jadwal kelas
         // (bukan dari data yang sudah diinput musyrif) -- pengali target baris per bulan.
         // Program "seminggu sekali" dihitung maksimal satu pertemuan per pekan kalender.
@@ -962,6 +980,7 @@ class QuarterlyReportController extends Controller
             'jurnal' => $jurnalData,
             'tahfizh_records' => $tahfizhRecords,
             'reguler_records' => $regulerRecords,
+            'pekan_dates' => $pekanDates,
             'tuntas_count' => collect($records)->where('is_tuntas', true)->count(),
         ];
     }
