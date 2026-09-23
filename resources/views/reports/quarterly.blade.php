@@ -138,10 +138,10 @@
                     <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
                     <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
                 </span>
-                <button type="button" onclick="alert('Mencetak Laporan Kelas: {{ $selectedClass?->name }}')" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
+                <a href="{{ route('reports.quarterly.export', request()->only(['class_room_id', 'academic_year', 'term'])) }}" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
                     <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                    <span>Ekspor Seluruh Kelas ke Excel (.xlsx)</span>
-                </button>
+                    <span>Download Laporan Kelas (.xlsx)</span>
+                </a>
             </div>
 
             <!-- HALAQOH GROUPINGS -->

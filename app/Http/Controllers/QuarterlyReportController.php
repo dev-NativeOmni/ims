@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\QuarterlyReportExport;
 use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
@@ -13,6 +14,9 @@ use App\Services\AutoHafalanTargetService;
 use App\Services\QuranLineTargetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class QuarterlyReportController extends Controller
 {
@@ -45,6 +49,26 @@ class QuarterlyReportController extends Controller
     }
 
     public function index(Request $request)
+    {
+        return view('reports.quarterly', $this->buildReportData($request));
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $data = $this->buildReportData($request);
+
+        $classSlug = Str::slug($data['selectedClass']?->name ?? 'kelas');
+        $termSlug = 'term-'.$data['selectedTerm'].'-'.str_replace('/', '-', $data['academicYear']);
+        $fileName = "laporan-triwulan-{$classSlug}-{$termSlug}.xlsx";
+
+        return Excel::download(new QuarterlyReportExport($data), $fileName);
+    }
+
+    /**
+     * Bangun seluruh data Laporan Triwulan (dipakai bersama oleh tampilan halaman & ekspor
+     * spreadsheet, supaya isi file yang di-download selalu sama persis dengan yang tampil di layar).
+     */
+    private function buildReportData(Request $request): array
     {
         // Load all classrooms with their program
         $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
@@ -246,7 +270,7 @@ class QuarterlyReportController extends Controller
             ];
         }
 
-        return view('reports.quarterly', [
+        return [
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'isTahfizhProgram' => $isTahfizhProgram,
@@ -255,7 +279,7 @@ class QuarterlyReportController extends Controller
             'monthsMap' => $monthsMap,
             'halaqahData' => $halaqahData,
             'months' => array_values($monthsMap),
-        ]);
+        ];
     }
 
     private function dateString($value): string

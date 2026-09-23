@@ -393,6 +393,10 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:super_admin,admin')
             ->name('reports.quarterly');
 
+        Route::get('/admin/reports/quarterly/export', [QuarterlyReportController::class, 'export'])
+            ->middleware('role:super_admin,admin')
+            ->name('reports.quarterly.export');
+
         Route::get('/wali-kelas', [WaliKelasController::class, 'index'])
             ->middleware('role:wali_kelas,super_admin,admin')
             ->name('wali-kelas.index');
