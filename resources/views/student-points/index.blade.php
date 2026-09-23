@@ -128,15 +128,13 @@
                                 </div>
                             @endif
 
-                            <div>
+                            <div class="sm:col-span-2 lg:col-span-2">
                                 <label for="type" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tipe Poin</label>
-                                <select name="type" id="type" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3 font-medium cursor-pointer">
-                                    <option value="">Semua Tipe</option>
-                                    <option value="violation" {{ request('type') === 'violation' ? 'selected' : '' }}>Pelanggaran Tata Tertib</option>
-                                    <option value="lateness" {{ request('type') === 'lateness' ? 'selected' : '' }}>Pelanggaran Keterlambatan</option>
-                                    <option value="attribute" {{ request('type') === 'attribute' ? 'selected' : '' }}>Pelanggaran Atribut/Seragam</option>
-                                    <option value="reward" {{ request('type') === 'reward' ? 'selected' : '' }}>Prestasi / Penghargaan</option>
-                                </select>
+                                <x-filter-toggle
+                                    name="type"
+                                    :options="['' => 'Semua Tipe', 'violation' => 'Tata Tertib', 'lateness' => 'Keterlambatan', 'attribute' => 'Atribut/Seragam', 'reward' => 'Prestasi']"
+                                    :colors="['violation' => 'bg-rose-600 text-white shadow-sm', 'lateness' => 'bg-amber-600 text-white shadow-sm', 'attribute' => 'bg-blue-600 text-white shadow-sm', 'reward' => 'bg-emerald-600 text-white shadow-sm']"
+                                />
                             </div>
 
                             <div class="flex gap-2">

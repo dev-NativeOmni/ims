@@ -83,9 +83,19 @@ class AdabController extends Controller
             $studentQuery->where('name', 'like', "%{$search}%");
         }
 
+        $today = now()->toDateString();
+
+        $fillStatus = $request->input('fill_status');
+        $fillStatus = in_array($fillStatus, ['belum', 'sudah'], true) ? $fillStatus : null;
+
+        if ($fillStatus === 'belum') {
+            $studentQuery->whereDoesntHave('adabRecords', fn ($q) => $q->whereDate('assessment_date', $today));
+        } elseif ($fillStatus === 'sudah') {
+            $studentQuery->whereHas('adabRecords', fn ($q) => $q->whereDate('assessment_date', $today));
+        }
+
         $students = $studentQuery->orderBy('name')->paginate(20)->withQueryString();
 
-        $today = now()->toDateString();
         $year = $request->integer('year', (int) now()->format('Y'));
         $month = $request->integer('month', (int) now()->format('n'));
 
@@ -164,7 +174,7 @@ class AdabController extends Controller
 
         return view('adab.index', compact(
             'students', 'classRooms', 'isAdmin', 'isSupervisor', 'canEvaluateMentor',
-            'today', 'year', 'month', 'catStats', 'categories', 'classRankings'
+            'today', 'year', 'month', 'catStats', 'categories', 'classRankings', 'fillStatus'
         ));
     }
 

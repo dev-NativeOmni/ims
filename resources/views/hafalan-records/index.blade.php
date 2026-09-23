@@ -158,12 +158,13 @@
                             <option value="revision" @selected(request('submission_type') === 'revision')>Perbaikan</option>
                         </select>
 
-                        <select name="status" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
-                            <option value="">Semua Status</option>
-                            <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
-                            <option value="repeat" @selected(request('status') === 'repeat')>Ulang</option>
-                            <option value="needs_improvement" @selected(request('status') === 'needs_improvement')>Perlu Perbaikan</option>
-                        </select>
+                        <div class="sm:col-span-2 lg:col-span-1 xl:col-span-2 flex items-center">
+                            <x-filter-toggle
+                                name="status"
+                                :options="['' => 'Semua Status', 'passed' => 'Lulus', 'repeat' => 'Ulang', 'needs_improvement' => 'Perlu Perbaikan']"
+                                :colors="['passed' => 'bg-emerald-600 text-white shadow-sm', 'repeat' => 'bg-rose-600 text-white shadow-sm', 'needs_improvement' => 'bg-amber-600 text-white shadow-sm']"
+                            />
+                        </div>
                         @endif
 
                         <div class="flex gap-2 col-span-1 sm:col-span-2 lg:col-span-1">

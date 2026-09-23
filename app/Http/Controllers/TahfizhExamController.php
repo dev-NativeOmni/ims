@@ -34,6 +34,11 @@ class TahfizhExamController extends Controller
         $examStatus = $request->input('exam_status');
         $examStatus = in_array($examStatus, ['belum', 'sudah'], true) ? $examStatus : null;
 
+        $maxScore = Setting::getTahfizhScoringConfig()['exam_weight'];
+        $passThreshold = round($maxScore * 0.7, 1);
+        $passStatus = $request->input('pass_status');
+        $passStatus = in_array($passStatus, ['lulus', 'tidak_lulus'], true) ? $passStatus : null;
+
         if ($examStatus === 'belum') {
             $pendingStudents = Student::query()
                 ->with(['classRoom.program', 'teacher.user'])
@@ -55,6 +60,7 @@ class TahfizhExamController extends Controller
                     'exams' => null,
                     'pendingStudents' => $pendingStudents,
                     'examStatus' => $examStatus,
+                    'passStatus' => null,
                     'termLabel' => $termLabel,
                 ],
                 $this->formData($user)
@@ -88,6 +94,8 @@ class TahfizhExamController extends Controller
                 $query->whereDate('exam_date', '>=', $termStart->toDateString())
                     ->whereDate('exam_date', '<=', $termEnd->toDateString());
             })
+            ->when($passStatus === 'lulus', fn ($query) => $query->where('total_score', '>=', $passThreshold))
+            ->when($passStatus === 'tidak_lulus', fn ($query) => $query->where('total_score', '<', $passThreshold))
             ->latest('exam_date')
             ->latest()
             ->paginate(20)
@@ -98,6 +106,7 @@ class TahfizhExamController extends Controller
                 'exams' => $exams,
                 'pendingStudents' => null,
                 'examStatus' => $examStatus,
+                'passStatus' => $passStatus,
                 'termLabel' => $termLabel,
             ],
             $this->formData($user)

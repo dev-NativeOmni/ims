@@ -55,6 +55,19 @@
                         </select>
                     </div>
 
+                    @if ($examStatus !== 'belum')
+                        <!-- Kelulusan -->
+                        <div class="flex-1 min-w-[220px]">
+                            <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelulusan (Ambang {{ $passThreshold }})</label>
+                            <x-filter-toggle
+                                name="pass_status"
+                                :options="['' => 'Semua', 'lulus' => 'Lulus', 'tidak_lulus' => 'Tidak Lulus']"
+                                :current="$passStatus"
+                                :colors="['lulus' => 'bg-emerald-600 text-white shadow-sm', 'tidak_lulus' => 'bg-rose-600 text-white shadow-sm']"
+                            />
+                        </div>
+                    @endif
+
                     <!-- Kelas -->
                     <div class="flex-1 min-w-[140px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelas</label>

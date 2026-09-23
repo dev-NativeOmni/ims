@@ -334,6 +334,15 @@
                 </div>
             </div>
 
+            <div class="rounded-xl bg-white p-4 shadow-sm border border-gray-100">
+                <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Status</p>
+                <x-filter-toggle
+                    name="status"
+                    :options="['' => 'Semua', 'active' => 'Aktif', 'completed' => 'Selesai', 'missed' => 'Terlewat', 'cancelled' => 'Dibatalkan']"
+                    :colors="['active' => 'bg-blue-600 text-white shadow-sm', 'completed' => 'bg-emerald-600 text-white shadow-sm', 'missed' => 'bg-amber-600 text-white shadow-sm', 'cancelled' => 'bg-zinc-500 text-white shadow-sm']"
+                />
+            </div>
+
             <div x-data="{
                 selectedTargets: [],
                 allIds: {{ json_encode($targets->pluck('id')->all()) }},

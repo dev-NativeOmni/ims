@@ -96,6 +96,16 @@
                                 </a>
                             </div>
                         </form>
+
+                        <div class="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                            <p class="text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Pengisian Hari Ini</p>
+                            <x-filter-toggle
+                                name="fill_status"
+                                :options="['' => 'Semua', 'belum' => 'Belum Isi Hari Ini', 'sudah' => 'Sudah Isi Hari Ini']"
+                                :current="$fillStatus"
+                                :colors="['belum' => 'bg-amber-600 text-white shadow-sm', 'sudah' => 'bg-emerald-600 text-white shadow-sm']"
+                            />
+                        </div>
                     </div>
                 @endif
 
