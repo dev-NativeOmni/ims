@@ -107,15 +107,19 @@ class QuarterlyReportTeacherExportTest extends TestCase
 
         $spreadsheet = $this->downloadMine($this->teacherUser, 'reguler');
 
-        $rows = collect($spreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1);
-        $names = $rows->pluck(3);
-        $classes = $rows->pluck(0);
+        $rows = $spreadsheet->getSheetByName('Term-Indeks')->toArray();
+        $cells = $this->flatten($rows);
 
-        $this->assertContains('Murid Kelas A', $names);
-        $this->assertContains('Murid Kelas B', $names);
-        $this->assertNotContains('Murid Guru Lain', $names);
-        $this->assertContains('XI F2', $classes->all());
-        $this->assertContains('XII F3', $classes->all());
+        $this->assertContains('Murid Kelas A', $cells);
+        $this->assertContains('Murid Kelas B', $cells);
+        $this->assertNotContains('Murid Guru Lain', $cells);
+        $this->assertTrue(collect($cells)->contains(fn ($v) => str_contains((string) $v, 'XI F2')));
+        $this->assertTrue(collect($cells)->contains(fn ($v) => str_contains((string) $v, 'XII F3')));
+    }
+
+    private function flatten(array $rows): array
+    {
+        return collect($rows)->flatten()->all();
     }
 
     #[Test]
@@ -141,12 +145,12 @@ class QuarterlyReportTeacherExportTest extends TestCase
         ]);
 
         $tahfizhSpreadsheet = $this->downloadMine($this->teacherUser, 'tahfizh');
-        $tahfizhNames = collect($tahfizhSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
+        $tahfizhNames = $this->flatten($tahfizhSpreadsheet->getSheetByName('Term-Indeks')->toArray());
         $this->assertContains('Murid Tahfizh', $tahfizhNames);
         $this->assertNotContains('Murid Reguler', $tahfizhNames);
 
         $regulerSpreadsheet = $this->downloadMine($this->teacherUser, 'reguler');
-        $regulerNames = collect($regulerSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
+        $regulerNames = $this->flatten($regulerSpreadsheet->getSheetByName('Term-Indeks')->toArray());
         $this->assertContains('Murid Reguler', $regulerNames);
         $this->assertNotContains('Murid Tahfizh', $regulerNames);
     }
@@ -187,19 +191,20 @@ class QuarterlyReportTeacherExportTest extends TestCase
 
         $spreadsheet = $this->downloadMine($this->teacherUser, 'reguler');
 
-        $termRows = collect($spreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1);
-        $studentRow = $termRows->firstWhere(3, 'Murid Ummi Kelas X');
+        // Term-Indeks: [No, Nama Murid, Level, Target Surah, Target Ayat, Capaian Surah, Capaian Ayat, ...]
+        $termRows = $spreadsheet->getSheetByName('Term-Indeks')->toArray();
+        $studentRow = collect($termRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($studentRow);
-        // Kolom: Kelas(0) Halaqah(1) No(2) Nama(3) Level(4) Target Surah(5) Target Ayat(6) Capaian Surah(7) Capaian Ayat(8)
+        $this->assertSame('Jilid 3', $studentRow[3]);
+        $this->assertStringContainsString('Peraga: Hal. 10 - 15', $studentRow[4]);
         $this->assertSame('Jilid 3', $studentRow[5]);
-        $this->assertStringContainsString('Peraga: Hal. 10 - 15', $studentRow[6]);
-        $this->assertSame('Jilid 3', $studentRow[7]);
-        $this->assertStringContainsString('Hal. 12 - 15', $studentRow[8]);
+        $this->assertStringContainsString('Hal. 12 - 15', $studentRow[6]);
 
-        $setoranRows = collect($spreadsheet->getSheetByName('Setoran')->toArray())->skip(1);
-        // Kolom Setoran: Kelas(0) Halaqah(1) Bulan(2) Nama(3) Level(4) Pekan(5) Hari(6) Surah/Keterangan(7)
-        $ummiRow = $setoranRows->first(fn ($r) => $r[3] === 'Murid Ummi Kelas X' && $r[7] === 'Jilid 3');
+        // Setoran: Pekan 1 (1-7 Juli) memuat setoran Ummi 6 Juli -> selnya berisi "Jilid 3".
+        $setoranRows = $spreadsheet->getSheetByName('Setoran')->toArray();
+        $ummiRow = collect($setoranRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($ummiRow);
+        $this->assertTrue(collect($ummiRow)->contains(fn ($v) => str_contains((string) $v, 'Jilid 3')));
     }
 
     #[Test]

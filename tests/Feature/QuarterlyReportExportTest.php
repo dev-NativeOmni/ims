@@ -109,31 +109,39 @@ class QuarterlyReportExportTest extends TestCase
         $sheetTitles = array_map(fn ($s) => $s->getTitle(), $spreadsheet->getAllSheets());
         $this->assertSame(['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan'], $sheetTitles);
 
+        // Term-Indeks: dikelompokkan per halaqoh lewat baris judul bagian ("Kelas — Musyrif"),
+        // diikuti baris judul kolom, lalu satu baris per murid -- bukan tabel datar.
         $termSheet = $spreadsheet->getSheetByName('Term-Indeks');
         $rows = $termSheet->toArray();
+        $this->assertSame('Kelas XII F4 Export — Guru Test', $rows[0][0]);
         $this->assertSame(
-            ['Kelas', 'Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
-            $rows[0]
+            ['No', 'Nama Murid', 'Level', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
+            $rows[1]
         );
-        $studentNames = collect($rows)->skip(1)->pluck(3)->all();
-        $this->assertContains($this->student->name, $studentNames);
-        $this->assertNotContains($otherStudent->name, $studentNames);
-
+        $studentRow = collect($rows)->firstWhere(1, $this->student->name);
+        $this->assertNotNull($studentRow);
         // Pelanggaran murid muncul di kolom terakhir (Term-Indeks).
-        $studentRow = collect($rows)->skip(1)->firstWhere(3, $this->student->name);
-        $this->assertSame('1', (string) $studentRow[15]);
+        $this->assertSame('1', (string) $studentRow[13]);
+
+        $allTermCells = $this->flatten($rows);
+        $this->assertNotContains($otherStudent->name, $allTermCells);
 
         $presensiSheet = $spreadsheet->getSheetByName('Presensi');
         $presensiRows = $presensiSheet->toArray();
         $this->assertGreaterThan(1, count($presensiRows));
 
         $setoranSheet = $spreadsheet->getSheetByName('Setoran');
-        $setoranRows = collect($setoranSheet->toArray())->skip(1);
-        $this->assertTrue($setoranRows->contains(fn ($r) => str_contains((string) $r[7], 'Al-Fatihah')));
+        $setoranCells = $this->flatten($setoranSheet->toArray());
+        $this->assertTrue(collect($setoranCells)->contains(fn ($v) => str_contains((string) $v, 'Al-Fatihah')));
 
         $grafikSheet = $spreadsheet->getSheetByName('Grafik Akhir Bulan');
-        $grafikRows = collect($grafikSheet->toArray())->skip(1);
-        $this->assertTrue($grafikRows->contains(fn ($r) => $r[3] === $this->student->name));
+        $grafikCells = $this->flatten($grafikSheet->toArray());
+        $this->assertContains($this->student->name, $grafikCells);
+    }
+
+    private function flatten(array $rows): array
+    {
+        return collect($rows)->flatten()->all();
     }
 
     #[Test]
@@ -173,12 +181,12 @@ class QuarterlyReportExportTest extends TestCase
 
         // Pastikan dua halaqoh benar-benar terbentuk sebelum diuji filternya.
         $fullSpreadsheet = $this->downloadAndLoad($query);
-        $fullNames = collect($fullSpreadsheet->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
+        $fullNames = $this->flatten($fullSpreadsheet->getSheetByName('Term-Indeks')->toArray());
         $this->assertContains('Murid Halaqoh Satu', $fullNames);
         $this->assertContains('Murid Halaqoh Dua', $fullNames);
 
         $filtered = $this->downloadAndLoad($query + ['musyrif' => $this->teacherUser->name]);
-        $filteredNames = collect($filtered->getSheetByName('Term-Indeks')->toArray())->skip(1)->pluck(3);
+        $filteredNames = $this->flatten($filtered->getSheetByName('Term-Indeks')->toArray());
         $this->assertContains('Murid Halaqoh Satu', $filteredNames);
         $this->assertNotContains('Murid Halaqoh Dua', $filteredNames);
     }

@@ -4,17 +4,23 @@ namespace App\Exports\QuarterlyReport;
 
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Sheet "Term-Indeks": rekap akhir triwulan per murid, sama persis dengan tabel
- * di tab "Term / Indeks (DNS)" pada halaman Laporan Triwulan.
+ * Sheet "Term-Indeks": rekap akhir triwulan per murid per halaqoh, dikelompokkan
+ * dengan baris judul bagian sama seperti tab "Term / Indeks (DNS)" di layar.
  */
-class TermIndexSheet implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
+class TermIndexSheet implements FromArray, ShouldAutoSize, WithStyles, WithTitle
 {
+    /** @var int[] */
+    private array $sectionRows = [];
+
+    /** @var int[] */
+    private array $headerRows = [];
+
     public function __construct(private readonly array $halaqahData) {}
 
     public function title(): string
@@ -22,42 +28,47 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithHeadings, WithSty
         return 'Term-Indeks';
     }
 
-    public function headings(): array
-    {
-        return [
-            'Kelas', 'Halaqah (Musyrif)', 'No', 'Nama Murid', 'Level',
-            'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat',
-            'Capaian Baris', 'Target Baris', 'Ketercapaian',
-            'Alpa', 'Izin', 'Sakit', 'Pelanggaran',
-        ];
-    }
-
     public function array(): array
     {
         $rows = [];
+        $row = 0;
 
         foreach ($this->halaqahData as $halaqah) {
-            $no = 1;
-            foreach ($halaqah['term_records'] as $row) {
+            $className = $halaqah['class_room_name'] ?? '-';
+
+            $rows[] = ["{$className} — {$halaqah['musyrif']}"];
+            $this->sectionRows[] = ++$row;
+
+            $rows[] = [
+                'No', 'Nama Murid', 'Level',
+                'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat',
+                'Capaian Baris', 'Target Baris', 'Ketercapaian',
+                'Alpa', 'Izin', 'Sakit', 'Pelanggaran',
+            ];
+            $this->headerRows[] = ++$row;
+
+            foreach ($halaqah['term_records'] as $idx => $termRow) {
                 $rows[] = [
-                    $halaqah['class_room_name'] ?? '-',
-                    $halaqah['musyrif'],
-                    $no++,
-                    $row['name'],
-                    $row['level'],
-                    $row['target_surah'],
-                    $row['target_ayat'],
-                    $row['capaian_surah'],
-                    $row['capaian_ayat'],
-                    $row['total_lines'],
-                    $row['target_lines'],
-                    $row['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
-                    $row['alpa'],
-                    $row['izin'],
-                    $row['sakit'],
-                    $row['pelanggaran'],
+                    $idx + 1,
+                    $termRow['name'],
+                    $termRow['level'],
+                    $termRow['target_surah'],
+                    $termRow['target_ayat'],
+                    $termRow['capaian_surah'],
+                    $termRow['capaian_ayat'],
+                    $termRow['total_lines'],
+                    $termRow['target_lines'],
+                    $termRow['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
+                    $termRow['alpa'],
+                    $termRow['izin'],
+                    $termRow['sakit'],
+                    $termRow['pelanggaran'],
                 ];
+                $row++;
             }
+
+            $rows[] = [];
+            $row++;
         }
 
         return $rows;
@@ -65,6 +76,23 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithHeadings, WithSty
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true]]];
+        $styles = [];
+
+        foreach ($this->sectionRows as $r) {
+            $styles[$r] = [
+                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '4F46E5']],
+            ];
+        }
+
+        foreach ($this->headerRows as $r) {
+            $styles[$r] = [
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'E5E7EB']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ];
+        }
+
+        return $styles;
     }
 }
