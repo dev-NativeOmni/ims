@@ -191,6 +191,8 @@ class AdabController extends Controller
                 $q->where('pendamping_adab_id', $user->id)
                     ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
             });
+        } elseif ($user->hasRole('wali_kelas') && ! $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
+            $classRoomsQuery->where('wali_kelas_user_id', $user->id);
         }
 
         $classRooms = $classRoomsQuery->get();
@@ -463,6 +465,8 @@ class AdabController extends Controller
         } elseif ($user->hasRole('pendamping_adab') && ($student->classRoom?->pendamping_adab_id === $user->id || $student->classRoom?->pendamping_adab_id === null)) {
             $visible = true;
         } elseif ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id) {
+            $visible = true;
+        } elseif ($user->hasRole('wali_kelas') && $student->classRoom?->wali_kelas_user_id === $user->id) {
             $visible = true;
         } elseif ($user->hasRole('parent') && $student->parents->contains($user->parentProfile?->id)) {
             $visible = true;

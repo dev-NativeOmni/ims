@@ -23,6 +23,52 @@
                     <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
                         {{ $classRoom->program?->name ?? '-' }} &middot; {{ $students->count() }} murid aktif
                     </p>
+
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <a href="{{ route('reports.periodic', ['class_room_id' => $classRoom->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 transition">
+                            Grafik Tahfizh Kelas
+                        </a>
+                        <a href="{{ route('adab.chart') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition">
+                            Grafik Adab Kelas
+                        </a>
+                        <a href="{{ route('student-points.chart', ['class_room_id' => $classRoom->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition">
+                            Grafik Kedisiplinan Kelas
+                        </a>
+                        <a href="{{ route('student-points.index', ['class_room_id' => $classRoom->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                            Riwayat Kedisiplinan Kelas
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Daftar Murid -->
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-5 space-y-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Daftar Murid</h3>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400">Lihat progres tahfizh (grafik &amp; riwayat setoran) dan riwayat adab per murid.</p>
+                    </div>
+
+                    <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs">
+                            <thead class="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
+                                <tr>
+                                    <th class="px-4 py-2 text-left border-r dark:border-zinc-700">Nama Murid</th>
+                                    <th class="px-4 py-2 text-right">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
+                                @foreach ($students as $student)
+                                    <tr>
+                                        <td class="px-4 py-2 border-r dark:border-zinc-700 font-semibold text-gray-900 dark:text-zinc-200">{{ $student->name }}</td>
+                                        <td class="px-4 py-2 text-right whitespace-nowrap">
+                                            <a href="{{ route('progress.show', $student) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">Progres Tahfizh</a>
+                                            <span class="text-gray-300 dark:text-zinc-700 mx-1.5">&middot;</span>
+                                            <a href="{{ route('adab.show', $student) }}" class="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">Riwayat Adab</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Ketuntasan Hafalan -->

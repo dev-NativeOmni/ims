@@ -335,7 +335,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,tanse'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,tanse,wali_kelas'])->group(function () {
         Route::get('/student-points', [StudentPointController::class, 'index'])->name('student-points.index');
         Route::get('/student-points/chart', [StudentPointController::class, 'chart'])->name('student-points.chart');
     });
@@ -374,7 +374,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('reports.export.csv');
 
         Route::get('/reports/periodic', [ReportController::class, 'periodicProgress'])
-            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor')
+            ->middleware('role:super_admin,admin,teacher,headmaster,coordinator_tahfizh,supervisor,wali_kelas')
             ->name('reports.periodic');
 
         Route::get('/reports/whatsapp', [ReportController::class, 'whatsappDaily'])
@@ -438,10 +438,13 @@ Route::middleware(['auth'])->group(function () {
     | Adab
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster'])->group(function () {
-        Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster,wali_kelas'])->group(function () {
         Route::get('/adab/chart', [AdabController::class, 'monthlyChart'])->name('adab.chart');
         Route::get('/adab/student/{student}', [AdabController::class, 'show'])->name('adab.show');
+    });
+
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster'])->group(function () {
+        Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
         Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
         Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
         Route::post('/adab/student/{student}/mentor-score', [AdabController::class, 'storeMentorScore'])->name('adab.store-mentor-score');

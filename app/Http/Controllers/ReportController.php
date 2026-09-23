@@ -560,6 +560,12 @@ class ReportController extends Controller
                 ->pluck('student_id');
         }
 
+        if ($this->userHasAnyRole($user, ['wali_kelas'])) {
+            return Student::query()
+                ->whereHas('classRoom', fn ($q) => $q->where('wali_kelas_user_id', $user->id))
+                ->pluck('id');
+        }
+
         if ($this->userHasAnyRole($user, ['student'])) {
             if (! Schema::hasColumn('students', 'user_id')) {
                 return collect();

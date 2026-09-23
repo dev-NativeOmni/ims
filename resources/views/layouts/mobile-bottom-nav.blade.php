@@ -136,6 +136,31 @@
             ];
             break;
 
+        case 'wali_kelas':
+            $leftItems = [
+                [
+                    'label' => 'Tahfizh',
+                    'route' => 'reports.periodic',
+                    'active' => $routeIs('reports.periodic*') || $routeIs('progress.*'),
+                    'icon' => 'chart',
+                ],
+                [
+                    'label' => 'Adab',
+                    'route' => 'adab.chart',
+                    'active' => $routeIs('adab.*'),
+                    'icon' => 'shield',
+                ],
+            ];
+            $rightItems = [
+                [
+                    'label' => 'Disiplin',
+                    'route' => 'student-points.chart',
+                    'active' => $routeIs('student-points.*'),
+                    'icon' => 'star',
+                ],
+            ];
+            break;
+
         case 'headmaster':
             $leftItems = [
                 [
