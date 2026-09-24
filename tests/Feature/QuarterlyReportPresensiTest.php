@@ -7,7 +7,6 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Program;
-use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Surah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,7 +47,7 @@ class QuarterlyReportPresensiTest extends TestCase
         ]);
 
         // 9 September (Rabu, pekan 2) libur nasional -> tidak ada pertemuan aktif di pekan itu.
-        Setting::set('national_holidays_2026', json_encode(['2026-09-09']));
+        $this->markHoliday('2026-09-09');
 
         $this->student->update([
             'class_room_id' => $classRoom->id,
@@ -164,7 +163,7 @@ class QuarterlyReportPresensiTest extends TestCase
         $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
 
         // Selasa 7 Juli libur nasional.
-        Setting::set('national_holidays_2026', json_encode(['2026-07-07']));
+        $this->markHoliday('2026-07-07');
 
         // Setoran di Juli (07-06) dan September (09-08); Agustus kosong.
         foreach (['2026-07-06', '2026-09-08'] as $date) {

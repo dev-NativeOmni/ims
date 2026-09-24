@@ -211,9 +211,6 @@ class AdabController extends Controller
         $totalScopeStudents = $allStudentsInScope->count();
         $studentIds = $allStudentsInScope->pluck('id')->toArray();
 
-        // Fetch national holidays for this year once
-        $holidays = Setting::getNationalHolidays($year);
-
         // Fetch effective days count for the selected month
         $effectiveDaysTotal = Setting::getEffectiveDaysCount($year, $month);
 

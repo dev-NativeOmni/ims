@@ -4,7 +4,6 @@ namespace Tests\Unit\Services;
 
 use App\Models\ClassRoom;
 use App\Models\Program;
-use App\Models\Setting;
 use App\Services\AcademicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,7 +56,7 @@ class AcademicCalendarServiceTest extends TestCase
         $this->assertSame(3, $this->service->tatapMukaNumber($classRoom, Carbon::parse('2026-07-03')));
 
         // Tandai 2026-07-07 (Selasa, hari efektif) sebagai libur nasional.
-        Setting::set('national_holidays_2026', json_encode(['2026-07-07']));
+        $this->markHoliday('2026-07-07');
 
         // 07-08 (Rabu): tanpa libur harusnya pertemuan ke-5, dengan libur di 07-07
         // yang dilewati, jadi tetap pertemuan ke-4.
@@ -108,7 +107,7 @@ class AcademicCalendarServiceTest extends TestCase
         ]);
 
         // Libur sebagian: hanya Kelas A yang libur di 2026-07-02.
-        Setting::set('class_holidays_2026', json_encode(['2026-07-02' => [$classA->id]]));
+        $this->markClassHoliday('2026-07-02', $classA->id);
 
         $this->assertFalse($this->service->isEffectiveDay($classA, Carbon::parse('2026-07-02')));
         $this->assertTrue($this->service->isEffectiveDay($classB, Carbon::parse('2026-07-02')));

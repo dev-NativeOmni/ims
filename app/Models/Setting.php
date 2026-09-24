@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SchoolCalendar;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -9,14 +10,6 @@ use Illuminate\Support\Facades\Cache;
 class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
-
-    protected static array $holidaysCache = [];
-
-    protected static array $classHolidaysCache = [];
-
-    protected static array $effectiveDatesSetCache = [];
-
-    protected static array $effectiveDaysCountCache = [];
 
     protected static array $studentAdabScoreCache = [];
 
@@ -33,13 +26,17 @@ class Setting extends Model
     {
         $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget("setting:{$key}");
-        self::$holidaysCache = [];
-        self::$classHolidaysCache = [];
-        self::$effectiveDatesSetCache = [];
-        self::$effectiveDaysCountCache = [];
         self::$studentAdabScoreCache = [];
 
         return $setting;
+    }
+
+    /**
+     * Dipanggil SchoolCalendar saat kalender berubah: skor adab bergantung pada hari efektif.
+     */
+    public static function flushCalendarCaches(): void
+    {
+        self::$studentAdabScoreCache = [];
     }
 
     /**
@@ -107,60 +104,27 @@ class Setting extends Model
     }
 
     /**
-     * Get list of national holidays for a given year.
-     * Checks database setting 'national_holidays_{year}' first, then falls back to defaults.
+     * Tanggal Libur Total (Tahfizh & Adab) setahun. Lihat App\Services\SchoolCalendar.
      */
     public static function getNationalHolidays(int $year): array
     {
-        if (isset(self::$holidaysCache[$year])) {
-            return self::$holidaysCache[$year];
-        }
-
-        $custom = self::get("national_holidays_{$year}");
-        if ($custom) {
-            $decoded = json_decode($custom, true);
-            if (is_array($decoded)) {
-                return self::$holidaysCache[$year] = $decoded;
-            }
-        }
-
-        // Default Indonesian national holidays (fixed dates + common movable holidays estimate)
-        return self::$holidaysCache[$year] = [
-            "{$year}-01-01", // Tahun Baru Masehi
-            "{$year}-05-01", // Hari Buruh
-            "{$year}-06-01", // Hari Lahir Pancasila
-            "{$year}-08-17", // Hari Kemerdekaan RI
-            "{$year}-12-25", // Hari Natal
-        ];
+        return app(SchoolCalendar::class)->totalHolidays($year);
     }
 
     /**
-     * Get the class-specific holidays map ('Y-m-d' => [class_room_id, ...]) for a given
-     * year. Di-cache per request supaya kalkulasi kalender yang berulang per hari/per
-     * murid (mis. AcademicCalendarService::scheduledMeetings) tidak query ulang-ulang.
+     * Libur Tahfizh khusus kelas ('Y-m-d' => [class_room_id, ...]). Lihat App\Services\SchoolCalendar.
      */
     public static function getClassHolidays(int $year): array
     {
-        if (isset(self::$classHolidaysCache[$year])) {
-            return self::$classHolidaysCache[$year];
-        }
-
-        $raw = self::get("class_holidays_{$year}");
-        $decoded = $raw ? json_decode($raw, true) : [];
-
-        return self::$classHolidaysCache[$year] = is_array($decoded) ? $decoded : [];
+        return app(SchoolCalendar::class)->classDays($year);
     }
 
     /**
-     * Check if a date is an effective day for Adab questionnaire (Selasa-Jumat, excluding national holidays).
+     * Hari efektif kuisioner Adab: Selasa-Jumat, bukan libur Adab (lihat SchoolCalendar).
      */
-    public static function isEffectiveAdabDay(Carbon $date, array $holidays = []): bool
+    public static function isEffectiveAdabDay(Carbon $date): bool
     {
-        // ISO day of week: 1=Senin, 2=Selasa, 3=Rabu, 4=Kamis, 5=Jumat, 6=Sabtu, 7=Minggu
-        $dayIso = $date->dayOfWeekIso;
-        $isTuesdayToFriday = ($dayIso >= 2 && $dayIso <= 5);
-
-        return $isTuesdayToFriday && ! in_array($date->toDateString(), $holidays, true);
+        return app(SchoolCalendar::class)->isAdabEffectiveDay($date);
     }
 
     /**
@@ -168,37 +132,7 @@ class Setting extends Model
      */
     public static function getEffectiveDatesSet(int $year, int $month, ?string $untilDate = null): array
     {
-        $cacheKey = "{$year}_{$month}_".($untilDate ?? 'full');
-        if (isset(self::$effectiveDatesSetCache[$cacheKey])) {
-            return self::$effectiveDatesSetCache[$cacheKey];
-        }
-
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
-        $daysInMonth = $startDate->daysInMonth;
-
-        $now = Carbon::now();
-        $isCurrentMonth = ($year === (int) $now->format('Y') && $month === (int) $now->format('n'));
-
-        if ($untilDate) {
-            $endDate = Carbon::parse($untilDate)->endOfDay();
-        } elseif ($isCurrentMonth) {
-            $endDate = $now->copy()->endOfDay();
-        } else {
-            $endDate = Carbon::createFromDate($year, $month, $daysInMonth)->endOfDay();
-        }
-
-        $holidays = self::getNationalHolidays($year);
-        $set = [];
-
-        $current = $startDate->copy();
-        while ($current->lte($endDate) && $current->month === $month) {
-            if (self::isEffectiveAdabDay($current, $holidays)) {
-                $set[$current->toDateString()] = true;
-            }
-            $current->addDay();
-        }
-
-        return self::$effectiveDatesSetCache[$cacheKey] = $set;
+        return app(SchoolCalendar::class)->adabEffectiveDates($year, $month, $untilDate);
     }
 
     /**
@@ -206,14 +140,7 @@ class Setting extends Model
      */
     public static function getEffectiveDaysCount(int $year, int $month, ?string $untilDate = null): int
     {
-        $cacheKey = "{$year}_{$month}_".($untilDate ?? 'full');
-        if (isset(self::$effectiveDaysCountCache[$cacheKey])) {
-            return self::$effectiveDaysCountCache[$cacheKey];
-        }
-
-        $datesSet = self::getEffectiveDatesSet($year, $month, $untilDate);
-
-        return self::$effectiveDaysCountCache[$cacheKey] = max(1, count($datesSet));
+        return max(1, count(self::getEffectiveDatesSet($year, $month, $untilDate)));
     }
 
     /**

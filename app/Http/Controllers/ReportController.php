@@ -9,7 +9,6 @@ use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
-use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\Surah;
@@ -17,6 +16,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
 use App\Services\QuranLineTargetService;
+use App\Services\SchoolCalendar;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -1221,48 +1221,24 @@ class ReportController extends Controller
 
     private function countMeetings(Carbon $startDate, Carbon $endDate, string $meetingFrequency, ClassRoom $classRoom): int
     {
-        $meetings = 0;
+        $calendar = app(SchoolCalendar::class);
         $current = $startDate->copy()->startOfDay();
         $end = $endDate->copy()->endOfDay();
-        $tahfizhDays = $classRoom->tahfizh_days;
+        $meetings = 0;
+        $weeks = [];
 
-        $year = $startDate->year;
-        $holidays = Setting::getNationalHolidays($year);
-        $classHolidaysRaw = Setting::get("class_holidays_{$year}");
-        $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
-
-        if ($meetingFrequency === 'seminggu sekali') {
-            $weeks = [];
-            while ($current->lte($end)) {
-                $dayOfWeek = $current->dayOfWeek;
-                $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
-                $dateString = $current->toDateString();
-
-                $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
-
-                if (in_array($isoDay, $tahfizhDays, true) && ! in_array($dateString, $holidays, true) && ! $isClassHoliday) {
-                    $weekNum = $current->format('o-W');
-                    $weeks[$weekNum] = true;
-                }
-                $current->addDay();
-            }
-            $meetings = count($weeks);
-        } else {
-            while ($current->lte($end)) {
-                $dayOfWeek = $current->dayOfWeek;
-                $isoDay = $dayOfWeek === 0 ? 7 : $dayOfWeek;
-                $dateString = $current->toDateString();
-
-                $isClassHoliday = isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString]);
-
-                if (in_array($isoDay, $tahfizhDays, true) && ! in_array($dateString, $holidays, true) && ! $isClassHoliday) {
+        while ($current->lte($end)) {
+            if ($calendar->isTahfizhEffectiveDay($classRoom, $current)) {
+                if ($meetingFrequency === 'seminggu sekali') {
+                    $weeks[$current->format('o-W')] = true;
+                } else {
                     $meetings++;
                 }
-                $current->addDay();
             }
+            $current->addDay();
         }
 
-        return $meetings;
+        return $meetingFrequency === 'seminggu sekali' ? count($weeks) : $meetings;
     }
 
     private static ?array $quranVerseLines = null;

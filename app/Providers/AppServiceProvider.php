@@ -19,6 +19,7 @@ use App\Policies\HafalanRecordPolicy;
 use App\Policies\HafalanTargetPolicy;
 use App\Policies\MurajaahRecordPolicy;
 use App\Policies\StudentPolicy;
+use App\Services\SchoolCalendar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -31,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->scoped(SchoolCalendar::class);
     }
 
     public function boot(): void

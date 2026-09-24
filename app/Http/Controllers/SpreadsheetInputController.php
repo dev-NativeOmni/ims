@@ -6,11 +6,11 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
-use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
+use App\Services\SchoolCalendar;
 use App\Services\UserAccessService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -60,21 +60,16 @@ class SpreadsheetInputController extends Controller
 
         $allDates = [];
         $daysInMonth = (int) date('t', strtotime($selectedMonth.'-01'));
-        $tahfizhDays = $selectedClass?->tahfizh_days ?? [1, 2, 3, 4, 5];
-        $holidays = Setting::getNationalHolidays($year);
-
-        $classHolidaysRaw = Setting::get("class_holidays_{$year}");
-        $classHolidays = $classHolidaysRaw ? json_decode($classHolidaysRaw, true) : [];
+        $calendar = app(SchoolCalendar::class);
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
-            $time = mktime(0, 0, 0, $month, $day, $year);
-            $dayOfWeek = (int) date('N', $time);
-            $dateString = date('Y-m-d', $time);
+            $date = Carbon::create($year, $month, $day);
+            $isEffective = $selectedClass
+                ? $calendar->isTahfizhEffectiveDay($selectedClass, $date)
+                : $date->isWeekday() && ! $calendar->isTahfizhHoliday(null, $date);
 
-            $isClassHoliday = isset($classHolidays[$dateString]) && in_array($selectedClass?->id, $classHolidays[$dateString]);
-
-            if (in_array($dayOfWeek, $tahfizhDays, true) && ! in_array($dateString, $holidays, true) && ! $isClassHoliday) {
-                $allDates[] = $dateString;
+            if ($isEffective) {
+                $allDates[] = $date->toDateString();
             }
         }
 

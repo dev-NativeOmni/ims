@@ -73,8 +73,8 @@ class AcademicCalendarTest extends TestCase
     {
         $year = (int) date('Y');
 
-        Setting::set("national_holidays_{$year}", json_encode(["{$year}-12-25"]));
-        Setting::set("class_holidays_{$year}", json_encode(["{$year}-12-25" => [$this->classRoom->id]]));
+        $this->markHoliday("{$year}-12-25");
+        $this->markClassHoliday("{$year}-12-24", $this->classRoom->id);
 
         $payload = [
             'year' => $year,
@@ -94,10 +94,10 @@ class AcademicCalendarTest extends TestCase
         $this->assertContains("{$year}-08-17", $holidays);
         $this->assertContains("{$year}-12-25", $holidays);
 
-        $classHolidays = json_decode(Setting::get("class_holidays_{$year}"), true);
+        $classHolidays = Setting::getClassHolidays($year);
         $this->assertArrayHasKey("{$year}-08-20", $classHolidays);
         $this->assertContains($this->classRoom->id, $classHolidays["{$year}-08-20"]);
-        $this->assertArrayHasKey("{$year}-12-25", $classHolidays);
+        $this->assertArrayHasKey("{$year}-12-24", $classHolidays, 'Libur bulan lain tidak boleh ikut terhapus.');
 
         $responseSpreadsheet = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
             'class_room_id' => $this->classRoom->id,

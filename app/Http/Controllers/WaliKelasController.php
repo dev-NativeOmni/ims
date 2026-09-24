@@ -180,7 +180,7 @@ class WaliKelasController extends Controller
 
     private function buildAdabToday(Collection $students, Collection $studentIds, Carbon $today): array
     {
-        $isEffectiveDay = Setting::isEffectiveAdabDay($today, Setting::getNationalHolidays($today->year));
+        $isEffectiveDay = Setting::isEffectiveAdabDay($today);
 
         // whereDate() dipakai (bukan where() biasa) supaya perbandingan tanggal benar
         // walau kolom assessment_date tersimpan dengan komponen jam di beberapa driver DB.

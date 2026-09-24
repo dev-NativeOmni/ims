@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\ClassRoom;
-use App\Models\Setting;
 use Carbon\Carbon;
 
 /**
@@ -57,29 +56,7 @@ class AcademicCalendarService
      */
     public function isEffectiveDay(ClassRoom $classRoom, Carbon $date, bool $forUmmi = false): bool
     {
-        $dayOfWeek = (int) $date->format('N');
-        $allowedDays = $forUmmi
-            ? array_intersect($classRoom->tahfizh_days, self::UMMI_DAYS)
-            : $classRoom->tahfizh_days;
-
-        if (! in_array($dayOfWeek, $allowedDays, true)) {
-            return false;
-        }
-
-        $year = (int) $date->format('Y');
-        $dateString = $date->toDateString();
-
-        if (in_array($dateString, Setting::getNationalHolidays($year), true)) {
-            return false;
-        }
-
-        $classHolidays = Setting::getClassHolidays($year);
-
-        if (isset($classHolidays[$dateString]) && in_array($classRoom->id, $classHolidays[$dateString], true)) {
-            return false;
-        }
-
-        return true;
+        return app(SchoolCalendar::class)->isTahfizhEffectiveDay($classRoom, $date, $forUmmi ? self::UMMI_DAYS : []);
     }
 
     /**
