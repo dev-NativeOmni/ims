@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ClassRoom;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\SidebarMenu;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -322,6 +323,40 @@ class NavigationMenuTest extends TestCase
         $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('student-points.index'));
         $response->assertSee(route('system-notifications.index'));
+    }
+
+    #[Test]
+    public function sidebar_groups_reports_and_settings_separately_without_duplicates(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $groups = SidebarMenu::for($this->superAdmin);
+
+        $this->assertSame(
+            ['utama', 'tahfizh', 'adab', 'ketahanan', 'laporan', 'data-master', 'pengaturan'],
+            array_column($groups, 'key')
+        );
+
+        $urls = collect($groups)->flatMap(fn ($g) => array_column($g['items'], 'url'));
+        $this->assertSame($urls->count(), $urls->unique()->count(), 'Setiap menu hanya boleh muncul sekali.');
+
+        $byKey = collect($groups)->keyBy('key');
+        $this->assertContains(route('digital-reports.index'), array_column($byKey['laporan']['items'], 'url'));
+        $this->assertContains(route('badges.index'), array_column($byKey['pengaturan']['items'], 'url'));
+        $this->assertContains(route('digital-reports.settings'), array_column($byKey['pengaturan']['items'], 'url'));
+    }
+
+    #[Test]
+    public function only_the_group_of_the_current_page_is_open_by_default(): void
+    {
+        $response = $this->actingAs($this->superAdmin)->get(route('progress.index'));
+
+        $groups = collect(SidebarMenu::for($this->superAdmin))->keyBy('key');
+        $this->assertTrue($groups['tahfizh']['active']);
+        $this->assertFalse($groups['laporan']['active']);
+        $this->assertFalse($groups['pengaturan']['active']);
+
+        $response->assertStatus(200);
+        $response->assertSee('aria-current="page"', false);
     }
 
     #[Test]

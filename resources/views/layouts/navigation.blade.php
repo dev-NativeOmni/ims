@@ -1,62 +1,9 @@
 @php
     $user = auth()->user();
 
-    $hasRole = function (string $role) use ($user): bool {
-        if (! $user) {
-            return false;
-        }
-
-        if (method_exists($user, 'hasRole')) {
-            return $user->hasRole($role);
-        }
-
-        return ($user->role?->name ?? null) === $role;
-    };
-
-    $isSuperAdmin = $hasRole('super_admin');
-    $isAdminUser = $hasRole('admin');
-    $isTeacher = $hasRole('teacher');
-    $isParent = $hasRole('parent');
-    $isStudent = $hasRole('student');
-    $isSupervisor = $hasRole('supervisor');
-    $isHeadmaster = $hasRole('headmaster');
-    $isTanse = $hasRole('tanse');
-    $isCoordinatorTahfizh = $hasRole('coordinator_tahfizh');
-    $isPendampingAdab = $hasRole('pendamping_adab');
-
-    $isAdmin = $isSuperAdmin || $isAdminUser;
-    $isLoggedIn = (bool) $user;
-
     $logo = \App\Models\Setting::get('logo');
-    $namaInstansi = \App\Models\Setting::get('nama_instansi');
-
-    $isPureTahfizhCoordinator = $isCoordinatorTahfizh && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
-    $isPureAdabCoordinator = $isPendampingAdab && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
-    $isPureTanseCoordinator = $isTanse && ! $isAdmin && ! $isHeadmaster && ! $isSupervisor && ! $isTeacher;
-
-    $canViewTahfizhGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isCoordinatorTahfizh) && ! $isPureAdabCoordinator && ! $isPureTanseCoordinator;
-    $canViewAdabGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isPendampingAdab) && ! $isPureTahfizhCoordinator && ! $isPureTanseCoordinator;
-    $canViewTanseGroup = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isTanse) && ! $isPureTahfizhCoordinator && ! $isPureAdabCoordinator;
 
     $hasRoute = fn (string $name): bool => \Illuminate\Support\Facades\Route::has($name);
-
-    $unreadNotificationCount = 0;
-
-    if ($user && method_exists($user, 'unreadSystemNotifications')) {
-        $unreadNotificationCount = $user->unreadSystemNotifications()->count();
-    }
-
-    $getLinkClasses = function (bool $active): string {
-        return $active
-            ? 'flex items-center px-3 py-2 text-sm font-bold rounded-xl bg-gradient-to-r from-teal-500/15 to-emerald-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/30 dark:border-teal-500/20 group transition-all duration-200 shadow-sm shadow-teal-500/10'
-            : 'flex items-center px-3 py-2 text-sm font-medium rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-200/60 dark:hover:border-white/5 group transition-all duration-150';
-    };
-
-    $getIconClasses = function (bool $active): string {
-        return $active
-            ? 'mr-3 h-5 w-5 text-teal-600 dark:text-teal-400 flex-shrink-0 transition-colors duration-150'
-            : 'mr-3 h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 flex-shrink-0 transition-colors duration-150';
-    };
 @endphp
 
 <!-- Global Sidebar (Drawer Overlay) -->
