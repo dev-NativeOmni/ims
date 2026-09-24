@@ -8,14 +8,7 @@
         <title>{{ config('app.name', 'TAD SMAIA 7') }}</title>
 
         <!-- PWA & Apple iOS Metadata -->
-        <link rel="manifest" href="/manifest.json">
-        <meta name="theme-color" content="#059669">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="TAD SMAIA 7">
-        <link rel="apple-touch-icon" href="/images/logo_alazhar7.png">
-        <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
+        @include('partials.app-icons')
 
         <!-- iOS Safari BFCache & PWA Service Worker -->
         <script>

@@ -18,7 +18,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>TAD Management System — Platform Pelacakan Hafalan & Murajaah Qur'an Modern</title>
-        <link rel="icon" type="image/png" href="/images/logo_alazhar7.png">
+        @include('partials.app-icons')
 
         <!-- Theme Initialization Script (Default: Light Mode unless explicitly set to dark) -->
         <script>
