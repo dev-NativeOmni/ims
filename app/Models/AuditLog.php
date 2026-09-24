@@ -90,6 +90,7 @@ class AuditLog extends Model
             TeacherProfile::class => 'Guru',
             ParentProfile::class => 'Orangtua',
             User::class => 'User',
+            CalendarMonthLock::class => 'Kunci Kalender',
             default => class_basename((string) $this->auditable_type),
         };
     }

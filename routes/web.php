@@ -202,11 +202,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('badges/{badge}/toggle', [BadgeController::class, 'toggleActive'])->name('badges.toggle');
     });
 
+    // Kalender Akademik: Koordinator Adab ikut masuk, tapi hanya bisa mengatur & mengunci
+    // cakupan Adab (dibatasi di SettingController::calendarPermissions()).
+    Route::middleware(['role:super_admin,admin,pendamping_adab'])->group(function () {
+        Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
+        Route::post('academic-calendar/update', [SettingController::class, 'calendarUpdate'])->name('academic-calendar.update');
+        Route::post('academic-calendar/lock', [SettingController::class, 'calendarLock'])->name('academic-calendar.lock');
+    });
+
     Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('class-schedules', [ClassRoomController::class, 'scheduleIndex'])->name('class-schedules.index');
         Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
-        Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
-        Route::post('academic-calendar/update', [SettingController::class, 'calendarUpdate'])->name('academic-calendar.update');
 
         // Teachers
         Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

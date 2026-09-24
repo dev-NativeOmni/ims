@@ -66,7 +66,8 @@ class AcademicCalendarTest extends TestCase
         $response = $this->actingAs($this->adminUser)->get(route('academic-calendar.index'));
         $response->assertStatus(200);
         $response->assertViewHas('gridDates');
-        $response->assertViewHas('holidays');
+        $response->assertViewHas('globalDays');
+        $response->assertViewHas('locks');
     }
 
     public function test_admin_can_toggle_and_save_holidays_with_month_merging(): void

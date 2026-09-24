@@ -162,37 +162,119 @@ class SettingController extends Controller
         $nextYear = $nextCarbon->year;
 
         $calendar = app(SchoolCalendar::class);
-        $holidays = $calendar->totalHolidays($year);
-        $classRooms = ClassRoom::query()->orderBy('name')->get();
-        $classHolidays = $calendar->classDays($year);
+        $monthDays = $calendar->monthDays($year, $month);
+        $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
+        $locks = $calendar->monthLocks($year, $month);
+        $permissions = $this->calendarPermissions($request, $year, $month);
 
-        return view('settings.calendar', compact(
-            'gridDates', 'year', 'month', 'holidays', 'classRooms', 'classHolidays',
-            'prevMonth', 'prevYear', 'nextMonth', 'nextYear'
-        ));
+        return view('settings.calendar', [
+            'gridDates' => $gridDates,
+            'year' => $year,
+            'month' => $month,
+            'globalDays' => $monthDays['global'],
+            'classHolidays' => $monthDays['class'],
+            'classRooms' => $classRooms,
+            'locks' => $locks,
+            'permissions' => $permissions,
+            'prevMonth' => $prevMonth,
+            'prevYear' => $prevYear,
+            'nextMonth' => $nextMonth,
+            'nextYear' => $nextYear,
+        ]);
     }
 
     public function calendarUpdate(Request $request)
     {
         $year = $request->integer('year', (int) date('Y'));
         $month = $request->integer('month', (int) date('m'));
+        $permissions = $this->calendarPermissions($request, $year, $month);
+
+        abort_unless($permissions['edit_tahfizh'] || $permissions['edit_adab'], 403, 'Kalender bulan ini terkunci atau Anda tidak berhak mengubahnya.');
 
         $globalDays = [];
+        foreach ((array) $request->input('days', []) as $date => $flags) {
+            $globalDays[(string) $date] = [
+                'tahfizh_off' => (bool) ($flags['tahfizh'] ?? false),
+                'adab_off' => (bool) ($flags['adab'] ?? false),
+            ];
+        }
+        // Format lama (holidays[] = Libur Total) tetap diterima.
         foreach ((array) $request->input('holidays', []) as $date) {
             $globalDays[(string) $date] = ['tahfizh_off' => true, 'adab_off' => true];
         }
 
         $classDays = array_filter(
             (array) $request->input('class_holidays', []),
-            fn ($classIds, $date) => ! isset($globalDays[$date]) && ! empty($classIds),
+            fn ($classIds, $date) => ! ($globalDays[$date]['tahfizh_off'] ?? false) && ! empty($classIds),
             ARRAY_FILTER_USE_BOTH
         );
 
-        app(SchoolCalendar::class)->saveMonth($year, $month, $globalDays, $classDays, $request->user()?->id);
+        app(SchoolCalendar::class)->updateMonth(
+            $year,
+            $month,
+            $globalDays,
+            $classDays,
+            $permissions['edit_tahfizh'],
+            $permissions['edit_adab'],
+            $request->user()?->id
+        );
 
         return redirect()
             ->route('academic-calendar.index', ['year' => $year, 'month' => $month])
             ->with('success', 'Kalender akademik berhasil diperbarui.');
+    }
+
+    public function calendarLock(Request $request)
+    {
+        $validated = $request->validate([
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'month' => ['required', 'integer', 'between:1,12'],
+            'scope' => ['required', 'in:'.SchoolCalendar::SCOPE_TAHFIZH.','.SchoolCalendar::SCOPE_ADAB],
+            'action' => ['required', 'in:lock,unlock'],
+        ]);
+        $permissions = $this->calendarPermissions($request, $validated['year'], $validated['month']);
+        $calendar = app(SchoolCalendar::class);
+        $scopeLabel = $validated['scope'] === SchoolCalendar::SCOPE_TAHFIZH ? 'Tahfizh' : 'Adab';
+
+        if ($validated['action'] === 'lock') {
+            abort_unless($permissions['lock_'.$validated['scope']], 403);
+            $calendar->lockMonth($validated['year'], $validated['month'], $validated['scope'], $request->user()?->id);
+            $message = "Kalender {$scopeLabel} bulan ini dikunci.";
+        } else {
+            abort_unless($permissions['unlock'], 403, 'Hanya Super Admin & Admin yang bisa membuka kunci kalender.');
+            $calendar->unlockMonth($validated['year'], $validated['month'], $validated['scope']);
+            $message = "Kunci kalender {$scopeLabel} bulan ini dibuka.";
+        }
+
+        return redirect()
+            ->route('academic-calendar.index', ['year' => $validated['year'], 'month' => $validated['month']])
+            ->with('success', $message);
+    }
+
+    /**
+     * Hak akses kalender: Super Admin & Admin mengatur semuanya; Koordinator Adab
+     * (pendamping_adab) hanya status Adab & mengunci Adab. Bulan terkunci tidak bisa
+     * diubah untuk cakupan itu sampai dibuka Super Admin/Admin.
+     *
+     * @return array<string, bool>
+     */
+    private function calendarPermissions(Request $request, int $year, int $month): array
+    {
+        $user = $request->user();
+        $isAdmin = $user?->hasAnyRole(['super_admin', 'admin']) ?? false;
+        $isAdabCoordinator = $user?->hasRole('pendamping_adab') ?? false;
+        $calendar = app(SchoolCalendar::class);
+        $tahfizhLocked = $calendar->isMonthLocked($year, $month, SchoolCalendar::SCOPE_TAHFIZH);
+        $adabLocked = $calendar->isMonthLocked($year, $month, SchoolCalendar::SCOPE_ADAB);
+
+        return [
+            'is_admin' => $isAdmin,
+            'edit_tahfizh' => $isAdmin && ! $tahfizhLocked,
+            'edit_adab' => ($isAdmin || $isAdabCoordinator) && ! $adabLocked,
+            'lock_tahfizh' => $isAdmin && ! $tahfizhLocked,
+            'lock_adab' => ($isAdmin || $isAdabCoordinator) && ! $adabLocked,
+            'unlock' => $isAdmin,
+        ];
     }
 
     public function hafalanTargetsIndex()

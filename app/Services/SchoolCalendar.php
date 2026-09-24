@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CalendarDay;
+use App\Models\CalendarMonthLock;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use Carbon\Carbon;
@@ -20,6 +21,10 @@ use Carbon\CarbonInterface;
  */
 class SchoolCalendar
 {
+    public const SCOPE_TAHFIZH = 'tahfizh';
+
+    public const SCOPE_ADAB = 'adab';
+
     /** Hari kuisioner Adab: Selasa-Jumat (ISO). */
     public const ADAB_DAYS = [2, 3, 4, 5];
 
@@ -34,6 +39,9 @@ class SchoolCalendar
 
     /** @var array<string, array<string, true>> */
     private array $adabDatesCache = [];
+
+    /** @var array<string, array<int, string>> */
+    private array $lockCache = [];
 
     public function __construct()
     {
@@ -231,6 +239,82 @@ class SchoolCalendar
         }
 
         $this->flush();
+    }
+
+    /**
+     * Isi kalender satu bulan (hanya tanggal yang tercatat).
+     *
+     * @return array{global: array<string, array{tahfizh_off: bool, adab_off: bool}>, class: array<string, array<int, int>>}
+     */
+    public function monthDays(int $year, int $month): array
+    {
+        $prefix = sprintf('%04d-%02d-', $year, $month);
+        $inMonth = fn ($value, string $date) => str_starts_with($date, $prefix);
+
+        return [
+            'global' => array_filter($this->globalDays($year), $inMonth, ARRAY_FILTER_USE_BOTH),
+            'class' => array_filter($this->classDays($year), $inMonth, ARRAY_FILTER_USE_BOTH),
+        ];
+    }
+
+    /**
+     * Simpan perubahan satu bulan, tapi cakupan yang tidak boleh diubah (hak akses atau
+     * bulan terkunci) tetap memakai isi lama -- apa pun yang dikirim form.
+     *
+     * @param  array<string, array{tahfizh_off: bool, adab_off: bool}>  $globalDays
+     * @param  array<string, array<int, int>>  $classDays
+     */
+    public function updateMonth(int $year, int $month, array $globalDays, array $classDays, bool $canTahfizh, bool $canAdab, ?int $userId = null): void
+    {
+        $canTahfizh = $canTahfizh && ! $this->isMonthLocked($year, $month, self::SCOPE_TAHFIZH);
+        $canAdab = $canAdab && ! $this->isMonthLocked($year, $month, self::SCOPE_ADAB);
+
+        if (! $canTahfizh && ! $canAdab) {
+            return;
+        }
+
+        $current = $this->monthDays($year, $month);
+        $merged = [];
+        foreach (array_unique(array_merge(array_keys($current['global']), array_keys($globalDays))) as $date) {
+            $merged[$date] = [
+                'tahfizh_off' => (bool) ($canTahfizh ? ($globalDays[$date]['tahfizh_off'] ?? false) : ($current['global'][$date]['tahfizh_off'] ?? false)),
+                'adab_off' => (bool) ($canAdab ? ($globalDays[$date]['adab_off'] ?? false) : ($current['global'][$date]['adab_off'] ?? false)),
+            ];
+        }
+
+        $this->saveMonth($year, $month, $merged, $canTahfizh ? $classDays : $current['class'], $userId);
+    }
+
+    public function isMonthLocked(int $year, int $month, string $scope): bool
+    {
+        return in_array($scope, $this->monthLocks($year, $month), true);
+    }
+
+    /**
+     * Cakupan yang terkunci pada bulan ini.
+     *
+     * @return array<int, string>
+     */
+    public function monthLocks(int $year, int $month): array
+    {
+        return $this->lockCache["{$year}-{$month}"] ??= CalendarMonthLock::query()
+            ->where('year', $year)
+            ->where('month', $month)
+            ->pluck('scope')
+            ->all();
+    }
+
+    public function lockMonth(int $year, int $month, string $scope, ?int $userId = null): void
+    {
+        CalendarMonthLock::firstOrCreate(['year' => $year, 'month' => $month, 'scope' => $scope], ['locked_by' => $userId]);
+        unset($this->lockCache["{$year}-{$month}"]);
+    }
+
+    public function unlockMonth(int $year, int $month, string $scope): void
+    {
+        // Lewat model (bukan query delete) supaya tercatat di Audit Log.
+        CalendarMonthLock::query()->where(['year' => $year, 'month' => $month, 'scope' => $scope])->get()->each->delete();
+        unset($this->lockCache["{$year}-{$month}"]);
     }
 
     public function flush(): void
