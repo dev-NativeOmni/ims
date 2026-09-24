@@ -390,7 +390,7 @@
                 </form>
 
                 <!-- Active Dates Number Toggles -->
-                @if (!$isWeekly && count($dates) > 0)
+                @if (count($dates) > 0)
                 @php
                     $todayDate = now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString();
                 @endphp

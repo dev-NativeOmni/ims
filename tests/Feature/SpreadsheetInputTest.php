@@ -269,6 +269,11 @@ class SpreadsheetInputTest extends TestCase
         $this->assertCount(5, $columns);
         $this->assertEquals('Pekan 1', $columns[0]['label']);
         $this->assertEquals('03/08 - 07/08', $columns[0]['sub_label']);
+
+        // Toggle "Tanggal Aktif" harus tetap tampil untuk program mingguan (Reguler),
+        // supaya guru bisa pilih pekan mana yang mau diisi -- sebelumnya sengaja
+        // disembunyikan untuk isWeekly, membuat guru terjebak di tanggal default saja.
+        $response->assertSee('Tanggal Aktif', false);
     }
 
     #[Test]
