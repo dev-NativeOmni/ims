@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\SchoolCalendar;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,6 +26,14 @@ class CalendarDay extends Model
         'tahfizh_off' => 'boolean',
         'adab_off' => 'boolean',
     ];
+
+    /**
+     * Simpan sebagai 'Y-m-d' murni supaya pencarian/unique konsisten di semua driver DB.
+     */
+    public function setDateAttribute($value): void
+    {
+        $this->attributes['date'] = Carbon::parse($value)->toDateString();
+    }
 
     protected static function booted(): void
     {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SchoolCalendar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +45,13 @@ class ClassRoom extends Model
 
     protected static function booted(): void
     {
+        // Jadwal default berubah: pekan yang sudah lewat tetap memakai jadwal lamanya.
+        static::updating(function (ClassRoom $classRoom) {
+            if ($classRoom->isDirty('tahfizh_days')) {
+                $previous = json_decode((string) $classRoom->getRawOriginal('tahfizh_days'), true) ?: [1, 2, 3, 4, 5];
+                app(SchoolCalendar::class)->snapshotPastWeeks($classRoom, $previous);
+            }
+        });
         static::saved(fn () => Cache::forget('all_class_rooms_cached'));
         static::deleted(fn () => Cache::forget('all_class_rooms_cached'));
     }

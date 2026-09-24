@@ -213,6 +213,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('class-schedules', [ClassRoomController::class, 'scheduleIndex'])->name('class-schedules.index');
         Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
+        Route::post('class-schedules/week', [ClassRoomController::class, 'scheduleWeekUpdate'])->name('class-schedules.week.update');
+        Route::post('class-schedules/week/lock', [ClassRoomController::class, 'scheduleWeekLock'])->name('class-schedules.week.lock');
 
         // Teachers
         Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

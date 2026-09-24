@@ -9,6 +9,7 @@ use App\Models\HafalanRecord;
 use App\Models\Program;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Services\SchoolCalendar;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
 use App\Services\StudentProgressService;
@@ -587,7 +588,72 @@ class ClassRoomController extends Controller
             ];
         }
 
-        return view('class-rooms.schedules', compact('scheduleBoard', 'classRooms', 'daysOfWeek'));
+        // Jadwal per pekan (tab "Jadwal Per Pekan"): jadwal khusus & kunci pekan.
+        $calendar = app(SchoolCalendar::class);
+        $weekStart = $calendar->weekStart(Carbon::parse($request->input('week', today()->toDateString())));
+        $weekStates = $classRooms->mapWithKeys(fn (ClassRoom $class) => [$class->id => $calendar->weekState($class, $weekStart)]);
+        $activeTab = $request->input('tab') === 'weekly' ? 'weekly' : 'default';
+
+        return view('class-rooms.schedules', compact('scheduleBoard', 'classRooms', 'daysOfWeek', 'weekStart', 'weekStates', 'activeTab'));
+    }
+
+    /**
+     * Simpan jadwal khusus satu pekan untuk semua kelas; kelas yang pekannya terkunci dilewati.
+     */
+    public function scheduleWeekUpdate(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'week' => ['required', 'date'],
+            'schedules' => ['array'],
+            'schedules.*' => ['array'],
+            'schedules.*.*' => ['integer', 'between:1,7'],
+        ]);
+        $calendar = app(SchoolCalendar::class);
+        $weekStart = $calendar->weekStart(Carbon::parse($validated['week']));
+        $lockedCount = 0;
+
+        // Kelas tanpa centang = tidak ada pertemuan pekan itu (mis. pekan ASTS).
+        foreach (ClassRoom::query()->get() as $class) {
+            if (! $calendar->saveWeek($class, $weekStart, $validated['schedules'][$class->id] ?? [], $request->user()?->id)) {
+                $lockedCount++;
+            }
+        }
+
+        $message = 'Jadwal pekan '.$weekStart->format('d-m-Y').' berhasil disimpan.';
+        if ($lockedCount > 0) {
+            $message .= " {$lockedCount} kelas terkunci tidak diubah.";
+        }
+
+        return redirect()
+            ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
+            ->with('success', $message);
+    }
+
+    /**
+     * Kunci / buka kunci jadwal satu pekan (semua kelas atau kelas tertentu).
+     */
+    public function scheduleWeekLock(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'week' => ['required', 'date'],
+            'action' => ['required', 'in:lock,unlock'],
+            'class_room_id' => ['nullable', 'integer', 'exists:class_rooms,id'],
+        ]);
+        $calendar = app(SchoolCalendar::class);
+        $weekStart = $calendar->weekStart(Carbon::parse($validated['week']));
+        $classes = ClassRoom::query()
+            ->when($validated['class_room_id'] ?? null, fn ($q, $id) => $q->whereKey($id))
+            ->get();
+
+        foreach ($classes as $class) {
+            $validated['action'] === 'lock'
+                ? $calendar->lockWeek($class, $weekStart, $request->user()?->id)
+                : $calendar->unlockWeek($class, $weekStart);
+        }
+
+        return redirect()
+            ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
+            ->with('success', $validated['action'] === 'lock' ? 'Jadwal pekan ini dikunci.' : 'Kunci jadwal pekan ini dibuka.');
     }
 
     public function scheduleUpdate(Request $request): RedirectResponse

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\CalendarMonthLock;
 use App\Models\ClassRoom;
+use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
@@ -69,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         MurajaahRecord::observe(ModelAuditObserver::class);
         HafalanTarget::observe(ModelAuditObserver::class);
         CalendarMonthLock::observe(ModelAuditObserver::class);
+        ClassWeekSchedule::observe(ModelAuditObserver::class);
 
         // Target hafalan otomatis mengikuti setoran (lihat AutoHafalanTargetService).
         HafalanRecord::observe(HafalanAutoTargetObserver::class);

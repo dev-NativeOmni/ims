@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\CalendarMonthLock;
 use App\Models\ClassRoom;
+use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
@@ -164,6 +165,7 @@ class AuditLogService
             MurajaahRecord::class => 'Murajaah',
             HafalanTarget::class => 'Target Hafalan',
             CalendarMonthLock::class => 'Kunci Kalender',
+            ClassWeekSchedule::class => 'Jadwal Pekanan',
             default => class_basename($model),
         };
     }

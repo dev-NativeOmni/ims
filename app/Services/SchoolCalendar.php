@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CalendarDay;
 use App\Models\CalendarMonthLock;
 use App\Models\ClassRoom;
+use App\Models\ClassWeekSchedule;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -13,7 +14,8 @@ use Carbon\CarbonInterface;
  * Satu-satunya sumber aturan hari efektif sekolah (dipakai lewat app(SchoolCalendar::class),
  * terdaftar sebagai scoped singleton supaya cache per request/tes tidak bocor).
  *
- * Tahfizh efektif = hari ada di jadwal kelas (tahfizh_days) DAN bukan libur Tahfizh
+ * Tahfizh efektif = hari ada di jadwal kelas pekan itu (jadwal khusus/arsip pekan di
+ *                   class_week_schedules, selain itu tahfizh_days) DAN bukan libur Tahfizh
  *                   (global atau khusus kelas itu).
  * Adab efektif    = Selasa-Jumat DAN bukan libur Adab global.
  *
@@ -42,6 +44,9 @@ class SchoolCalendar
 
     /** @var array<string, array<int, string>> */
     private array $lockCache = [];
+
+    /** @var array<int, array<string, ClassWeekSchedule>> */
+    private array $weekCache = [];
 
     public function __construct()
     {
@@ -136,7 +141,160 @@ class SchoolCalendar
      */
     public function classMeetingDays(ClassRoom $classRoom, CarbonInterface $date): array
     {
-        return $classRoom->tahfizh_days;
+        $row = $this->weekSchedules($classRoom->id)[$this->weekStart($date)->toDateString()] ?? null;
+
+        return $row ? array_map('intval', $row->days) : $classRoom->tahfizh_days;
+    }
+
+    public function weekStart(CarbonInterface $date): Carbon
+    {
+        return Carbon::parse($date->toDateString())->startOfWeek(Carbon::MONDAY);
+    }
+
+    /**
+     * Jadwal pekanan tersimpan satu kelas: 'Y-m-d' (Senin) => ClassWeekSchedule.
+     *
+     * @return array<string, ClassWeekSchedule>
+     */
+    public function weekSchedules(int $classRoomId): array
+    {
+        return $this->weekCache[$classRoomId] ??= ClassWeekSchedule::query()
+            ->where('class_room_id', $classRoomId)
+            ->get()
+            ->keyBy(fn (ClassWeekSchedule $row) => $row->week_start->toDateString())
+            ->all();
+    }
+
+    /**
+     * Keadaan jadwal satu kelas di satu pekan.
+     *
+     * @return array{days: array<int, int>, is_custom: bool, locked: bool, auto_locked: bool, manually_locked: bool, unlocked: bool}
+     */
+    public function weekState(ClassRoom $classRoom, CarbonInterface $weekStart): array
+    {
+        $weekStart = $this->weekStart($weekStart);
+        $row = $this->weekSchedules($classRoom->id)[$weekStart->toDateString()] ?? null;
+        $ended = $this->weekEnded($weekStart);
+        $unlocked = (bool) $row?->unlocked;
+
+        return [
+            'days' => $row ? array_map('intval', $row->days) : $classRoom->tahfizh_days,
+            'is_custom' => (bool) $row?->is_custom,
+            'locked' => ! $unlocked && ($ended || $row?->locked_at !== null),
+            'auto_locked' => $ended && ! $unlocked && $row?->locked_at === null,
+            'manually_locked' => ! $unlocked && $row?->locked_at !== null,
+            'unlocked' => $unlocked,
+        ];
+    }
+
+    public function weekEnded(CarbonInterface $weekStart): bool
+    {
+        return $this->weekStart($weekStart)->addDays(6)->endOfDay()->lt(now());
+    }
+
+    /**
+     * Simpan jadwal khusus satu kelas di satu pekan. Pekan terkunci ditolak (return false).
+     *
+     * @param  array<int, int|string>  $days
+     */
+    public function saveWeek(ClassRoom $classRoom, CarbonInterface $weekStart, array $days, ?int $userId = null): bool
+    {
+        $weekStart = $this->weekStart($weekStart);
+        $state = $this->weekState($classRoom, $weekStart);
+        if ($state['locked']) {
+            return false;
+        }
+
+        $days = $this->normalizeDays($days);
+        $isDefault = $days === $this->normalizeDays($classRoom->tahfizh_days);
+        $row = $this->weekSchedules($classRoom->id)[$weekStart->toDateString()] ?? null;
+
+        if ($row === null) {
+            if (! $isDefault) {
+                ClassWeekSchedule::create([
+                    'class_room_id' => $classRoom->id, 'week_start' => $weekStart->toDateString(),
+                    'days' => $days, 'is_custom' => true,
+                ]);
+            }
+        } elseif ($isDefault && ! $row->unlocked && $row->locked_at === null) {
+            $row->delete();
+        } elseif ($row->days !== $days || $row->is_custom === $isDefault) {
+            $row->update(['days' => $days, 'is_custom' => ! $isDefault]);
+        }
+
+        return true;
+    }
+
+    public function lockWeek(ClassRoom $classRoom, CarbonInterface $weekStart, ?int $userId = null): void
+    {
+        $weekStart = $this->weekStart($weekStart);
+        ClassWeekSchedule::updateOrCreate(
+            ['class_room_id' => $classRoom->id, 'week_start' => $weekStart->toDateString()],
+            [
+                'days' => $this->weekState($classRoom, $weekStart)['days'],
+                'locked_at' => now(), 'locked_by' => $userId, 'unlocked' => false,
+            ]
+        );
+    }
+
+    public function unlockWeek(ClassRoom $classRoom, CarbonInterface $weekStart): void
+    {
+        $weekStart = $this->weekStart($weekStart);
+        ClassWeekSchedule::updateOrCreate(
+            ['class_room_id' => $classRoom->id, 'week_start' => $weekStart->toDateString()],
+            [
+                // Salin jadwal yang berlaku sekarang supaya membuka kunci tidak mengubah apa pun.
+                'days' => $this->weekState($classRoom, $weekStart)['days'],
+                'locked_at' => null, 'locked_by' => null, 'unlocked' => true,
+            ]
+        );
+    }
+
+    /**
+     * Sebelum jadwal default kelas berubah: bekukan pekan-pekan yang sudah lewat (tanpa
+     * jadwal tersimpan) dengan jadwal lama, supaya TM/jurnal/target lampau tidak ikut berubah.
+     * Mencakup tahun ajaran berjalan & sebelumnya, tidak sebelum kelas dibuat.
+     *
+     * @param  array<int, int>  $previousDays
+     */
+    public function snapshotPastWeeks(ClassRoom $classRoom, array $previousDays): void
+    {
+        $today = now();
+        $academicStartYear = $today->month >= 7 ? $today->year : $today->year - 1;
+        $from = $this->weekStart(Carbon::create($academicStartYear - 1, 7, 1));
+        if ($classRoom->created_at && $classRoom->created_at->gt($from)) {
+            $from = $this->weekStart($classRoom->created_at);
+        }
+
+        $existing = array_keys($this->weekSchedules($classRoom->id));
+        $days = json_encode($this->normalizeDays($previousDays));
+        $rows = [];
+
+        for ($week = $from->copy(); $this->weekEnded($week); $week->addWeek()) {
+            if (! in_array($week->toDateString(), $existing, true)) {
+                $rows[] = [
+                    'class_room_id' => $classRoom->id, 'week_start' => $week->toDateString(), 'days' => $days,
+                    'is_custom' => false, 'unlocked' => false, 'created_at' => $today, 'updated_at' => $today,
+                ];
+            }
+        }
+
+        foreach (array_chunk($rows, 500) as $chunk) {
+            ClassWeekSchedule::insert($chunk);
+        }
+        unset($this->weekCache[$classRoom->id]);
+    }
+
+    /**
+     * @param  array<int, int|string>  $days
+     * @return array<int, int>
+     */
+    private function normalizeDays(array $days): array
+    {
+        $days = array_values(array_unique(array_filter(array_map('intval', $days), fn ($d) => $d >= 1 && $d <= 7)));
+        sort($days);
+
+        return $days;
     }
 
     public function isTahfizhEffectiveDay(ClassRoom $classRoom, CarbonInterface $date, array $onlyDays = []): bool
@@ -322,6 +480,8 @@ class SchoolCalendar
         $this->globalCache = [];
         $this->classCache = [];
         $this->adabDatesCache = [];
+        $this->lockCache = [];
+        $this->weekCache = [];
         Setting::flushCalendarCaches();
     }
 
