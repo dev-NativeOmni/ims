@@ -16,7 +16,7 @@
                 </a>
                 @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                     <a 
-                        href="{{ route('digital-reports.print', [$student, 'academic_year' => $academicYear, 'semester' => $semester]) }}" 
+                        href="{{ route('digital-reports.print', [$student, 'academic_year' => $academicYear, 'semester' => $semester, 'term' => $tanseTerm['term']]) }}" 
                         target="_blank"
                         class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition"
                     >
@@ -78,6 +78,14 @@
                             <select name="semester" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
                                 <option value="1" {{ $semester === 1 ? 'selected' : '' }}>1 (Ganjil)</option>
                                 <option value="2" {{ $semester === 2 ? 'selected' : '' }}>2 (Genap)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">Triwulan (Tanse)</label>
+                            <select name="term" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
+                                @foreach ($tanseTerm['terms'] as $termValue => $termLabel)
+                                    <option value="{{ $termValue }}" @selected($tanseTerm['term'] === $termValue)>{{ $termLabel }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-zinc-800 hover:bg-zinc-950 dark:bg-zinc-700 dark:hover:bg-zinc-650 text-white font-bold rounded-xl text-sm transition">
@@ -214,6 +222,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 dark:border-zinc-800 mb-4 gap-2">
                     <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                         <x-heroicon-o-shield-check class="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" /> Catatan Evaluasi Kedisiplinan &amp; Ketahanan Sekolah (Tanse)
+                        <span class="normal-case font-semibold text-gray-500 dark:text-zinc-400">· {{ $tanseTerm['label'] }}</span>
                     </h4>
                     <span class="px-2.5 py-1 rounded-full text-xs font-black self-start sm:self-auto {{ $tanseScore >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }}">
                         Skor Tanse: {{ $tanseScore }} (Predikat {{ $tanseGrade }})

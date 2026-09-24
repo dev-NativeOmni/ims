@@ -15,6 +15,7 @@ use App\Models\StudentReport;
 use App\Models\UmmiRecord;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class StudentReportController extends Controller
@@ -70,7 +71,7 @@ class StudentReportController extends Controller
             'status' => 'draft',
         ]);
 
-        $data = $this->getReportData($student, $academicYear, $semester);
+        $data = $this->getReportData($student, $academicYear, $semester, null, $request->integer('term') ?: null);
         $data['report'] = $report;
 
         $totalSetoran = HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))->where('status', 'passed')->count();
@@ -128,7 +129,7 @@ class StudentReportController extends Controller
         $academicYear = $request->input('academic_year', '2025/2026');
         $semester = $request->integer('semester', 1);
 
-        $data = $this->getReportData($student, $academicYear, $semester);
+        $data = $this->getReportData($student, $academicYear, $semester, null, $request->integer('term') ?: null);
 
         return view('reports.digital-report-print', $data);
     }
@@ -203,13 +204,70 @@ class StudentReportController extends Controller
 
         $reportsData = [];
         foreach ($students as $student) {
-            $reportsData[] = $this->getReportData($student, $academicYear, $semester, $batchContext);
+            $reportsData[] = $this->getReportData($student, $academicYear, $semester, $batchContext, $request->integer('term') ?: null);
         }
 
-        return view('reports.digital-report-class-print', compact('classRoom', 'reportsData', 'academicYear', 'semester'));
+        $tanseTerm = self::resolveTanseTerm($academicYear, $semester, $request->integer('term') ?: null);
+
+        return view('reports.digital-report-class-print', compact('classRoom', 'reportsData', 'academicYear', 'semester', 'tanseTerm'));
     }
 
-    private function getReportData(Student $student, string $academicYear, int $semester, ?array $batch = null): array
+    /**
+     * Deskripsi Tanse di rapor, berdasarkan predikat (lihat tanseGrade()).
+     */
+    public const TANSE_NOTES = [
+        'A' => 'Alhamdulillah ananda sudah Sangat Baik dalam menerapkan budaya sekolah, disiplin, bertanggung jawab, santun, peduli, dan menjadi teladan bagi lingkungan sekitar. Semoga tetap istiqomah dalam menjalankan pembiasaan budaya sekolah dan berprestasi',
+        'B' => 'Alhamdulillah ananda sudah Baik dalam menerapkan budaya sekolah dan masih memerlukan bimbingan serta pembiasaan dalam kedisiplinan, tanggung jawab, dan sikap santun. Semoga bisa istiqomah dalam menjalankan pembiasaan budaya sekolah.',
+        'C' => 'Alhamdulillah ananda sudah Cukup Baik dalam menerapkan budaya sekolah, namun masih memerlukan bimbingan, pendampingan, pembiasaan dan konsistensi dalam kedisiplinan, tanggung jawab, dan sikap santun.',
+    ];
+
+    /**
+     * Predikat Tanse dari skor (100 - poin pelanggaran triwulan): A >= 90, B >= 80, selain itu C.
+     */
+    public static function tanseGrade(int $score): string
+    {
+        return match (true) {
+            $score >= 90 => 'A',
+            $score >= 80 => 'B',
+            default => 'C',
+        };
+    }
+
+    /**
+     * Triwulan yang dipakai bagian Tanse. Semester 1 = triwulan 1 (Jul-Sep) & 2 (Okt-Des),
+     * semester 2 = triwulan 3 (Jan-Mar) & 4 (Apr-Jun) -- sama dengan Laporan Triwulan.
+     * Tanpa pilihan yang valid: triwulan yang sedang berjalan bila masih di semester itu,
+     * selain itu triwulan terakhir semester tersebut.
+     *
+     * @return array{term: int, terms: array<int, string>, label: string, start: Carbon, end: Carbon}
+     */
+    public static function resolveTanseTerm(string $academicYear, int $semester, ?int $requested = null): array
+    {
+        $startYear = (int) explode('/', $academicYear)[0];
+        $all = [
+            1 => ['Triwulan 1 (Jul - Sep)', Carbon::create($startYear, 7, 1)],
+            2 => ['Triwulan 2 (Okt - Des)', Carbon::create($startYear, 10, 1)],
+            3 => ['Triwulan 3 (Jan - Mar)', Carbon::create($startYear + 1, 1, 1)],
+            4 => ['Triwulan 4 (Apr - Jun)', Carbon::create($startYear + 1, 4, 1)],
+        ];
+        $semesterTerms = $semester === 2 ? [3, 4] : [1, 2];
+
+        $term = in_array($requested, $semesterTerms, true) ? $requested : null;
+        foreach ($semesterTerms as $candidate) {
+            $term ??= now()->between($all[$candidate][1], $all[$candidate][1]->copy()->addMonths(2)->endOfMonth()) ? $candidate : null;
+        }
+        $term ??= end($semesterTerms);
+
+        return [
+            'term' => $term,
+            'terms' => collect($semesterTerms)->mapWithKeys(fn ($t) => [$t => $all[$t][0]])->all(),
+            'label' => $all[$term][0],
+            'start' => $all[$term][1]->copy()->startOfDay(),
+            'end' => $all[$term][1]->copy()->addMonths(2)->endOfMonth(),
+        ];
+    }
+
+    private function getReportData(Student $student, string $academicYear, int $semester, ?array $batch = null, ?int $term = null): array
     {
         if (! $student->relationLoaded('classRoom')) {
             $student->load(['classRoom.program', 'teacher.user', 'parents.user']);
@@ -409,47 +467,20 @@ class StudentReportController extends Controller
         $adabGrade = $adabScoreData['grade'];
         $adabGradeLabel = $adabScoreData['grade_label'];
 
-        // Tanse (Ketahanan Sekolah)
+        // Tanse (Ketahanan Sekolah): hanya poin dalam triwulan terpilih.
+        $tanseTerm = self::resolveTanseTerm($academicYear, $semester, $term);
+        $inTanseTerm = fn ($point) => $point->date?->between($tanseTerm['start'], $tanseTerm['end']);
+        $violations = $violations->filter($inTanseTerm)->values();
+        $rewards = $rewards->filter($inTanseTerm)->values();
+
         $totalViolationPoints = $violations->sum('points');
         $latenessCount = $violations->where('type', 'lateness')->count();
         $attributeCount = $violations->where('type', 'attribute')->count();
         $tatibCount = $violations->where('type', 'violation')->count();
 
-        if ($violations->isEmpty()) {
-            $autoTanseNotes = 'Murid menunjukkan kedisiplinan dan kepatuhan yang sangat baik terhadap tata tertib, atribut seragam, dan ketepatan waktu di sekolah (0 Poin Pelanggaran).';
-            $tanseScore = 100;
-            $tanseGrade = 'A';
-        } else {
-            $detailsArr = [];
-            if ($latenessCount > 0) {
-                $detailsArr[] = "{$latenessCount} Pelanggaran Keterlambatan";
-            }
-            if ($attributeCount > 0) {
-                $detailsArr[] = "{$attributeCount} Pelanggaran Atribut/Seragam";
-            }
-            if ($tatibCount > 0) {
-                $detailsArr[] = "{$tatibCount} Pelanggaran Tata Tertib";
-            }
-            $detailsStr = implode(', ', $detailsArr);
-
-            $sanctions = $violations->pluck('sanction')->filter()->unique()->implode('; ');
-            $sanctionStr = $sanctions ? " Sanksi/pembinaan: {$sanctions}." : '';
-
-            $autoTanseNotes = "Murid memiliki total {$totalViolationPoints} poin pelanggaran pada semester ini ({$detailsStr}).{$sanctionStr} Diharapkan tingkat kedisiplinan murid lebih ditingkatkan.";
-
-            $tanseScore = max(0, 100 - $totalViolationPoints);
-            if ($tanseScore >= 90) {
-                $tanseGrade = 'A';
-            } elseif ($tanseScore >= 80) {
-                $tanseGrade = 'B';
-            } elseif ($tanseScore >= 70) {
-                $tanseGrade = 'C';
-            } elseif ($tanseScore >= 60) {
-                $tanseGrade = 'D';
-            } else {
-                $tanseGrade = 'E';
-            }
-        }
+        $tanseScore = max(0, 100 - $totalViolationPoints);
+        $tanseGrade = self::tanseGrade($tanseScore);
+        $autoTanseNotes = self::TANSE_NOTES[$tanseGrade];
 
         return compact(
             'student',
@@ -484,6 +515,7 @@ class StudentReportController extends Controller
             'autoTanseNotes',
             'tanseScore',
             'tanseGrade',
+            'tanseTerm',
             'report'
         );
     }

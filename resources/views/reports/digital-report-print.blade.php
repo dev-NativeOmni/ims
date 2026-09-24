@@ -258,7 +258,7 @@
 
         <!-- III. LAPORAN TANSE -->
         <div class="mb-6 space-y-3">
-            <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE</h3>
+            <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE <span class="font-semibold normal-case">&mdash; {{ $tanseTerm['label'] }}</span></h3>
             
             <table class="w-full border border-black text-xs text-left">
                 <thead>
@@ -278,7 +278,7 @@
                             @if($rewards->isNotEmpty())
                                 <ul class="list-disc list-inside">
                                     @foreach($rewards as $r)
-                                        <li>{{ $r->notes }} (+{{ $r->points }} Poin)</li>
+                                        <li>{{ $r->title }} (+{{ $r->points }} Poin)</li>
                                     @endforeach
                                 </ul>
                             @else
@@ -294,13 +294,19 @@
                             @if($violations->isNotEmpty())
                                 <ul class="list-disc list-inside text-rose-700">
                                     @foreach($violations as $v)
-                                        <li>{{ $v->notes }} (-{{ $v->points }} Poin)</li>
+                                        <li>{{ $v->title }} (-{{ $v->points }} Poin)</li>
                                     @endforeach
                                 </ul>
                             @else
                                 Nihil - Tidak memiliki catatan pelanggaran perilaku negatif.
                             @endif
                         </td>
+                    </tr>
+                    <tr class="border-b border-black">
+                        <td class="p-2 border-r border-black text-center">3</td>
+                        <td class="p-2 border-r border-black font-bold">Predikat</td>
+                        <td class="p-2 border-r border-black text-center font-black">{{ $tanseGrade }}</td>
+                        <td class="p-2 text-gray-900 font-semibold">{{ $autoTanseNotes }}</td>
                     </tr>
                 </tbody>
             </table>
