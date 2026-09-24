@@ -64,7 +64,7 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison
                             $jIdx + 1,
                             $entry['tanggal'],
                             $entry['materi'],
-                            $entry['jumlah_murid'],
+                            $entry['jumlah_murid'] ?? '-',
                             $entry['paraf'],
                         ];
                         $row++;

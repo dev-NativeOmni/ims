@@ -783,12 +783,51 @@ class QuarterlyReportController extends Controller
                 ];
             }
         } else {
-            for ($p = 1; $p <= 5; $p++) {
+            // Reguler: satu baris per hari pertemuan aktif kelas (jadwal kelas x kalender
+            // akademik), ditambah tanggal lain yang ternyata ada presensi/setorannya.
+            // Program seminggu sekali: satu pertemuan per pekan -- tanggal yang ada datanya,
+            // kalau belum ada, hari efektif pertama pekan itu.
+            $meetingDates = [];
+            foreach ($effectiveByDay as $day => $isEffective) {
+                if (! $isEffective) {
+                    continue;
+                }
+                $date = $monthStart->copy()->day($day);
+                $meetingDates[$isWeeklyProgram ? $date->format('o-W') : $date->toDateString()] ??= $date->toDateString();
+            }
+            foreach ($uniqueDates as $date) {
+                $key = $isWeeklyProgram ? Carbon::parse($date)->format('o-W') : $date;
+                if ($isWeeklyProgram && isset($meetingDates[$key]) && ! in_array($meetingDates[$key], $uniqueDates, true)) {
+                    $meetingDates[$key] = $date;
+                }
+                $meetingDates[$key] ??= $date;
+            }
+            $meetingDates = collect($meetingDates)->unique()->sort()->values();
+
+            foreach ($meetingDates as $date) {
+                $dayAttendances = $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date);
+                $daySetoranStudents = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date)
+                    ->pluck('student_id')
+                    ->unique();
+                $held = $dayAttendances->isNotEmpty() || $daySetoranStudents->isNotEmpty();
+                $carbonDate = Carbon::parse($date);
+
                 $jurnalData[] = [
-                    'tanggal' => "Pekan $p",
+                    'tanggal' => $dayNames[$carbonDate->dayOfWeekIso - 1].', '.$carbonDate->format('d-m-Y'),
                     'materi' => "Muroja'ah & Ziyadah Hafalan",
-                    'jumlah_murid' => count($groupStudents),
-                    'paraf' => '✓',
+                    'jumlah_murid' => $held
+                        ? ($dayAttendances->isNotEmpty() ? $dayAttendances->where('status', 'hadir')->count() : $daySetoranStudents->count())
+                        : null,
+                    'paraf' => $held ? '✓' : '-',
+                ];
+            }
+
+            if (empty($jurnalData)) {
+                $jurnalData[] = [
+                    'tanggal' => 'Tidak ada pertemuan terjadwal',
+                    'materi' => '-',
+                    'jumlah_murid' => null,
+                    'paraf' => '-',
                 ];
             }
         }
