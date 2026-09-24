@@ -194,10 +194,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('class-rooms/import', [ClassRoomController::class, 'import'])->name('class-rooms.import');
         Route::get('class-rooms/{class_room}/export-capaian', [ClassRoomController::class, 'exportCapaian'])->name('class-rooms.export-capaian');
         Route::resource('class-rooms', ClassRoomController::class);
-        // Badges Management (Super Admin / Admin / Koordinator Tahfizh)
     });
 
-    Route::middleware(['role:super_admin,admin,coordinator_tahfizh'])->group(function () {
+    // Badges Management (Super Admin only)
+    Route::middleware(['role:super_admin'])->group(function () {
         Route::resource('badges', BadgeController::class);
         Route::post('badges/{badge}/toggle', [BadgeController::class, 'toggleActive'])->name('badges.toggle');
     });
