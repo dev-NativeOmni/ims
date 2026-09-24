@@ -53,18 +53,12 @@ class QuarterlyReportController extends Controller
 
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        if ($this->userHasAnyRole($user, ['teacher']) && ! $this->userHasAnyRole($user, ['super_admin', 'admin'])) {
-            return view('reports.quarterly-mine', $this->buildTeacherIndexData($request));
-        }
-
-        return view('reports.quarterly', $this->buildReportData($request));
+        return view('reports.quarterly', $this->buildReportData($request, $this->teacherScope($request)));
     }
 
     public function export(Request $request): BinaryFileResponse
     {
-        $data = $this->buildReportData($request);
+        $data = $this->buildReportData($request, $this->teacherScope($request));
 
         $classSlug = Str::slug($data['selectedClass']?->name ?? 'kelas');
         $termSlug = 'term-'.$data['selectedTerm'].'-'.str_replace('/', '-', $data['academicYear']);
@@ -135,19 +129,18 @@ class QuarterlyReportController extends Controller
     }
 
     /**
-     * Data ringan untuk halaman "Laporan Triwulan" versi guru: cuma info konteks
-     * triwulan + dua tombol download (Reguler & Tahfizh), tanpa tabel data penuh
-     * seperti versi admin (guru sudah punya tampilan detail di menu Progres).
+     * Profil guru bila yang login adalah guru (bukan admin): laporan per kelas lalu
+     * dibatasi ke kelas & murid yang dia ampu saja. Null = admin, lihat semua.
      */
-    private function buildTeacherIndexData(Request $request): array
+    private function teacherScope(Request $request): ?TeacherProfile
     {
-        $context = $this->resolveTermContext($request);
+        $user = $request->user();
 
-        return [
-            'academicYear' => $context['academicYear'],
-            'selectedTerm' => $context['selectedTerm'],
-            'months' => array_values($context['monthsMap']),
-        ];
+        if (! $this->userHasAnyRole($user, ['teacher']) || $this->userHasAnyRole($user, ['super_admin', 'admin'])) {
+            return null;
+        }
+
+        return $user->teacherProfile ?? abort(403, 'Akun ini tidak terhubung ke profil guru.');
     }
 
     /**
@@ -364,12 +357,24 @@ class QuarterlyReportController extends Controller
      * Bangun seluruh data Laporan Triwulan (dipakai bersama oleh tampilan halaman & ekspor
      * spreadsheet, supaya isi file yang di-download selalu sama persis dengan yang tampil di layar).
      */
-    private function buildReportData(Request $request): array
+    private function buildReportData(Request $request, ?TeacherProfile $teacher = null): array
     {
-        // Load all classrooms with their program
-        $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
+        // Load all classrooms with their program (guru: hanya kelas yang punya murid aktif dia ampu)
+        $classRooms = ClassRoom::query()
+            ->with('program')
+            ->when($teacher, fn ($query) => $query->whereIn(
+                'id',
+                $teacher->students()->where('status', 'active')->select('class_room_id')
+            ))
+            ->orderBy('name')
+            ->get();
         $selectedClassId = $request->input('class_room_id', $classRooms->first()?->id);
         $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
+
+        if ($teacher && ! $selectedClass) {
+            $selectedClass = $classRooms->first();
+            $selectedClassId = $selectedClass?->id;
+        }
 
         $termContext = $this->resolveTermContext($request);
         $academicYear = $termContext['academicYear'];
@@ -384,15 +389,18 @@ class QuarterlyReportController extends Controller
         $isTahfizhProgram = str_contains($programName, 'tahfizh') || str_contains($programName, 'akselerasi');
 
         // Get actual active students in the selected class
-        $students = Student::query()
-            ->with(['classRoom', 'teacher.user'])
-            ->where('class_room_id', $selectedClassId)
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+        $students = $teacher && ! $selectedClass
+            ? collect()
+            : Student::query()
+                ->with(['classRoom', 'teacher.user'])
+                ->where('class_room_id', $selectedClassId)
+                ->when($teacher, fn ($query) => $query->where('teacher_id', $teacher->id))
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
 
-        // Fallback for empty seeded classrooms
-        if ($students->isEmpty()) {
+        // Fallback for empty seeded classrooms (admin saja -- guru tidak boleh melihat murid lain)
+        if ($students->isEmpty() && ! $teacher) {
             $students = Student::query()
                 ->with(['classRoom', 'teacher.user'])
                 ->where('status', 'active')
@@ -443,6 +451,7 @@ class QuarterlyReportController extends Controller
         }
 
         return [
+            'isTeacherView' => (bool) $teacher,
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'isTahfizhProgram' => $isTahfizhProgram,

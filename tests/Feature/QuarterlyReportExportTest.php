@@ -243,10 +243,12 @@ class QuarterlyReportExportTest extends TestCase
     }
 
     #[Test]
-    public function only_admin_and_super_admin_can_download_the_export(): void
+    public function only_admin_super_admin_and_teacher_can_download_the_export(): void
     {
+        // Guru boleh, tapi datanya dibatasi ke murid yang dia ampu (QuarterlyReportTeacherPreviewTest).
         $this->get(route('reports.quarterly.export'))->assertRedirect(route('login'));
-        $this->actingAs($this->teacherUser)->get(route('reports.quarterly.export'))->assertStatus(403);
+        $this->actingAs($this->parentUser)->get(route('reports.quarterly.export'))->assertStatus(403);
+        $this->actingAs($this->studentUser)->get(route('reports.quarterly.export'))->assertStatus(403);
     }
 
     #[Test]

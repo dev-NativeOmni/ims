@@ -6,17 +6,23 @@
                     {{ __('Laporan Perkembangan Triwulan (Term)') }}
                 </h2>
                 <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                    Format cetak dan rekapan triwulan otomatis berdasarkan program kelas & pengelompokan halaqoh Musyrif.
+                    @if ($isTeacherView)
+                        Rekap triwulan untuk murid yang Anda ampu, per kelas.
+                    @else
+                        Format cetak dan rekapan triwulan otomatis berdasarkan program kelas & pengelompokan halaqoh Musyrif.
+                    @endif
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <span class="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-bold border border-indigo-500/20">
                     Program: {{ $selectedClass?->program?->name ?? 'Tahfizh' }}
                 </span>
+                @unless ($isTeacherView)
                 <span class="hidden sm:inline-flex px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20 items-center gap-1">
                     <x-heroicon-o-lock-closed class="w-3.5 h-3.5" />
                     <span>Eksklusif Admin</span>
                 </span>
+                @endunless
                 <button onclick="window.print()" class="no-print hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold shadow transition cursor-pointer">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -136,12 +142,29 @@
             <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
                 <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-start sm:items-center gap-1.5">
                     <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
+                    @if ($isTeacherView)
+                        <span><strong>Informasi:</strong> Hanya murid yang Anda ampu yang ditampilkan. Data disinkronkan langsung dari presensi, setoran hafalan, dan pelanggaran selama term terpilih.</span>
+                    @else
+                        <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
+                    @endif
                 </span>
-                <a href="{{ route('reports.quarterly.export', request()->only(['class_room_id', 'academic_year', 'term'])) }}" class="shrink-0 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
-                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                    <span>Download Laporan Kelas (.xlsx)</span>
-                </a>
+                <div class="shrink-0 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    @if ($selectedClass)
+                        <a href="{{ route('reports.quarterly.export', request()->only(['class_room_id', 'academic_year', 'term'])) }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                            <span>Download Laporan Kelas (.xlsx)</span>
+                        </a>
+                    @endif
+                    @if ($isTeacherView)
+                        {{-- Rekap lintas semua kelas yang diampu, per program (lihat exportMine()). --}}
+                        @foreach (['reguler' => 'Semua Kelas Reguler Saya', 'tahfizh' => 'Semua Kelas Tahfizh Saya'] as $program => $label)
+                            <a href="{{ route('reports.quarterly.export.mine', ['program' => $program] + request()->only(['academic_year', 'term'])) }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-zinc-900 border border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
+                                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                                <span>{{ $label }}</span>
+                            </a>
+                        @endforeach
+                    @endif
+                </div>
             </div>
 
             <!-- HALAQOH GROUPINGS -->
@@ -699,7 +722,11 @@
                 </div>
             @empty
                 <div class="bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 shadow-sm rounded-xl p-10 text-center text-gray-500 dark:text-zinc-500">
-                    Tidak ada murid aktif atau kelompok halaqoh di kelas yang dipilih.
+                    @if ($isTeacherView && $classRooms->isEmpty())
+                        Belum ada murid aktif yang terhubung ke akun Anda sebagai pengampu.
+                    @else
+                        Tidak ada murid aktif atau kelompok halaqoh di kelas yang dipilih.
+                    @endif
                 </div>
             @endforelse
 

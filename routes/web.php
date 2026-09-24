@@ -393,8 +393,9 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:super_admin,admin,teacher')
             ->name('reports.quarterly');
 
+        // Guru boleh export, tapi dibatasi ke kelas & murid yang dia ampu (lihat teacherScope()).
         Route::get('/admin/reports/quarterly/export', [QuarterlyReportController::class, 'export'])
-            ->middleware('role:super_admin,admin')
+            ->middleware('role:super_admin,admin,teacher')
             ->name('reports.quarterly.export');
 
         Route::get('/admin/reports/quarterly/export-mine', [QuarterlyReportController::class, 'exportMine'])

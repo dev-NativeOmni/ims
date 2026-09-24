@@ -57,13 +57,16 @@ class QuarterlyReportTest extends TestCase
         $this->actingAs($parent)->get(route('reports.quarterly'))->assertStatus(403);
     }
 
-    public function test_quarterly_report_shows_download_mine_page_for_teacher(): void
+    public function test_teacher_sees_the_same_preview_page_with_personal_downloads(): void
     {
         $teacher = User::where('username', 'guru')->first();
 
         $response = $this->actingAs($teacher)->get(route('reports.quarterly'));
         $response->assertStatus(200);
-        $response->assertViewIs('reports.quarterly-mine');
-        $response->assertSee('Laporan Triwulan - Kelas Saya');
+        $response->assertViewIs('reports.quarterly');
+        $response->assertViewHas('isTeacherView', true);
+        $response->assertSee('Laporan Perkembangan Triwulan');
+        $response->assertSee(route('reports.quarterly.export.mine', ['program' => 'reguler']), false);
+        $response->assertDontSee('Eksklusif Admin');
     }
 }
