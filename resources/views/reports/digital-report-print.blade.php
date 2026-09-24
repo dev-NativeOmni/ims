@@ -274,39 +274,16 @@
                         <td class="p-2 border-r border-black text-center">1</td>
                         <td class="p-2 border-r border-black font-bold">Penghargaan</td>
                         <td class="p-2 border-r border-black text-center font-bold text-emerald-700">{{ $rewards->sum('points') }}</td>
-                        <td class="p-2 text-gray-700">
-                            @if($rewards->isNotEmpty())
-                                <ul class="list-disc list-inside">
-                                    @foreach($rewards as $r)
-                                        <li>{{ $r->title }} (+{{ $r->points }} Poin)</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                Nihil - Tidak memiliki catatan penghargaan/prestasi.
-                            @endif
+                        {{-- Satu deskripsi untuk seluruh Tanse, berdasarkan predikat triwulan. --}}
+                        <td rowspan="2" class="p-2 text-gray-900 align-top">
+                            <p class="font-black">Predikat {{ $tanseGrade }}</p>
+                            <p class="mt-1 leading-relaxed">{{ $autoTanseNotes }}</p>
                         </td>
                     </tr>
                     <tr class="border-b border-black">
                         <td class="p-2 border-r border-black text-center">2</td>
                         <td class="p-2 border-r border-black font-bold">Pelanggaran</td>
                         <td class="p-2 border-r border-black text-center font-bold text-rose-700">{{ $violations->sum('points') }}</td>
-                        <td class="p-2 text-gray-700">
-                            @if($violations->isNotEmpty())
-                                <ul class="list-disc list-inside text-rose-700">
-                                    @foreach($violations as $v)
-                                        <li>{{ $v->title }} (-{{ $v->points }} Poin)</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                Nihil - Tidak memiliki catatan pelanggaran perilaku negatif.
-                            @endif
-                        </td>
-                    </tr>
-                    <tr class="border-b border-black">
-                        <td class="p-2 border-r border-black text-center">3</td>
-                        <td class="p-2 border-r border-black font-bold">Predikat</td>
-                        <td class="p-2 border-r border-black text-center font-black">{{ $tanseGrade }}</td>
-                        <td class="p-2 text-gray-900 font-semibold">{{ $autoTanseNotes }}</td>
                     </tr>
                 </tbody>
             </table>

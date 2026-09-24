@@ -305,7 +305,7 @@
                                         <th class="p-0.5 border-r border-black w-5">No.</th>
                                         <th class="p-0.5 border-r border-black">Jenis</th>
                                         <th class="p-0.5 border-r border-black w-8">Poin</th>
-                                        <th class="p-0.5">Keterangan</th>
+                                        <th class="p-0.5">Deskripsi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -313,7 +313,12 @@
                                         <td class="p-0.5 border-r border-black text-center">1</td>
                                         <td class="p-0.5 border-r border-black">Penghargaan</td>
                                         <td class="p-0.5 border-r border-black text-center text-emerald-700 font-bold">0</td>
-                                        <td class="p-0.5 text-gray-500">Nihil</td>
+                                        <td rowspan="2" class="p-0.5 text-gray-700 align-top"><span class="font-bold">Predikat A</span> &mdash; Alhamdulillah ananda sudah Sangat Baik&hellip;</td>
+                                    </tr>
+                                    <tr class="border-b border-black">
+                                        <td class="p-0.5 border-r border-black text-center">2</td>
+                                        <td class="p-0.5 border-r border-black">Pelanggaran</td>
+                                        <td class="p-0.5 border-r border-black text-center text-rose-700 font-bold">0</td>
                                     </tr>
                                 </tbody>
                             </table>

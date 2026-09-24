@@ -103,7 +103,7 @@ class DigitalReportTanseTest extends TestCase
     }
 
     #[Test]
-    public function printed_report_shows_the_triwulan_predicate_description_and_point_titles(): void
+    public function printed_report_shows_one_merged_description_for_the_triwulan(): void
     {
         $this->point('violation', 12, '2026-08-10', 'Tidak Memakai Atribut');
 
@@ -113,7 +113,9 @@ class DigitalReportTanseTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Triwulan 1 (Jul - Sep)');
-        $response->assertSee('Tidak Memakai Atribut (-12 Poin)');
-        $response->assertSee('Alhamdulillah ananda sudah Baik', false);
+        $response->assertSee('Predikat B');
+        $response->assertSee('rowspan="2"', false);
+        $this->assertSame(1, substr_count($response->getContent(), 'Alhamdulillah ananda sudah'), 'Deskripsi Tanse hanya satu sel.');
+        $response->assertDontSee('Tidak Memakai Atribut (-12 Poin)');
     }
 }
