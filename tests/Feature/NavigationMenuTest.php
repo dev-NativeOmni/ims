@@ -234,7 +234,6 @@ class NavigationMenuTest extends TestCase
         // Restricted for Headmaster
         $response->assertDontSee('Mushaf Al-Qur\'an');
         $response->assertDontSee('<span>Progress</span>');
-        $response->assertDontSee('Rapor Digital');
         $response->assertDontSee('Kinerja Guru');
         $response->assertDontSee('href="'.route('student-points.index').'"');
 
@@ -243,6 +242,9 @@ class NavigationMenuTest extends TestCase
         $response->assertSee(route('adab.chart'));
         $response->assertSee(route('student-points.chart'));
         $response->assertSee(route('system-notifications.index'));
+        // Kepala sekolah kini juga boleh melihat Rapor Digital.
+        $response->assertSee('Rapor Digital');
+        $response->assertSee(route('digital-reports.index'));
     }
 
     #[Test]
@@ -309,7 +311,6 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('progress.index'));
         $response->assertDontSee(route('reports.index'));
         $response->assertDontSee(route('reports.teachers'));
-        $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('quran.mushaf'));
         $response->assertDontSee(route('adab.index'));
         $response->assertDontSee(route('users.index'));
@@ -317,6 +318,8 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('settings.index'));
 
         // Should see
+        // Tanse kini juga boleh melihat Rapor Digital.
+        $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('student-points.index'));
         $response->assertSee(route('system-notifications.index'));
     }

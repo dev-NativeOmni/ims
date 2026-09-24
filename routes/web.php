@@ -469,14 +469,22 @@ Route::middleware(['auth'])->group(function () {
     | Rapor Digital Terpadu
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,tanse'])->group(function () {
+    // Lihat rapor + edit catatan per murid (edit-nya sendiri masih dibatasi di controller
+    // ke super_admin/admin/teacher, lihat StudentReportController::update()).
+    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,pendamping_adab,tanse,headmaster,wali_kelas'])->group(function () {
         Route::get('/digital-reports', [StudentReportController::class, 'index'])->name('digital-reports.index');
         Route::get('/digital-reports/student/{student}', [StudentReportController::class, 'show'])->name('digital-reports.show');
         Route::get('/digital-reports/student/{student}/print', [StudentReportController::class, 'print'])->name('digital-reports.print');
         Route::get('/digital-reports/class/{classRoom}/print', [StudentReportController::class, 'printClass'])->name('digital-reports.class-print');
+        Route::post('/digital-reports/student/{student}', [StudentReportController::class, 'update'])->name('digital-reports.update');
+    });
+
+    // Pengaturan global rapor (tahun ajaran, judul template, nama kepala sekolah dst.) --
+    // tetap dibatasi lebih sempit karena settings()/updateSettings() tidak punya
+    // pengecekan role sendiri di controller, murni mengandalkan middleware ini.
+    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,tanse'])->group(function () {
         Route::get('/digital-reports/settings', [StudentReportController::class, 'settings'])->name('digital-reports.settings');
         Route::post('/digital-reports/settings', [StudentReportController::class, 'updateSettings'])->name('digital-reports.settings.update');
-        Route::post('/digital-reports/student/{student}', [StudentReportController::class, 'update'])->name('digital-reports.update');
     });
 
     /*

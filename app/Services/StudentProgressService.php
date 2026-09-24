@@ -80,6 +80,13 @@ class StudentProgressService
             return $query->where('class_room_id', $classRoomId);
         }
 
+        if ($this->userHasAnyRole($user, ['pendamping_adab'])) {
+            return $query->whereHas('classRoom', function ($q) use ($user) {
+                $q->where('pendamping_adab_id', $user->id)
+                    ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+            });
+        }
+
         if ($this->userHasAnyRole($user, ['parent'])) {
             $parentId = $user->parentProfile?->id
                 ?? ParentProfile::query()->where('user_id', $user->id)->value('id');

@@ -24,6 +24,7 @@
     $isTanse = $hasRole('tanse');
     $isCoordinatorTahfizh = $hasRole('coordinator_tahfizh');
     $isPendampingAdab = $hasRole('pendamping_adab');
+    $isWaliKelas = $hasRole('wali_kelas');
 
     $isAdmin = $isSuperAdmin || $isAdminUser;
 
@@ -38,9 +39,14 @@
     $canManageRecords = $isSuperAdmin || $isAdminUser || $isTeacher || $isSupervisor || $isCoordinatorTahfizh;
     $canViewProgress = $isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isHeadmaster || $isSupervisor || $isCoordinatorTahfizh;
     $isAllowedRapor = $isSuperAdmin || $isAdminUser || $isTeacher || $isCoordinatorTahfizh || $isTanse;
-    $canViewReports = $isAllowedRapor;
+    // reports.index & reports.whatsapp tidak pernah mengizinkan tanse di middleware route-nya
+    // (beda dari $isAllowedRapor) -- dipisah supaya link ini tidak tampil lalu 403 kalau diklik.
+    $canViewReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isCoordinatorTahfizh;
     $canViewPeriodicReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isHeadmaster || $isCoordinatorTahfizh || $isSupervisor;
-    $canViewDigitalReports = $isAllowedRapor;
+    // Rapor Digital (lihat saja): super admin, admin, guru, koor tahfizh, koor adab,
+    // tanse, kepala sekolah, wali kelas -- dipisah dari $isAllowedRapor karena variabel
+    // itu juga dipakai untuk menu "Laporan" & "Pengaturan Rapor" yang cakupannya beda.
+    $canViewDigitalReports = $isSuperAdmin || $isAdminUser || $isTeacher || $isCoordinatorTahfizh || $isTanse || $isPendampingAdab || $isHeadmaster || $isWaliKelas;
     $canViewReportSettings = $isAllowedRapor;
     $canViewTeacherPerformance = $isSuperAdmin || $isAdminUser || $isHeadmaster;
     $canViewAdab = ($isSuperAdmin || $isAdminUser || $isTeacher || $isParent || $isStudent || $isSupervisor || $isHeadmaster || $isPendampingAdab) && ! $isPureTahfizhCoordinator && ! $isPureTanseCoordinator;
@@ -144,7 +150,7 @@
 @endif
 
 <!-- AKADEMIK & TAHFIZH Group -->
-@if ($canViewTahfizhGroup && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewPeriodicReports && $hasRoute('reports.periodic')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
+@if (($canViewTahfizhGroup || $canViewDigitalReports) && ($canManageRecords || ($canViewProgress && $hasRoute('progress.index')) || ($canViewReports && $hasRoute('reports.index')) || ($canViewPeriodicReports && $hasRoute('reports.periodic')) || ($canViewMushaf && $hasRoute('quran.mushaf')) || ($canViewDigitalReports && $hasRoute('digital-reports.index')) || ($canViewTeacherPerformance && $hasRoute('reports.teachers'))))
     <div class="mt-6 space-y-1">
         <span class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
             Tahfizh
@@ -244,7 +250,7 @@
             </a>
         @endif
 
-        @if ($canViewDigitalReports && $hasRoute('digital-reports.index') && !$isHeadmaster)
+        @if ($canViewDigitalReports && $hasRoute('digital-reports.index'))
             <a href="{{ route('digital-reports.index') }}" class="{{ $getLinkClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}">
                 <svg class="{{ $getIconClasses($routeIs('digital-reports.index') || $routeIs('digital-reports.show')) }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
