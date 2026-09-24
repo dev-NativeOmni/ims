@@ -13,11 +13,11 @@
                 <span class="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-bold border border-indigo-500/20">
                     Program: {{ $selectedClass?->program?->name ?? 'Tahfizh' }}
                 </span>
-                <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20 inline-flex items-center gap-1">
+                <span class="hidden sm:inline-flex px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold border border-amber-500/20 items-center gap-1">
                     <x-heroicon-o-lock-closed class="w-3.5 h-3.5" />
                     <span>Eksklusif Admin</span>
                 </span>
-                <button onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold shadow transition cursor-pointer">
+                <button onclick="window.print()" class="no-print hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold shadow transition cursor-pointer">
                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
@@ -133,12 +133,12 @@
             </div>
 
             <!-- Export Bar -->
-            <div class="no-print flex items-center justify-between gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
-                <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-center gap-1.5">
+            <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-sm rounded-xl p-4">
+                <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-start sm:items-center gap-1.5">
                     <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
                     <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
                 </span>
-                <a href="{{ route('reports.quarterly.export', request()->only(['class_room_id', 'academic_year', 'term'])) }}" class="shrink-0 inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
+                <a href="{{ route('reports.quarterly.export', request()->only(['class_room_id', 'academic_year', 'term'])) }}" class="shrink-0 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition gap-1.5 cursor-pointer">
                     <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                     <span>Download Laporan Kelas (.xlsx)</span>
                 </a>
@@ -161,7 +161,7 @@
                         </div>
 
                         <!-- Mini Statistics for this Halaqoh -->
-                        <div class="flex items-center gap-3">
+                        <div class="grid grid-cols-3 gap-2 w-full md:flex md:w-auto md:items-center md:gap-3">
                             <div class="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-bold border border-emerald-200 dark:border-emerald-900/30">
                                 Tuntas: {{ $halaqah['tuntas_count'] }}
                             </div>
@@ -171,7 +171,7 @@
                             <div class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-900/30">
                                 Rasio: {{ $halaqah['total_students'] > 0 ? round(($halaqah['tuntas_count'] / $halaqah['total_students']) * 100, 1) : 0 }}%
                             </div>
-                            <a href="{{ route('reports.quarterly.export', array_merge(request()->only(['class_room_id', 'academic_year', 'term']), ['musyrif' => $halaqah['musyrif']])) }}" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition cursor-pointer">
+                            <a href="{{ route('reports.quarterly.export', array_merge(request()->only(['class_room_id', 'academic_year', 'term']), ['musyrif' => $halaqah['musyrif']])) }}" class="no-print col-span-3 inline-flex items-center justify-center gap-1.5 px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition cursor-pointer whitespace-nowrap">
                                 <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                 <span>Download Halaqoh Ini</span>
                             </a>
@@ -179,26 +179,26 @@
                     </div>
 
                     <!-- Inner Navigation Tabs -->
-                    <div class="no-print flex flex-wrap items-center gap-1 border-b dark:border-zinc-800 pb-1">
-                        <button type="button" @click="activeTab = 'presensi'" :class="activeTab === 'presensi' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                    <div class="no-print flex flex-nowrap sm:flex-wrap items-center gap-1 border-b dark:border-zinc-800 pb-1 overflow-x-auto -mx-1 px-1">
+                        <button type="button" @click="activeTab = 'presensi'" :class="activeTab === 'presensi' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
                             <x-heroicon-o-calendar class="w-3.5 h-3.5" />
                             <span>Presensi</span>
                         </button>
-                        <button type="button" @click="activeTab = 'jurnal'" :class="activeTab === 'jurnal' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                        <button type="button" @click="activeTab = 'jurnal'" :class="activeTab === 'jurnal' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
                             <x-heroicon-o-document-text class="w-3.5 h-3.5" />
-                            <span>Jurnal Pembelajaran</span>
+                            <span class="sm:hidden">Jurnal</span><span class="hidden sm:inline">Jurnal Pembelajaran</span>
                         </button>
-                        <button type="button" @click="activeTab = 'setoran'" :class="activeTab === 'setoran' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                        <button type="button" @click="activeTab = 'setoran'" :class="activeTab === 'setoran' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
                             <x-heroicon-o-book-open class="w-3.5 h-3.5" />
-                            <span>Capaian Hafalan (Setoran)</span>
+                            <span class="sm:hidden">Setoran</span><span class="hidden sm:inline">Capaian Hafalan (Setoran)</span>
                         </button>
-                        <button type="button" @click="activeTab = 'grafik'" :class="activeTab === 'grafik' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                        <button type="button" @click="activeTab = 'grafik'" :class="activeTab === 'grafik' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
                             <x-heroicon-o-chart-bar class="w-3.5 h-3.5" />
-                            <span>Grafik Akhir Bulan</span>
+                            <span class="sm:hidden">Grafik</span><span class="hidden sm:inline">Grafik Akhir Bulan</span>
                         </button>
-                        <button type="button" @click="activeTab = 'term'" :class="activeTab === 'term' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
+                        <button type="button" @click="activeTab = 'term'" :class="activeTab === 'term' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-350'" class="shrink-0 whitespace-nowrap px-3 sm:px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition duration-150 cursor-pointer inline-flex items-center gap-1.5">
                             <x-heroicon-o-academic-cap class="w-3.5 h-3.5" />
-                            <span>Term / Indeks (DNS)</span>
+                            <span class="sm:hidden">Term</span><span class="hidden sm:inline">Term / Indeks (DNS)</span>
                         </button>
                     </div>
 
@@ -213,7 +213,7 @@
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr>
                                             <th rowspan="2" class="px-3 py-3 text-left w-10 border-b border-r dark:border-zinc-700">No</th>
-                                            <th rowspan="2" class="px-4 py-3 text-left min-w-[150px] border-b border-r dark:border-zinc-700">Nama Murid</th>
+                                            <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             @foreach ($halaqah['months'] as $mName)
                                                 <th colspan="15" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">{{ $mName }}</th>
                                             @endforeach
@@ -233,7 +233,7 @@
                                         @foreach ($halaqah['students'] as $idx => $student)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-3 py-2 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                                <td class="px-4 py-2 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $student->name }}</td>
+                                                <td class="px-4 py-2 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $student->name }}</td>
                                                 @foreach ($halaqah['months'] as $mName)
                                                     @php $sPres = $halaqah['presensi'][$student->id][$mName]; @endphp
                                                     @for ($day = 1; $day <= 12; $day++)
@@ -271,7 +271,7 @@
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr>
                                             <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
-                                            <th rowspan="2" class="px-4 py-3 text-left min-w-[200px] border-b border-r dark:border-zinc-700">Nama Murid</th>
+                                            <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[200px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th colspan="5" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">Kehadiran Pekanan</th>
                                             <th colspan="4" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Kehadiran</th>
                                         </tr>
@@ -292,7 +292,7 @@
                                             @php $sPres = $month['presensi'][$student->id]; @endphp
                                             <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                                <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $student->name }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $student->name }}</td>
                                                 @for ($p = 1; $p <= 5; $p++)
                                                     <td class="px-2 py-3 border-r dark:border-zinc-700">
                                                         @if ($sPres['pekan'][$p] === 'Hadir')
@@ -364,15 +364,15 @@
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         @if ($isTahfizhProgram)
                             <!-- TAHFIZH SETORAN: DAILY TABS (Senin - Jumat) -->
-                            <div class="flex items-center justify-between gap-3 bg-gray-50 dark:bg-zinc-950 p-2.5 rounded-xl border dark:border-zinc-800">
-                                <div class="flex items-center gap-1.5">
+                            <div class="flex items-center justify-between gap-3 bg-gray-50 dark:bg-zinc-950 p-2 sm:p-2.5 rounded-xl border dark:border-zinc-800">
+                                <div class="flex flex-1 sm:flex-none items-center gap-1 sm:gap-1.5">
                                     @for ($p = 1; $p <= 5; $p++)
-                                        <button type="button" @click="pekanTab = {{ $p }}" :class="pekanTab === {{ $p }} ? 'bg-indigo-600 text-white shadow' : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 hover:bg-gray-150'" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition duration-150 cursor-pointer">
-                                            Pekan {{ $p }}
+                                        <button type="button" @click="pekanTab = {{ $p }}" :class="pekanTab === {{ $p }} ? 'bg-indigo-600 text-white shadow' : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 hover:bg-gray-150'" class="flex-1 sm:flex-none px-2 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition duration-150 cursor-pointer whitespace-nowrap">
+                                            <span class="hidden sm:inline">Pekan </span><span class="sm:hidden">P</span>{{ $p }}
                                         </button>
                                     @endfor
                                 </div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider pr-2">Jurnal Setoran Harian</span>
+                                <span class="hidden sm:inline text-[10px] font-bold text-gray-400 uppercase tracking-wider pr-2">Jurnal Setoran Harian</span>
                             </div>
 
                             <!-- Render Pekan Tables -->
@@ -382,7 +382,7 @@
                                         <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                             <tr>
                                                 <th rowspan="2" class="px-3 py-3 text-left w-10 border-b border-r dark:border-zinc-700">No</th>
-                                                <th rowspan="2" class="px-4 py-3 text-left min-w-[150px] border-b border-r dark:border-zinc-700">Nama Murid</th>
+                                                <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                                 <th rowspan="2" class="px-2 py-3 border-b border-r dark:border-zinc-700">Halaqoh</th>
                                                 <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">SENIN</th>
                                                 <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">SELASA</th>
@@ -417,7 +417,7 @@
                                                 @php $wRecord = $row['pekan'][$p]; @endphp
                                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                     <td class="px-3 py-2.5 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                                    <td class="px-4 py-2.5 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
+                                                    <td class="px-4 py-2.5 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-700 font-medium text-gray-600 dark:text-zinc-400">{{ $row['level'] }}</td>
                                                     
                                                     <!-- Days -->
@@ -458,7 +458,7 @@
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr class="border-b dark:border-zinc-700">
                                             <th rowspan="3" class="px-2 py-3 text-left border-b border-r dark:border-zinc-750">No</th>
-                                            <th rowspan="3" class="px-3 py-3 text-left min-w-[150px] border-b border-r dark:border-zinc-750">Nama Murid</th>
+                                            <th rowspan="3" class="px-3 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-750 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th rowspan="3" class="px-2 py-3 border-b border-r dark:border-zinc-750">Halaqah</th>
                                             <th colspan="5" class="px-2 py-2 border-b border-r dark:border-zinc-750">Jurnal & Setoran Pekanan</th>
                                             <th colspan="5" class="px-2 py-2 border-b dark:border-zinc-750">Rekap Bulanan</th>
@@ -489,7 +489,7 @@
                                             @php $sPres = $month['presensi'][$row['student_id']]; @endphp
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                                <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
+                                                <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 font-semibold text-gray-700 dark:text-zinc-300">{{ $row['level'] }}</td>
                                                 
                                                 <!-- Pekan 1 - 5 -->
@@ -591,7 +591,7 @@
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                     <tr>
                                         <th class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
-                                        <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700">Nama Murid</th>
+                                        <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700 min-w-[120px] sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Halaqoh Group</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Capaian Baris</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Target Baris</th>
@@ -603,7 +603,7 @@
                                     @foreach ($records as $idx => $row)
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-gray-500 dark:text-zinc-400">{{ $row['level'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $row['total_lines'] }} Baris</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $row['target_lines'] }} Baris</td>
@@ -644,7 +644,7 @@
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                     <tr>
                                         <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
-                                        <th rowspan="2" class="px-4 py-3 text-left min-w-[180px] border-b border-r dark:border-zinc-700">Nama Murid</th>
+                                        <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[180px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th colspan="2" class="px-3 py-2 border-b border-r dark:border-zinc-700">Target Semester</th>
                                         <th colspan="2" class="px-3 py-2 border-b border-r dark:border-zinc-700">Capaian Akhir</th>
                                         <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Baris</th>
@@ -672,7 +672,7 @@
                                         @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200">{{ $row['name'] }}</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">{{ $row['target_surah'] }}</td>
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">{{ $row['target_ayat'] }}</td>
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $row['capaian_surah'] }}</td>
