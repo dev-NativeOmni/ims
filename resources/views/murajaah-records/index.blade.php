@@ -39,7 +39,7 @@
                             <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Kelas</label>
                             <x-filter-toggle
                                 name="class_room_id"
-                                :options="collect(['' => 'Semua Kelas'])->merge($classRooms->pluck('name', 'id'))->all()"
+                                :options="['' => 'Semua Kelas'] + $classRooms->pluck('name', 'id')->all()"
                             />
                         </div>
 

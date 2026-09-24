@@ -174,6 +174,25 @@ class QuickFilterTogglesTest extends TestCase
     }
 
     #[Test]
+    public function class_filter_pills_link_to_the_real_class_id_not_the_list_position(): void
+    {
+        // Regresi: collect([...])->merge() menomori ulang key angka, sehingga pill
+        // "Kelas XII F2" menunjuk ke class_room_id=1 (posisi) dan hasilnya kosong.
+        $secondClassId = $this->secondStudent->class_room_id;
+
+        foreach (['hafalan-targets.index', 'murajaah-records.index'] as $routeName) {
+            $response = $this->actingAs($this->admin)->get(route($routeName));
+
+            $response->assertOk();
+            $this->assertMatchesRegularExpression(
+                '/class_room_id='.$secondClassId.'"[^>]*>\s*Kelas XII F2\s*</',
+                $response->getContent(),
+                "Pill kelas di {$routeName} harus memakai id kelas yang asli."
+            );
+        }
+    }
+
+    #[Test]
     public function tahfizh_exam_pass_status_filter_uses_the_scoring_threshold(): void
     {
         TahfizhExam::create([

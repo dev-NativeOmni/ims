@@ -339,7 +339,7 @@
                     <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Kelas</p>
                     <x-filter-toggle
                         name="class_room_id"
-                        :options="collect(['' => 'Semua Kelas'])->merge($classRooms->pluck('name', 'id'))->all()"
+                        :options="['' => 'Semua Kelas'] + $classRooms->pluck('name', 'id')->all()"
                     />
                 </div>
 
