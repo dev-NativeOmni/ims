@@ -112,6 +112,7 @@
                                     id="search"
                                     value="{{ request('search') }}"
                                     placeholder="Cari nama atau NIS murid..."
+                                    x-on:input.debounce.600ms="$el.form.submit()"
                                     class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3"
                                 />
                             </div>
@@ -119,7 +120,7 @@
                             @if ($classRooms->isNotEmpty())
                                 <div>
                                     <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas</label>
-                                    <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3 font-medium cursor-pointer">
+                                    <select name="class_room_id" id="class_room_id" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm py-2.5 px-3 font-medium cursor-pointer">
                                         <option value="">Semua Kelas</option>
                                         @foreach ($classRooms as $class)
                                             <option value="{{ $class->id }}" {{ request('class_room_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>

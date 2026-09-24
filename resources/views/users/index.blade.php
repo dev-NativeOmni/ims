@@ -143,13 +143,14 @@
                             id="search"
                             value="{{ request('search') }}"
                             placeholder="Cari nama atau username..."
+                            x-on:input.debounce.600ms="$el.form.submit()"
                             class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400"
                         >
                     </div>
 
                     <div>
                         <label for="role_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Peran (Role)</label>
-                        <select name="role_id" id="role_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                        <select name="role_id" id="role_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
                             <option value="" class="dark:bg-zinc-900">Semua Peran</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" @selected((string) request('role_id') === (string) $role->id) class="dark:bg-zinc-900">
@@ -161,7 +162,7 @@
 
                     <div>
                         <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas (Murid)</label>
-                        <select name="class_room_id" id="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                        <select name="class_room_id" id="class_room_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
                             <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
                             @foreach ($classRooms as $cRoom)
                                 <option value="{{ $cRoom->id }}" @selected((string) request('class_room_id') === (string) $cRoom->id) class="dark:bg-zinc-900">
@@ -173,7 +174,7 @@
 
                     <div>
                         <label for="status" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Status Akun</label>
-                        <select name="status" id="status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
+                        <select name="status" id="status" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white">
                             <option value="" class="dark:bg-zinc-900">Semua Status</option>
                             <option value="active" @selected(request('status') === 'active') class="dark:bg-zinc-900">Aktif</option>
                             <option value="inactive" @selected(request('status') === 'inactive') class="dark:bg-zinc-900">Nonaktif</option>

@@ -49,12 +49,13 @@
                                    name="search"
                                    value="{{ request('search') }}"
                                    placeholder="Nama murid / surah..."
+                                   x-on:input.debounce.600ms="$el.form.submit()"
                                    class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm">
                         </div>
 
                         <div>
                             <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Surah</label>
-                            <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                            <select name="surah_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                                 <option value="">Semua Surah</option>
                                 @foreach ($surahs as $surah)
                                     <option value="{{ $surah->id }}" @selected(request('surah_id') == $surah->id)>

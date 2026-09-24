@@ -118,13 +118,13 @@
 
                 <!-- Right Section: Quick Month/Year Dropdown Selectors -->
                 <form method="GET" action="{{ route('academic-calendar.index') }}" class="flex items-center gap-2">
-                    <select name="month" id="month" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white text-xs font-semibold py-2 px-3 shadow-xs focus:ring-indigo-500">
+                    <select name="month" id="month" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white text-xs font-semibold py-2 px-3 shadow-xs focus:ring-indigo-500">
                         @foreach ($monthsList as $num => $name)
                             <option value="{{ $num }}" {{ $num === $month ? 'selected' : '' }}>{{ $name }}</option>
                         @endforeach
                     </select>
 
-                    <select name="year" id="year" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white text-xs font-semibold py-2 px-3 shadow-xs focus:ring-indigo-500">
+                    <select name="year" id="year" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white text-xs font-semibold py-2 px-3 shadow-xs focus:ring-indigo-500">
                         @foreach ($yearsList as $yr)
                             <option value="{{ $yr }}" {{ $yr === $year ? 'selected' : '' }}>{{ $yr }}</option>
                         @endforeach

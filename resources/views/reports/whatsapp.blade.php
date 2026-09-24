@@ -25,7 +25,7 @@
                     <!-- Classroom Selector -->
                     <div>
                         <label for="class_room_id" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Kelas Halaqoh</label>
-                        <select name="class_room_id" id="class_room_id" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
+                        <select name="class_room_id" id="class_room_id" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
                             @foreach ($classRooms as $class)
                                 <option value="{{ $class->id }}" {{ $selectedClassId == $class->id ? 'selected' : '' }}>{{ $class->name }} ({{ $class->program?->name }})</option>
                             @endforeach
@@ -35,7 +35,7 @@
                     <!-- Date Selector -->
                     <div>
                         <label for="date" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tanggal Laporan</label>
-                        <input type="date" name="date" id="date" value="{{ $selectedDate }}" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
+                        <input type="date" name="date" id="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm">
                     </div>
 
                     <!-- Submit Button -->

@@ -53,6 +53,7 @@
                                    name="q"
                                    value="{{ request('q') }}"
                                    placeholder="Nama / nomor murid"
+                                   x-on:input.debounce.600ms="$el.form.submit()"
                                    class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
 
@@ -62,6 +63,7 @@
                             </label>
                             <select id="student_id"
                                     name="student_id"
+                                    onchange="this.form.submit()"
                                     class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Murid</option>
                                 @foreach ($filterStudents as $student)
@@ -81,6 +83,7 @@
                             </label>
                             <select id="class_room_id"
                                     name="class_room_id"
+                                    onchange="this.form.submit()"
                                     class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Kelas</option>
                                 @foreach ($classRooms as $classRoom)
@@ -100,6 +103,7 @@
                             </label>
                             <select id="teacher_id"
                                     name="teacher_id"
+                                    onchange="this.form.submit()"
                                     class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Halaqoh</option>
                                 @foreach ($teachers as $t)
@@ -116,6 +120,7 @@
                             </label>
                             <select id="sort"
                                     name="sort"
+                                    onchange="this.form.submit()"
                                     class="w-full rounded-lg border-gray-300 text-xs sm:text-sm text-gray-900 shadow-xs focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Progress Tertinggi</option>
                                 <option value="low_progress" @selected(request('sort') === 'low_progress')>Progress Terendah</option>

@@ -70,13 +70,14 @@
                                     id="search"
                                     value="{{ request('search') }}"
                                     placeholder="Cari nama..."
+                                    x-on:input.debounce.600ms="$el.form.submit()"
                                     class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 py-2.5 px-3"
                                 >
                             </div>
 
                             <div>
                                 <label for="class_room_id" class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-2">Kelas</label>
-                                <select name="class_room_id" id="class_room_id" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white py-2.5 px-3 font-medium cursor-pointer">
+                                <select name="class_room_id" id="class_room_id" onchange="this.form.submit()" class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white py-2.5 px-3 font-medium cursor-pointer">
                                     <option value="" class="dark:bg-zinc-900">Semua Kelas</option>
                                     @foreach ($classRooms as $classRoom)
                                         <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id) class="dark:bg-zinc-900">

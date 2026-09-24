@@ -53,7 +53,7 @@
                 <form method="GET" action="{{ route('reports.teachers') }}" class="flex flex-wrap items-end gap-3 sm:gap-4">
                     <div class="flex-1 min-w-[160px] sm:min-w-[200px]">
                         <label for="month" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 sm:mb-2">Bulan</label>
-                        <select name="month" id="month" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm">
+                        <select name="month" id="month" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm">
                             @foreach ($months as $key => $name)
                                 <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $name }}</option>
                             @endforeach
@@ -62,7 +62,7 @@
 
                     <div class="flex-1 min-w-[120px] sm:min-w-[150px]">
                         <label for="year" class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5 sm:mb-2">Tahun</label>
-                        <select name="year" id="year" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm">
+                        <select name="year" id="year" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm">
                             @foreach ($years as $yr)
                                 <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>{{ $yr }}</option>
                             @endforeach

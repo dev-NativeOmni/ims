@@ -13,24 +13,24 @@
 
             {{-- Advanced Filter Form --}}
             <form method="GET" action="{{ route('student-points.chart') }}" class="flex flex-wrap items-center gap-2">
-                <select name="time_frame" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                <select name="time_frame" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                     <option value="month" @selected($timeFrame === 'month')>Bulan Terpilih</option>
                     <option value="all" @selected($timeFrame === 'all')>Semua Waktu (Akumulasi)</option>
                 </select>
 
-                <select name="violation_type" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                <select name="violation_type" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                     <option value="all" @selected($violationType === 'all')>Semua Pelanggaran</option>
                     <option value="lateness" @selected($violationType === 'lateness')>Keterlambatan</option>
                     <option value="attribute" @selected($violationType === 'attribute')>Atribut / Seragam</option>
                     <option value="violation" @selected($violationType === 'violation')>Tata Tertib</option>
                 </select>
 
-                <select name="sort_by" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                <select name="sort_by" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                     <option value="count" @selected($sortBy === 'count')>Urutkan: Kasus Terbanyak</option>
                     <option value="points" @selected($sortBy === 'points')>Urutkan: Poin Terbanyak</option>
                 </select>
 
-                <select name="class_room_id" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                     <option value="">Semua Kelas</option>
                     @foreach ($classRooms as $cRoom)
                         <option value="{{ $cRoom->id }}" @selected((string) $classRoomId === (string) $cRoom->id)>
@@ -40,13 +40,13 @@
                 </select>
 
                 @if ($timeFrame === 'month')
-                    <select name="month" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                    <select name="month" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                         @foreach ($monthsList as $mNum => $mName)
                             <option value="{{ $mNum }}" @selected($mNum === $month)>{{ $mName }}</option>
                         @endforeach
                     </select>
 
-                    <select name="year" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                    <select name="year" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
                         @for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
                             <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
                         @endfor

@@ -131,6 +131,7 @@
                             name="search"
                             value="{{ request('search') }}"
                             placeholder="Cari murid / surah..."
+                            x-on:input.debounce.600ms="$el.form.submit()"
                             class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm"
                         >
 
@@ -138,10 +139,11 @@
                             type="date"
                             name="date"
                             value="{{ request('date') }}"
+                            onchange="this.form.submit()"
                             class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm"
                         >
 
-                        <select name="surah_id" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                        <select name="surah_id" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                             <option value="">Semua Surah</option>
                             @foreach ($surahs as $surah)
                                 <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
@@ -151,7 +153,7 @@
                         </select>
 
                         @if (request('category') !== 'ummi')
-                        <select name="submission_type" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                        <select name="submission_type" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                             <option value="">Semua Jenis</option>
                             <option value="new" @selected(request('submission_type') === 'new')>Baru</option>
                             <option value="continuation" @selected(request('submission_type') === 'continuation')>Lanjutan</option>

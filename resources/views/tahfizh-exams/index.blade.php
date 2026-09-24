@@ -48,7 +48,7 @@
                     <!-- Status Ujian Triwulan -->
                     <div class="flex-1 min-w-[180px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Status Ujian ({{ $termLabel }})</label>
-                        <select name="exam_status" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <select name="exam_status" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua</option>
                             <option value="belum" @selected($examStatus === 'belum')>Belum ujian triwulan ini</option>
                             <option value="sudah" @selected($examStatus === 'sudah')>Sudah ujian triwulan ini</option>
@@ -71,7 +71,7 @@
                     <!-- Kelas -->
                     <div class="flex-1 min-w-[140px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Kelas</label>
-                        <select name="class_room_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <select name="class_room_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua Kelas</option>
                             @foreach ($classRooms as $class)
                                 <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
@@ -84,7 +84,7 @@
                     <!-- Murid -->
                     <div class="flex-1 min-w-[140px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Murid</label>
-                        <select name="student_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <select name="student_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua Murid</option>
                             @foreach ($students as $student)
                                 <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
@@ -97,7 +97,7 @@
                     <!-- Juz -->
                     <div class="flex-1 min-w-[110px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Juz</label>
-                        <select name="juz" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <select name="juz" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua Juz</option>
                             @for ($j = 1; $j <= 30; $j++)
                                 <option value="{{ $j }}" @selected((string) request('juz') === (string) $j)>
@@ -110,7 +110,7 @@
                     <!-- Surah -->
                     <div class="flex-1 min-w-[140px]">
                         <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Surah</label>
-                        <select name="surah_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <select name="surah_id" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua Surah</option>
                             @foreach ($surahs as $surah)
                                 <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>

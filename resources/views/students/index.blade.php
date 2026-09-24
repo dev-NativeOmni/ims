@@ -56,10 +56,11 @@
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Cari nama / nomor murid..."
+                        x-on:input.debounce.600ms="$el.form.submit()"
                         class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 shadow-sm py-2 px-3"
                     >
 
-                    <select name="class_room_id" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
+                    <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
                         <option value="">Semua Kelas</option>
                         @foreach ($classRooms as $classRoom)
                             <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id)>
@@ -68,7 +69,7 @@
                         @endforeach
                     </select>
 
-                    <select name="status" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
+                    <select name="status" onchange="this.form.submit()" class="rounded-xl border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm py-2 px-3 font-medium cursor-pointer">
                         <option value="">Semua Status</option>
                         <option value="active" @selected(request('status') === 'active')>Aktif</option>
                         <option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option>

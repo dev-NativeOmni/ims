@@ -35,7 +35,7 @@
                             <label for="student_id" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Murid
                             </label>
-                            <select id="student_id" name="student_id" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="student_id" name="student_id" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Murid</option>
                                 @foreach ($students as $student)
                                     <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
@@ -49,7 +49,7 @@
                             <label for="class_room_id" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Kelas
                             </label>
-                            <select id="class_room_id" name="class_room_id" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="class_room_id" name="class_room_id" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Kelas</option>
                                 @foreach ($classRooms as $classRoom)
                                     <option value="{{ $classRoom->id }}" @selected((string) request('class_room_id') === (string) $classRoom->id)>
@@ -63,7 +63,7 @@
                             <label for="teacher_id" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Guru
                             </label>
-                            <select id="teacher_id" name="teacher_id" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="teacher_id" name="teacher_id" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Guru</option>
                                 @foreach ($teachers as $teacher)
                                     <option value="{{ $teacher->id }}" @selected((string) request('teacher_id') === (string) $teacher->id)>
@@ -77,7 +77,7 @@
                             <label for="surah_id" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Surah
                             </label>
-                            <select id="surah_id" name="surah_id" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="surah_id" name="surah_id" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Surah</option>
                                 @foreach ($surahs as $surah)
                                     <option value="{{ $surah->id }}" @selected((string) request('surah_id') === (string) $surah->id)>
@@ -91,7 +91,7 @@
                             <label for="status" class="mb-1 block text-sm font-semibold text-gray-700">
                                 Status Setoran
                             </label>
-                            <select id="status" name="status" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="status" name="status" onchange="this.form.submit()" class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Status</option>
                                 <option value="passed" @selected(request('status') === 'passed')>Lulus</option>
                                 <option value="good" @selected(request('status') === 'good')>Baik</option>
@@ -105,6 +105,7 @@
                                 Dari Tanggal
                             </label>
                             <input id="from" type="date" name="from" value="{{ request('from') }}"
+                                   onchange="this.form.submit()"
                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
 
@@ -113,6 +114,7 @@
                                 Sampai Tanggal
                             </label>
                             <input id="to" type="date" name="to" value="{{ request('to') }}"
+                                   onchange="this.form.submit()"
                                    class="w-full rounded-lg border-gray-300 text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
 

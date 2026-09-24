@@ -50,7 +50,7 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <form method="GET" action="{{ route('class-rooms.index') }}" class="flex flex-col md:flex-row gap-3">
-                    <select name="program_id" class="rounded-md border-gray-300 shadow-sm">
+                    <select name="program_id" onchange="this.form.submit()" class="rounded-md border-gray-300 shadow-sm">
                         <option value="">Semua Program</option>
                         @foreach ($programs as $program)
                             <option value="{{ $program->id }}" @selected((string) request('program_id') === (string) $program->id)>

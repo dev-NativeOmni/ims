@@ -68,14 +68,14 @@
                     <form method="GET" action="{{ route('digital-reports.show', $student) }}" class="space-y-4 mt-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">Tahun Ajaran</label>
-                            <select name="academic_year" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
+                            <select name="academic_year" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
                                 <option value="2025/2026" {{ $academicYear === '2025/2026' ? 'selected' : '' }}>2025/2026</option>
                                 <option value="2026/2027" {{ $academicYear === '2026/2027' ? 'selected' : '' }}>2026/2027</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">Semester</label>
-                            <select name="semester" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
+                            <select name="semester" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-950/40 text-sm">
                                 <option value="1" {{ $semester === 1 ? 'selected' : '' }}>1 (Ganjil)</option>
                                 <option value="2" {{ $semester === 2 ? 'selected' : '' }}>2 (Genap)</option>
                             </select>
