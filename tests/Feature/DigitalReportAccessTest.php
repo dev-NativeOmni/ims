@@ -15,8 +15,9 @@ use Tests\TestCase;
  * Rapor Digital (lihat saja) diperluas ke: super_admin, admin, teacher,
  * coordinator_tahfizh, pendamping_adab (koor adab), tanse, headmaster,
  * wali_kelas -- sebelumnya cuma 5 role pertama. Pengaturan Rapor (settings,
- * ubah tahun ajaran/template global) TETAP dibatasi ke role lama saja,
- * karena action itu tidak punya pengecekan role sendiri di controller.
+ * ubah tahun ajaran/template global) dibatasi lebih ketat lagi: khusus
+ * super_admin & admin, karena action itu tidak punya pengecekan role
+ * sendiri di controller (murni mengandalkan middleware route).
  */
 class DigitalReportAccessTest extends TestCase
 {
@@ -104,11 +105,12 @@ class DigitalReportAccessTest extends TestCase
     }
 
     #[Test]
-    public function only_the_original_roles_can_access_report_settings(): void
+    public function only_super_admin_and_admin_can_access_report_settings(): void
     {
+        $this->actingAs($this->superAdmin)->get(route('digital-reports.settings'))->assertOk();
         $this->actingAs($this->admin)->get(route('digital-reports.settings'))->assertOk();
 
-        foreach (['pendamping_adab', 'headmaster', 'wali_kelas'] as $roleName) {
+        foreach (['teacher', 'coordinator_tahfizh', 'tanse', 'pendamping_adab', 'headmaster', 'wali_kelas'] as $roleName) {
             $user = $this->makeUser($roleName, $roleName);
             $this->actingAs($user)->get(route('digital-reports.settings'))->assertForbidden();
         }

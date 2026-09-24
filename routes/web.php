@@ -480,9 +480,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Pengaturan global rapor (tahun ajaran, judul template, nama kepala sekolah dst.) --
-    // tetap dibatasi lebih sempit karena settings()/updateSettings() tidak punya
-    // pengecekan role sendiri di controller, murni mengandalkan middleware ini.
-    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,tanse'])->group(function () {
+    // khusus super_admin & admin. settings()/updateSettings() tidak punya pengecekan
+    // role sendiri di controller, murni mengandalkan middleware ini.
+    Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('/digital-reports/settings', [StudentReportController::class, 'settings'])->name('digital-reports.settings');
         Route::post('/digital-reports/settings', [StudentReportController::class, 'updateSettings'])->name('digital-reports.settings.update');
     });
