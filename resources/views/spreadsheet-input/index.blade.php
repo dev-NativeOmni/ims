@@ -18,6 +18,8 @@
                 tab: 'hafalan',
                 selectedClass: '{{ $selectedClassId }}',
                 selectedMonth: '{{ $selectedMonth }}',
+                selectedMonthNum: '{{ explode('-', $selectedMonth)[1] ?? date('m') }}',
+                selectedYearNum: '{{ explode('-', $selectedMonth)[0] ?? date('Y') }}',
                 todayDate: '{{ now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString() }}',
                 currentMonth: '{{ now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->format('Y-m') }}',
                 selectedMobileDate: '{{ in_array(now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString(), $dates) ? now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->toDateString() : ($dates[0] ?? '') }}',
@@ -332,10 +334,35 @@
                         </select>
                     </div>
                     <div>
-                        <label for="month" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
                             Pilih Bulan & Tahun
                         </label>
-                        <input type="month" id="month" name="month" x-model="selectedMonth" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs">
+                        {{-- Dropdown Bulan/Tahun biasa dipakai, bukan <input type="month"> -- rendering
+                             input type="month" tidak konsisten (kadang jadi kotak teks kosong tanpa
+                             picker) di sebagian browser HP, walau tampil normal di iPad/laptop. --}}
+                        <div class="grid grid-cols-2 gap-2">
+                            <select
+                                name="month_num"
+                                x-model="selectedMonthNum"
+                                @change="selectedMonth = selectedYearNum + '-' + selectedMonthNum; $nextTick(() => $el.form.submit())"
+                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs"
+                            >
+                                @foreach (['01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April', '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus', '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'] as $num => $label)
+                                    <option value="{{ $num }}" class="dark:bg-zinc-900">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <select
+                                name="year_num"
+                                x-model="selectedYearNum"
+                                @change="selectedMonth = selectedYearNum + '-' + selectedMonthNum; $nextTick(() => $el.form.submit())"
+                                class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs"
+                            >
+                                @foreach (range((int) date('Y') - 1, (int) date('Y') + 1) as $y)
+                                    <option value="{{ $y }}" class="dark:bg-zinc-900">{{ $y }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <input type="hidden" name="month" x-model="selectedMonth">
                     </div>
                     @if (!$isWeekly)
                     <div>
