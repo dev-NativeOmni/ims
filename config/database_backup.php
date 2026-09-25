@@ -48,4 +48,35 @@ return [
 
     'timeout' => (int) env('BACKUP_TIMEOUT', 300),
 
+    /*
+    |--------------------------------------------------------------------------
+    | mysql Path (restore)
+    |--------------------------------------------------------------------------
+    */
+
+    'mysql_path' => env('BACKUP_MYSQL_PATH', 'mysql'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | File Unggahan
+    |--------------------------------------------------------------------------
+    |
+    | Folder file unggahan (tanda tangan, foto, lampiran) yang ikut dibackup
+    | sebagai .zip bila backup dijalankan dengan --with-files.
+    |
+    */
+
+    'files_path' => storage_path('app/public'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Google Drive Retention
+    |--------------------------------------------------------------------------
+    |
+    | Backup di Google Drive yang lebih tua dari jumlah hari ini dihapus.
+    |
+    */
+
+    'drive_retention_days' => (int) env('BACKUP_DRIVE_RETENTION_DAYS', 60),
+
 ];

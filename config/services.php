@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Backup ke Google Drive (OAuth "Hubungkan Google Drive" di halaman Backup & Restore).
+    'google_drive' => [
+        'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+        'folder_name' => env('GOOGLE_DRIVE_BACKUP_FOLDER', 'TAD Backup'),
+    ],
+
 ];

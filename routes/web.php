@@ -238,6 +238,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/audit-logs/{auditLog}', [AuditLogController::class, 'show'])
             ->name('audit-logs.show');
 
+        // Backup & Restore: admin boleh membuat & mengunduh backup; restore, hapus, dan koneksi
+        // Google Drive khusus super admin.
         Route::prefix('database-backups')
             ->name('database-backups.')
             ->group(function () {
@@ -250,8 +252,20 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{filename}/download', [DatabaseBackupController::class, 'download'])
                     ->name('download');
 
-                Route::delete('/{filename}', [DatabaseBackupController::class, 'destroy'])
-                    ->name('destroy');
+                Route::middleware(['role:super_admin'])->group(function () {
+                    Route::post('/restore', [DatabaseBackupController::class, 'restore'])
+                        ->name('restore');
+                    Route::get('/google-drive/connect', [DatabaseBackupController::class, 'connectDrive'])
+                        ->name('drive.connect');
+                    Route::get('/google-drive/callback', [DatabaseBackupController::class, 'driveCallback'])
+                        ->name('drive.callback');
+                    Route::post('/google-drive/disconnect', [DatabaseBackupController::class, 'disconnectDrive'])
+                        ->name('drive.disconnect');
+                    Route::post('/{filename}/google-drive', [DatabaseBackupController::class, 'sendToDrive'])
+                        ->name('drive.send');
+                    Route::delete('/{filename}', [DatabaseBackupController::class, 'destroy'])
+                        ->name('destroy');
+                });
             });
     });
 

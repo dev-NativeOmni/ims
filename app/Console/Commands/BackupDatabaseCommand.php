@@ -2,171 +2,51 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Backup\BackupManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Process\Process;
+use Throwable;
 
 class BackupDatabaseCommand extends Command
 {
-    protected $signature = 'tad:backup-database {--prune : Hapus backup lama setelah backup berhasil}';
+    protected $signature = 'tad:backup-database
+        {--prune : Hapus backup lama (server & Google Drive) setelah backup berhasil}
+        {--with-files : Ikut backup file unggahan (storage/app/public) sebagai .zip}
+        {--no-drive : Jangan kirim ke Google Drive}';
 
     protected $aliases = ['ims:backup-database'];
 
-    protected $description = 'Membuat backup database MySQL TAD dalam format SQL.';
+    protected $description = 'Backup database TAD (.sql.gz), opsional file unggahan (.zip), lalu salin ke Google Drive bila terhubung.';
 
-    public function handle(): int
+    public function handle(BackupManager $backups): int
     {
-        $defaultConnection = config('database.default');
+        $this->info('Memulai backup...');
 
-        if ($defaultConnection !== 'mysql') {
-            $this->error('Backup ini hanya mendukung koneksi mysql. Koneksi aktif sekarang: '.$defaultConnection);
-
-            return self::FAILURE;
-        }
-
-        $connection = config('database.connections.mysql');
-
-        $database = (string) ($connection['database'] ?? '');
-
-        if ($database === '') {
-            $this->error('Nama database tidak ditemukan di konfigurasi.');
+        try {
+            $result = $backups->backup((bool) $this->option('with-files'), ! $this->option('no-drive'));
+        } catch (Throwable $e) {
+            $this->error('Backup gagal: '.$e->getMessage());
 
             return self::FAILURE;
         }
 
-        $backupDirectory = (string) config('database_backup.path');
-
-        File::ensureDirectoryExists($backupDirectory);
-
-        $filename = now()->format('Y-m-d_His').'_'.$this->safeFilename($database).'.sql';
-        $backupPath = $backupDirectory.DIRECTORY_SEPARATOR.$filename;
-
-        $command = $this->buildCommand($connection, $database, $backupPath);
-
-        $this->info('Memulai backup database...');
-        $this->line('Database: '.$database);
-        $this->line('Target: '.$backupPath);
-
-        $process = new Process($command);
-        $process->setTimeout((int) config('database_backup.timeout', 300));
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            if (File::exists($backupPath)) {
-                File::delete($backupPath);
-            }
-
-            $this->error('Backup gagal.');
-            $this->line($process->getErrorOutput() ?: $process->getOutput());
-
-            return self::FAILURE;
+        foreach ($result['files'] as $path) {
+            $this->line('File: '.$path.' ('.number_format(File::size($path) / 1048576, 2).' MB)');
         }
 
-        if (! File::exists($backupPath) || File::size($backupPath) < 1) {
-            if (File::exists($backupPath)) {
-                File::delete($backupPath);
-            }
-
-            $this->error('Backup gagal. File backup kosong atau tidak terbentuk.');
-
-            return self::FAILURE;
+        if ($result['drive'] !== []) {
+            $this->info('Tersalin ke Google Drive: '.implode(', ', $result['drive']));
+        } elseif ($result['drive_error']) {
+            $this->warn('Gagal dikirim ke Google Drive: '.$result['drive_error']);
         }
 
         if ($this->option('prune')) {
-            $deleted = $this->pruneOldBackups();
-
-            if ($deleted > 0) {
-                $this->info("Backup lama dihapus: {$deleted} file.");
-            }
+            $deleted = $backups->prune();
+            $this->info("Backup lama dihapus: {$deleted['local']} di server, {$deleted['drive']} di Google Drive.");
         }
 
         $this->info('Backup berhasil dibuat.');
-        $this->line('File: '.$backupPath);
-        $this->line('Ukuran: '.$this->formatBytes(File::size($backupPath)));
 
         return self::SUCCESS;
-    }
-
-    private function buildCommand(array $connection, string $database, string $backupPath): array
-    {
-        $host = (string) ($connection['host'] ?? '127.0.0.1');
-        $port = (string) ($connection['port'] ?? '3306');
-        $username = (string) ($connection['username'] ?? '');
-        $password = (string) ($connection['password'] ?? '');
-
-        $command = [
-            (string) config('database_backup.mysqldump_path', 'mysqldump'),
-            '--host='.$host,
-            '--port='.$port,
-            '--single-transaction',
-            '--quick',
-            '--routines',
-            '--triggers',
-            '--databases',
-            $database,
-            '--result-file='.$backupPath,
-        ];
-
-        if ($username !== '') {
-            $command[] = '--user='.$username;
-        }
-
-        if ($password !== '') {
-            $command[] = '--password='.$password;
-        }
-
-        return $command;
-    }
-
-    private function pruneOldBackups(): int
-    {
-        $backupDirectory = (string) config('database_backup.path');
-        $retentionDays = (int) config('database_backup.retention_days', 14);
-
-        if ($retentionDays <= 0 || ! File::isDirectory($backupDirectory)) {
-            return 0;
-        }
-
-        $deleted = 0;
-        $cutoffTimestamp = now()->subDays($retentionDays)->timestamp;
-
-        foreach (File::files($backupDirectory) as $file) {
-            if ($file->getExtension() !== 'sql') {
-                continue;
-            }
-
-            if ($file->getMTime() >= $cutoffTimestamp) {
-                continue;
-            }
-
-            File::delete($file->getPathname());
-            $deleted++;
-        }
-
-        return $deleted;
-    }
-
-    private function safeFilename(string $value): string
-    {
-        $clean = preg_replace('/[^A-Za-z0-9_\-]/', '_', $value);
-
-        return $clean ?: 'database';
-    }
-
-    private function formatBytes(int $bytes): string
-    {
-        if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2).' GB';
-        }
-
-        if ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2).' MB';
-        }
-
-        if ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2).' KB';
-        }
-
-        return $bytes.' bytes';
     }
 }
