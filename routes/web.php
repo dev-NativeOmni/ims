@@ -321,9 +321,11 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/hafalan-targets/{hafalanTarget}/mark-missed', [HafalanTargetController::class, 'markMissed'])
             ->name('hafalan-targets.mark-missed');
 
-        // Target Triwulan: dihitung otomatis dari pertemuan aktif (tidak disimpan).
+        // Target Triwulan: target manual 3 bulan per murid dalam satu kelas.
         Route::get('/hafalan-targets/triwulan', [HafalanTargetController::class, 'term'])
             ->name('hafalan-targets.term');
+        Route::post('/hafalan-targets/triwulan', [HafalanTargetController::class, 'storeTerm'])
+            ->name('hafalan-targets.term.store');
         Route::patch('/hafalan-targets/arah/{student}', [HafalanTargetController::class, 'updateDirection'])
             ->name('hafalan-targets.direction');
         Route::patch('/hafalan-targets/urutan-juz/{student}', [HafalanTargetController::class, 'updateJuzOrder'])

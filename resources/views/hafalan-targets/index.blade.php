@@ -494,7 +494,7 @@
                                             </div>
                                             <div class="text-xs text-gray-600">Ayat {{ $target->ayah_range }}</div>
                                             @if ($target->is_auto)
-                                                <span class="mt-1 inline-flex items-center rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 border border-sky-200" title="Dihitung otomatis dari setoran pertama term dan jumlah pertemuan x level. Edit untuk menggantinya dengan target Anda.">Otomatis</span>
+                                                <span class="mt-1 inline-flex items-center rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 border border-sky-200" title="Target lama dari perhitungan otomatis (sudah tidak dipakai). Edit atau isi ulang di Target Triwulan.">Otomatis lama</span>
                                             @endif
                                         @endif
                                     </td>

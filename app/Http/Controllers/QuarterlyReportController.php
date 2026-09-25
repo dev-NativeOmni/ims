@@ -12,7 +12,6 @@ use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
-use App\Services\AutoHafalanTargetService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Support\TargetRules;
@@ -419,17 +418,6 @@ class QuarterlyReportController extends Controller
 
         $studentIds = $students->pluck('id')->toArray();
 
-        // Segarkan target otomatis per bulan (kelas 11 & 12) SEBELUM data term diambil, supaya
-        // target yang baru dibuat ikut terbaca oleh fetchTermData(); target buatan guru tetap
-        // menang. Kegagalan sinkron tidak boleh menghalangi laporan tampil.
-        if ($selectedClass && ! $selectedClass->isGradeTen()) {
-            try {
-                app(AutoHafalanTargetService::class)->syncClass($selectedClass, Carbon::parse($termStartDate));
-            } catch (\Throwable $e) {
-                report($e);
-            }
-        }
-
         $term = $this->fetchTermData($studentIds, $termStartDate, $termEndDate);
 
         // Group students by their Musyrif
@@ -513,14 +501,6 @@ class QuarterlyReportController extends Controller
             }
 
             $studentIds = $groupStudents->pluck('id')->toArray();
-
-            if (! $classRoom->isGradeTen()) {
-                try {
-                    app(AutoHafalanTargetService::class)->syncClass($classRoom, Carbon::parse($termStartDate));
-                } catch (\Throwable $e) {
-                    report($e);
-                }
-            }
 
             $term = $this->fetchTermData($studentIds, $termStartDate, $termEndDate);
             $positionCheck = ! $classRoom->isGradeTen() ? new QuranLineTargetService : null;

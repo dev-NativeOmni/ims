@@ -6,6 +6,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
 use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
@@ -154,13 +155,13 @@ class HafalanTargetController extends Controller
         $isTeacherOnly = $user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']);
 
         if ($isTeacherOnly && $user->teacherProfile) {
-            $teachers = \App\Models\TeacherProfile::query()
+            $teachers = TeacherProfile::query()
                 ->with('user')
                 ->where('id', $user->teacherProfile->id)
                 ->get();
             $currentTeacherId = $user->teacherProfile->id;
         } else {
-            $teachers = \App\Models\TeacherProfile::query()
+            $teachers = TeacherProfile::query()
                 ->with('user')
                 ->whereHas('user')
                 ->orderBy('id')
@@ -279,7 +280,7 @@ class HafalanTargetController extends Controller
         if ($user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']) && $user->teacherProfile) {
             $teacherProfile = $user->teacherProfile;
         } else {
-            $teacherProfile = \App\Models\TeacherProfile::findOrFail($validated['teacher_id']);
+            $teacherProfile = TeacherProfile::findOrFail($validated['teacher_id']);
         }
 
         $studentsQuery = Student::query()
@@ -633,66 +634,192 @@ class HafalanTargetController extends Controller
     }
 
     /**
-     * Target Triwulan: per murid kelas 11/12, titik awal (setoran pertama triwulan), target
-     * akhir triwulan & titik antara tiap bulan, capaian, dan persentase -- semuanya dihitung
-     * otomatis dari pertemuan aktif (AutoHafalanTargetService::termPlan).
+     * Target Triwulan: per murid kelas 11/12, target manual tiap bulan (surah & ayat) dengan
+     * deadline = pertemuan aktif terakhir bulan itu. Target triwulan = bulan terakhir yang terisi.
      */
     public function term(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar): View
     {
         $visibleStudentIds = $this->visibleStudentIds($request->user());
+        [$periods, $period] = $this->termPeriods($request->input('period'), $calendar);
+        $classRooms = $this->termClassRooms($visibleStudentIds);
+        $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
 
-        // Pilihan triwulan: 6 triwulan terakhir (termasuk yang berjalan).
+        $months = $selectedClass ? $targets->termMonths($selectedClass, Carbon::parse($period)) : [];
+        $rows = collect();
+        if ($selectedClass) {
+            $rows = $this->termStudents($selectedClass, $visibleStudentIds)
+                ->map(fn (Student $student) => [
+                    'student' => $student,
+                    'plan' => $targets->termPlan($student, Carbon::parse($period), $selectedClass, $months),
+                ]);
+        }
+
+        $withTarget = $rows->filter(fn ($row) => $row['plan']['target'] !== null);
+        $summary = [
+            'students' => $rows->count(),
+            'with_target' => $withTarget->count(),
+            'reached' => $rows->where('plan.reached', true)->count(),
+            'avg_progress' => $withTarget->isEmpty() ? 0 : (int) round($withTarget->avg('plan.progress')),
+        ];
+
+        return view('hafalan-targets.term', [
+            'periods' => $periods,
+            'period' => $period,
+            'classRooms' => $classRooms,
+            'selectedClass' => $selectedClass,
+            'months' => $months,
+            'rows' => $rows,
+            'summary' => $summary,
+            'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
+            'canEdit' => $request->user()->can('create', HafalanTarget::class),
+        ]);
+    }
+
+    /**
+     * Simpan target 3 bulan untuk satu kelas sekaligus. Satu target per murid per bulan:
+     * target yang sudah ada di bulan itu diperbarui, dikosongkan = dihapus.
+     */
+    public function storeTerm(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar): RedirectResponse
+    {
+        $this->authorize('create', HafalanTarget::class);
+
+        $visibleStudentIds = $this->visibleStudentIds($request->user());
+        [, $period] = $this->termPeriods($request->input('period'), $calendar);
+        $selectedClass = $this->termClassRooms($visibleStudentIds)->firstWhere('id', (int) $request->input('class_room_id'));
+        abort_unless($selectedClass, 403, 'Kelas tidak boleh diakses oleh akun ini.');
+
+        $months = $targets->termMonths($selectedClass, Carbon::parse($period));
+        $students = $this->termStudents($selectedClass, $visibleStudentIds)->keyBy('id');
+        $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
+        $input = $request->input('targets', []);
+
+        // Validasi dulu seluruh isian, simpan hanya bila semuanya benar.
+        $errors = [];
+        $entries = [];
+        foreach ($students as $student) {
+            foreach ($months as $monthKey => $month) {
+                $cell = $input[$student->id][$monthKey] ?? [];
+                $surahId = (int) ($cell['surah_id'] ?? 0);
+                $ayah = (int) ($cell['ayah'] ?? 0);
+                $field = "targets.{$student->id}.{$monthKey}";
+
+                if (! $surahId && ! $ayah) {
+                    $entries[] = [$student, $monthKey, null, null];
+
+                    continue;
+                }
+                $surah = $surahs->get($surahId);
+                if (! $surah) {
+                    $errors[$field] = "{$student->name} ({$month['label']}): pilih surah target.";
+                } elseif ($ayah < 1 || $ayah > (int) $surah->total_ayah) {
+                    $errors[$field] = "{$student->name} ({$month['label']}): ayat {$surah->name_latin} harus 1–{$surah->total_ayah}.";
+                } else {
+                    $entries[] = [$student, $monthKey, $surah, $ayah];
+                }
+            }
+        }
+        if ($errors) {
+            return back()->withInput()->withErrors($errors);
+        }
+
+        $termStart = reset($months)['start'];
+        $termEnd = end($months)['end'];
+        $saved = 0;
+        DB::transaction(function () use ($entries, $months, $request, $targets, $termStart, $termEnd, &$saved) {
+            foreach ($entries as [$student, $monthKey, $surah, $ayah]) {
+                $month = $months[$monthKey];
+                $existing = HafalanTarget::query()
+                    ->where('student_id', $student->id)
+                    ->whereBetween('target_date', [$month['start']->toDateString(), $month['end']->copy()->endOfDay()->toDateTimeString()])
+                    ->orderBy('target_date')
+                    ->orderBy('id')
+                    ->get();
+                $current = $existing->last();
+
+                if (! $surah) {
+                    if ($current) {
+                        $current->delete();
+                        $saved++;
+                    }
+
+                    continue;
+                }
+
+                $deadline = $month['deadline']->toDateString();
+                if ($current
+                    && (int) $current->surah_id === $surah->id
+                    && (int) $current->ayah === $ayah
+                    && $current->target_date?->toDateString() === $deadline
+                    && $current->auto_month === null) {
+                    continue;
+                }
+
+                $attributes = ['surah_id' => $surah->id, 'ayah' => $ayah, 'target_date' => $deadline, 'auto_month' => null];
+                if ($current) {
+                    $current->update($attributes);
+                } else {
+                    $current = HafalanTarget::create($attributes + [
+                        'student_id' => $student->id,
+                        'teacher_id' => $this->resolveTeacherId($request, $student),
+                        'status' => 'active',
+                    ]);
+                }
+                $targets->refreshStatus($current, $termStart, $termEnd);
+                $saved++;
+            }
+        });
+
+        return redirect()
+            ->route('hafalan-targets.term', ['period' => $period, 'class_room_id' => $selectedClass->id])
+            ->with('success', $saved > 0 ? "Target triwulan {$selectedClass->name} disimpan ({$saved} perubahan)." : 'Tidak ada perubahan target.');
+    }
+
+    /**
+     * Pilihan triwulan: 6 triwulan terakhir (termasuk yang berjalan) dan triwulan terpilih.
+     *
+     * @return array{0: Collection<string, string>, 1: string}
+     */
+    private function termPeriods(?string $requested, AcademicCalendarService $calendar): array
+    {
         $currentStart = $calendar->termStartDate(today());
-        $periods = collect(range(0, 5))->mapWithKeys(function ($i) use ($currentStart) {
+        $periods = collect(range(-1, 5))->mapWithKeys(function ($i) use ($currentStart) {
             $start = $currentStart->copy()->subMonthsNoOverflow($i * 3);
             $termNumber = [7 => 1, 10 => 2, 1 => 3, 4 => 4][$start->month];
             $academicYear = $start->month >= 7 ? $start->year.'/'.($start->year + 1) : ($start->year - 1).'/'.$start->year;
 
             return [$start->toDateString() => "Triwulan {$termNumber} · {$academicYear} ({$start->locale('id')->translatedFormat('M')} – {$start->copy()->addMonths(2)->locale('id')->translatedFormat('M Y')})"];
         });
-        $period = $periods->has($request->input('period')) ? $request->input('period') : $currentStart->toDateString();
 
-        $classRooms = ClassRoom::query()
+        return [$periods, $periods->has($requested) ? $requested : $currentStart->toDateString()];
+    }
+
+    private function termClassRooms(Collection $visibleStudentIds): Collection
+    {
+        return ClassRoom::query()
             ->with('program')
             ->whereIn('id', Student::query()->whereIn('id', $visibleStudentIds)->where('status', 'active')->select('class_room_id'))
             ->orderBy('name')
             ->get()
             ->reject(fn (ClassRoom $class) => $class->isGradeTen())
             ->values();
-        $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
+    }
 
-        $rows = collect();
-        if ($selectedClass) {
-            $rows = Student::query()
-                ->whereIn('id', $visibleStudentIds)
-                ->where('class_room_id', $selectedClass->id)
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get()
-                ->map(function (Student $student) use ($targets, $selectedClass, $period) {
-                    $student->setRelation('classRoom', $selectedClass);
-
-                    return ['student' => $student, 'plan' => $targets->termPlan($student, Carbon::parse($period), $selectedClass)];
-                });
-        }
-
-        $withStart = $rows->filter(fn ($row) => $row['plan']['start'] !== null);
-        $summary = [
-            'students' => $rows->count(),
-            'reached' => $rows->where('plan.reached', true)->count(),
-            'no_start' => $rows->count() - $withStart->count(),
-            'avg_progress' => $withStart->isEmpty() ? 0 : (int) round($withStart->avg('plan.progress')),
-            'meetings' => $rows->first()['plan']['term_meetings'] ?? 0,
-        ];
-
-        return view('hafalan-targets.term', compact('periods', 'period', 'classRooms', 'selectedClass', 'rows', 'summary'));
+    private function termStudents(ClassRoom $classRoom, Collection $visibleStudentIds): Collection
+    {
+        return Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('class_room_id', $classRoom->id)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom));
     }
 
     /**
-     * Ubah arah hafalan murid (lanjut ke belakang / pindah ke depan setelah Juz 29, 28, atau 27),
-     * lalu hitung ulang target otomatis triwulan yang sedang dilihat.
+     * Ubah arah hafalan murid (lanjut ke belakang / pindah ke depan setelah Juz 29, 28, atau 27);
+     * dipakai untuk menilai ketuntasan target.
      */
-    public function updateDirection(Request $request, Student $student, AutoHafalanTargetService $targets): RedirectResponse
+    public function updateDirection(Request $request, Student $student): RedirectResponse
     {
         abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
 
@@ -702,16 +829,15 @@ class HafalanTargetController extends Controller
         ]);
 
         $student->update(['hafalan_direction' => $validated['hafalan_direction']]);
-        $targets->syncStudent($student->fresh(), Carbon::parse($validated['period'] ?? today()));
 
-        return back()->with('success', "Arah hafalan {$student->name} diperbarui dan target dihitung ulang.");
+        return back()->with('success', "Arah hafalan {$student->name} diperbarui.");
     }
 
     /**
      * Koreksi urutan di dalam satu juz (dari awal / dari akhir) untuk satu murid, atau
-     * kembalikan ke deteksi otomatis; lalu hitung ulang target otomatis triwulan itu.
+     * kembalikan ke deteksi otomatis.
      */
-    public function updateJuzOrder(Request $request, Student $student, AutoHafalanTargetService $targets): RedirectResponse
+    public function updateJuzOrder(Request $request, Student $student): RedirectResponse
     {
         abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
 
@@ -726,9 +852,8 @@ class HafalanTargetController extends Controller
             $orders->put((string) $validated['juz'], $validated['order']);
         }
         $student->update(['juz_orders' => $orders->isEmpty() ? null : $orders->all()]);
-        $targets->syncStudent($student->fresh(), Carbon::parse($validated['period'] ?? today()));
 
-        return back()->with('success', "Urutan Juz {$validated['juz']} untuk {$student->name} diperbarui dan target dihitung ulang.");
+        return back()->with('success', "Urutan Juz {$validated['juz']} untuk {$student->name} diperbarui.");
     }
 
     /**

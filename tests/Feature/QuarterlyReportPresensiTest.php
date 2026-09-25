@@ -223,7 +223,7 @@ class QuarterlyReportPresensiTest extends TestCase
     }
 
     #[Test]
-    public function term_target_is_filled_automatically_for_grade_11_12_but_not_grade_10(): void
+    public function term_target_comes_from_the_teachers_target_for_every_grade(): void
     {
         $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
         $baqarah = Surah::firstOrCreate(
@@ -231,7 +231,7 @@ class QuarterlyReportPresensiTest extends TestCase
             ['name_ar' => 'البقرة', 'name_latin' => 'Al-Baqarah', 'total_ayah' => 286, 'juz_start' => 1, 'juz_end' => 3]
         );
 
-        // Kelas 12: target semester otomatis. 14 Rabu di Jul-Sep 2026 x 5 baris = 70 baris.
+        // Kelas 12: 14 Rabu di Jul-Sep 2026 x 5 baris = 70 baris.
         $class12 = ClassRoom::create([
             'program_id' => $program->id,
             'name' => 'Kelas XII F3',
@@ -261,9 +261,18 @@ class QuarterlyReportPresensiTest extends TestCase
                 ->viewData('halaqahData'))->first()['term_records']
         )->firstWhere('student_id', $this->student->id);
 
+        // Target tidak lagi dibuat otomatis: tanpa target guru kolom target kosong.
         $row12 = $termRow($class12->id);
         $this->assertSame(70, $row12['target_lines']);
-        // Al-Fatihah (7 baris) habis, sisanya berjalan ke Al-Baqarah dari ayat 1.
+        $this->assertSame('-', $row12['target_surah']);
+        $this->assertSame(0, HafalanTarget::where('student_id', $this->student->id)->count());
+
+        // Target yang diisi guru (Target Triwulan) langsung dipakai laporan.
+        HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $baqarah->id, 'ayah' => 20, 'target_date' => '2026-09-30', 'status' => 'active',
+        ]);
+        $row12 = $termRow($class12->id);
         $this->assertSame('Al-Baqarah', $row12['target_surah']);
         $this->assertStringStartsWith('1 - ', $row12['target_ayat']);
 

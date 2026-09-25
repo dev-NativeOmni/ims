@@ -54,16 +54,15 @@
                 </div>
             @endif
 
-            {{-- Aturan target otomatis (dipakai Target Bulanan, Target Triwulan & semua laporan) --}}
-            <form method="POST" action="{{ route('settings.target-rules.update') }}" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4"
-                  onsubmit="return confirm('Simpan aturan dan hitung ulang semua target otomatis triwulan berjalan?')">
+            {{-- Aturan baris & urutan hafalan (dipakai penilaian target & laporan) --}}
+            <form method="POST" action="{{ route('settings.target-rules.update') }}" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
                 @csrf
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Aturan Target Otomatis</h3>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Aturan Baris & Urutan Hafalan</h3>
                     <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                        Target = pertemuan aktif × baris per pertemuan. Urutan hafalan: Juz 30 sampai juz wajib, lalu murid memilih terus ke belakang
-                        atau pindah ke Juz 1 (paling lambat setelah batas pindah). Setelah disimpan, target otomatis triwulan berjalan dihitung ulang;
-                        target yang diatur guru tidak berubah.
+                        Target diisi guru di menu Target Triwulan. Baris per pertemuan dipakai untuk kolom baris di laporan; urutan hafalan
+                        (Juz 30 sampai juz wajib, lalu murid memilih terus ke belakang atau pindah ke Juz 1 paling lambat setelah batas pindah)
+                        dipakai untuk menilai ketuntasan target.
                     </p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -100,7 +99,7 @@
                 </p>
                 @if ($canEditTargetRules)
                     <div class="flex justify-end">
-                        <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm cursor-pointer">Simpan &amp; Hitung Ulang</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm cursor-pointer">Simpan Aturan</button>
                     </div>
                 @endif
             </form>

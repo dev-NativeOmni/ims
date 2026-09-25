@@ -60,7 +60,7 @@ class JuzOrderAndCoverageTest extends TestCase
     }
 
     #[Test]
-    public function memorising_juz_27_from_the_end_is_detected_and_the_target_follows_it(): void
+    public function memorising_juz_27_from_the_end_is_detected(): void
     {
         $this->setoran('2026-07-01', 57, 1, 29); // Al-Hadid
         $this->setoran('2026-07-08', 56, 1, 20); // lalu Al-Waqi'ah -> mundur
@@ -69,7 +69,10 @@ class JuzOrderAndCoverageTest extends TestCase
 
         $this->assertSame(HafalanOrder::DESC, $plan['juz_orders'][27]);
         $this->assertSame('auto', ($plan['juz_order_source'])(27));
-        $this->assertContains($plan['target']['surah']->number, [55, 56], 'Target mundur ke Al-Waqiah/Ar-Rahman, bukan Adz-Dzariyat.');
+
+        // Target di Al-Waqi'ah tuntas walau Adz-Dzariyat (awal juz) belum disetor.
+        $result = app(HafalanProgressService::class)->evaluate($this->student->fresh(), 56, 20, Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30'), Carbon::parse('2026-09-30'));
+        $this->assertTrue($result['reached']);
     }
 
     #[Test]

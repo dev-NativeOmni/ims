@@ -6,7 +6,9 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Program;
+use App\Models\Role;
 use App\Models\Surah;
+use App\Models\User;
 use App\Services\AutoHafalanTargetService;
 use App\Support\HafalanOrder;
 use App\Support\TargetRules;
@@ -17,7 +19,7 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Target otomatis mengikuti urutan hafalan sekolah dan halaman Target Triwulan.
+ * Target Triwulan: target manual 3 bulan per murid, deadline di pertemuan aktif terakhir.
  */
 class TargetTriwulanTest extends TestCase
 {
@@ -61,54 +63,117 @@ class TargetTriwulanTest extends TestCase
         }
     }
 
-    #[Test]
-    public function monthly_targets_move_from_juz_30_into_the_start_of_juz_29_not_al_fatihah(): void
+    private function saveTerm(array $cells, $user = null)
     {
-        $this->finishJuz30ExceptAnNaba();
-        $this->setoran('2026-07-01', 78, 1, 5); // setoran pertama triwulan
+        return $this->actingAs($user ?? $this->teacherUser)->post(route('hafalan-targets.term.store'), [
+            'period' => '2026-07-01',
+            'class_room_id' => $this->classRoom->id,
+            'targets' => [$this->student->id => $cells],
+        ]);
+    }
 
-        app(AutoHafalanTargetService::class)->syncStudent($this->student->fresh(), Carbon::parse('2026-07-01'));
-
-        $targets = HafalanTarget::where('student_id', $this->student->id)->whereNotNull('auto_month')->orderBy('auto_month')->with('surah')->get();
-        $this->assertCount(3, $targets);
-        $last = $targets->last();
-        $this->assertTrue(
-            $last->surah->number >= 67 && $last->surah->number <= 78,
-            "Target akhir triwulan harus di An-Naba/Juz 29, bukan surah {$last->surah->number}."
-        );
+    private function surahId(int $number): int
+    {
+        return (int) Surah::where('number', $number)->value('id');
     }
 
     #[Test]
-    public function term_plan_matches_the_last_monthly_checkpoint_and_tracks_progress(): void
+    public function term_page_shows_three_months_with_deadline_on_the_last_active_meeting(): void
     {
-        $this->finishJuz30ExceptAnNaba();
-        $this->setoran('2026-07-01', 78, 1, 5);
-        $this->setoran('2026-07-08', 78, 6, 40);
-        $this->setoran('2026-07-15', 67, 1, 10); // lanjut ke awal Juz 29
-
-        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-15'));
-
-        $this->assertSame(78, $plan['start']['surah']->number);
-        $this->assertSame(14, $plan['term_meetings'], 'Rabu Jul-Sep 2026: 5 + 4 + 5 pertemuan.');
-        $this->assertSame(70, $plan['target_lines'], '14 pertemuan x 5 baris.');
-        $this->assertSame(end($plan['months'])['position']['surah']->number, $plan['target']['surah']->number);
-        $this->assertSame(67, $plan['capaian']['surah']->number, 'Capaian terjauh = Al-Mulk, bukan An-Naba.');
-        $this->assertGreaterThan(0, $plan['progress']);
-    }
-
-    #[Test]
-    public function term_page_lists_students_of_grade_11_12_only(): void
-    {
-        $this->finishJuz30ExceptAnNaba();
-        $this->setoran('2026-07-01', 78, 1, 5);
-
         $response = $this->actingAs($this->admin)->get(route('hafalan-targets.term', ['period' => '2026-07-01', 'class_room_id' => $this->classRoom->id]));
 
         $response->assertOk();
-        $response->assertSee('Target Triwulan');
         $response->assertSee($this->student->name);
-        $this->assertSame(1, $response->viewData('summary')['students']);
         $this->assertFalse($response->viewData('classRooms')->contains(fn ($c) => $c->isGradeTen()));
+
+        // Kelas hanya Rabu: pertemuan terakhir 29 Jul, 26 Agu, 30 Sep 2026.
+        $deadlines = collect($response->viewData('months'))->map(fn ($m) => $m['deadline']->toDateString())->all();
+        $this->assertSame(['2026-07' => '2026-07-29', '2026-08' => '2026-08-26', '2026-09' => '2026-09-30'], $deadlines);
+    }
+
+    #[Test]
+    public function teacher_fills_three_months_at_once_and_the_last_month_is_the_term_target(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-01', 78, 1, 40);
+
+        $this->saveTerm([
+            '2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 40],
+            '2026-08' => ['surah_id' => $this->surahId(67), 'ayah' => 15],
+            '2026-09' => ['surah_id' => $this->surahId(67), 'ayah' => 30],
+        ])->assertRedirect(route('hafalan-targets.term', ['period' => '2026-07-01', 'class_room_id' => $this->classRoom->id]));
+
+        $targets = HafalanTarget::where('student_id', $this->student->id)->orderBy('target_date')->get();
+        $this->assertSame(['2026-07-29', '2026-08-26', '2026-09-30'], $targets->map(fn ($t) => $t->target_date->toDateString())->all());
+        $this->assertTrue($targets->every(fn ($t) => $t->auto_month === null));
+        $this->assertSame('completed', $targets[0]->status, 'An-Naba 1-40 sudah lulus disetor.');
+        $this->assertSame('active', $targets[2]->status);
+
+        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-01'));
+        $this->assertSame(67, $plan['target']->surah->number);
+        $this->assertSame(30, $plan['target']->ayah);
+        $this->assertSame('2026-09', $plan['target_month']);
+
+        // Laporan Triwulan memakai target yang sama.
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
+        $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
+        $this->assertSame('Surah 67', $termRecord['target_surah']);
+    }
+
+    #[Test]
+    public function saving_again_updates_the_same_month_target_and_empty_cells_delete_it(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+        // Target otomatis lama di Juli ikut diambil alih menjadi target guru.
+        $old = HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surahId(78), 'ayah' => 10, 'target_date' => '2026-07-31', 'status' => 'active', 'auto_month' => '2026-07',
+        ]);
+
+        $this->saveTerm([
+            '2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 20],
+            '2026-08' => ['surah_id' => $this->surahId(78), 'ayah' => 30],
+        ])->assertSessionHasNoErrors();
+
+        $old->refresh();
+        $this->assertSame(20, $old->ayah);
+        $this->assertNull($old->auto_month);
+        $this->assertSame('2026-07-29', $old->target_date->toDateString());
+        $this->assertSame(2, HafalanTarget::where('student_id', $this->student->id)->count());
+
+        $this->saveTerm([
+            '2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 20],
+            '2026-08' => ['surah_id' => '', 'ayah' => ''],
+        ]);
+        $this->assertSame(1, HafalanTarget::where('student_id', $this->student->id)->count());
+    }
+
+    #[Test]
+    public function invalid_ayah_rejects_the_whole_form(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+        $maxAyah = (int) Surah::where('number', 78)->value('total_ayah');
+
+        $this->saveTerm([
+            '2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 10],
+            '2026-08' => ['surah_id' => $this->surahId(78), 'ayah' => $maxAyah + 1],
+        ])->assertSessionHasErrors("targets.{$this->student->id}.2026-08");
+
+        $this->assertSame(0, HafalanTarget::where('student_id', $this->student->id)->count());
+    }
+
+    #[Test]
+    public function only_staff_who_can_create_targets_for_the_class_can_save(): void
+    {
+        $this->student->update(['teacher_id' => null]);
+        $this->saveTerm(['2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 10]])->assertForbidden();
+
+        $role = Role::firstOrCreate(['name' => 'headmaster'], ['display_name' => 'Kepala Sekolah']);
+        $headmaster = User::factory()->create(['role_id' => $role->id, 'status' => 'active']);
+        $this->saveTerm(['2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 10]], $headmaster)->assertForbidden();
+
+        $this->assertSame(0, HafalanTarget::count());
     }
 
     #[Test]
@@ -135,33 +200,6 @@ class TargetTriwulanTest extends TestCase
     }
 
     #[Test]
-    public function a_teachers_manual_target_becomes_the_term_target_everywhere(): void
-    {
-        $this->finishJuz30ExceptAnNaba();
-        $this->setoran('2026-07-01', 78, 1, 5);
-        app(AutoHafalanTargetService::class)->syncStudent($this->student->fresh(), Carbon::parse('2026-07-01'));
-
-        // Guru mengganti target September.
-        HafalanTarget::where('student_id', $this->student->id)->where('auto_month', '2026-09')->forceDelete();
-        HafalanTarget::create([
-            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
-            'surah_id' => Surah::where('number', 67)->value('id'), 'ayah' => 15,
-            'target_date' => '2026-09-30', 'status' => 'active',
-        ]);
-
-        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-01'));
-        $this->assertSame('manual', $plan['target_source']);
-        $this->assertSame(67, $plan['target']['surah']->number);
-        $this->assertSame(15, $plan['target']['ayah_end']);
-        $this->assertSame('manual', $plan['months']['2026-09']['source']);
-
-        // Laporan Triwulan memakai target yang sama.
-        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
-        $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
-        $this->assertSame('Surah 67', $termRecord['target_surah']);
-    }
-
-    #[Test]
     public function target_rules_are_editable_and_drive_the_calculation(): void
     {
         $this->finishJuz30ExceptAnNaba();
@@ -176,9 +214,6 @@ class TargetTriwulanTest extends TestCase
         $this->assertSame([30, 29, 28], TargetRules::switchOptions());
         $this->assertArrayHasKey('front_30', HafalanOrder::directionOptions());
         $this->assertSame([30, 1, 2], array_slice(HafalanOrder::juzSequence('front_30'), 0, 3), 'Pindah setelah Juz 30 langsung ke Juz 1.');
-
-        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-01'));
-        $this->assertSame(14 * 4, $plan['target_lines'], '14 pertemuan x 4 baris (pengaturan baru).');
 
         $this->actingAs($this->teacherUser)->post(route('settings.target-rules.update'), [
             'level_lines' => ['tahsin' => 1, 'reguler' => 1, 'akselerasi' => 1], 'mandatory_until' => 29, 'latest_switch' => 27,

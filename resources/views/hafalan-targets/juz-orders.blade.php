@@ -7,7 +7,7 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 {{ $student->classRoom?->name }} · Juz diurutkan sesuai arah hafalan murid. Urutan di dalam juz terdeteksi otomatis dari setoran
-                (surah makin kecil = dari akhir juz) dan bisa dikoreksi; perubahan langsung menghitung ulang target otomatis.
+                (surah makin kecil = dari akhir juz) dan bisa dikoreksi; urutan ini dipakai untuk menilai ketuntasan target.
             </p>
         </div>
     </x-slot>

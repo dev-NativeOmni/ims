@@ -9,7 +9,6 @@ use App\Support\Signatures;
 use App\Support\TargetRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
@@ -336,8 +335,7 @@ class SettingController extends Controller
     }
 
     /**
-     * Aturan target otomatis (baris per level, juz wajib, batas pindah ke depan), lalu
-     * hitung ulang target otomatis triwulan berjalan untuk semua kelas 11/12.
+     * Aturan baris per level, juz wajib, dan batas pindah ke depan.
      */
     public function targetRulesUpdate(Request $request)
     {
@@ -352,11 +350,8 @@ class SettingController extends Controller
 
         TargetRules::save($validated['level_lines'], (int) $validated['mandatory_until'], (int) $validated['latest_switch']);
 
-        @set_time_limit(300);
-        Artisan::call('tad:sync-auto-targets');
-
         return redirect()->route('settings.hafalan-targets')
-            ->with('success', 'Aturan target otomatis disimpan dan target triwulan berjalan sudah dihitung ulang.');
+            ->with('success', 'Aturan baris & urutan hafalan disimpan.');
     }
 
     public function hafalanTargetsUpdate(Request $request)

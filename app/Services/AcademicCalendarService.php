@@ -123,6 +123,24 @@ class AcademicCalendarService
     }
 
     /**
+     * Tanggal pertemuan aktif terakhir kelas dalam rentang (inklusif), atau null bila tidak ada.
+     */
+    public function lastMeetingDate(ClassRoom $classRoom, Carbon $start, Carbon $end): ?Carbon
+    {
+        $cursor = $end->copy()->startOfDay();
+
+        while ($cursor->gte($start->copy()->startOfDay())) {
+            if ($this->isEffectiveDay($classRoom, $cursor)) {
+                return $cursor;
+            }
+
+            $cursor = $cursor->copy()->subDay();
+        }
+
+        return null;
+    }
+
+    /**
      * Jumlah pertemuan terjadwal kelas dalam rentang tanggal (inklusif) menurut kalender:
      * hari kelas, libur nasional, dan libur khusus kelas. Program "seminggu sekali"
      * dihitung maksimal satu pertemuan per pekan kalender.
