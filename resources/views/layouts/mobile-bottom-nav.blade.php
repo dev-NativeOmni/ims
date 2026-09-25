@@ -146,7 +146,7 @@
                 ],
                 [
                     'label' => 'Adab',
-                    'route' => 'adab.chart',
+                    'route' => 'adab.index',
                     'active' => $routeIs('adab.*'),
                     'icon' => 'shield',
                 ],

@@ -185,7 +185,7 @@
                                                 Riwayat & Rincian
                                             </a>
 
-                                            @if ($isAdmin || $isSupervisor || Auth::user()->hasRole('teacher') || Auth::user()->hasRole('pendamping_adab'))
+                                            @if ($isAdmin || $isSupervisor || Auth::user()->hasAnyRole(['teacher', 'pendamping_adab', 'wali_kelas']))
                                                 @if (!$student->today_record)
                                                     <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-150">
                                                         Bantu Isi

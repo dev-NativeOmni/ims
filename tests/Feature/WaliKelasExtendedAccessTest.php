@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdabMentorAssessment;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Program;
@@ -15,9 +16,9 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Wali Kelas diberi akses lihat (bukan input/edit) ke perkembangan tahfizh, adab, dan
- * kedisiplinan murid kelasnya -- termasuk grafik & riwayat -- dengan tetap dibatasi
- * hanya ke kelas yang mereka ampu (tidak boleh melihat data kelas/murid lain).
+ * Wali Kelas melihat perkembangan tahfizh, adab, dan kedisiplinan murid kelasnya (grafik &
+ * riwayat), serta mengisi adab & memberi nilai adab bulanan seperti pendamping adab --
+ * semuanya dibatasi ke kelas perwaliannya (tidak boleh data kelas/murid lain).
  */
 class WaliKelasExtendedAccessTest extends TestCase
 {
@@ -68,12 +69,55 @@ class WaliKelasExtendedAccessTest extends TestCase
     }
 
     #[Test]
-    public function wali_kelas_can_view_but_not_edit_a_students_adab_history(): void
+    public function wali_kelas_can_give_the_monthly_adab_score_for_their_own_class(): void
     {
         $response = $this->actingAs($this->waliKelasUser)->get(route('adab.show', $this->student));
-
         $response->assertStatus(200);
-        $response->assertDontSee(route('adab.store-mentor-score', $this->student));
+        $response->assertSee(route('adab.store-mentor-score', $this->student));
+
+        $this->actingAs($this->waliKelasUser)
+            ->post(route('adab.store-mentor-score', $this->student), ['mentor_score' => 88, 'year' => 2026, 'month' => 9])
+            ->assertRedirect(route('adab.show', $this->student));
+        $this->assertSame(88, (int) AdabMentorAssessment::where('student_id', $this->student->id)->where('month', 9)->value('mentor_score'));
+
+        $this->actingAs($this->waliKelasUser)
+            ->post(route('adab.store-mentor-score', $this->otherStudent), ['mentor_score' => 70, 'year' => 2026, 'month' => 9])
+            ->assertStatus(403);
+    }
+
+    #[Test]
+    public function wali_kelas_can_fill_the_class_monthly_scores_like_a_pendamping(): void
+    {
+        $response = $this->actingAs($this->waliKelasUser)->get(route('adab.index'));
+        $response->assertOk();
+        $this->assertSame([$this->classRoom->id], $response->viewData('classRooms')->pluck('id')->all());
+        $this->assertSame([$this->student->id], collect($response->viewData('students')->items())->pluck('id')->all());
+
+        $this->actingAs($this->waliKelasUser)
+            ->getJson(route('adab.mentor-class-data', ['class_room_id' => $this->classRoom->id, 'year' => 2026, 'month' => 9]))
+            ->assertOk()
+            ->assertJsonPath('students.0.student_id', $this->student->id);
+        $this->actingAs($this->waliKelasUser)
+            ->getJson(route('adab.mentor-class-data', ['class_room_id' => $this->otherStudent->class_room_id, 'year' => 2026, 'month' => 9]))
+            ->assertStatus(403);
+
+        // Isian untuk murid kelas lain diabaikan.
+        $this->actingAs($this->waliKelasUser)->postJson(route('adab.batch-mentor-score'), [
+            'year' => 2026, 'month' => 9, 'class_room_id' => $this->classRoom->id,
+            'entries' => [
+                ['student_id' => $this->student->id, 'mentor_score' => 90],
+                ['student_id' => $this->otherStudent->id, 'mentor_score' => 60],
+            ],
+        ])->assertOk();
+        $this->assertSame(90, (int) AdabMentorAssessment::where('student_id', $this->student->id)->value('mentor_score'));
+        $this->assertFalse(AdabMentorAssessment::where('student_id', $this->otherStudent->id)->exists());
+    }
+
+    #[Test]
+    public function wali_kelas_can_help_fill_daily_adab_only_for_their_own_class(): void
+    {
+        $this->actingAs($this->waliKelasUser)->get(route('adab.create', $this->student))->assertOk();
+        $this->actingAs($this->waliKelasUser)->get(route('adab.create', $this->otherStudent))->assertStatus(403);
     }
 
     #[Test]
@@ -82,14 +126,6 @@ class WaliKelasExtendedAccessTest extends TestCase
         $this->actingAs($this->waliKelasUser)
             ->get(route('adab.show', $this->otherStudent))
             ->assertStatus(403);
-    }
-
-    #[Test]
-    public function wali_kelas_cannot_access_adab_management_routes(): void
-    {
-        $this->actingAs($this->waliKelasUser)->get(route('adab.index'))->assertStatus(403);
-        $this->actingAs($this->waliKelasUser)->get(route('adab.create', $this->student))->assertStatus(403);
-        $this->actingAs($this->waliKelasUser)->post(route('adab.store', $this->student))->assertStatus(403);
     }
 
     #[Test]

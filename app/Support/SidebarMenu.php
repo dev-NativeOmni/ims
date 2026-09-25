@@ -108,7 +108,7 @@ class SidebarMenu
                 'items' => [
                     [
                         'label' => 'Adab', 'route' => 'adab.index', 'icon' => 'shield-check',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'pendamping_adab', 'parent', 'student'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'pendamping_adab', 'wali_kelas', 'parent', 'student'],
                         'active' => ['adab.index', 'adab.show'],
                     ],
                     // Koordinator Keagamaan/Adab: kalender untuk mengatur & mengunci libur Adab (Admin lewat Data Master).
@@ -153,7 +153,7 @@ class SidebarMenu
                     ],
                     [
                         'label' => 'Grafik Adab', 'route' => 'adab.chart', 'icon' => 'chart-pie',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'headmaster', 'pendamping_adab'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'headmaster', 'pendamping_adab', 'wali_kelas'],
                         'active' => ['adab.chart'],
                     ],
                     [

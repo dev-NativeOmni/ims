@@ -63,6 +63,11 @@ class AdabController extends Controller
             })->pluck('id');
             $studentQuery->whereIn('class_room_id', $assignedClassIds);
             $classRoomsQuery->whereIn('id', $assignedClassIds);
+        } elseif ($user->hasRole('wali_kelas') && ! $isAdmin && ! $isSupervisor) {
+            // Wali kelas: sama seperti pendamping adab, terbatas pada kelas perwaliannya.
+            $waliClassIds = ClassRoom::where('wali_kelas_user_id', $user->id)->pluck('id');
+            $studentQuery->whereIn('class_room_id', $waliClassIds);
+            $classRoomsQuery->whereIn('id', $waliClassIds);
         } elseif ($isTeacher) {
             $teacherProfile = $user->teacherProfile;
             $studentQuery->where('teacher_id', $teacherProfile?->id);
@@ -392,8 +397,9 @@ class AdabController extends Controller
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
         $isPendampingAdab = $user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist()));
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
+        $isWaliKelas = $this->isWaliKelasOf($user, $student->classRoom);
 
-        abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher, 403);
+        abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher || $isWaliKelas, 403);
 
         $categories = Setting::getAdabQuestions();
 
@@ -411,8 +417,9 @@ class AdabController extends Controller
         $isAdminOrSupervisor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor']);
         $isPendampingAdab = $user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist()));
         $isTeacher = $user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id;
+        $isWaliKelas = $this->isWaliKelasOf($user, $student->classRoom);
 
-        if (! ($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher)) {
+        if (! ($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher || $isWaliKelas)) {
             return redirect()->route('student.dashboard')
                 ->with('error', 'Anda tidak memiliki izin untuk menyimpan data ini.');
         }
@@ -535,7 +542,8 @@ class AdabController extends Controller
             ->exists();
 
         $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
-            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())));
+            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())))
+            || $this->isWaliKelasOf($user, $student->classRoom);
 
         return view('adab.show', compact(
             'student', 'adabRecords', 'mentorAssessments',
@@ -572,11 +580,12 @@ class AdabController extends Controller
         $user = Auth::user();
 
         $isAuthorizedMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])
-            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())));
+            || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())))
+            || $this->isWaliKelasOf($user, $student->classRoom);
 
         abort_unless(
             $isAuthorizedMentor,
-            403, 'Hanya pendamping adab kelas ini atau admin yang dapat memberi nilai.'
+            403, 'Hanya pendamping adab, wali kelas kelas ini, atau admin yang dapat memberi nilai.'
         );
 
         $validated = $request->validate([
@@ -657,7 +666,8 @@ class AdabController extends Controller
 
                 $isAuthorized = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
                     || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $student->classRoom) || ($student->classRoom?->pendamping_adab_id === null && $student->classRoom?->pendampingAdabList()->doesntExist())))
-                    || ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id);
+                    || ($user->hasRole('teacher') && $student->teacher_id === $user->teacherProfile?->id)
+                    || $this->isWaliKelasOf($user, $student->classRoom);
 
                 if (! $isAuthorized) {
                     continue;
@@ -714,7 +724,8 @@ class AdabController extends Controller
 
         $isMentor = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster'])
             || ($user->hasRole('pendamping_adab') && ($this->isUserAssignedPendamping($user, $classRoom) || ($classRoom->pendamping_adab_id === null && $classRoom->pendampingAdabList()->doesntExist())))
-            || $user->hasRole('teacher');
+            || $user->hasRole('teacher')
+            || $this->isWaliKelasOf($user, $classRoom);
 
         if (! $isMentor) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -765,6 +776,16 @@ class AdabController extends Controller
             'month' => $month,
             'students' => $data,
         ]);
+    }
+
+    /**
+     * Wali kelas boleh mengisi & menilai adab bulanan murid kelas perwaliannya (setara pendamping adab).
+     */
+    private function isWaliKelasOf(User $user, ?ClassRoom $classRoom): bool
+    {
+        return $classRoom !== null
+            && $user->hasRole('wali_kelas')
+            && (int) $classRoom->wali_kelas_user_id === (int) $user->id;
     }
 
     private function isUserAssignedPendamping(User $user, ?ClassRoom $classRoom): bool

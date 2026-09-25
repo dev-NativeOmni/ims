@@ -483,7 +483,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/adab/student/{student}', [AdabController::class, 'show'])->name('adab.show');
     });
 
-    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster'])->group(function () {
+    Route::middleware(['role:super_admin,admin,supervisor,teacher,parent,student,pendamping_adab,headmaster,wali_kelas'])->group(function () {
         Route::get('/adab', [AdabController::class, 'index'])->name('adab.index');
         Route::get('/adab/student/{student}/create', [AdabController::class, 'create'])->name('adab.create');
         Route::post('/adab/student/{student}', [AdabController::class, 'store'])->name('adab.store');
