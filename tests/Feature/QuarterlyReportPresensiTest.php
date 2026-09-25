@@ -275,7 +275,7 @@ class QuarterlyReportPresensiTest extends TestCase
         $row12 = $termRow($class12->id);
         $this->assertSame('Al-Baqarah', $row12['target_surah']);
         // Dari setoran pertama triwulan (Al-Fatihah 1) sampai Al-Baqarah 20.
-        $this->assertSame('Al-Fatihah 1 - 20', $row12['target_ayat']);
+        $this->assertSame('Al-Fatihah 1 - Al-Baqarah 20', $row12['target_ayat']);
 
         // Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru, tanpa target otomatis.
         $class10 = ClassRoom::create([

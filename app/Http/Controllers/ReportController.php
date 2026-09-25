@@ -1101,26 +1101,38 @@ class ReportController extends Controller
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
-            // Tuntas: kelas 11 & 12 dengan target guru -> capaian baris >= target baris
-            // (HafalanProgressService); selain itu (Kelas 10/Ummi, tanpa target) dari jumlah baris.
-            if (! $isGrade10 && $levelBaris !== null && $latestTarget?->surah) {
-                // Target & capaian baris dari target guru: sejak setoran pertama triwulan target sampai
-                // target itu; capaian = baris setoran lulus sejak awal triwulan sampai akhir periode.
-                $calendar = app(AcademicCalendarService::class);
-                $targetTermMonths = $calendar->termMonths(Carbon::parse($latestTarget->target_date));
-                $evaluation = app(HafalanProgressService::class)->evaluate(
-                    $student,
-                    (int) $latestTarget->surah->number,
-                    (int) $latestTarget->ayah,
-                    reset($targetTermMonths)['start'],
-                    end($targetTermMonths)['end'],
-                    Carbon::parse($endDate)
-                );
-                $targetBaris = $evaluation['target_lines'];
-                $capaianBaris = $evaluation['achieved_lines'];
-                $isTuntas = $evaluation['reached'];
-            } else {
-                $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
+            // Kelas 11 & 12 yang punya target guru di triwulan periode ini: target baris dari setoran
+            // pertama triwulan sampai target guru, capaian = baris setoran lulus. Periode bulanan
+            // hanya memakai bagian bulan itu (bukan kumulatif sejak awal triwulan). Tanpa target
+            // guru (atau Kelas 10/Ummi): pertemuan x baris per level.
+            $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
+            if (! $isGrade10 && $levelBaris !== null) {
+                $termMonths = app(AcademicCalendarService::class)->termMonths(Carbon::parse($startDate));
+                $termTargets = HafalanTarget::query()
+                    ->with('surah')
+                    ->where('student_id', $student->id)
+                    ->whereBetween('target_date', [reset($termMonths)['start']->toDateString(), end($termMonths)['end']->toDateString().' 23:59:59'])
+                    ->get()
+                    ->filter(fn ($target) => $target->surah !== null);
+
+                if ($termTargets->isNotEmpty()) {
+                    $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, Carbon::parse($endDate)->endOfDay());
+                    $cell = $periodType === 'monthly' ? ($breakdown['months'][Carbon::parse($startDate)->format('Y-m')] ?? null) : null;
+
+                    if ($cell !== null) {
+                        $shownTarget = $cell['target'];
+                        $targetBaris = $cell['target_lines'];
+                        $capaianBaris = $cell['achieved_lines'];
+                        $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
+                    } else {
+                        $shownTarget = $breakdown['target'];
+                        $targetBaris = $breakdown['evaluation']['target_lines'] ?? 0;
+                        $capaianBaris = $breakdown['evaluation']['achieved_lines'] ?? $capaianBaris;
+                        $isTuntas = $breakdown['evaluation']['reached'] ?? false;
+                    }
+                    $targetSurah = $shownTarget?->surah?->name_latin ?? '-';
+                    $targetAyat = $shownTarget?->ayah ?? '-';
+                }
             }
 
             if ($isTuntas) {

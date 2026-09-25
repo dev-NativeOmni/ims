@@ -50,7 +50,7 @@ class HafalanProgressService
             ->orderBy('hafalan_record_surahs.id')
             ->get([
                 'surahs.number as surah_number', 'hafalan_record_surahs.ayah_start', 'hafalan_record_surahs.ayah_end',
-                'hafalan_record_surahs.status', 'hafalan_records.submitted_at',
+                'hafalan_record_surahs.status', 'hafalan_record_surahs.baris', 'hafalan_records.submitted_at',
             ]);
     }
 
@@ -148,8 +148,9 @@ class HafalanProgressService
     }
 
     /**
-     * Baris setoran lulus pada rentang tanggal (inklusif), termasuk mengulang ayat yang dulu
-     * pernah lulus; ayat yang disetor lebih dari sekali di rentang ini dihitung sekali.
+     * Baris setoran lulus pada rentang tanggal (inklusif) -- sama dengan kolom baris di tab
+     * Capaian Hafalan: baris yang tersimpan di setoran (bila diisi), selain itu dihitung dari
+     * ayat. Mengulang ayat lama ikut dihitung; setoran belum lulus tidak.
      */
     public function passedLines(Collection $records, Carbon $from, Carbon $until): float
     {
@@ -157,16 +158,14 @@ class HafalanProgressService
             return 0.0;
         }
 
-        $inRange = $records->filter(fn ($r) => Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay()));
-        $lines = 0.0;
-        foreach ($this->coverage($inRange) as $surahNumber => $intervals) {
-            $totalAyah = (int) ($this->surahs()->get($surahNumber)?->total_ayah ?? 0);
-            foreach ($intervals as [$a, $b]) {
-                $lines += ReportController::calculateLines($surahNumber, $a, $b, $totalAyah);
-            }
-        }
+        $lines = $records
+            ->filter(fn ($r) => $r->status === 'passed'
+                && Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay()))
+            ->sum(fn ($r) => $r->baris !== null
+                ? (float) $r->baris
+                : ReportController::calculateLines((int) $r->surah_number, (int) $r->ayah_start, (int) $r->ayah_end, (int) ($this->surahs()->get((int) $r->surah_number)?->total_ayah ?? 0)));
 
-        return round($lines, 1);
+        return round((float) $lines, 1);
     }
 
     /**
@@ -211,7 +210,7 @@ class HafalanProgressService
 
     /**
      * Rentang ayat target untuk tampilan: dari ayat pertama jalur target sampai ayat target,
-     * mis. "21 - 40" (satu surah) atau "An-Naba 21 - 40" (mulai di surah lain).
+     * mis. "21 - 40" (satu surah) atau "Al-Ma'arij 41 - Al-Jinn 12" (lintas surah).
      */
     public function targetRangeLabel(?array $evaluation, int $targetSurah, int $targetAyah): string
     {
@@ -222,9 +221,11 @@ class HafalanProgressService
 
         [$surah, $ayah] = $pathStart;
 
+        $name = fn (int $number) => $this->surahs()->get($number)?->name_latin ?? "Surah {$number}";
+
         return $surah === $targetSurah
             ? "{$ayah} - {$targetAyah}"
-            : ($this->surahs()->get($surah)?->name_latin ?? "Surah {$surah}")." {$ayah} - {$targetAyah}";
+            : "{$name($surah)} {$ayah} - {$name($targetSurah)} {$targetAyah}";
     }
 
     /**

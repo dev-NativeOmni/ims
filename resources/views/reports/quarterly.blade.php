@@ -659,7 +659,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>
-                                <strong class="font-semibold">Informasi:</strong> Target Triwulan Kelas 11 &amp; 12 dihitung otomatis: dari setoran pertama triwulan sejauh (pertemuan aktif × baris per level), mengikuti urutan hafalan Juz 30 → 29 → … (atau pindah ke Juz 1 sesuai pilihan murid). TUNTAS bila capaian terjauh yang lulus sudah sampai posisi target; bila tidak ada target posisi, dinilai dari jumlah baris. Kelas 10 (UMMI) memakai target buatan guru.
+                                <strong class="font-semibold">Informasi:</strong> Target Triwulan Kelas 11 &amp; 12 = target guru bulan terakhir di menu Target Triwulan. Target baris dihitung dari setoran pertama triwulan sampai target (mengikuti arah &amp; urutan juz murid); capaian baris = jumlah baris setoran lulus di triwulan. TUNTAS bila capaian baris ≥ target baris. Murid tanpa target guru dan Kelas 10 (UMMI) dinilai dari pertemuan aktif × baris per level.
                             </span>
                         </div>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">

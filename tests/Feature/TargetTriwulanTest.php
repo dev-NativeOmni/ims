@@ -261,19 +261,45 @@ class TargetTriwulanTest extends TestCase
     }
 
     #[Test]
-    public function capaian_counts_every_passed_setoran_in_the_term_once_but_not_failed_ones(): void
+    public function capaian_is_the_sum_of_baris_of_passed_setoran_like_the_setoran_tab(): void
     {
         $this->finishJuz30ExceptAnNaba();
         $this->setoran('2026-06-20', 78, 1, 20);
         $this->setoran('2026-07-08', 78, 1, 20); // mengulang ayat lama: ikut dihitung
-        $this->setoran('2026-07-09', 78, 1, 20); // disetor lagi di triwulan yang sama: dihitung sekali
-        $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-15']);
-        $record->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 21, 'ayah_end' => 30, 'submission_type' => 'new', 'status' => 'repeat']);
+        $withBaris = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-09']);
+        $withBaris->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 21, 'ayah_end' => 25, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 4]);
+        $failed = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-15']);
+        $failed->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 26, 'ayah_end' => 30, 'submission_type' => 'new', 'status' => 'repeat']);
         $this->target('2026-09-30', 78, 40);
 
         $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
 
-        $this->assertSame(round($this->lines(78, 1, 20), 1), $plan['achieved_lines']);
+        // Baris tersimpan (4) dipakai apa adanya; setoran "ulang" tidak dihitung.
+        $this->assertSame(round($this->lines(78, 1, 20) + 4, 1), $plan['achieved_lines']);
+    }
+
+    #[Test]
+    public function periodic_monthly_report_shows_only_that_months_part_not_the_cumulative_term(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-08', 78, 1, 20);
+        $this->setoran('2026-09-09', 78, 21, 30);
+        $this->target('2026-07-29', 78, 20);
+        $this->target('2026-09-30', 78, 40);
+
+        $row = fn (int $month) => collect($this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => $month, 'year' => 2026,
+        ]))->viewData('studentReports'))->first(fn ($r) => $r['student']->id === $this->student->id);
+
+        $september = $row(9);
+        $this->assertEqualsWithDelta($this->lines(78, 21, 40), $september['target_baris'], 1.0, 'Hanya bagian September (ayat 21-40), bukan 1-40.');
+        $this->assertSame(round($this->lines(78, 21, 30), 1), (float) $september['capaian_baris']);
+        $this->assertFalse($september['is_tuntas']);
+
+        $july = $row(7);
+        $this->assertSame(round($this->lines(78, 1, 20), 1), (float) $july['target_baris']);
+        $this->assertTrue($july['is_tuntas']);
     }
 
     #[Test]
