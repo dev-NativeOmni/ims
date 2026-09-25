@@ -4,7 +4,7 @@
             <div>
                 <h2 class="font-bold text-2xl text-gray-900 leading-tight flex items-center gap-2">
                     <x-heroicon-o-flag class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                    <span>Kelola Target Hafalan Murid</span>
+                    <span>Target Bulanan</span>
                 </h2>
                 <p class="text-sm text-gray-600">
                     Pengisian target hafalan reguler per-murid dan target metode Ummi serentak per-Halaqah Musyrif.
@@ -38,6 +38,8 @@
                     {{ session('error') }}
                 </div>
             @endif
+
+            @include('hafalan-targets.partials.period-tabs')
 
             {{-- ═══════════════ PROGRAM MODE TOGGLE ═══════════════ --}}
             <div class="flex items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">

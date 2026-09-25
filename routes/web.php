@@ -316,6 +316,10 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/hafalan-targets/{hafalanTarget}/mark-missed', [HafalanTargetController::class, 'markMissed'])
             ->name('hafalan-targets.mark-missed');
 
+        // Target Triwulan: dihitung otomatis dari pertemuan aktif (tidak disimpan).
+        Route::get('/hafalan-targets/triwulan', [HafalanTargetController::class, 'term'])
+            ->name('hafalan-targets.term');
+
         Route::resource('hafalan-targets', HafalanTargetController::class);
 
         Route::get('/ummi-records/tatap-muka-suggestion', [HafalanRecordController::class, 'suggestTatapMuka'])

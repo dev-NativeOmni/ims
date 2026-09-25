@@ -7,6 +7,7 @@ use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
+use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -16,8 +17,8 @@ use Illuminate\Support\Collection;
  *
  * Titik awal = surah & ayat pertama yang disetorkan murid di term tersebut.
  * Target akhir tiap bulan = titik awal + total baris target sampai bulan itu
- * (jumlah pertemuan terjadwal x baris per level), dihitung maju menurut mushaf
- * dengan hitungan baris otomatis yang sama dengan setoran.
+ * (jumlah pertemuan terjadwal x baris per level), dihitung menurut urutan hafalan
+ * sekolah (Juz 30 fleksibel, lalu Juz 29, 28, ... dari awal juz; lihat termPlan()).
  *
  * Target buatan guru selalu menang: bulan yang sudah punya target guru tidak dibuat
  * target otomatis, target otomatis yang diedit guru menjadi target guru, dan target
@@ -153,14 +154,66 @@ class AutoHafalanTargetService
      */
     private function desiredTargets(Student $student, ?ClassRoom $classRoom, array $months, Carbon $termStart, Carbon $termEnd): array
     {
+        $plan = $this->termPlan($student, $termStart, $classRoom);
+
+        return collect($plan['months'])
+            ->filter(fn ($month) => $month['position'] !== null)
+            ->map(fn ($month) => $month['position'])
+            ->all();
+    }
+
+    /**
+     * Rencana target satu triwulan untuk satu murid (dipakai target bulanan otomatis dan
+     * halaman Target Triwulan): titik awal = setoran pertama triwulan, target = titik awal +
+     * (pertemuan aktif x baris per level), dihitung menurut urutan hafalan sekolah
+     * (Juz 30 fleksibel, lalu Juz 29, 28, ... dari awal juz). Target bulan = titik antara.
+     *
+     * @return array{
+     *     eligible: bool, reason: ?string, level_baris: ?int,
+     *     start: ?array{surah: Surah, ayah: int, date: ?string},
+     *     months: array<string, array{label: string, meetings: int, cumulative_lines: int, position: ?array}>,
+     *     term_meetings: int, target_lines: int, target: ?array,
+     *     capaian: ?array{surah: Surah, ayah: int, date: ?string}, achieved_lines: float, progress: int, reached: bool
+     * }
+     */
+    public function termPlan(Student $student, Carbon $date, ?ClassRoom $classRoom = null): array
+    {
+        $classRoom ??= $student->classRoom;
+        $termStart = $this->calendar->termStartDate($date);
+        $months = $this->calendar->termMonths($date);
+        $termEnd = end($months)['end'];
         $levelBaris = self::levelBaris($student->tahfizh_level);
 
-        if (! $classRoom || $classRoom->isGradeTen() || $levelBaris === null) {
-            return [];
+        $plan = [
+            'eligible' => false, 'reason' => null, 'level_baris' => $levelBaris, 'start' => null,
+            'months' => [], 'term_meetings' => 0, 'target_lines' => 0, 'target' => null,
+            'capaian' => null, 'achieved_lines' => 0.0, 'progress' => 0, 'reached' => false,
+        ];
+
+        if (! $classRoom) {
+            return ['reason' => 'no_class'] + $plan;
+        }
+        if ($classRoom->isGradeTen() || $levelBaris === null) {
+            return ['reason' => 'ummi'] + $plan;
         }
 
-        $first = HafalanRecordSurah::query()
-            ->select('hafalan_record_surahs.*')
+        // Pertemuan aktif per bulan (jadwal kelas pekanan x kalender) -> baris kumulatif.
+        $cumulative = 0;
+        foreach ($months as $monthKey => $range) {
+            $meetings = $this->calendar->scheduledMeetings($classRoom, $range['start'], $range['end']);
+            $cumulative += $levelBaris * $meetings;
+            $plan['months'][$monthKey] = [
+                'label' => $range['start']->locale('id')->translatedFormat('F Y'),
+                'meetings' => $meetings,
+                'cumulative_lines' => $cumulative,
+                'position' => null,
+            ];
+            $plan['term_meetings'] += $meetings;
+        }
+        $plan['target_lines'] = $cumulative;
+
+        $termRecords = HafalanRecordSurah::query()
+            ->select('hafalan_record_surahs.*', 'hafalan_records.submitted_at')
             ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
             ->whereNull('hafalan_records.deleted_at')
             ->where('hafalan_records.student_id', $student->id)
@@ -170,37 +223,73 @@ class AutoHafalanTargetService
             ->orderBy('hafalan_record_surahs.sort_order')
             ->orderBy('hafalan_record_surahs.id')
             ->with('surah')
-            ->first();
+            ->get()
+            ->filter(fn ($record) => $record->surah !== null)
+            ->values();
 
-        if (! $first || ! $first->surah) {
-            return [];
+        $first = $termRecords->first();
+        if (! $first) {
+            return ['eligible' => true, 'reason' => 'no_start'] + $plan;
         }
 
         $surahs = $this->surahsByNumber ??= Surah::query()->get()->keyBy('number');
+        $startSurah = (int) $first->surah->number;
+        $startAyah = (int) $first->ayah_start;
+        $juz30Done = $this->juz30DoneBefore($student, $termStart);
 
-        $desired = [];
-        $cumulativeLines = 0;
+        $plan['eligible'] = true;
+        $plan['start'] = ['surah' => $first->surah, 'ayah' => $startAyah, 'date' => $first->submitted_at ? Carbon::parse($first->submitted_at)->toDateString() : null];
 
-        foreach ($months as $monthKey => $range) {
-            $meetings = $this->calendar->scheduledMeetings($classRoom, $range['start'], $range['end']);
-            $cumulativeLines += $levelBaris * $meetings;
-
-            if ($meetings === 0) {
-                continue;
-            }
-
-            $position = $this->quran->targetPosition(
-                (int) $first->surah->number,
-                (int) $first->ayah_start,
-                (float) $cumulativeLines,
-                $surahs
-            );
-
-            if ($position !== null) {
-                $desired[$monthKey] = $position;
+        foreach ($plan['months'] as $monthKey => $month) {
+            if ($month['meetings'] > 0) {
+                $plan['months'][$monthKey]['position'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $month['cumulative_lines'], $surahs, $juz30Done);
             }
         }
+        $plan['target'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $plan['target_lines'], $surahs, $juz30Done);
 
-        return $desired;
+        // Capaian = setoran lulus terjauh di triwulan ini menurut urutan hafalan.
+        $furthest = $termRecords
+            ->filter(fn ($record) => $record->status === 'passed')
+            ->sortByDesc(fn ($record) => HafalanOrder::rank((int) $record->surah->number, (int) $record->ayah_end))
+            ->first();
+
+        if ($furthest) {
+            $plan['capaian'] = [
+                'surah' => $furthest->surah,
+                'ayah' => (int) $furthest->ayah_end,
+                'date' => $furthest->submitted_at ? Carbon::parse($furthest->submitted_at)->toDateString() : null,
+            ];
+            $plan['achieved_lines'] = round($this->quran->linesUntil($startSurah, $startAyah, (int) $furthest->surah->number, (int) $furthest->ayah_end, $surahs, $juz30Done), 1);
+            $plan['progress'] = $plan['target_lines'] > 0 ? (int) min(100, round($plan['achieved_lines'] / $plan['target_lines'] * 100)) : 0;
+            $plan['reached'] = $plan['target'] !== null && $this->quran->hasReached(
+                (int) $furthest->surah->number, (int) $furthest->ayah_end,
+                (int) $plan['target']['surah']->number, (int) $plan['target']['ayah_end']
+            );
+        }
+
+        return $plan;
+    }
+
+    /**
+     * Surah Juz 30 yang sudah disetor (lulus) sebelum triwulan: nomor surah => ayat terakhir.
+     * Juz 30 fleksibel, jadi sisa targetnya adalah surah/ayat yang belum pernah disetor.
+     *
+     * @return array<int, int>
+     */
+    private function juz30DoneBefore(Student $student, Carbon $termStart): array
+    {
+        return HafalanRecordSurah::query()
+            ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+            ->join('surahs', 'surahs.id', '=', 'hafalan_record_surahs.surah_id')
+            ->whereNull('hafalan_records.deleted_at')
+            ->where('hafalan_records.student_id', $student->id)
+            ->where('hafalan_records.submitted_at', '<', $termStart->toDateString())
+            ->where('hafalan_record_surahs.status', 'passed')
+            ->whereBetween('surahs.number', [78, 114])
+            ->groupBy('surahs.number')
+            ->selectRaw('surahs.number as surah_number, max(hafalan_record_surahs.ayah_end) as ayah_end')
+            ->pluck('ayah_end', 'surah_number')
+            ->map(fn ($ayah) => (int) $ayah)
+            ->all();
     }
 }

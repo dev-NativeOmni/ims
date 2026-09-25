@@ -7,7 +7,10 @@ use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\User;
+use App\Services\AcademicCalendarService;
+use App\Services\AutoHafalanTargetService;
 use App\Services\StudentProgressService;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -624,6 +627,62 @@ class HafalanTargetController extends Controller
             403,
             'Target hafalan tidak boleh diakses oleh akun ini.'
         );
+    }
+
+    /**
+     * Target Triwulan: per murid kelas 11/12, titik awal (setoran pertama triwulan), target
+     * akhir triwulan & titik antara tiap bulan, capaian, dan persentase -- semuanya dihitung
+     * otomatis dari pertemuan aktif (AutoHafalanTargetService::termPlan).
+     */
+    public function term(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar): View
+    {
+        $visibleStudentIds = $this->visibleStudentIds($request->user());
+
+        // Pilihan triwulan: 6 triwulan terakhir (termasuk yang berjalan).
+        $currentStart = $calendar->termStartDate(today());
+        $periods = collect(range(0, 5))->mapWithKeys(function ($i) use ($currentStart) {
+            $start = $currentStart->copy()->subMonthsNoOverflow($i * 3);
+            $termNumber = [7 => 1, 10 => 2, 1 => 3, 4 => 4][$start->month];
+            $academicYear = $start->month >= 7 ? $start->year.'/'.($start->year + 1) : ($start->year - 1).'/'.$start->year;
+
+            return [$start->toDateString() => "Triwulan {$termNumber} · {$academicYear} ({$start->locale('id')->translatedFormat('M')} – {$start->copy()->addMonths(2)->locale('id')->translatedFormat('M Y')})"];
+        });
+        $period = $periods->has($request->input('period')) ? $request->input('period') : $currentStart->toDateString();
+
+        $classRooms = ClassRoom::query()
+            ->with('program')
+            ->whereIn('id', Student::query()->whereIn('id', $visibleStudentIds)->where('status', 'active')->select('class_room_id'))
+            ->orderBy('name')
+            ->get()
+            ->reject(fn (ClassRoom $class) => $class->isGradeTen())
+            ->values();
+        $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
+
+        $rows = collect();
+        if ($selectedClass) {
+            $rows = Student::query()
+                ->whereIn('id', $visibleStudentIds)
+                ->where('class_room_id', $selectedClass->id)
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get()
+                ->map(function (Student $student) use ($targets, $selectedClass, $period) {
+                    $student->setRelation('classRoom', $selectedClass);
+
+                    return ['student' => $student, 'plan' => $targets->termPlan($student, Carbon::parse($period), $selectedClass)];
+                });
+        }
+
+        $withStart = $rows->filter(fn ($row) => $row['plan']['start'] !== null);
+        $summary = [
+            'students' => $rows->count(),
+            'reached' => $rows->where('plan.reached', true)->count(),
+            'no_start' => $rows->count() - $withStart->count(),
+            'avg_progress' => $withStart->isEmpty() ? 0 : (int) round($withStart->avg('plan.progress')),
+            'meetings' => $rows->first()['plan']['term_meetings'] ?? 0,
+        ];
+
+        return view('hafalan-targets.term', compact('periods', 'period', 'classRooms', 'selectedClass', 'rows', 'summary'));
     }
 
     private function visibleStudentIds(?User $user): Collection
