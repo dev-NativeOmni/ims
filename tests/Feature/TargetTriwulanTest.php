@@ -132,4 +132,31 @@ class TargetTriwulanTest extends TestCase
             ->assertForbidden();
         $this->assertSame('backward', $this->student->fresh()->hafalan_direction);
     }
+
+    #[Test]
+    public function a_teachers_manual_target_becomes_the_term_target_everywhere(): void
+    {
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-01', 78, 1, 5);
+        app(AutoHafalanTargetService::class)->syncStudent($this->student->fresh(), Carbon::parse('2026-07-01'));
+
+        // Guru mengganti target September.
+        HafalanTarget::where('student_id', $this->student->id)->where('auto_month', '2026-09')->forceDelete();
+        HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => Surah::where('number', 67)->value('id'), 'ayah' => 15,
+            'target_date' => '2026-09-30', 'status' => 'active',
+        ]);
+
+        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-01'));
+        $this->assertSame('manual', $plan['target_source']);
+        $this->assertSame(67, $plan['target']['surah']->number);
+        $this->assertSame(15, $plan['target']['ayah_end']);
+        $this->assertSame('manual', $plan['months']['2026-09']['source']);
+
+        // Laporan Triwulan memakai target yang sama.
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
+        $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
+        $this->assertSame('Surah 67', $termRecord['target_surah']);
+    }
 }

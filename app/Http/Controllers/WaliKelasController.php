@@ -95,7 +95,7 @@ class WaliKelasController extends Controller
         $targetsByStudent = HafalanTarget::query()
             ->with('surah')
             ->whereIn('student_id', $studentIds)
-            ->where('target_date', '<=', $termEnd->toDateString())
+            ->whereBetween('target_date', [$termStart->toDateString(), $termEnd->toDateString()])
             ->orderBy('target_date', 'desc')
             ->get()
             ->groupBy('student_id');

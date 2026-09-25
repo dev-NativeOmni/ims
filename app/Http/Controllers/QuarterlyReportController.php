@@ -246,10 +246,11 @@ class QuarterlyReportController extends Controller
             ->whereBetween('date', [$termStartDate, $termEndDate])
             ->get();
 
+        // Target triwulan = target tersimpan terakhir DI DALAM triwulan ini (sama dengan Target Triwulan).
         $latestTargets = HafalanTarget::query()
             ->with('surah')
             ->whereIn('student_id', $studentIds)
-            ->where('target_date', '<=', $termEndDate.' 23:59:59')
+            ->whereBetween('target_date', [$termStartDate, $termEndDate.' 23:59:59'])
             ->orderBy('target_date', 'desc')
             ->get()
             ->groupBy('student_id');

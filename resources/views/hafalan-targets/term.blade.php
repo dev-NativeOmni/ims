@@ -133,6 +133,9 @@
                                                 <span class="text-gray-500">{{ $month['label'] }}:</span>
                                                 <span class="font-semibold text-gray-800 dark:text-zinc-200">{{ $pos($month['position']) }}</span>
                                                 <span class="text-gray-400">({{ $month['meetings'] }} TM · {{ $month['cumulative_lines'] }} baris)</span>
+                                                @if ($month['source'] === 'manual')
+                                                    <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">diatur guru</span>
+                                                @endif
                                             </li>
                                         @endforeach
                                     </ul>
@@ -140,6 +143,11 @@
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <p class="font-bold text-indigo-700 dark:text-indigo-400">{{ $pos($plan['target']) }}</p>
                                     <p class="text-[11px] text-gray-500">{{ $plan['target_lines'] }} baris · {{ $plan['term_meetings'] }} pertemuan</p>
+                                    @if ($plan['target'])
+                                        <span class="mt-0.5 inline-block px-1.5 py-0.5 rounded text-[10px] font-bold {{ $plan['target_source'] === 'manual' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600' }}">
+                                            {{ $plan['target_source'] === 'manual' ? 'Diatur guru (Target Bulanan)' : 'Otomatis' }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if ($plan['capaian'])

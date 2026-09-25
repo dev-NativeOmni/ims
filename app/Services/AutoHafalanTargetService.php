@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\Surah;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Membuat & memperbarui target hafalan otomatis per murid per bulan untuk kelas
@@ -156,8 +157,8 @@ class AutoHafalanTargetService
         $plan = $this->termPlan($student, $termStart, $classRoom);
 
         return collect($plan['months'])
-            ->filter(fn ($month) => $month['position'] !== null)
-            ->map(fn ($month) => $month['position'])
+            ->filter(fn ($month) => $month['auto_position'] !== null)
+            ->map(fn ($month) => $month['auto_position'])
             ->all();
     }
 
@@ -187,7 +188,7 @@ class AutoHafalanTargetService
             'eligible' => false, 'reason' => null, 'level_baris' => $levelBaris, 'start' => null,
             'months' => [], 'term_meetings' => 0, 'target_lines' => 0, 'target' => null,
             'capaian' => null, 'achieved_lines' => 0.0, 'progress' => 0, 'reached' => false, 'juz_orders' => [],
-            'juz_order_source' => fn (int $juz) => 'default',
+            'juz_order_source' => fn (int $juz) => 'default', 'target_source' => 'computed',
         ];
 
         if (! $classRoom) {
@@ -207,6 +208,8 @@ class AutoHafalanTargetService
                 'meetings' => $meetings,
                 'cumulative_lines' => $cumulative,
                 'position' => null,
+                'auto_position' => null,
+                'source' => 'computed',
             ];
             $plan['term_meetings'] += $meetings;
         }
@@ -240,12 +243,30 @@ class AutoHafalanTargetService
 
         foreach ($plan['months'] as $monthKey => $month) {
             if ($month['meetings'] > 0) {
-                $plan['months'][$monthKey]['position'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $month['cumulative_lines'], $surahs, $coveredBefore, $direction, $juzOrders);
+                $position = $this->quran->targetPosition($startSurah, $startAyah, (float) $month['cumulative_lines'], $surahs, $coveredBefore, $direction, $juzOrders);
+                $plan['months'][$monthKey]['auto_position'] = $position;
+                $plan['months'][$monthKey]['position'] = $position;
             }
         }
 
         $walk = $this->quran->walkLines($startSurah, $startAyah, (float) $plan['target_lines'], $surahs, $coveredBefore, $direction, $juzOrders);
         $plan['target'] = $walk['position'] ?? null;
+
+        // Target tersimpan menang atas hitungan (sama dengan yang dipakai laporan): target guru di
+        // suatu bulan menggantikan titik bulan itu; target triwulan = target tersimpan terakhir.
+        $stored = $this->storedTermTargets($student, $termStart, $termEnd);
+        foreach ($stored->whereNull('auto_month') as $manual) {
+            $monthKey = $manual->target_date->format('Y-m');
+            if (isset($plan['months'][$monthKey]) && $manual->surah) {
+                $plan['months'][$monthKey]['position'] = ['surah' => $manual->surah, 'ayah_start' => 1, 'ayah_end' => (int) $manual->ayah];
+                $plan['months'][$monthKey]['source'] = 'manual';
+            }
+        }
+        $latestStored = $stored->last();
+        if ($latestStored?->surah) {
+            $plan['target'] = ['surah' => $latestStored->surah, 'ayah_start' => 1, 'ayah_end' => (int) $latestStored->ayah];
+            $plan['target_source'] = $latestStored->auto_month === null ? 'manual' : 'auto';
+        }
 
         // Capaian ditampilkan = setoran lulus terakhir di triwulan ini; progres & tuntas dari cakupan ayat.
         $latest = $records
@@ -259,13 +280,31 @@ class AutoHafalanTargetService
             ];
         }
 
-        if ($walk) {
+        if ($plan['target']) {
+            // Nilai target yang berlaku (tersimpan atau hitungan) dengan aturan cakupan yang sama dengan laporan.
+            $evaluation = $this->progress->evaluate($student, (int) $plan['target']['surah']->number, (int) $plan['target']['ayah_end'], $termStart, $termEnd, now(), $records);
             $coverageNow = $this->progress->coverage($records);
-            $plan['achieved_lines'] = round($this->quran->piecesLines($walk['pieces'], $surahs, $coverageNow), 1);
-            $plan['progress'] = $this->progress->progress($walk['pieces'], $coverageNow);
-            $plan['reached'] = $this->quran->piecesCovered($walk['pieces'], $coverageNow);
+            $plan['reached'] = $evaluation['reached'];
+            $plan['progress'] = $evaluation['progress'];
+            $plan['achieved_lines'] = $evaluation['pieces'] !== null
+                ? round($this->quran->piecesLines($evaluation['pieces'], $surahs, $coverageNow), 1)
+                : ($evaluation['reached'] ? (float) $plan['target_lines'] : 0.0);
         }
 
         return $plan;
+    }
+
+    /**
+     * Target tersimpan (tidak dihapus) di dalam triwulan, urut tanggal -- sumber yang sama dengan laporan.
+     */
+    public function storedTermTargets(Student $student, Carbon $termStart, Carbon $termEnd): Collection
+    {
+        return HafalanTarget::query()
+            ->with('surah')
+            ->where('student_id', $student->id)
+            ->whereBetween('target_date', [$termStart->toDateString(), $termEnd->copy()->endOfDay()->toDateTimeString()])
+            ->orderBy('target_date')
+            ->orderBy('id')
+            ->get();
     }
 }
