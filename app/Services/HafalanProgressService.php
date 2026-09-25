@@ -19,8 +19,8 @@ use Illuminate\Support\Collection;
  * - Cakupan: ayat yang sudah lulus disetor (urutan bebas).
  * - Urutan di dalam juz: dideteksi dari setoran (surah makin kecil = dari akhir juz),
  *   bisa dikoreksi guru (Student::juz_orders).
- * - Titik awal triwulan: posisi hafalan saat pertemuan pertama triwulan (lanjutan riwayat).
- * - Target baris: dari titik awal sampai target guru; capaian baris: ayat baru yang lulus.
+ * - Titik awal triwulan: setoran pertama di triwulan itu.
+ * - Target baris: dari titik awal sampai target guru; capaian baris: setoran lulus di triwulan.
  * - Tuntas: capaian baris >= target baris.
  */
 class HafalanProgressService
@@ -121,24 +121,24 @@ class HafalanProgressService
     }
 
     /**
-     * Titik awal triwulan = posisi hafalan murid saat pertemuan pertama triwulan: lanjutan dari
-     * setoran lulus terakhir sebelum triwulan (ayat yang sudah dihafal dilewati oleh
-     * HafalanOrder::segments). Tanpa riwayat: setoran pertama triwulan, lalu awal urutan hafalan.
+     * Titik awal triwulan = setoran pertama murid di triwulan itu. Belum ada setoran di
+     * triwulan: lanjutan setoran lulus terakhir sebelum triwulan (ayat yang sudah dihafal
+     * dilewati oleh HafalanOrder::segments), lalu awal urutan hafalan.
      *
      * @return array{surah: int, ayah: int, source: string, date: ?string}
      */
     public function startPoint(Student $student, Collection $records, Carbon $termStart, Carbon $termEnd): array
     {
+        $first = $this->firstBetween($records, $termStart, $termEnd);
+        if ($first) {
+            return ['surah' => (int) $first->surah_number, 'ayah' => (int) $first->ayah_start, 'source' => 'first_setoran', 'date' => Carbon::parse($first->submitted_at)->toDateString()];
+        }
+
         $before = $records
             ->filter(fn ($r) => $r->status === 'passed' && Carbon::parse($r->submitted_at)->lt($termStart->copy()->startOfDay()))
             ->last();
         if ($before) {
             return ['surah' => (int) $before->surah_number, 'ayah' => (int) $before->ayah_end, 'source' => 'history', 'date' => Carbon::parse($before->submitted_at)->toDateString()];
-        }
-
-        $first = $this->firstBetween($records, $termStart, $termEnd);
-        if ($first) {
-            return ['surah' => (int) $first->surah_number, 'ayah' => (int) $first->ayah_start, 'source' => 'first_setoran', 'date' => Carbon::parse($first->submitted_at)->toDateString()];
         }
 
         $firstJuz = HafalanOrder::juzSequence($student->hafalan_direction)[0];
@@ -148,23 +148,21 @@ class HafalanProgressService
     }
 
     /**
-     * Baris ayat BARU yang lulus disetor pada rentang: tercakup sampai $until tapi belum
-     * tercakup sebelum $from (mengulang ayat lama tidak dihitung).
+     * Baris setoran lulus pada rentang tanggal (inklusif), termasuk mengulang ayat yang dulu
+     * pernah lulus; ayat yang disetor lebih dari sekali di rentang ini dihitung sekali.
      */
-    public function newLines(Collection $records, Carbon $from, Carbon $until): float
+    public function passedLines(Collection $records, Carbon $from, Carbon $until): float
     {
         if ($until->lt($from)) {
             return 0.0;
         }
 
-        $before = $this->coverage($records, $from);
+        $inRange = $records->filter(fn ($r) => Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay()));
         $lines = 0.0;
-        foreach ($this->coverage($records, null, $until) as $surahNumber => $intervals) {
+        foreach ($this->coverage($inRange) as $surahNumber => $intervals) {
             $totalAyah = (int) ($this->surahs()->get($surahNumber)?->total_ayah ?? 0);
             foreach ($intervals as [$a, $b]) {
-                foreach (AyahCoverage::uncovered($before[$surahNumber] ?? [], $a, $b) as [$x, $y]) {
-                    $lines += ReportController::calculateLines($surahNumber, $x, $y, $totalAyah);
-                }
+                $lines += ReportController::calculateLines($surahNumber, $a, $b, $totalAyah);
             }
         }
 
@@ -173,30 +171,32 @@ class HafalanProgressService
 
     /**
      * Nilai target posisi (surah, ayat) pada $cutoff:
-     * - target baris = baris dari titik awal triwulan sampai target, mengikuti arah & urutan juz
-     *   murid, ayat yang sudah dihafal sebelum triwulan dilewati;
-     * - capaian baris = baris ayat baru yang lulus disetor sejak awal triwulan sampai $cutoff;
+     * - target baris = baris dari titik awal triwulan (setoran pertama) sampai target, mengikuti
+     *   arah & urutan juz murid, ayat yang sudah dihafal sebelum triwulan dilewati;
+     * - capaian baris = baris setoran lulus sejak awal triwulan sampai $cutoff;
      * - tuntas = capaian baris >= target baris (target yang sudah dihafal sebelum triwulan: tuntas).
      *
-     * @return array{reached: bool, progress: int, target_lines: float, achieved_lines: float, start: array}
+     * @return array{reached: bool, progress: int, target_lines: float, achieved_lines: float, start: array, path_start: ?array{0: int, 1: int}}
      */
     public function evaluate(Student $student, int $targetSurah, int $targetAyah, Carbon $termStart, Carbon $termEnd, Carbon $cutoff, ?Collection $records = null): array
     {
         $records ??= $this->records($student);
         $start = $this->startPoint($student, $records, $termStart, $termEnd);
-        $achieved = $this->newLines($records, $termStart, $cutoff->copy()->min($termEnd->copy()->endOfDay()));
+        $achieved = $this->passedLines($records, $termStart, $cutoff->copy()->min($termEnd->copy()->endOfDay()));
 
         $pieces = $this->quran->piecesUntil(
             $start['surah'], $start['ayah'], $targetSurah, $targetAyah, $this->surahs(),
             $this->coverage($records, $termStart), $student->hafalan_direction, $this->juzOrders($student, $records)
         );
         $targetLines = $pieces === null ? 0.0 : round($this->quran->piecesLines($pieces, $this->surahs()), 1);
+        // Ayat pertama jalur target (setelah melewati ayat yang sudah dihafal), untuk tampilan "dari ... s.d. ...".
+        $pathStart = $pieces ? [$pieces[0][0], $pieces[0][1]] : null;
 
         if ($targetLines <= 0) {
             // Ayat target sudah dihafal sebelum triwulan (atau di luar jalur): tuntas bila tercakup.
             $reached = AyahCoverage::contains($this->coverage($records, null, $cutoff)[$targetSurah] ?? [], $targetAyah);
 
-            return ['reached' => $reached, 'progress' => $reached ? 100 : 0, 'target_lines' => 0.0, 'achieved_lines' => $achieved, 'start' => $start];
+            return ['reached' => $reached, 'progress' => $reached ? 100 : 0, 'target_lines' => 0.0, 'achieved_lines' => $achieved, 'start' => $start, 'path_start' => null];
         }
 
         return [
@@ -205,7 +205,26 @@ class HafalanProgressService
             'target_lines' => $targetLines,
             'achieved_lines' => $achieved,
             'start' => $start,
+            'path_start' => $pathStart,
         ];
+    }
+
+    /**
+     * Rentang ayat target untuk tampilan: dari ayat pertama jalur target sampai ayat target,
+     * mis. "21 - 40" (satu surah) atau "An-Naba 21 - 40" (mulai di surah lain).
+     */
+    public function targetRangeLabel(?array $evaluation, int $targetSurah, int $targetAyah): string
+    {
+        $pathStart = $evaluation['path_start'] ?? null;
+        if ($pathStart === null) {
+            return (string) $targetAyah;
+        }
+
+        [$surah, $ayah] = $pathStart;
+
+        return $surah === $targetSurah
+            ? "{$ayah} - {$targetAyah}"
+            : ($this->surahs()->get($surah)?->name_latin ?? "Surah {$surah}")." {$ayah} - {$targetAyah}";
     }
 
     /**
@@ -232,7 +251,7 @@ class HafalanProgressService
                 ->sortBy(fn ($t) => Carbon::parse($t->target_date)->format('Y-m-d').sprintf('%010d', $t->id))
                 ->last();
             $until = $range['end']->copy()->endOfDay()->min($cutoff);
-            $cumAchieved = $until->lt($range['start']) ? $prevAchieved : $this->newLines($records, $termStart, $until);
+            $cumAchieved = $until->lt($range['start']) ? $prevAchieved : $this->passedLines($records, $termStart, $until);
 
             $evaluation = $target
                 ? $this->evaluate($student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, $until, $records)
@@ -246,6 +265,7 @@ class HafalanProgressService
                 'cumulative_target_lines' => $cumTarget,
                 'cumulative_achieved_lines' => $cumAchieved,
                 'reached' => $evaluation ? $evaluation['reached'] : null,
+                'evaluation' => $evaluation,
             ];
 
             if ($target) {

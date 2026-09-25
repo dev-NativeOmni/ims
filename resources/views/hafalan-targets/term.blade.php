@@ -7,8 +7,8 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Isi target surah &amp; ayat tiap bulan untuk murid yang diampu. Deadline tiap bulan = pertemuan aktif terakhir kelas di bulan itu.
-                Target baris dihitung dari posisi hafalan murid di pertemuan pertama triwulan (lanjutan riwayat setoran) sampai target, mengikuti
-                arah &amp; urutan juz murid. Capaian = baris ayat baru yang lulus disetor. Tercapai bila capaian baris ≥ target baris.
+                Target baris dihitung dari setoran pertama murid di triwulan ini sampai target, mengikuti arah &amp; urutan juz murid
+                (ayat yang sudah dihafal sebelumnya dilewati). Capaian = baris setoran lulus di triwulan ini. Tercapai bila capaian baris ≥ target baris.
             </p>
         </div>
     </x-slot>
@@ -100,7 +100,7 @@
                                         <a href="{{ route('hafalan-targets.juz-orders', $student) }}" class="font-bold text-gray-900 dark:text-white hover:text-indigo-600 hover:underline" title="Lihat & atur urutan hafalan per juz">{{ $student->name }}</a>
                                         <p class="text-[11px] text-gray-500">{{ ucfirst($student->tahfizh_level ?? 'reguler') }}</p>
                                         @if ($plan['start'])
-                                            <p class="text-[11px] text-gray-400" title="{{ ['history' => 'Lanjutan setoran terakhir sebelum triwulan ('.$plan['start']['date'].')', 'first_setoran' => 'Belum ada riwayat sebelum triwulan: setoran pertama triwulan', 'default' => 'Belum ada setoran: awal urutan hafalan'][$plan['start']['source']] }}">
+                                            <p class="text-[11px] text-gray-400" title="{{ ['history' => 'Belum setor di triwulan ini: lanjutan setoran terakhir ('.$plan['start']['date'].')', 'first_setoran' => 'Setoran pertama triwulan ('.$plan['start']['date'].')', 'default' => 'Belum ada setoran: awal urutan hafalan'][$plan['start']['source']] }}">
                                                 Awal: {{ $plan['start']['surah_model']?->name_latin }} : {{ $plan['start']['ayah'] }}
                                                 <span class="text-gray-300">· Juz {{ $plan['start']['juz'] }}</span>
                                             </p>

@@ -450,7 +450,7 @@ class StudentReportController extends Controller
                 $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
 
                 // Target guru di triwulan rapor (Target Triwulan): baris dari posisi di pertemuan
-                // pertama triwulan sampai target, capaian = baris ayat baru yang lulus.
+                // pertama triwulan sampai target, capaian = baris setoran lulus di triwulan.
                 $raporTerm = self::resolveTanseTerm($academicYear, $semester, $term);
                 $termTarget = HafalanTarget::query()
                     ->with('surah')

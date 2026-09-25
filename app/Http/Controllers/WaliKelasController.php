@@ -100,8 +100,8 @@ class WaliKelasController extends Controller
             ->get()
             ->groupBy('student_id');
 
-        // Kelas 11 & 12: target & capaian baris dari target guru (posisi di pertemuan pertama triwulan
-        // sampai target; capaian = baris ayat baru yang lulus). Kelas 10/Ummi atau belum ada target:
+        // Kelas 11 & 12: target & capaian baris dari target guru (setoran pertama triwulan sampai
+        // target; capaian = baris setoran lulus di triwulan). Kelas 10/Ummi atau belum ada target:
         // pertemuan x level.
         $progress = app(HafalanProgressService::class);
         $breakdowns = $classRoom->isGradeTen() ? [] : $students

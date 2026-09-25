@@ -98,7 +98,7 @@ class AutoHafalanTargetService
         $plan['juz_orders'] = $juzOrders;
         $plan['juz_order_source'] = fn (int $juz) => in_array($juz, $manualJuz, true) ? 'manual' : (isset($detected[$juz]) ? 'auto' : 'default');
 
-        // Titik awal = posisi saat pertemuan pertama triwulan (lanjutan riwayat hafalan).
+        // Titik awal = setoran pertama triwulan (tanpa setoran: lanjutan riwayat hafalan).
         $start = $breakdown['start'];
         $plan['start'] = $start + [
             'surah_model' => $surahs->get($start['surah']),
@@ -117,7 +117,7 @@ class AutoHafalanTargetService
             ];
         }
 
-        $plan['achieved_lines'] = $this->progress->newLines($records, $termStart, now()->min($termEnd->copy()->endOfDay()));
+        $plan['achieved_lines'] = $this->progress->passedLines($records, $termStart, now()->min($termEnd->copy()->endOfDay()));
         if ($breakdown['evaluation']) {
             $plan['reached'] = $breakdown['evaluation']['reached'];
             $plan['progress'] = $breakdown['evaluation']['progress'];

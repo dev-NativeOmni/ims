@@ -325,7 +325,7 @@ class QuarterlyReportController extends Controller
         ];
 
         // Kelas 11 & 12 (non-Ummi) yang sudah punya target guru di triwulan ini: target & capaian baris
-        // dari target guru, dihitung dari posisi hafalan saat pertemuan pertama triwulan
+        // dari target guru, dihitung dari setoran pertama triwulan
         // (HafalanProgressService::termBreakdown). Belum ada target: pertemuan x baris per level.
         $termStartDay = Carbon::parse(reset($monthRanges)['start'])->startOfDay();
         $termEndDay = Carbon::parse(end($monthRanges)['end'])->endOfDay();
@@ -972,11 +972,15 @@ class QuarterlyReportController extends Controller
             $studentTarget = $latestTargets->get($student->id)?->first();
 
             // Kelas 11 & 12: target bulan = target guru bulan ini; baris target = bagian bulan ini dari
-            // titik awal triwulan sampai target; capaian = baris ayat baru yang lulus di bulan ini.
+            // setoran pertama triwulan sampai target; capaian = baris setoran lulus di bulan ini.
             $breakdown = $context['breakdowns'][$student->id] ?? null;
+            $monthTargetAyat = null;
             if ($breakdown !== null) {
                 $cell = $breakdown['months'][Carbon::parse($range['start'])->format('Y-m')];
                 $studentTarget = $cell['target'];
+                $monthTargetAyat = $studentTarget
+                    ? app(HafalanProgressService::class)->targetRangeLabel($cell['evaluation'], (int) $studentTarget->surah->number, (int) $studentTarget->ayah)
+                    : null;
                 $targetLines = $cell['target_lines'];
                 $totalCapaianLines = $cell['achieved_lines'];
                 $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
@@ -990,7 +994,7 @@ class QuarterlyReportController extends Controller
                 $targetAyat = trim('Peraga: '.($studentTarget->halaman_peraga ?: '-').' · Buku: '.($studentTarget->halaman_buku ?: '-'));
             } else {
                 $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
-                $targetAyat = $studentTarget ? $studentTarget->ayah_range : '-';
+                $targetAyat = $studentTarget ? ($monthTargetAyat ?? $studentTarget->ayah_range) : '-';
             }
 
             // Capaian: pakai catatan Ummi terbaru kalau ada (Ziyadah, kalau ada, dihitung mundur
@@ -1067,13 +1071,15 @@ class QuarterlyReportController extends Controller
             $targetAyat = $first['target_ayat'] ?? '-';
 
             // Kelas 11 & 12: target triwulan = target guru bulan terakhir yang terisi; target baris dari
-            // posisi di pertemuan pertama triwulan sampai target; capaian = baris ayat baru yang lulus.
+            // setoran pertama triwulan sampai target; capaian = baris setoran lulus di triwulan.
             $breakdown = $breakdowns[$student->id] ?? null;
             if ($breakdown !== null) {
                 $termTarget = $breakdown['target'];
                 $evaluation = $breakdown['evaluation'];
                 $targetSurah = $termTarget?->surah?->name_latin ?? '-';
-                $targetAyat = $termTarget ? $termTarget->ayah_range : '-';
+                $targetAyat = $termTarget
+                    ? app(HafalanProgressService::class)->targetRangeLabel($evaluation, (int) $termTarget->surah->number, (int) $termTarget->ayah)
+                    : '-';
                 $targetLines = $evaluation['target_lines'] ?? 0;
                 $totalLines = $evaluation['achieved_lines'] ?? $rows->sum('total_lines');
                 $isTuntas = $evaluation['reached'] ?? false;

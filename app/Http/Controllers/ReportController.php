@@ -1104,8 +1104,8 @@ class ReportController extends Controller
             // Tuntas: kelas 11 & 12 dengan target guru -> capaian baris >= target baris
             // (HafalanProgressService); selain itu (Kelas 10/Ummi, tanpa target) dari jumlah baris.
             if (! $isGrade10 && $levelBaris !== null && $latestTarget?->surah) {
-                // Target & capaian baris dari target guru: sejak posisi di pertemuan pertama triwulan
-                // target sampai target itu; capaian = baris ayat baru yang lulus sampai akhir periode.
+                // Target & capaian baris dari target guru: sejak setoran pertama triwulan target sampai
+                // target itu; capaian = baris setoran lulus sejak awal triwulan sampai akhir periode.
                 $calendar = app(AcademicCalendarService::class);
                 $targetTermMonths = $calendar->termMonths(Carbon::parse($latestTarget->target_date));
                 $evaluation = app(HafalanProgressService::class)->evaluate(

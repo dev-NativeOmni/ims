@@ -238,38 +238,42 @@ class TargetTriwulanTest extends TestCase
     }
 
     #[Test]
-    public function target_lines_start_from_the_position_before_the_first_meeting_not_the_first_setoran(): void
+    public function target_lines_start_from_the_first_setoran_of_the_term(): void
     {
         $this->finishJuz30ExceptAnNaba();
-        $this->setoran('2026-06-20', 78, 1, 20); // riwayat sebelum triwulan: An-Naba sampai ayat 20
-        $this->setoran('2026-08-05', 78, 21, 30); // absen di Juli, baru setor Agustus
+        $this->setoran('2026-06-20', 78, 1, 10);  // riwayat sebelum triwulan
+        $this->setoran('2026-08-05', 78, 21, 30); // setoran pertama triwulan (ayat 11-20 dilewati murid)
         $this->target('2026-09-30', 78, 40);
 
         $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
 
-        $this->assertSame('history', $plan['start']['source']);
-        $this->assertSame(round($this->lines(78, 21, 40), 1), $plan['target_lines'], 'Target = An-Naba 21-40, bukan dari setoran pertama triwulan.');
+        $this->assertSame('first_setoran', $plan['start']['source']);
+        $this->assertSame(21, $plan['start']['ayah']);
+        $this->assertSame(round($this->lines(78, 21, 40), 1), $plan['target_lines'], 'Target = An-Naba 21-40, dari setoran pertama triwulan.');
         $this->assertSame(round($this->lines(78, 21, 30), 1), $plan['achieved_lines']);
         $this->assertFalse($plan['reached']);
 
         $this->setoran('2026-08-12', 78, 31, 40);
         $this->assertTrue(app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'))['reached']);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
+        $this->assertSame('21 - 40', $response->viewData('halaqahData')[0]['term_records'][0]['target_ayat']);
     }
 
     #[Test]
-    public function repeating_old_ayat_or_failed_setoran_does_not_count_as_capaian(): void
+    public function capaian_counts_every_passed_setoran_in_the_term_once_but_not_failed_ones(): void
     {
         $this->finishJuz30ExceptAnNaba();
         $this->setoran('2026-06-20', 78, 1, 20);
-        $this->setoran('2026-07-08', 78, 1, 20); // mengulang ayat lama
+        $this->setoran('2026-07-08', 78, 1, 20); // mengulang ayat lama: ikut dihitung
+        $this->setoran('2026-07-09', 78, 1, 20); // disetor lagi di triwulan yang sama: dihitung sekali
         $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-15']);
         $record->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 21, 'ayah_end' => 30, 'submission_type' => 'new', 'status' => 'repeat']);
         $this->target('2026-09-30', 78, 40);
 
         $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
 
-        $this->assertSame(0.0, $plan['achieved_lines']);
-        $this->assertSame(0, $plan['progress']);
+        $this->assertSame(round($this->lines(78, 1, 20), 1), $plan['achieved_lines']);
     }
 
     #[Test]
