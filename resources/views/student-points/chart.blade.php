@@ -1,3 +1,22 @@
+@php
+    $isReward = $category === 'reward';
+    $noun = $isReward ? 'Penghargaan' : 'Pelanggaran';
+    $unit = $isReward ? 'Prestasi' : 'Kasus';
+    $typeStyles = [
+        'lateness' => ['icon' => 'heroicon-o-clock', 'chip' => 'bg-amber-50 text-amber-700 border-amber-200', 'text' => 'text-amber-600'],
+        'attribute' => ['icon' => 'heroicon-o-tag', 'chip' => 'bg-blue-50 text-blue-700 border-blue-200', 'text' => 'text-blue-600'],
+        'violation' => ['icon' => 'heroicon-o-document-text', 'chip' => 'bg-rose-50 text-rose-700 border-rose-200', 'text' => 'text-rose-600'],
+        'academic' => ['icon' => 'heroicon-o-academic-cap', 'chip' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'text' => 'text-emerald-600'],
+        'non-academic' => ['icon' => 'heroicon-o-star', 'chip' => 'bg-sky-50 text-sky-700 border-sky-200', 'text' => 'text-sky-600'],
+        'other' => ['icon' => 'heroicon-o-sparkles', 'chip' => 'bg-gray-50 text-gray-700 border-gray-200', 'text' => 'text-gray-600'],
+    ];
+    $accentText = $isReward ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+    $accentIconBox = $isReward ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400';
+    $accentBadge = $isReward ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300';
+    $barSelected = $isReward ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-rose-600 dark:bg-rose-500';
+    $barIdle = $isReward ? 'bg-emerald-200 dark:bg-emerald-950/60 hover:bg-emerald-300' : 'bg-rose-200 dark:bg-rose-950/60 hover:bg-rose-300';
+    $barGradient = $isReward ? 'from-teal-400 to-emerald-600' : 'from-amber-500 to-rose-600';
+@endphp
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -7,7 +26,11 @@
                     <span>Laporan & Rekapitulasi Ketahanan Sekolah (Tanse)</span>
                 </h2>
                 <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                    Pemantauan tren dan peringkat pelanggaran kedisiplinan murid (Tata Tertib, Keterlambatan, dan Atribut/Seragam).
+                    @if ($isReward)
+                        Pemantauan tren dan peringkat penghargaan & prestasi murid (Akademik dan Non-Akademik).
+                    @else
+                        Pemantauan tren dan peringkat pelanggaran kedisiplinan murid (Tata Tertib, Keterlambatan, dan Atribut/Seragam).
+                    @endif
                 </p>
             </div>
 
@@ -18,15 +41,27 @@
                     <option value="all" @selected($timeFrame === 'all')>Semua Waktu (Akumulasi)</option>
                 </select>
 
+                {{-- Ganti jenis catatan: sub-jenis dikembalikan ke "Semua" supaya tidak memakai tipe jenis lain. --}}
+                <select name="category" onchange="this.form.violation_type.value = 'all'; this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-bold py-2 px-3 focus:ring-indigo-500 dark:text-white">
+                    <option value="violation" @selected(! $isReward)>Pelanggaran</option>
+                    <option value="reward" @selected($isReward)>Penghargaan / Prestasi</option>
+                </select>
+
                 <select name="violation_type" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
-                    <option value="all" @selected($violationType === 'all')>Semua Pelanggaran</option>
-                    <option value="lateness" @selected($violationType === 'lateness')>Keterlambatan</option>
-                    <option value="attribute" @selected($violationType === 'attribute')>Atribut / Seragam</option>
-                    <option value="violation" @selected($violationType === 'violation')>Tata Tertib</option>
+                    @if ($isReward)
+                        <option value="all" @selected($violationType === 'all')>Semua Prestasi</option>
+                        <option value="academic" @selected($violationType === 'academic')>Akademik</option>
+                        <option value="non-academic" @selected($violationType === 'non-academic')>Non-Akademik</option>
+                    @else
+                        <option value="all" @selected($violationType === 'all')>Semua Pelanggaran</option>
+                        <option value="lateness" @selected($violationType === 'lateness')>Keterlambatan</option>
+                        <option value="attribute" @selected($violationType === 'attribute')>Atribut / Seragam</option>
+                        <option value="violation" @selected($violationType === 'violation')>Tata Tertib</option>
+                    @endif
                 </select>
 
                 <select name="sort_by" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
-                    <option value="count" @selected($sortBy === 'count')>Urutkan: Kasus Terbanyak</option>
+                    <option value="count" @selected($sortBy === 'count')>Urutkan: {{ $isReward ? 'Prestasi' : 'Kasus' }} Terbanyak</option>
                     <option value="points" @selected($sortBy === 'points')>Urutkan: Poin Terbanyak</option>
                 </select>
 
@@ -92,14 +127,12 @@
                 {{-- Total Pelanggaran --}}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
+                        <div class="p-3 {{ $accentIconBox }} rounded-xl">
+                            <x-dynamic-component :component="$isReward ? 'heroicon-o-trophy' : 'heroicon-o-exclamation-triangle'" class="w-6 h-6" />
                         </div>
                         <div>
-                            <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Pelanggaran</p>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-0.5">{{ $monthViolationsCount }} <span class="text-xs font-normal text-gray-400">Kasus</span></h3>
+                            <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total {{ $noun }}</p>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-0.5">{{ $monthViolationsCount }} <span class="text-xs font-normal text-gray-400">{{ $unit }}</span></h3>
                             <p class="text-[11px] text-gray-400 mt-0.5">{{ $timeFrame === 'all' ? 'Semua Waktu' : $monthsList[$month] . ' ' . $year }}</p>
                         </div>
                     </div>
@@ -116,7 +149,7 @@
                         <div>
                             <p class="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Total Akumulasi Poin</p>
                             <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-0.5">{{ $monthViolationsPoints }} <span class="text-xs font-normal text-gray-400">Poin</span></h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Dampak Kedisiplinan</p>
+                            <p class="text-[11px] text-gray-400 mt-0.5">{{ $isReward ? 'Poin Prestasi' : 'Dampak Kedisiplinan' }}</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +157,7 @@
                 {{-- Murid Terbanyak Pelanggaran --}}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
+                        <div class="p-3 {{ $accentIconBox }} rounded-xl">
                             <x-heroicon-o-trophy class="w-6 h-6" />
                         </div>
                         <div>
@@ -132,8 +165,8 @@
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5 truncate max-w-[150px]">
                                 {{ $studentLeaderboard->first()['student']->name ?? '-' }}
                             </h3>
-                            <p class="text-[11px] text-rose-500 font-semibold mt-0.5">
-                                {{ $studentLeaderboard->first()['violation_count'] ?? 0 }} Kasus ({{ $studentLeaderboard->first()['violation_points'] ?? 0 }} Poin)
+                            <p class="text-[11px] {{ $accentText }} font-semibold mt-0.5">
+                                {{ $studentLeaderboard->first()['violation_count'] ?? 0 }} {{ $unit }} ({{ $studentLeaderboard->first()['violation_points'] ?? 0 }} Poin)
                             </p>
                         </div>
                     </div>
@@ -141,29 +174,17 @@
 
                 {{-- Rincian Tipe Pelanggaran --}}
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
-                    <p class="text-xs font-semibold text-gray-550 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran Tipe Pelanggaran</p>
+                    <p class="text-xs font-semibold text-gray-550 dark:text-zinc-400 uppercase tracking-wider mb-2">Sebaran {{ $isReward ? 'Jenis Prestasi' : 'Tipe Pelanggaran' }}</p>
                     <div class="grid grid-cols-3 gap-1.5">
-                        <div class="p-2 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center justify-center gap-1 truncate max-w-full" title="Keterlambatan">
-                                <x-heroicon-o-clock class="w-3 h-3 text-amber-600 shrink-0" />
-                                <span>Telat</span>
-                            </span>
-                            <span class="text-base font-black text-amber-900 dark:text-amber-100 mt-0.5">{{ $typeBreakdown['lateness'] }}</span>
-                        </div>
-                        <div class="p-2 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-1 truncate max-w-full" title="Atribut">
-                                <x-heroicon-o-tag class="w-3 h-3 text-blue-600 shrink-0" />
-                                <span>Atribut</span>
-                            </span>
-                            <span class="text-base font-black text-blue-900 dark:text-blue-100 mt-0.5">{{ $typeBreakdown['attribute'] }}</span>
-                        </div>
-                        <div class="p-2 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/30 rounded-xl text-center flex flex-col items-center justify-center">
-                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-1 truncate max-w-full" title="Tata Tertib">
-                                <x-heroicon-o-document-text class="w-3 h-3 text-rose-600 shrink-0" />
-                                <span>Tatib</span>
-                            </span>
-                            <span class="text-base font-black text-rose-900 dark:text-rose-100 mt-0.5">{{ $typeBreakdown['violation'] }}</span>
-                        </div>
+                        @foreach ($typeLabels as $typeKey => $typeLabel)
+                            <div class="p-2 border rounded-xl text-center flex flex-col items-center justify-center {{ $typeStyles[$typeKey]['chip'] }}">
+                                <span class="text-[10px] font-bold flex flex-wrap items-center justify-center gap-1 leading-tight text-center" title="{{ $typeLabel }}">
+                                    <x-dynamic-component :component="$typeStyles[$typeKey]['icon']" class="w-3 h-3 shrink-0" />
+                                    <span>{{ $typeLabel }}</span>
+                                </span>
+                                <span class="text-base font-black mt-0.5">{{ $typeBreakdown[$typeKey] }}</span>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -174,10 +195,10 @@
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             <x-heroicon-o-trophy class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                            <span>Rekapitulasi Peringkat Murid dengan Pelanggaran Terbanyak</span>
+                            <span>Rekapitulasi Peringkat Murid dengan {{ $noun }} Terbanyak</span>
                         </h3>
                         <p class="text-xs text-gray-500">
-                            Diurutkan berdasarkan {{ $sortBy === 'points' ? 'Total Poin Terbanyak' : 'Jumlah Kasus Terbanyak' }} ({{ $timeFrame === 'all' ? 'Akumulasi Semua Waktu' : $monthsList[$month] . ' ' . $year }}).
+                            Diurutkan berdasarkan {{ $sortBy === 'points' ? 'Total Poin Terbanyak' : 'Jumlah '.$unit.' Terbanyak' }} ({{ $timeFrame === 'all' ? 'Akumulasi Semua Waktu' : $monthsList[$month] . ' ' . $year }}).
                         </p>
                     </div>
                 </div>
@@ -189,10 +210,10 @@
                                 <th class="px-4 py-3 text-center w-16">Peringkat</th>
                                 <th class="px-4 py-3">Nama Murid / NIS</th>
                                 <th class="px-4 py-3">Kelas / Halaqah</th>
-                                <th class="px-4 py-3 text-center">Total Kasus</th>
+                                <th class="px-4 py-3 text-center">Total {{ $isReward ? 'Prestasi' : 'Kasus' }}</th>
                                 <th class="px-4 py-3 text-center">Total Poin</th>
-                                <th class="px-4 py-3">Rincian Pelanggaran</th>
-                                <th class="px-4 py-3">Catatan / Sanksi Terakhir</th>
+                                <th class="px-4 py-3">Rincian {{ $noun }}</th>
+                                <th class="px-4 py-3">{{ $isReward ? 'Prestasi Terakhir' : 'Catatan / Sanksi Terakhir' }}</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -226,8 +247,8 @@
                                         {{ $st->classRoom?->name ?? '-' }}
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
-                                            {{ $item['violation_count'] }} Kasus
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black {{ $accentBadge }}">
+                                            {{ $item['violation_count'] }} {{ $unit }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -237,31 +258,21 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="flex items-center gap-1.5">
-                                            @if ($item['lateness_count'] > 0)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold">
-                                                    <x-heroicon-o-clock class="w-3 h-3" />
-                                                    <span>Telat: {{ $item['lateness_count'] }}</span>
-                                                </span>
-                                            @endif
-                                            @if ($item['attribute_count'] > 0)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
-                                                    <x-heroicon-o-tag class="w-3 h-3" />
-                                                    <span>Atribut: {{ $item['attribute_count'] }}</span>
-                                                </span>
-                                            @endif
-                                            @if ($item['tatib_count'] > 0)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
-                                                    <x-heroicon-o-document-text class="w-3 h-3" />
-                                                    <span>Tatib: {{ $item['tatib_count'] }}</span>
-                                                </span>
-                                            @endif
+                                            @foreach ($typeLabels as $typeKey => $typeLabel)
+                                                @if ($item['type_counts'][$typeKey] > 0)
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-bold {{ $typeStyles[$typeKey]['chip'] }}">
+                                                        <x-dynamic-component :component="$typeStyles[$typeKey]['icon']" class="w-3 h-3" />
+                                                        <span>{{ $typeLabel }}: {{ $item['type_counts'][$typeKey] }}</span>
+                                                    </span>
+                                                @endif
+                                            @endforeach
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        @if (!empty($item['recent_sanctions']))
-                                            <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 truncate max-w-[200px]" title="{{ implode(', ', $item['recent_sanctions']) }}">
-                                                <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5 shrink-0" />
-                                                <span>{{ implode(', ', $item['recent_sanctions']) }}</span>
+                                        @if (!empty($item['recent_notes']))
+                                            <span class="text-xs font-semibold {{ $accentText }} flex items-center gap-1 truncate max-w-[200px]" title="{{ implode(', ', $item['recent_notes']) }}">
+                                                <x-dynamic-component :component="$isReward ? 'heroicon-o-trophy' : 'heroicon-o-exclamation-triangle'" class="w-3.5 h-3.5 shrink-0" />
+                                                <span>{{ implode(', ', $item['recent_notes']) }}</span>
                                             </span>
                                         @else
                                             <span class="text-xs text-gray-400 italic">-</span>
@@ -277,7 +288,7 @@
                             @empty
                                 <tr>
                                     <td colspan="8" class="px-4 py-12 text-center text-gray-400 dark:text-zinc-500">
-                                        Belum ada data pelanggaran murid pada filter ini.
+                                        Belum ada data {{ strtolower($noun) }} murid pada filter ini.
                                     </td>
                                 </tr>
                             @endforelse
@@ -293,8 +304,8 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm space-y-6">
                     <div class="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Grafik Tren Perkembangan Pelanggaran Sekolah (Januari – Desember {{ $year }})</h3>
-                            <p class="text-xs text-gray-500">Jumlah kasus pelanggaran kedisiplinan murid di seluruh sekolah dari bulan ke bulan.</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Grafik Tren Perkembangan {{ $noun }} Sekolah (Januari – Desember {{ $year }})</h3>
+                            <p class="text-xs text-gray-500">Jumlah {{ $isReward ? 'penghargaan & prestasi' : 'kasus pelanggaran kedisiplinan' }} murid di seluruh sekolah dari bulan ke bulan.</p>
                         </div>
                     </div>
 
@@ -307,14 +318,14 @@
                                 $tCount = $tData['count'];
                                 $isSel = ($mNum === $month);
                                 $heightPct = round(($tCount / $maxCount) * 100);
-                                $barBg = $isSel ? 'bg-rose-600 dark:bg-rose-500' : 'bg-rose-200 dark:bg-rose-950/60 hover:bg-rose-300';
+                                $barBg = $isSel ? $barSelected : $barIdle;
                             @endphp
                             <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
-                                <span class="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">{{ $tCount }}</span>
+                                <span class="text-[10px] font-extrabold {{ $accentText }} group-hover:scale-110 transition-transform">{{ $tCount }}</span>
                                 <div class="w-full max-w-[28px] bg-gray-100 dark:bg-zinc-800 rounded-t-lg overflow-hidden flex items-end h-full">
                                     <div class="w-full rounded-t-lg {{ $barBg }} transition-all duration-300" style="height: {{ max(4, $heightPct) }}%"></div>
                                 </div>
-                                <span class="text-[10px] font-bold uppercase {{ $isSel ? 'text-rose-600 dark:text-rose-400 font-extrabold' : 'text-gray-400' }}">{{ $tData['month_name'] }}</span>
+                                <span class="text-[10px] font-bold uppercase {{ $isSel ? $accentText.' font-extrabold' : 'text-gray-400' }}">{{ $tData['month_name'] }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -324,8 +335,8 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm space-y-6">
                     <div class="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Peringkat Pelanggaran per Kelas (Diurutkan dari Terbanyak)</h3>
-                            <p class="text-xs text-gray-500">Perbandingan jumlah kasus dan poin pelanggaran antar kelas bulan {{ $monthsList[$month] }} {{ $year }}.</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Peringkat {{ $noun }} per Kelas (Diurutkan dari Terbanyak)</h3>
+                            <p class="text-xs text-gray-500">Perbandingan jumlah dan poin {{ strtolower($noun) }} antar kelas bulan {{ $monthsList[$month] }} {{ $year }}.</p>
                         </div>
                     </div>
 
@@ -350,12 +361,12 @@
                                         <span class="text-xs text-gray-400">({{ $item['total_students'] }} Murid)</span>
                                     </div>
                                     <div class="text-right">
-                                        <span class="font-bold text-rose-600 dark:text-rose-400">{{ $vCount }} Kasus</span>
+                                        <span class="font-bold {{ $accentText }}">{{ $vCount }} {{ $isReward ? 'Prestasi' : 'Kasus' }}</span>
                                         <span class="text-xs text-gray-500">({{ $vPoints }} Poin)</span>
                                     </div>
                                 </div>
                                 <div class="w-full bg-gray-100 dark:bg-zinc-800 rounded-full h-3 overflow-hidden border border-gray-200/50 dark:border-zinc-700/50">
-                                    <div class="bg-gradient-to-r from-amber-500 to-rose-600 h-full rounded-full transition-all duration-500" style="width: {{ max(2, $pct) }}%"></div>
+                                    <div class="bg-gradient-to-r {{ $barGradient }} h-full rounded-full transition-all duration-500" style="width: {{ max(2, $pct) }}%"></div>
                                 </div>
                             </div>
                         @empty
@@ -367,8 +378,8 @@
                 {{-- Rekapitulasi Detail per Murid dalam Kelas --}}
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm space-y-6">
                     <div class="border-b pb-4 dark:border-zinc-800">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Rekapitulasi Detail Pelanggaran Murid per Kelas</h3>
-                        <p class="text-xs text-gray-500">Klik kelas untuk melihat rincian pelanggaran keterlambatan, atribut, tata tertib, dan sanksi per murid.</p>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Rekapitulasi Detail {{ $noun }} Murid per Kelas</h3>
+                        <p class="text-xs text-gray-500">Klik kelas untuk melihat rincian {{ $isReward ? 'prestasi akademik & non-akademik' : 'pelanggaran keterlambatan, atribut, tata tertib, dan sanksi' }} per murid.</p>
                     </div>
 
                     <div class="space-y-4" x-data="{ openClass: null }">
@@ -389,11 +400,11 @@
                                         </span>
                                         <div>
                                             <h4 class="font-bold text-gray-900 dark:text-white text-base">{{ $cRoom->name }}</h4>
-                                            <p class="text-xs text-gray-500">Total Murid: {{ $item['total_students'] }} | Total Kasus: {{ $item['violation_count'] }}</p>
+                                            <p class="text-xs text-gray-500">Total Murid: {{ $item['total_students'] }} | Total {{ $unit }}: {{ $item['violation_count'] }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <span class="text-xs font-bold text-rose-600 dark:text-rose-400">{{ $item['violation_points'] }} Poin</span>
+                                        <span class="text-xs font-bold {{ $accentText }}">{{ $item['violation_points'] }} Poin</span>
                                         <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openClass === {{ $cIndex }} ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -406,27 +417,17 @@
                                             <thead>
                                                 <tr class="text-gray-500 dark:text-zinc-400 uppercase font-bold text-[10px]">
                                                     <th class="py-2 px-3 text-left">Nama Murid</th>
-                                                    <th class="py-2 px-3 text-center">
-                                                        <span class="inline-flex items-center justify-center gap-1">
-                                                            <x-heroicon-o-clock class="w-3 h-3 text-amber-500" />
-                                                            <span>Telat</span>
-                                                        </span>
-                                                    </th>
-                                                    <th class="py-2 px-3 text-center">
-                                                        <span class="inline-flex items-center justify-center gap-1">
-                                                            <x-heroicon-o-tag class="w-3 h-3 text-blue-500" />
-                                                            <span>Atribut</span>
-                                                        </span>
-                                                    </th>
-                                                    <th class="py-2 px-3 text-center">
-                                                        <span class="inline-flex items-center justify-center gap-1">
-                                                            <x-heroicon-o-document-text class="w-3 h-3 text-rose-500" />
-                                                            <span>Tatib</span>
-                                                        </span>
-                                                    </th>
-                                                    <th class="py-2 px-3 text-center">Total Kasus</th>
+                                                    @foreach ($typeLabels as $typeKey => $typeLabel)
+                                                        <th class="py-2 px-3 text-center">
+                                                            <span class="inline-flex items-center justify-center gap-1">
+                                                                <x-dynamic-component :component="$typeStyles[$typeKey]['icon']" class="w-3 h-3 {{ $typeStyles[$typeKey]['text'] }}" />
+                                                                <span>{{ $typeLabel }}</span>
+                                                            </span>
+                                                        </th>
+                                                    @endforeach
+                                                    <th class="py-2 px-3 text-center">Total {{ $isReward ? 'Prestasi' : 'Kasus' }}</th>
                                                     <th class="py-2 px-3 text-center">Total Poin</th>
-                                                    <th class="py-2 px-3 text-left">Sanksi Terakhir</th>
+                                                    <th class="py-2 px-3 text-left">{{ $isReward ? 'Prestasi Terakhir' : 'Sanksi Terakhir' }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-100 dark:divide-zinc-800/80">
@@ -435,13 +436,13 @@
                                                         <td class="py-2.5 px-3 font-bold text-gray-900 dark:text-white">
                                                             {{ $sDet['student']->name }}
                                                         </td>
-                                                        <td class="py-2.5 px-3 text-center text-amber-600 font-bold">{{ $sDet['lateness_count'] }}</td>
-                                                        <td class="py-2.5 px-3 text-center text-blue-600 font-bold">{{ $sDet['attribute_count'] }}</td>
-                                                        <td class="py-2.5 px-3 text-center text-rose-600 font-bold">{{ $sDet['tatib_count'] }}</td>
+                                                        @foreach ($typeLabels as $typeKey => $typeLabel)
+                                                            <td class="py-2.5 px-3 text-center font-bold {{ $typeStyles[$typeKey]['text'] }}">{{ $sDet['type_counts'][$typeKey] }}</td>
+                                                        @endforeach
                                                         <td class="py-2.5 px-3 text-center font-black text-gray-900 dark:text-white">{{ $sDet['violation_count'] }}</td>
-                                                        <td class="py-2.5 px-3 text-center font-black text-rose-600 dark:text-rose-400">{{ $sDet['violation_points'] }}</td>
+                                                        <td class="py-2.5 px-3 text-center font-black {{ $accentText }}">{{ $sDet['violation_points'] }}</td>
                                                         <td class="py-2.5 px-3 text-gray-500 italic">
-                                                            {{ implode(', ', $sDet['recent_sanctions']) ?: '-' }}
+                                                            {{ implode(', ', $sDet['recent_notes']) ?: '-' }}
                                                         </td>
                                                     </tr>
                                                 @endforeach
