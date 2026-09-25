@@ -705,6 +705,30 @@ class HafalanTargetController extends Controller
         return back()->with('success', "Arah hafalan {$student->name} diperbarui dan target dihitung ulang.");
     }
 
+    /**
+     * Koreksi urutan di dalam satu juz (dari awal / dari akhir) untuk satu murid, atau
+     * kembalikan ke deteksi otomatis; lalu hitung ulang target otomatis triwulan itu.
+     */
+    public function updateJuzOrder(Request $request, Student $student, AutoHafalanTargetService $targets): RedirectResponse
+    {
+        abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
+
+        $validated = $request->validate([
+            'juz' => ['required', 'integer', 'between:1,30'],
+            'order' => ['required', Rule::in(['auto', HafalanOrder::ASC, HafalanOrder::DESC])],
+            'period' => ['nullable', 'date'],
+        ]);
+
+        $orders = collect($student->juz_orders ?? [])->except((string) $validated['juz']);
+        if ($validated['order'] !== 'auto') {
+            $orders->put((string) $validated['juz'], $validated['order']);
+        }
+        $student->update(['juz_orders' => $orders->isEmpty() ? null : $orders->all()]);
+        $targets->syncStudent($student->fresh(), Carbon::parse($validated['period'] ?? today()));
+
+        return back()->with('success', "Urutan Juz {$validated['juz']} untuk {$student->name} diperbarui dan target dihitung ulang.");
+    }
+
     private function visibleStudentIds(?User $user): Collection
     {
         if (! $user) {

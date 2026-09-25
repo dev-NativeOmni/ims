@@ -8,7 +8,8 @@
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Dihitung otomatis: setoran pertama triwulan + (pertemuan aktif × baris per level), mengikuti urutan hafalan
                 Juz 30 → 29 lalu sesuai pilihan murid: terus ke belakang (28, 27, 26, …) atau pindah ke depan (Juz 1, 2, …)
-                setelah Juz 29, 28, atau paling lambat 27. Tiap juz dari awal; Juz 30 fleksibel (surah yang belum disetor).
+                setelah Juz 29, 28, atau paling lambat 27. Urutan di dalam juz (dari awal/akhir) terdeteksi otomatis dari setoran
+                dan bisa dikoreksi; ayat yang sudah dihafal dilewati. Tercapai = semua ayat sampai target sudah lulus disetor.
             </p>
         </div>
     </x-slot>
@@ -92,8 +93,35 @@
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if ($plan['start'])
-                                        <p class="font-semibold text-gray-800 dark:text-zinc-200">{{ $plan['start']['surah']->name_latin }} : {{ $plan['start']['ayah'] }}</p>
-                                        <p class="text-[11px] text-gray-500">{{ $plan['start']['date'] ? \Carbon\Carbon::parse($plan['start']['date'])->format('d/m/Y') : '' }}</p>
+                                        <p class="font-semibold text-gray-800 dark:text-zinc-200">{{ $plan['start']['surah']?->name_latin }} : {{ $plan['start']['ayah'] }}</p>
+                                        <p class="text-[11px] text-gray-500">Juz {{ $plan['start']['juz'] }} · {{ $plan['start']['date'] ? \Carbon\Carbon::parse($plan['start']['date'])->format('d/m/Y') : '' }}</p>
+                                        {{-- Urutan di dalam juz: otomatis dari setoran, bisa dikoreksi guru. --}}
+                                        @php
+                                            $orderJuzList = array_values(array_unique(array_filter([
+                                                $plan['start']['juz'],
+                                                $plan['target'] ? \App\Support\HafalanOrder::juzOf((int) $plan['target']['surah']->number, (int) $plan['target']['ayah_end']) : null,
+                                            ])));
+                                        @endphp
+                                        @foreach ($orderJuzList as $orderJuz)
+                                            @php
+                                                $effective = $plan['juz_orders'][$orderJuz] ?? \App\Support\HafalanOrder::defaultJuzOrder($orderJuz);
+                                                $source = ($plan['juz_order_source'])($orderJuz);
+                                            @endphp
+                                            <form method="POST" action="{{ route('hafalan-targets.juz-order', $row['student']) }}" class="mt-1">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="period" value="{{ $period }}">
+                                                <input type="hidden" name="juz" value="{{ $orderJuz }}">
+                                                <select name="order" onchange="this.form.submit()" title="Urutan menghafal di dalam Juz {{ $orderJuz }}"
+                                                        class="rounded-lg border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 text-[11px] py-1 pl-2 pr-7">
+                                                    <option value="auto" @selected($source !== 'manual')>
+                                                        Juz {{ $orderJuz }}: {{ $effective === 'desc' ? 'dari akhir' : 'dari awal' }} ({{ $source === 'auto' ? 'otomatis' : 'default' }})
+                                                    </option>
+                                                    <option value="asc" @selected($source === 'manual' && $effective === 'asc')>Juz {{ $orderJuz }}: dari awal juz (diatur)</option>
+                                                    <option value="desc" @selected($source === 'manual' && $effective === 'desc')>Juz {{ $orderJuz }}: dari akhir juz (diatur)</option>
+                                                </select>
+                                            </form>
+                                        @endforeach
                                     @else
                                         <span class="text-xs text-amber-600">Belum ada setoran triwulan ini</span>
                                     @endif
@@ -115,8 +143,8 @@
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if ($plan['capaian'])
-                                        <p class="font-semibold text-gray-800 dark:text-zinc-200">{{ $plan['capaian']['surah']->name_latin }} : {{ $plan['capaian']['ayah'] }}</p>
-                                        <p class="text-[11px] text-gray-500">{{ $plan['achieved_lines'] }} baris</p>
+                                        <p class="font-semibold text-gray-800 dark:text-zinc-200">{{ $plan['capaian']['surah']?->name_latin }} : {{ $plan['capaian']['ayah'] }}</p>
+                                        <p class="text-[11px] text-gray-500">{{ $plan['achieved_lines'] }} dari {{ $plan['target_lines'] }} baris target tercakup</p>
                                     @else
                                         <span class="text-xs text-gray-400">–</span>
                                     @endif

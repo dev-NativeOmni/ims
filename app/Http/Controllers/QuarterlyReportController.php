@@ -13,6 +13,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
+use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -334,7 +335,9 @@ class QuarterlyReportController extends Controller
             $gViolations,
             $term['latestTargets'],
             $term['latestHafalans'],
-            $positionCheck
+            $positionCheck,
+            Carbon::parse(reset($monthRanges)['start']),
+            Carbon::parse(end($monthRanges)['end'])
         );
 
         return [
@@ -1043,7 +1046,7 @@ class QuarterlyReportController extends Controller
     /**
      * Rekap satu term per murid: baris & target dijumlahkan dari semua bulan, absensi dan pelanggaran dihitung sepanjang term.
      */
-    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, ?QuranLineTargetService $positionCheck): array
+    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, ?QuranLineTargetService $positionCheck, Carbon $termStart, Carbon $termEnd): array
     {
         $termRecords = [];
 
@@ -1059,22 +1062,14 @@ class QuarterlyReportController extends Controller
             $targetLines = $rows->sum('target_lines');
             $studentAtt = $gAttendances->where('student_id', $student->id);
 
-            // Ketercapaian: bila murid punya target posisi (surah & ayat), tuntas HANYA jika capaian
-            // terjauh yang lulus sudah sampai/melewati posisi itu menurut urutan hafalan. Jumlah baris
-            // hanya dipakai bila tidak ada target posisi (mis. Kelas 10/Ummi atau belum ada target),
-            // supaya "Tuntas" selalu sejalan dengan kolom Target & Capaian yang ditampilkan.
+            // Ketercapaian: bila murid punya target posisi (surah & ayat), tuntas HANYA jika semua
+            // ayat dari titik awal triwulan sampai target sudah lulus disetor (cakupan, urutan bebas;
+            // lihat HafalanProgressService). Jumlah baris hanya dipakai bila tidak ada target posisi
+            // (mis. Kelas 10/Ummi atau belum ada target).
             $studentTarget = $latestTargets->get($student->id)?->first();
-            $studentCapaian = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()), $student->hafalan_direction);
-            $reachedByPosition = $positionCheck
-                && $studentTarget?->surah
-                && $studentCapaian?->surah
-                && $positionCheck->hasReached(
-                    (int) $studentCapaian->surah->number,
-                    (int) $studentCapaian->ayah_end,
-                    (int) $studentTarget->surah->number,
-                    (int) $studentTarget->ayah,
-                    $student->hafalan_direction
-                );
+            $evaluation = ($positionCheck && $studentTarget?->surah)
+                ? app(HafalanProgressService::class)->evaluate($student, (int) $studentTarget->surah->number, (int) $studentTarget->ayah, $termStart, $termEnd, $termEnd)
+                : null;
 
             $termRecords[] = [
                 'student_id' => $student->id,
@@ -1086,9 +1081,7 @@ class QuarterlyReportController extends Controller
                 'capaian_ayat' => $first['capaian_ayat'] ?? '-',
                 'total_lines' => $totalLines,
                 'target_lines' => $targetLines,
-                'is_tuntas' => ($positionCheck && $studentTarget?->surah)
-                    ? (bool) $reachedByPosition
-                    : $totalLines >= $targetLines,
+                'is_tuntas' => $evaluation !== null ? $evaluation['reached'] : $totalLines >= $targetLines,
                 'alpa' => $studentAtt->where('status', 'alpa')->count(),
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),

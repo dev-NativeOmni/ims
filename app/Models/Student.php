@@ -24,11 +24,13 @@ class Student extends Model
         'status',
         'tahfizh_level',
         'hafalan_direction',
+        'juz_orders',
     ];
 
     protected function casts(): array
     {
         return [
+            'juz_orders' => 'array',
             'birth_date' => 'date',
         ];
     }

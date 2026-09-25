@@ -321,6 +321,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('hafalan-targets.term');
         Route::patch('/hafalan-targets/arah/{student}', [HafalanTargetController::class, 'updateDirection'])
             ->name('hafalan-targets.direction');
+        Route::patch('/hafalan-targets/urutan-juz/{student}', [HafalanTargetController::class, 'updateJuzOrder'])
+            ->name('hafalan-targets.juz-order');
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 

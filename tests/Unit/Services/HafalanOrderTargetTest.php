@@ -51,11 +51,11 @@ class HafalanOrderTargetTest extends TestCase
         return collect(HafalanOrder::JUZ_RANGES[$juz])->sum(fn ($r) => $this->lines($r['surah'], $r['start'], $r['end']));
     }
 
-    /** Semua surah Juz 30 kecuali yang disebut sudah selesai disetor. */
+    /** Cakupan (AyahCoverage): semua surah Juz 30 sudah disetor kecuali yang disebut. */
     private function juz30AllDoneExcept(array $pending): array
     {
         return collect(range(78, 114))->reject(fn ($s) => in_array($s, $pending, true))
-            ->mapWithKeys(fn ($s) => [$s => (int) $this->surahs[$s]->total_ayah])->all();
+            ->mapWithKeys(fn ($s) => [$s => [[1, (int) $this->surahs[$s]->total_ayah]]])->all();
     }
 
     #[Test]
@@ -173,11 +173,15 @@ class HafalanOrderTargetTest extends TestCase
     }
 
     #[Test]
-    public function lines_until_measures_progress_along_the_same_order(): void
+    public function pieces_until_a_target_follow_the_same_path(): void
     {
-        $this->assertSame($this->lines(67, 1, 10), $this->service->linesUntil(67, 1, 67, 10, $this->surahs));
-        $this->assertSame($this->juzLines(29) + $this->lines(58, 1, 3), $this->service->linesUntil(67, 1, 58, 3, $this->surahs));
-        $this->assertSame(0.0, $this->service->linesUntil(58, 1, 67, 5, $this->surahs), 'Capaian di belakang titik awal = 0.');
+        $this->assertSame([[67, 1, 10]], $this->service->piecesUntil(67, 1, 67, 10, $this->surahs));
+
+        $pieces = $this->service->piecesUntil(67, 1, 58, 3, $this->surahs);
+        $this->assertSame($this->juzLines(29) + $this->lines(58, 1, 3), $this->service->piecesLines($pieces, $this->surahs));
+
+        // Target di belakang titik awal tidak ada di jalur ke depan.
+        $this->assertNull($this->service->piecesUntil(58, 1, 67, 5, $this->surahs));
     }
 
     #[Test]

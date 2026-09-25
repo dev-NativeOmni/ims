@@ -15,6 +15,8 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Services\AcademicCalendarService;
+use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\SchoolCalendar;
 use Illuminate\Contracts\View\View;
@@ -1104,22 +1106,22 @@ class ReportController extends Controller
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
-            // Check if student completed their target: baris terpenuhi, atau (kelas 11 & 12) posisi
-            // capaian sudah sampai/melewati posisi target -- capaian >= target otomatis tuntas.
-            $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
-
-            if (! $isTuntas
-                && ! $isGrade10
-                && $latestTarget?->surah
-                && $latestHafalanPassed?->surah
-                && app(QuranLineTargetService::class)->hasReached(
-                    (int) $latestHafalanPassed->surah->number,
-                    (int) $latestHafalanPassed->ayah_end,
+            // Tuntas: kelas 11 & 12 dengan target posisi -> semua ayat dari titik awal triwulan target
+            // sampai target sudah lulus disetor per akhir periode (HafalanProgressService); selain itu
+            // (Kelas 10/Ummi, tanpa target) dari jumlah baris.
+            if (! $isGrade10 && $levelBaris !== null && $latestTarget?->surah) {
+                $calendar = app(AcademicCalendarService::class);
+                $targetTermMonths = $calendar->termMonths(Carbon::parse($latestTarget->target_date));
+                $isTuntas = app(HafalanProgressService::class)->evaluate(
+                    $student,
                     (int) $latestTarget->surah->number,
                     (int) $latestTarget->ayah,
-                    $student->hafalan_direction
-                )) {
-                $isTuntas = true;
+                    reset($targetTermMonths)['start'],
+                    end($targetTermMonths)['end'],
+                    Carbon::parse($endDate)
+                )['reached'];
+            } else {
+                $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
             }
 
             if ($isTuntas) {

@@ -11,16 +11,24 @@ use Illuminate\Support\Collection;
  * - 'front_29' / 'front_28' / 'front_27': setelah juz itu pindah ke depan,
  *   Juz 1 -> 2 -> ... sampai juz sebelum titik pindah (mis. front_29: 30, 29, 1..28).
  *
- * - Selain Juz 30, tiap juz selalu dimulai dari AWAL juz dan berjalan maju (mis. Juz 29:
- *   Al-Mulk 1 -> Al-Mursalat 50, lalu Juz 28: Al-Mujadilah 1 -> At-Tahrim 12).
- * - Juz 30 fleksibel: urutan surahnya bebas; yang dihitung adalah surah/ayat yang
- *   belum disetor, dari An-Nas mundur ke An-Naba.
+ * Di dalam tiap juz urutan surahnya bisa dari awal ('asc', mis. Juz 29: Al-Mulk ->
+ * Al-Mursalat) atau dari akhir ('desc', mis. Juz 27: Al-Hadid -> Adz-Dzariyat 31); ayat
+ * dalam satu surah selalu maju. Default: Juz 30 'desc', juz lain 'asc'; arah sebenarnya
+ * per murid dideteksi dari setoran (App\Services\HafalanProgressService).
+ *
+ * Semua juz fleksibel: ayat yang sudah lulus disetor (cakupan) dilewati, jadi target
+ * hanya menghitung ayat yang belum dihafal.
  *
  * Batas juz sama dengan migrasi populate_juz_in_ayahs_table.
  */
 class HafalanOrder
 {
     public const BACKWARD = 'backward';
+
+    /** Urutan di dalam juz: dari awal juz / dari akhir juz. */
+    public const ASC = 'asc';
+
+    public const DESC = 'desc';
 
     /** Pindah ke depan setelah Juz 27 (batas paling akhir). */
     public const FORWARD = 'front_27';
@@ -144,57 +152,91 @@ class HafalanOrder
         return self::$sequenceIndex[$direction][$juz];
     }
 
+    public static function defaultJuzOrder(int $juz): string
+    {
+        return $juz === 30 ? self::DESC : self::ASC;
+    }
+
     /**
      * Peringkat posisi dalam urutan hafalan: makin besar = makin jauh.
-     * Juz 30 diurutkan mundur per surah (An-Nas paling awal), juz lain maju.
+     * Di dalam juz mengikuti urutan juz itu ($juzOrders, default Juz 30 mundur, lainnya maju).
+     *
+     * @param  array<int, string>  $juzOrders  juz => 'asc'|'desc'
      */
-    public static function rank(int $surah, int $ayah, ?string $direction = self::BACKWARD): int
+    public static function rank(int $surah, int $ayah, ?string $direction = self::BACKWARD, array $juzOrders = []): int
     {
         $juz = self::juzOf($surah, $ayah);
-        $inner = $juz === 30 ? (114 - $surah) * 1000 + $ayah : $surah * 1000 + $ayah;
+        $order = $juzOrders[$juz] ?? self::defaultJuzOrder($juz);
+        $inner = $order === self::DESC ? (114 - $surah) * 1000 + $ayah : $surah * 1000 + $ayah;
 
         return self::juzPosition($juz, $direction) * 1_000_000 + $inner;
     }
 
     /**
-     * Potongan hafalan berurutan mulai dari titik awal: [surah, ayat_awal, ayat_akhir].
+     * Potongan surah satu juz dalam urutan jalan: [surah, ayat awal, ayat akhir].
      *
-     * @param  array<int, int>  $juz30Done  surah Juz 30 => ayat terakhir yang sudah disetor sebelumnya
-     * @param  Collection<int, mixed>  $surahsByNumber  (butuh total_ayah)
+     * @return array<int, array{0: int, 1: int, 2: int}>
+     */
+    public static function juzPieces(int $juz, string $order): array
+    {
+        $ranges = self::JUZ_RANGES[$juz];
+        if ($order === self::DESC) {
+            $ranges = array_reverse($ranges);
+        }
+
+        return array_map(fn ($range) => [$range['surah'], $range['start'], $range['end']], $ranges);
+    }
+
+    /**
+     * Potongan hafalan berurutan mulai dari titik awal: [surah, ayat_awal, ayat_akhir].
+     * Juz titik awal dimulai dari titik itu lalu memutar ke sisa juz tersebut; juz
+     * berikutnya mengikuti urutan arah murid. Ayat yang sudah tercakup dilewati.
+     *
+     * @param  array<int, array<int, array{0: int, 1: int}>>  $covered  cakupan (AyahCoverage) sebelum titik awal
+     * @param  Collection<int, mixed>  $surahsByNumber  (tidak dipakai lagi untuk batas; dipertahankan untuk API)
+     * @param  array<int, string>  $juzOrders  juz => 'asc'|'desc'
      * @return \Generator<int, array{0: int, 1: int, 2: int}>
      */
-    public static function segments(int $startSurah, int $startAyah, array $juz30Done, Collection $surahsByNumber, ?string $direction = self::BACKWARD): \Generator
+    public static function segments(int $startSurah, int $startAyah, array $covered, Collection $surahsByNumber, ?string $direction = self::BACKWARD, array $juzOrders = []): \Generator
     {
         $startJuz = self::juzOf($startSurah, $startAyah);
-        $total = fn (int $surah) => (int) ($surahsByNumber->get($surah)?->total_ayah ?? 0);
+        $sequence = array_slice(self::juzSequence($direction), self::juzPosition($startJuz, $direction));
 
-        if ($startJuz === 30) {
-            yield [$startSurah, max(1, $startAyah), $total($startSurah)];
-
-            for ($surah = 114; $surah >= 78; $surah--) {
-                $from = ($juz30Done[$surah] ?? 0) + 1;
-                if ($surah !== $startSurah && $from <= $total($surah)) {
-                    yield [$surah, $from, $total($surah)];
-                }
+        foreach ($sequence as $i => $juz) {
+            $pieces = self::juzPieces($juz, $juzOrders[$juz] ?? self::defaultJuzOrder($juz));
+            if ($i === 0) {
+                $pieces = self::rotateToStart($pieces, $startSurah, max(1, $startAyah));
             }
-        } else {
-            foreach (self::JUZ_RANGES[$startJuz] as $range) {
-                if ($range['surah'] < $startSurah) {
-                    continue;
-                }
-                $from = $range['surah'] === $startSurah ? max($range['start'], $startAyah) : $range['start'];
-                if ($from <= $range['end']) {
-                    yield [$range['surah'], $from, $range['end']];
+
+            foreach ($pieces as [$surah, $from, $to]) {
+                foreach (AyahCoverage::uncovered($covered[$surah] ?? [], $from, $to) as [$gapFrom, $gapTo]) {
+                    yield [$surah, $gapFrom, $gapTo];
                 }
             }
         }
+    }
 
-        $sequence = self::juzSequence($direction);
-        foreach (array_slice($sequence, self::juzPosition($startJuz, $direction) + 1) as $juz) {
-            foreach (self::JUZ_RANGES[$juz] as $range) {
-                yield [$range['surah'], $range['start'], $range['end']];
+    /**
+     * Putar potongan juz supaya dimulai dari titik awal; bagian juz sebelum titik itu
+     * (dalam urutan jalan) dikerjakan setelahnya, sebelum pindah ke juz berikutnya.
+     *
+     * @param  array<int, array{0: int, 1: int, 2: int}>  $pieces
+     * @return array<int, array{0: int, 1: int, 2: int}>
+     */
+    private static function rotateToStart(array $pieces, int $startSurah, int $startAyah): array
+    {
+        foreach ($pieces as $k => [$surah, $from, $to]) {
+            if ($surah === $startSurah && $startAyah >= $from && $startAyah <= $to) {
+                $rotated = array_merge([[$surah, $startAyah, $to]], array_slice($pieces, $k + 1), array_slice($pieces, 0, $k));
+                if ($startAyah > $from) {
+                    $rotated[] = [$surah, $from, $startAyah - 1];
+                }
+
+                return $rotated;
             }
         }
+
+        return $pieces;
     }
 
     /**

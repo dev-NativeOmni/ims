@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
+use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -99,22 +100,15 @@ class WaliKelasController extends Controller
             ->get()
             ->groupBy('student_id');
 
-        $reachesTarget = function (Student $student, Carbon $cutoff) use ($termHafalan, $targetsByStudent, $positionCheck) {
+        // Tuntas = semua ayat dari titik awal triwulan sampai target sudah lulus disetor per $cutoff.
+        $progress = app(HafalanProgressService::class);
+        $reachesTarget = function (Student $student, Carbon $cutoff) use ($targetsByStudent, $progress, $termStart, $termEnd) {
             $target = $targetsByStudent->get($student->id, collect())
                 ->first(fn (HafalanTarget $t) => $t->target_date->lte($cutoff));
-            $capaian = $positionCheck->latestByPosition(
-                $termHafalan->where('student_id', $student->id)
-                    ->filter(fn ($h) => Carbon::parse($h->submitted_at)->lte($cutoff)),
-                $student->hafalan_direction
-            );
 
-            return $target?->surah && $capaian?->surah && $positionCheck->hasReached(
-                (int) $capaian->surah->number,
-                (int) $capaian->ayah_end,
-                (int) $target->surah->number,
-                (int) $target->ayah,
-                $student->hafalan_direction
-            );
+            return $target?->surah !== null && $progress->evaluate(
+                $student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, $cutoff
+            )['reached'];
         };
 
         $monthly = [];
