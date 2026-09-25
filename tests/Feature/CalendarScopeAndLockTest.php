@@ -30,7 +30,8 @@ class CalendarScopeAndLockTest extends TestCase
         parent::setUp();
         $this->setUpHafizPlusData();
 
-        $role = Role::firstOrCreate(['name' => 'pendamping_adab'], ['display_name' => 'Koordinator Adab']);
+        // Koordinator Adab = role supervisor ("Koordinator Keagamaan").
+        $role = Role::firstOrCreate(['name' => 'supervisor'], ['display_name' => 'Koordinator Keagamaan']);
         $this->adabCoordinator = User::factory()->create(['role_id' => $role->id, 'status' => 'active']);
 
         $program = Program::create(['name' => 'Program Kalender', 'status' => 'active']);
@@ -83,6 +84,12 @@ class CalendarScopeAndLockTest extends TestCase
             ->assertViewHas('permissions', fn ($p) => $p['edit_adab'] && ! $p['edit_tahfizh'] && ! $p['unlock']);
 
         $this->actingAs($this->teacherUser)->get(route('academic-calendar.index'))->assertForbidden();
+
+        $pendamping = User::factory()->create([
+            'role_id' => Role::firstOrCreate(['name' => 'pendamping_adab'], ['display_name' => 'Pendamping Adab'])->id,
+            'status' => 'active',
+        ]);
+        $this->actingAs($pendamping)->get(route('academic-calendar.index'))->assertForbidden();
     }
 
     #[Test]

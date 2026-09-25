@@ -274,7 +274,7 @@ class SettingController extends Controller
 
     /**
      * Hak akses kalender: Super Admin & Admin mengatur semuanya; Koordinator Adab
-     * (pendamping_adab) hanya status Adab & mengunci Adab. Bulan terkunci tidak bisa
+     * (Koordinator Keagamaan, role supervisor) hanya status Adab & mengunci Adab. Bulan terkunci tidak bisa
      * diubah untuk cakupan itu sampai dibuka Super Admin/Admin.
      *
      * @return array<string, bool>
@@ -283,7 +283,7 @@ class SettingController extends Controller
     {
         $user = $request->user();
         $isAdmin = $user?->hasAnyRole(['super_admin', 'admin']) ?? false;
-        $isAdabCoordinator = $user?->hasRole('pendamping_adab') ?? false;
+        $isAdabCoordinator = $user?->hasRole('supervisor') ?? false;
         $calendar = app(SchoolCalendar::class);
         $tahfizhLocked = $calendar->isMonthLocked($year, $month, SchoolCalendar::SCOPE_TAHFIZH);
         $adabLocked = $calendar->isMonthLocked($year, $month, SchoolCalendar::SCOPE_ADAB);

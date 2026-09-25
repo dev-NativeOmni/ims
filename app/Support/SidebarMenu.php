@@ -107,8 +107,8 @@ class SidebarMenu
                         'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'pendamping_adab', 'parent', 'student'],
                         'active' => ['adab.index', 'adab.show'],
                     ],
-                    // Koordinator Adab: kalender untuk mengatur & mengunci libur Adab (Admin lewat Data Master).
-                    ['label' => 'Kalender Adab', 'route' => 'academic-calendar.index', 'icon' => 'calendar', 'roles' => ['pendamping_adab'], 'active' => ['academic-calendar.*']],
+                    // Koordinator Keagamaan/Adab: kalender untuk mengatur & mengunci libur Adab (Admin lewat Data Master).
+                    ['label' => 'Kalender Adab', 'route' => 'academic-calendar.index', 'icon' => 'calendar', 'roles' => ['supervisor'], 'active' => ['academic-calendar.*']],
                     [
                         'label' => 'Materi Adab', 'route' => 'adab-materials.index', 'icon' => 'book',
                         'except' => ['parent', 'student', 'headmaster'],
@@ -136,7 +136,7 @@ class SidebarMenu
                 'items' => [
                     [
                         'label' => 'Rapor Digital', 'route' => 'digital-reports.index', 'icon' => 'document',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'tanse', 'pendamping_adab', 'headmaster', 'wali_kelas'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'supervisor', 'tanse', 'pendamping_adab', 'headmaster', 'wali_kelas'],
                         'active' => ['digital-reports.index', 'digital-reports.show'],
                     ],
                     ['label' => 'Laporan Triwulan', 'route' => 'reports.quarterly', 'icon' => 'document-chart', 'roles' => ['super_admin', 'admin', 'teacher'], 'active' => ['reports.quarterly']],

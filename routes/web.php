@@ -202,9 +202,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('badges/{badge}/toggle', [BadgeController::class, 'toggleActive'])->name('badges.toggle');
     });
 
-    // Kalender Akademik: Koordinator Adab ikut masuk, tapi hanya bisa mengatur & mengunci
-    // cakupan Adab (dibatasi di SettingController::calendarPermissions()).
-    Route::middleware(['role:super_admin,admin,pendamping_adab'])->group(function () {
+    // Kalender Akademik: Koordinator Keagamaan/Adab (supervisor) ikut masuk, tapi hanya bisa
+    // mengatur & mengunci cakupan Adab (dibatasi di SettingController::calendarPermissions()).
+    Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
         Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
         Route::post('academic-calendar/update', [SettingController::class, 'calendarUpdate'])->name('academic-calendar.update');
         Route::post('academic-calendar/lock', [SettingController::class, 'calendarLock'])->name('academic-calendar.lock');
@@ -486,7 +486,7 @@ Route::middleware(['auth'])->group(function () {
     */
     // Lihat rapor + edit catatan per murid (edit-nya sendiri masih dibatasi di controller
     // ke super_admin/admin/teacher, lihat StudentReportController::update()).
-    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,pendamping_adab,tanse,headmaster,wali_kelas'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,coordinator_tahfizh,supervisor,pendamping_adab,tanse,headmaster,wali_kelas'])->group(function () {
         Route::get('/digital-reports', [StudentReportController::class, 'index'])->name('digital-reports.index');
         Route::get('/digital-reports/student/{student}', [StudentReportController::class, 'show'])->name('digital-reports.show');
         Route::get('/digital-reports/student/{student}/print', [StudentReportController::class, 'print'])->name('digital-reports.print');

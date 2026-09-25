@@ -14,7 +14,7 @@
                 <a href="{{ route('digital-reports.index') }}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 transition">
                     Kembali
                 </a>
-                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                @if (\App\Http\Controllers\StudentReportController::canPrint(auth()->user()))
                     <a 
                         href="{{ route('digital-reports.print', [$student, 'academic_year' => $academicYear, 'semester' => $semester, 'term' => $tanseTerm['term']]) }}" 
                         target="_blank"

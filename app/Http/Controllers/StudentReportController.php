@@ -119,7 +119,7 @@ class StudentReportController extends Controller
     public function print(Student $student, Request $request)
     {
         $user = $request->user();
-        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Akses ekspor atau cetak dokumen PDF tidak diizinkan untuk akun murid dan orang tua.');
+        abort_unless(self::canPrint($user), 403, 'Akses cetak rapor tidak diizinkan untuk akun ini.');
 
         $canView = $this->progressService->visibleStudentQuery($user)
             ->where('id', $student->id)
@@ -137,7 +137,7 @@ class StudentReportController extends Controller
     public function printClass(ClassRoom $classRoom, Request $request)
     {
         $user = $request->user();
-        abort_if($user->hasAnyRole(['student', 'parent']), 403, 'Akses cetak rapor kelas tidak diizinkan untuk akun murid dan orang tua.');
+        abort_unless(self::canPrint($user), 403, 'Akses cetak rapor kelas tidak diizinkan untuk akun ini.');
 
         $visibleStudentIds = $this->progressService->visibleStudentQuery($user)
             ->where('class_room_id', $classRoom->id)
@@ -241,6 +241,14 @@ class StudentReportController extends Controller
      *
      * @return array{term: int, terms: array<int, string>, label: string, start: Carbon, end: Carbon}
      */
+    /**
+     * Cetak/unduh rapor: semua yang boleh melihat rapor, kecuali Pendamping Adab (lihat saja).
+     */
+    public static function canPrint($user): bool
+    {
+        return $user !== null && ! $user->hasAnyRole(['student', 'parent', 'pendamping_adab']);
+    }
+
     /**
      * Tanggal BLP (titimangsa rapor) per semester: ASTS & ASAS (semester 1), ASTS & ASAT
      * (semester 2). Diatur per tahun ajaran di Pengaturan Rapor.

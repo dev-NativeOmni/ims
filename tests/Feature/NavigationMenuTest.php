@@ -189,12 +189,13 @@ class NavigationMenuTest extends TestCase
         $response->assertDontSee(route('students.index'));
         $response->assertDontSee(route('reports.teachers'));
         $response->assertDontSee('href="'.route('reports.index').'"');
-        $response->assertDontSee(route('digital-reports.index'));
         $response->assertDontSee(route('users.index'));
         $response->assertDontSee(route('audit-logs.index'));
         $response->assertDontSee(route('settings.index'));
 
         // Should see
+        // Koordinator Keagamaan kini setara Koordinator Tahfizh & Tanse untuk Rapor Digital.
+        $response->assertSee(route('digital-reports.index'));
         $response->assertSee(route('hafalan-records.index'));
         $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
