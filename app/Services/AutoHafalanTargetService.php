@@ -166,7 +166,7 @@ class AutoHafalanTargetService
      * Rencana target satu triwulan untuk satu murid (dipakai target bulanan otomatis dan
      * halaman Target Triwulan): titik awal = setoran pertama triwulan, target = titik awal +
      * (pertemuan aktif x baris per level), dihitung menurut urutan hafalan sekolah
-     * (Juz 30 fleksibel, lalu Juz 29, 28, ... dari awal juz). Target bulan = titik antara.
+     * (Juz 30 fleksibel, lalu 29-27 dari awal juz, lalu sesuai arah murid). Target bulan = titik antara.
      *
      * @return array{
      *     eligible: bool, reason: ?string, level_baris: ?int,
@@ -236,21 +236,22 @@ class AutoHafalanTargetService
         $startSurah = (int) $first->surah->number;
         $startAyah = (int) $first->ayah_start;
         $juz30Done = $this->juz30DoneBefore($student, $termStart);
+        $direction = $student->hafalan_direction;
 
         $plan['eligible'] = true;
         $plan['start'] = ['surah' => $first->surah, 'ayah' => $startAyah, 'date' => $first->submitted_at ? Carbon::parse($first->submitted_at)->toDateString() : null];
 
         foreach ($plan['months'] as $monthKey => $month) {
             if ($month['meetings'] > 0) {
-                $plan['months'][$monthKey]['position'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $month['cumulative_lines'], $surahs, $juz30Done);
+                $plan['months'][$monthKey]['position'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $month['cumulative_lines'], $surahs, $juz30Done, $direction);
             }
         }
-        $plan['target'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $plan['target_lines'], $surahs, $juz30Done);
+        $plan['target'] = $this->quran->targetPosition($startSurah, $startAyah, (float) $plan['target_lines'], $surahs, $juz30Done, $direction);
 
         // Capaian = setoran lulus terjauh di triwulan ini menurut urutan hafalan.
         $furthest = $termRecords
             ->filter(fn ($record) => $record->status === 'passed')
-            ->sortByDesc(fn ($record) => HafalanOrder::rank((int) $record->surah->number, (int) $record->ayah_end))
+            ->sortByDesc(fn ($record) => HafalanOrder::rank((int) $record->surah->number, (int) $record->ayah_end, $direction))
             ->first();
 
         if ($furthest) {
@@ -259,11 +260,12 @@ class AutoHafalanTargetService
                 'ayah' => (int) $furthest->ayah_end,
                 'date' => $furthest->submitted_at ? Carbon::parse($furthest->submitted_at)->toDateString() : null,
             ];
-            $plan['achieved_lines'] = round($this->quran->linesUntil($startSurah, $startAyah, (int) $furthest->surah->number, (int) $furthest->ayah_end, $surahs, $juz30Done), 1);
+            $plan['achieved_lines'] = round($this->quran->linesUntil($startSurah, $startAyah, (int) $furthest->surah->number, (int) $furthest->ayah_end, $surahs, $juz30Done, $direction), 1);
             $plan['progress'] = $plan['target_lines'] > 0 ? (int) min(100, round($plan['achieved_lines'] / $plan['target_lines'] * 100)) : 0;
             $plan['reached'] = $plan['target'] !== null && $this->quran->hasReached(
                 (int) $furthest->surah->number, (int) $furthest->ayah_end,
-                (int) $plan['target']['surah']->number, (int) $plan['target']['ayah_end']
+                (int) $plan['target']['surah']->number, (int) $plan['target']['ayah_end'],
+                $direction
             );
         }
 

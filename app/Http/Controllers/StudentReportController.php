@@ -466,7 +466,7 @@ class StudentReportController extends Controller
             }
 
             if (! $latestHafalan) {
-                $latestHafalan = $this->positionCheck->latestByPosition($studentHafalanAll);
+                $latestHafalan = $this->positionCheck->latestByPosition($studentHafalanAll, $student->hafalan_direction);
             }
 
             if ($latestHafalan) {
@@ -491,7 +491,7 @@ class StudentReportController extends Controller
         $latestJuz30Hafalan = $studentHafalanAll
             ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
             ->sortBy(fn ($r) => $r->surah?->number ?? 114)
-            ->first() ?? $this->positionCheck->latestByPosition($studentHafalanAll);
+            ->first() ?? $this->positionCheck->latestByPosition($studentHafalanAll, $student->hafalan_direction);
 
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();

@@ -23,6 +23,7 @@ class Student extends Model
         'birth_date',
         'status',
         'tahfizh_level',
+        'hafalan_direction',
     ];
 
     protected function casts(): array

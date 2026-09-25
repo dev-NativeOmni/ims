@@ -181,6 +181,23 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        <div>
+                            <label for="hafalan_direction" class="block text-sm font-medium text-gray-700">
+                                Arah Hafalan Setelah Juz 27
+                            </label>
+                            <select
+                                id="hafalan_direction"
+                                name="hafalan_direction"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                                <option value="backward" @selected(old('hafalan_direction', $student->hafalan_direction ?? 'backward') === 'backward')>Lanjut ke belakang (Juz 26, 25, …)</option>
+                                <option value="forward" @selected(old('hafalan_direction', $student->hafalan_direction ?? 'backward') === 'forward')>Pindah ke depan (Juz 1, 2, …)</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Juz 30 → 27 selalu lebih dulu. Dipakai untuk menghitung target otomatis.</p>
+                            @error('hafalan_direction')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <div>
                             <label for="user_id" class="block text-sm font-medium text-gray-700">

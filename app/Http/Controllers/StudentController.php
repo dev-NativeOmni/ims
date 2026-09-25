@@ -12,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\User;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
+use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -185,7 +186,10 @@ class StudentController extends Controller
             'birth_date',
             'status',
             'tahfizh_level',
+            'hafalan_direction',
         ]);
+
+        $payload['hafalan_direction'] = HafalanOrder::normalizeDirection($payload['hafalan_direction'] ?? null);
 
         if (empty($payload['tahfizh_level'])) {
             $class = ClassRoom::find($payload['class_room_id'] ?? null);

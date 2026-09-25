@@ -21,7 +21,7 @@ class QuranLineTargetService
      * @param  array<int, int>  $juz30Done  surah Juz 30 => ayat terakhir yang sudah disetor sebelum titik awal
      * @return array{surah: Surah, ayah_start: int, ayah_end: int}|null
      */
-    public function targetPosition(int $startSurahNumber, int $startAyah, float $targetLines, Collection $surahsByNumber, array $juz30Done = []): ?array
+    public function targetPosition(int $startSurahNumber, int $startAyah, float $targetLines, Collection $surahsByNumber, array $juz30Done = [], ?string $direction = HafalanOrder::BACKWARD): ?array
     {
         if ($targetLines <= 0 || ! $surahsByNumber->has($startSurahNumber)) {
             return null;
@@ -29,7 +29,7 @@ class QuranLineTargetService
 
         $remaining = $targetLines;
 
-        foreach (HafalanOrder::segments($startSurahNumber, $startAyah, $juz30Done, $surahsByNumber) as [$surahNumber, $from, $to]) {
+        foreach (HafalanOrder::segments($startSurahNumber, $startAyah, $juz30Done, $surahsByNumber, $direction) as [$surahNumber, $from, $to]) {
             $surah = $surahsByNumber->get($surahNumber);
             if (! $surah || $from > $to) {
                 continue;
@@ -60,14 +60,14 @@ class QuranLineTargetService
      *
      * @param  array<int, int>  $juz30Done
      */
-    public function linesUntil(int $startSurahNumber, int $startAyah, int $capaianSurah, int $capaianAyah, Collection $surahsByNumber, array $juz30Done = []): float
+    public function linesUntil(int $startSurahNumber, int $startAyah, int $capaianSurah, int $capaianAyah, Collection $surahsByNumber, array $juz30Done = [], ?string $direction = HafalanOrder::BACKWARD): float
     {
         $lines = 0.0;
-        $capaianJuz = HafalanOrder::juzOf($capaianSurah, $capaianAyah);
+        $capaianPosition = HafalanOrder::juzPosition(HafalanOrder::juzOf($capaianSurah, $capaianAyah), $direction);
 
-        foreach (HafalanOrder::segments($startSurahNumber, $startAyah, $juz30Done, $surahsByNumber) as [$surahNumber, $from, $to]) {
+        foreach (HafalanOrder::segments($startSurahNumber, $startAyah, $juz30Done, $surahsByNumber, $direction) as [$surahNumber, $from, $to]) {
             // Sudah melewati juz capaian tanpa menemukannya: capaian tidak di depan titik awal.
-            if (HafalanOrder::juzOf($surahNumber, $from) < $capaianJuz) {
+            if (HafalanOrder::juzPosition(HafalanOrder::juzOf($surahNumber, $from), $direction) > $capaianPosition) {
                 return 0.0;
             }
 
@@ -85,11 +85,11 @@ class QuranLineTargetService
 
     /**
      * Apakah capaian sudah sampai atau melewati target menurut urutan hafalan
-     * (Juz 30 -> 29 -> 28 ..., lihat HafalanOrder::rank()).
+     * (Juz 30 -> 27, lalu sesuai arah murid; lihat HafalanOrder::rank()).
      */
-    public function hasReached(int $capaianSurahNumber, int $capaianAyah, int $targetSurahNumber, int $targetAyah): bool
+    public function hasReached(int $capaianSurahNumber, int $capaianAyah, int $targetSurahNumber, int $targetAyah, ?string $direction = HafalanOrder::BACKWARD): bool
     {
-        return HafalanOrder::rank($capaianSurahNumber, $capaianAyah) >= HafalanOrder::rank($targetSurahNumber, $targetAyah);
+        return HafalanOrder::rank($capaianSurahNumber, $capaianAyah, $direction) >= HafalanOrder::rank($targetSurahNumber, $targetAyah, $direction);
     }
 
     /**
@@ -101,21 +101,21 @@ class QuranLineTargetService
      *
      * @param  Collection<int, mixed>  $records
      */
-    public function latestByPosition(Collection $records): mixed
+    public function latestByPosition(Collection $records, ?string $direction = HafalanOrder::BACKWARD): mixed
     {
         if ($records->isEmpty()) {
             return null;
         }
 
-        return $records->sort(function ($a, $b) {
+        return $records->sort(function ($a, $b) use ($direction) {
             $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
             $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
             if ($dateA !== $dateB) {
                 return $dateB <=> $dateA;
             }
 
-            $rankA = HafalanOrder::rank((int) ($a->surah?->number ?? 114), (int) ($a->ayah_end ?? 0));
-            $rankB = HafalanOrder::rank((int) ($b->surah?->number ?? 114), (int) ($b->ayah_end ?? 0));
+            $rankA = HafalanOrder::rank((int) ($a->surah?->number ?? 114), (int) ($a->ayah_end ?? 0), $direction);
+            $rankB = HafalanOrder::rank((int) ($b->surah?->number ?? 114), (int) ($b->ayah_end ?? 0), $direction);
 
             return $rankB <=> $rankA;
         })->first();
@@ -129,7 +129,7 @@ class QuranLineTargetService
      *
      * @param  Collection<int, mixed>  $records
      */
-    public function furthestRecord(Collection $records, bool $isGrade10Ummi = false): mixed
+    public function furthestRecord(Collection $records, bool $isGrade10Ummi = false, ?string $direction = HafalanOrder::BACKWARD): mixed
     {
         if ($records->isEmpty()) {
             return null;
@@ -153,6 +153,6 @@ class QuranLineTargetService
             }
         }
 
-        return $this->latestByPosition($records);
+        return $this->latestByPosition($records, $direction);
     }
 }

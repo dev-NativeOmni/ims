@@ -109,4 +109,27 @@ class TargetTriwulanTest extends TestCase
         $this->assertSame(1, $response->viewData('summary')['students']);
         $this->assertFalse($response->viewData('classRooms')->contains(fn ($c) => $c->isGradeTen()));
     }
+
+    #[Test]
+    public function staff_can_switch_a_students_direction_from_the_term_page(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+
+        $this->actingAs($this->teacherUser)
+            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'forward', 'period' => '2026-07-01'])
+            ->assertRedirect();
+
+        $this->assertSame('forward', $this->student->fresh()->hafalan_direction);
+    }
+
+    #[Test]
+    public function staff_cannot_switch_direction_for_students_they_cannot_see(): void
+    {
+        $this->student->update(['teacher_id' => null]);
+
+        $this->actingAs($this->teacherUser)
+            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'forward'])
+            ->assertForbidden();
+        $this->assertSame('backward', $this->student->fresh()->hafalan_direction);
+    }
 }

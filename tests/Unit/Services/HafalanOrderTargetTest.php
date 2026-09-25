@@ -102,6 +102,42 @@ class HafalanOrderTargetTest extends TestCase
     }
 
     #[Test]
+    public function after_juz_27_backward_students_continue_to_juz_26(): void
+    {
+        $position = $this->service->targetPosition(51, 31, $this->juzLines(27) + 2, $this->surahs, [], HafalanOrder::BACKWARD);
+
+        $this->assertSame(46, $position['surah']->number, 'Juz 26 dimulai dari Al-Ahqaf.');
+        $this->assertSame(1, $position['ayah_start']);
+    }
+
+    #[Test]
+    public function after_juz_27_forward_students_move_to_juz_1_then_juz_2(): void
+    {
+        $toJuz1 = $this->service->targetPosition(51, 31, $this->juzLines(27) + 2, $this->surahs, [], HafalanOrder::FORWARD);
+        $this->assertSame(1, $toJuz1['surah']->number, 'Pindah ke depan: Al-Fatihah.');
+        $this->assertSame(1, $toJuz1['ayah_start']);
+
+        $toJuz2 = $this->service->targetPosition(1, 1, $this->juzLines(1) + 2, $this->surahs, [], HafalanOrder::FORWARD);
+        $this->assertSame(2, $toJuz2['surah']->number);
+        $this->assertSame(142, $toJuz2['ayah_start'], 'Setelah Juz 1 lanjut Juz 2 dari Al-Baqarah 142.');
+    }
+
+    #[Test]
+    public function juz_30_to_27_always_come_first_in_both_directions(): void
+    {
+        $this->assertSame([30, 29, 28, 27, 26], array_slice(HafalanOrder::juzSequence(HafalanOrder::BACKWARD), 0, 5));
+        $this->assertSame([30, 29, 28, 27, 1, 2], array_slice(HafalanOrder::juzSequence(HafalanOrder::FORWARD), 0, 6));
+
+        // Kedua arah: Juz 1 datang setelah Juz 27; Juz 28 belum melewati Juz 27.
+        $this->assertTrue($this->service->hasReached(2, 5, 57, 29, HafalanOrder::FORWARD));
+        $this->assertFalse($this->service->hasReached(58, 1, 57, 1, HafalanOrder::FORWARD));
+
+        // Beda arah: ke depan Juz 26 paling akhir (melewati Juz 1); ke belakang Juz 26 sebelum Juz 1.
+        $this->assertTrue($this->service->hasReached(46, 5, 2, 5, HafalanOrder::FORWARD));
+        $this->assertFalse($this->service->hasReached(46, 5, 2, 5, HafalanOrder::BACKWARD));
+    }
+
+    #[Test]
     public function reaching_is_judged_by_memorisation_order_not_surah_number(): void
     {
         $this->assertTrue($this->service->hasReached(67, 1, 78, 40), 'Al-Mulk (Juz 29) sudah melewati An-Naba.');

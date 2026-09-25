@@ -104,14 +104,16 @@ class WaliKelasController extends Controller
                 ->first(fn (HafalanTarget $t) => $t->target_date->lte($cutoff));
             $capaian = $positionCheck->latestByPosition(
                 $termHafalan->where('student_id', $student->id)
-                    ->filter(fn ($h) => Carbon::parse($h->submitted_at)->lte($cutoff))
+                    ->filter(fn ($h) => Carbon::parse($h->submitted_at)->lte($cutoff)),
+                $student->hafalan_direction
             );
 
             return $target?->surah && $capaian?->surah && $positionCheck->hasReached(
                 (int) $capaian->surah->number,
                 (int) $capaian->ayah_end,
                 (int) $target->surah->number,
-                (int) $target->ayah
+                (int) $target->ayah,
+                $student->hafalan_direction
             );
         };
 

@@ -66,6 +66,10 @@ class StoreStudentRequest extends FormRequest
                 'nullable',
                 Rule::in(['tahsin', 'reguler', 'akselerasi', 'ummi']),
             ],
+            'hafalan_direction' => [
+                'nullable',
+                Rule::in(['backward', 'forward']),
+            ],
             'parent_ids' => [
                 'nullable',
                 'array',

@@ -319,6 +319,8 @@ Route::middleware(['auth'])->group(function () {
         // Target Triwulan: dihitung otomatis dari pertemuan aktif (tidak disimpan).
         Route::get('/hafalan-targets/triwulan', [HafalanTargetController::class, 'term'])
             ->name('hafalan-targets.term');
+        Route::patch('/hafalan-targets/arah/{student}', [HafalanTargetController::class, 'updateDirection'])
+            ->name('hafalan-targets.direction');
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 

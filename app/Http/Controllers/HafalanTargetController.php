@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
 use App\Services\StudentProgressService;
+use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -683,6 +684,25 @@ class HafalanTargetController extends Controller
         ];
 
         return view('hafalan-targets.term', compact('periods', 'period', 'classRooms', 'selectedClass', 'rows', 'summary'));
+    }
+
+    /**
+     * Ubah arah hafalan murid setelah Juz 27 (lanjut ke belakang / pindah ke depan),
+     * lalu hitung ulang target otomatis triwulan yang sedang dilihat.
+     */
+    public function updateDirection(Request $request, Student $student, AutoHafalanTargetService $targets): RedirectResponse
+    {
+        abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
+
+        $validated = $request->validate([
+            'hafalan_direction' => ['required', Rule::in([HafalanOrder::BACKWARD, HafalanOrder::FORWARD])],
+            'period' => ['nullable', 'date'],
+        ]);
+
+        $student->update(['hafalan_direction' => $validated['hafalan_direction']]);
+        $targets->syncStudent($student->fresh(), Carbon::parse($validated['period'] ?? today()));
+
+        return back()->with('success', "Arah hafalan {$student->name} diperbarui dan target dihitung ulang.");
     }
 
     private function visibleStudentIds(?User $user): Collection
