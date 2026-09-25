@@ -100,16 +100,17 @@ class WaliKelasController extends Controller
             ->get()
             ->groupBy('student_id');
 
-        // Tuntas = semua ayat dari titik awal triwulan sampai target sudah lulus disetor per $cutoff.
+        // Kelas 11 & 12: target & capaian baris dari target guru (posisi di pertemuan pertama triwulan
+        // sampai target; capaian = baris ayat baru yang lulus). Kelas 10/Ummi atau belum ada target:
+        // pertemuan x level.
         $progress = app(HafalanProgressService::class);
-        $reachesTarget = function (Student $student, Carbon $cutoff) use ($targetsByStudent, $progress, $termStart, $termEnd) {
-            $target = $targetsByStudent->get($student->id, collect())
-                ->first(fn (HafalanTarget $t) => $t->target_date->lte($cutoff));
-
-            return $target?->surah !== null && $progress->evaluate(
-                $student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, $cutoff
-            )['reached'];
-        };
+        $breakdowns = $classRoom->isGradeTen() ? [] : $students
+            ->filter(fn (Student $student) => AutoHafalanTargetService::levelBaris($student->tahfizh_level) !== null
+                && $targetsByStudent->get($student->id, collect())->contains(fn ($target) => $target->surah !== null))
+            ->mapWithKeys(fn (Student $student) => [$student->id => $progress->termBreakdown(
+                $student, $targetsByStudent->get($student->id, collect()), $months, $today->copy()->endOfDay()
+            )])
+            ->all();
 
         $monthly = [];
         $termCapaian = [];
@@ -120,17 +121,22 @@ class WaliKelasController extends Controller
 
             foreach ($students as $student) {
                 $levelBaris = AutoHafalanTargetService::levelBaris($student->tahfizh_level);
-                $capaian = $termHafalan->where('student_id', $student->id)
-                    ->filter(fn ($h) => Carbon::parse($h->submitted_at)->between($range['start'], $range['end']))
-                    ->sum('lines_count');
-                $target = $levelBaris === null ? 0 : $levelBaris * $calendar->scheduledMeetings($classRoom, $range['start'], $range['end']);
+                $cell = $breakdowns[$student->id]['months'][$monthKey] ?? null;
+
+                if ($cell !== null) {
+                    $capaian = $cell['achieved_lines'];
+                    $target = $cell['target_lines'];
+                    $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
+                } else {
+                    $capaian = $termHafalan->where('student_id', $student->id)
+                        ->filter(fn ($h) => Carbon::parse($h->submitted_at)->between($range['start'], $range['end']))
+                        ->sum('lines_count');
+                    $target = $levelBaris === null ? 0 : $levelBaris * $calendar->scheduledMeetings($classRoom, $range['start'], $range['end']);
+                    $isTuntas = $levelBaris === null || $capaian >= $target;
+                }
 
                 $termCapaian[$student->id] = ($termCapaian[$student->id] ?? 0) + $capaian;
                 $termTarget[$student->id] = ($termTarget[$student->id] ?? 0) + $target;
-
-                $isTuntas = $levelBaris === null
-                    || $capaian >= $target
-                    || $reachesTarget($student, $range['end']);
 
                 if (! $isTuntas) {
                     $rows->push([
@@ -150,12 +156,17 @@ class WaliKelasController extends Controller
         $termRows = collect();
         foreach ($students as $student) {
             $levelBaris = AutoHafalanTargetService::levelBaris($student->tahfizh_level);
-            $capaian = $termCapaian[$student->id] ?? 0;
-            $target = $termTarget[$student->id] ?? 0;
+            $evaluation = $breakdowns[$student->id]['evaluation'] ?? null;
 
-            $isTuntas = $levelBaris === null
-                || $capaian >= $target
-                || $reachesTarget($student, $termEnd);
+            if (isset($breakdowns[$student->id])) {
+                $capaian = $evaluation['achieved_lines'] ?? $termCapaian[$student->id] ?? 0;
+                $target = $evaluation['target_lines'] ?? 0;
+                $isTuntas = $evaluation['reached'] ?? false;
+            } else {
+                $capaian = $termCapaian[$student->id] ?? 0;
+                $target = $termTarget[$student->id] ?? 0;
+                $isTuntas = $levelBaris === null || $capaian >= $target;
+            }
 
             if (! $isTuntas) {
                 $termRows->push([

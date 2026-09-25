@@ -7,7 +7,8 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Isi target surah &amp; ayat tiap bulan untuk murid yang diampu. Deadline tiap bulan = pertemuan aktif terakhir kelas di bulan itu.
-                Target triwulan = target bulan terakhir yang terisi; tercapai bila semua ayat sampai target sudah lulus disetor.
+                Target baris dihitung dari posisi hafalan murid di pertemuan pertama triwulan (lanjutan riwayat setoran) sampai target, mengikuti
+                arah &amp; urutan juz murid. Capaian = baris ayat baru yang lulus disetor. Tercapai bila capaian baris ≥ target baris.
             </p>
         </div>
     </x-slot>
@@ -99,12 +100,16 @@
                                         <a href="{{ route('hafalan-targets.juz-orders', $student) }}" class="font-bold text-gray-900 dark:text-white hover:text-indigo-600 hover:underline" title="Lihat & atur urutan hafalan per juz">{{ $student->name }}</a>
                                         <p class="text-[11px] text-gray-500">{{ ucfirst($student->tahfizh_level ?? 'reguler') }}</p>
                                         @if ($plan['start'])
-                                            <p class="text-[11px] text-gray-400">Awal: {{ $plan['start']['surah']?->name_latin }} : {{ $plan['start']['ayah'] }}</p>
+                                            <p class="text-[11px] text-gray-400" title="{{ ['history' => 'Lanjutan setoran terakhir sebelum triwulan ('.$plan['start']['date'].')', 'first_setoran' => 'Belum ada riwayat sebelum triwulan: setoran pertama triwulan', 'default' => 'Belum ada setoran: awal urutan hafalan'][$plan['start']['source']] }}">
+                                                Awal: {{ $plan['start']['surah_model']?->name_latin }} : {{ $plan['start']['ayah'] }}
+                                                <span class="text-gray-300">· Juz {{ $plan['start']['juz'] }}</span>
+                                            </p>
                                         @endif
                                     </td>
                                     @foreach ($months as $monthKey => $month)
                                         @php
-                                            $stored = $plan['months'][$monthKey]['target'] ?? null;
+                                            $cell = $plan['months'][$monthKey] ?? [];
+                                            $stored = $cell['target'] ?? null;
                                             $surahValue = (string) old("targets.{$student->id}.{$monthKey}.surah_id", $stored?->surah_id);
                                             $ayahValue = old("targets.{$student->id}.{$monthKey}.ayah", $stored?->ayah);
                                             $hasError = $errors->has("targets.{$student->id}.{$monthKey}");
@@ -123,9 +128,13 @@
                                                        x-init="syncMax($el.previousElementSibling)"
                                                        class="w-16 rounded-lg text-xs py-1.5 px-2 dark:bg-zinc-800 dark:text-zinc-200 {{ $hasError ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700' }}">
                                             </div>
+                                            <p class="mt-1 text-[11px] text-gray-500">
+                                                Target <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $stored ? ($cell['target_lines'] + 0).' baris' : '–' }}</span>
+                                                · Capaian <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ ($cell['achieved_lines'] ?? 0) + 0 }} baris</span>
+                                            </p>
                                             @if ($stored)
                                                 <div class="mt-1 flex flex-wrap gap-1">
-                                                    @if ($stored->status === 'completed')
+                                                    @if ($cell['reached'])
                                                         <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">Tercapai</span>
                                                     @elseif ($stored->target_date->lt(today()))
                                                         <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Belum tercapai</span>
@@ -144,8 +153,14 @@
                                         @else
                                             <p class="text-xs text-amber-600">Belum ada target</p>
                                         @endif
+                                        @if ($plan['target'])
+                                            <p class="mt-1 text-[11px] text-gray-500">
+                                                <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['achieved_lines'] + 0 }}</span> dari
+                                                <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['target_lines'] + 0 }}</span> baris target
+                                            </p>
+                                        @endif
                                         <p class="mt-1 text-[11px] text-gray-500">
-                                            Capaian:
+                                            Setoran terakhir:
                                             <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['capaian'] ? $plan['capaian']['surah']?->name_latin.' : '.$plan['capaian']['ayah'] : '–' }}</span>
                                         </p>
                                         @if ($plan['target'])

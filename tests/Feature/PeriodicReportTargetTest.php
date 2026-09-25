@@ -59,7 +59,7 @@ class PeriodicReportTargetTest extends TestCase
     }
 
     #[Test]
-    public function periodic_report_marks_tuntas_when_capaian_reaches_the_target_position(): void
+    public function periodic_report_uses_lines_up_to_the_teachers_target(): void
     {
         $this->setoran('2026-09-09', 1, 7); // Al-Fatihah sampai ayat 7 -> hanya 7 baris
 
@@ -76,9 +76,9 @@ class PeriodicReportTargetTest extends TestCase
         $report = fn () => collect($this->actingAs($this->admin)->get(route('reports.periodic', $query))->viewData('studentReports'))
             ->first(fn ($r) => $r['student']->id === $this->student->id);
 
-        // Baris belum memenuhi target (5 pertemuan x 5 = 25), tapi ayat 7 >= target ayat 5.
+        // Target baris = Al-Fatihah 1-5 (dari titik awal), capaian = 1-7 -> tuntas.
         $row = $report();
-        $this->assertLessThan($row['target_baris'], $row['capaian_baris']);
+        $this->assertGreaterThanOrEqual($row['target_baris'], $row['capaian_baris']);
         $this->assertTrue($row['is_tuntas']);
 
         // Target di surah yang lebih jauh (Al-Baqarah) belum tercapai.

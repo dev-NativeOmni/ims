@@ -57,8 +57,8 @@ class AutoHafalanTargetService
     }
 
     /**
-     * Target satu murid per bulan di triwulan ini (target terakhir di bulan itu), target triwulan
-     * (bulan terakhir yang terisi), capaian, dan progres cakupan ayat terhadap target triwulan.
+     * Target satu murid per bulan di triwulan ini (target terakhir di bulan itu) beserta target &
+     * capaian baris, target triwulan (bulan terakhir yang terisi), titik awal, dan progres baris.
      */
     public function termPlan(Student $student, Carbon $date, ?ClassRoom $classRoom = null, ?array $months = null): array
     {
@@ -67,6 +67,7 @@ class AutoHafalanTargetService
             'eligible' => false, 'reason' => null, 'level_baris' => self::levelBaris($student->tahfizh_level),
             'start' => null, 'months' => [], 'target' => null, 'target_month' => null,
             'capaian' => null, 'progress' => 0, 'reached' => false, 'juz_orders' => [],
+            'target_lines' => 0.0, 'achieved_lines' => 0.0,
             'juz_order_source' => fn (int $juz) => 'default',
         ];
 
@@ -83,34 +84,28 @@ class AutoHafalanTargetService
         $plan['eligible'] = true;
 
         $stored = $this->storedTermTargets($student, $termStart, $termEnd);
-        foreach ($months as $monthKey => $month) {
-            $target = $stored->filter(fn (HafalanTarget $t) => $t->target_date->format('Y-m') === $monthKey)->last();
-            $plan['months'][$monthKey] = ['target' => $target];
-            if ($target?->surah) {
-                $plan['target'] = $target;
-                $plan['target_month'] = $monthKey;
-            }
-        }
-
         $records = $this->progress->records($student);
         $surahs = $this->progress->surahs();
+        $breakdown = $this->progress->termBreakdown($student, $stored, $months, now(), $records);
+
+        $plan['months'] = $breakdown['months'];
+        $plan['target'] = $breakdown['target'];
+        $plan['target_month'] = $breakdown['target']?->target_date->format('Y-m');
+
         $juzOrders = $this->progress->juzOrders($student, $records);
         $manualJuz = array_map('intval', array_keys($student->juz_orders ?? []));
         $detected = $this->progress->detectedJuzOrders($records);
         $plan['juz_orders'] = $juzOrders;
         $plan['juz_order_source'] = fn (int $juz) => in_array($juz, $manualJuz, true) ? 'manual' : (isset($detected[$juz]) ? 'auto' : 'default');
 
-        $first = $this->progress->firstBetween($records, $termStart, $termEnd);
-        if ($first) {
-            $plan['start'] = [
-                'surah' => $surahs->get((int) $first->surah_number),
-                'ayah' => (int) $first->ayah_start,
-                'juz' => HafalanOrder::juzOf((int) $first->surah_number, (int) $first->ayah_start),
-                'date' => Carbon::parse($first->submitted_at)->toDateString(),
-            ];
-        }
+        // Titik awal = posisi saat pertemuan pertama triwulan (lanjutan riwayat hafalan).
+        $start = $breakdown['start'];
+        $plan['start'] = $start + [
+            'surah_model' => $surahs->get($start['surah']),
+            'juz' => HafalanOrder::juzOf($start['surah'], $start['ayah']),
+        ];
 
-        // Capaian = setoran lulus terakhir di triwulan ini; progres & tuntas dari cakupan ayat.
+        // Capaian = setoran lulus terakhir di triwulan ini.
         $latest = $records
             ->filter(fn ($r) => $r->status === 'passed' && Carbon::parse($r->submitted_at)->betweenIncluded($termStart, $termEnd->copy()->endOfDay()))
             ->last();
@@ -122,10 +117,11 @@ class AutoHafalanTargetService
             ];
         }
 
-        if ($plan['target']) {
-            $evaluation = $this->progress->evaluate($student, (int) $plan['target']->surah->number, (int) $plan['target']->ayah, $termStart, $termEnd, now(), $records);
-            $plan['reached'] = $evaluation['reached'];
-            $plan['progress'] = $evaluation['progress'];
+        $plan['achieved_lines'] = $this->progress->newLines($records, $termStart, now()->min($termEnd->copy()->endOfDay()));
+        if ($breakdown['evaluation']) {
+            $plan['reached'] = $breakdown['evaluation']['reached'];
+            $plan['progress'] = $breakdown['evaluation']['progress'];
+            $plan['target_lines'] = $breakdown['evaluation']['target_lines'];
         }
 
         return $plan;

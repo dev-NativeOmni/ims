@@ -13,8 +13,8 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Tab Term / Indeks: bila ada target posisi, TUNTAS hanya jika capaian sudah sampai
- * posisi target -- jumlah baris yang cukup saja tidak membuat tuntas.
+ * Tab Term / Indeks: bila ada target guru, target baris = baris dari titik awal triwulan
+ * sampai target; TUNTAS bila capaian baris (ayat baru lulus) sudah mencapainya.
  */
 class QuarterlyTermTuntasTest extends TestCase
 {
@@ -64,13 +64,14 @@ class QuarterlyTermTuntasTest extends TestCase
     }
 
     #[Test]
-    public function enough_lines_but_target_position_not_reached_is_not_tuntas(): void
+    public function capaian_lines_below_the_lines_to_the_target_is_not_tuntas(): void
     {
         $this->target(200);
 
         $record = $this->termRecord();
 
-        $this->assertGreaterThanOrEqual($record['target_lines'], $record['total_lines'], 'Baris sudah melebihi target baris.');
+        // Target baris = Al-Baqarah 1-200 (dari titik awal), capaian = 1-120.
+        $this->assertLessThan($record['target_lines'], $record['total_lines']);
         $this->assertFalse($record['is_tuntas'], 'Capaian ayat 120 belum sampai target ayat 200.');
     }
 

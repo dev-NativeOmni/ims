@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
 use App\Models\UmmiRecord;
+use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
 use App\Support\TargetRules;
@@ -447,6 +448,27 @@ class StudentReportController extends Controller
                 $totalTargetBaris = $levelBaris * $meetings;
 
                 $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
+
+                // Target guru di triwulan rapor (Target Triwulan): baris dari posisi di pertemuan
+                // pertama triwulan sampai target, capaian = baris ayat baru yang lulus.
+                $raporTerm = self::resolveTanseTerm($academicYear, $semester, $term);
+                $termTarget = HafalanTarget::query()
+                    ->with('surah')
+                    ->where('student_id', $student->id)
+                    ->whereBetween('target_date', [$raporTerm['start']->toDateString(), $raporTerm['end']->toDateString().' 23:59:59'])
+                    ->orderBy('target_date')
+                    ->orderBy('id')
+                    ->get()
+                    ->filter(fn ($t) => $t->surah)
+                    ->last();
+                if ($termTarget) {
+                    $evaluation = app(HafalanProgressService::class)->evaluate(
+                        $student, (int) $termTarget->surah->number, (int) $termTarget->ayah,
+                        $raporTerm['start'], $raporTerm['end'], now()->min($raporTerm['end'])
+                    );
+                    $termTargetText = "Target {$raporTerm['label']}: QS. {$termTarget->surah->name_latin} ayat {$termTarget->ayah} = "
+                        .($evaluation['target_lines'] + 0).' baris · Capaian '.($evaluation['achieved_lines'] + 0).' baris';
+                }
             }
         }
 
