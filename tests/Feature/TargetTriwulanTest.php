@@ -325,4 +325,31 @@ class TargetTriwulanTest extends TestCase
         $this->assertSame($plan['achieved_lines'], $termRecord['total_lines']);
         $this->assertFalse($termRecord['is_tuntas']);
     }
+
+    #[Test]
+    public function periodic_term_report_has_stacked_monthly_capaian_and_period_titles(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-08', 78, 1, 20);
+        $this->setoran('2026-09-09', 78, 21, 30);
+        $this->target('2026-09-30', 78, 40);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'quarterly', 'quarter' => 1, 'year' => 2026,
+        ]));
+        $response->assertOk();
+        $response->assertSee('GRAFIK CAPAIAN TERM 1 (JULI – SEPTEMBER 2026) KELAS XII F3');
+        $response->assertSee('KETUNTASAN TERM 1 (JULI – SEPTEMBER 2026) KELAS XII F3');
+
+        $row = collect($response->viewData('studentReports'))->first(fn ($r) => $r['student']->id === $this->student->id);
+        $this->assertSame(round($this->lines(78, 1, 20), 1), $row['monthly_capaian']['2026-07']);
+        $this->assertSame(0.0, $row['monthly_capaian']['2026-08']);
+        $this->assertSame(round($this->lines(78, 1, 40), 1), round((float) $row['target_baris'], 1));
+
+        $monthly = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 8, 'year' => 2026,
+        ]));
+        $monthly->assertSee('GRAFIK CAPAIAN BULAN AGUSTUS 2026 KELAS XII F3');
+    }
 }

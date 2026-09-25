@@ -233,8 +233,24 @@
                     }
                     $monthName = $monthsList[$selectedMonth] ?? '';
                     $className = $selectedClass?->name ?? '';
-                    $titleCapaian = "GRAFIK CAPAIAN BULAN " . strtoupper($monthName) . " KELAS " . strtoupper($className);
-                    $titleKetuntasan = "KETUNTASAN BULAN KELAS " . strtoupper($className);
+                    $periodLabel ??= 'BULAN ' . strtoupper($monthsList[$selectedMonth] ?? '');
+                    $isTermChart = $periodType !== 'monthly';
+                    $titleCapaian = "GRAFIK CAPAIAN " . $periodLabel . " KELAS " . strtoupper($className);
+                    $titleKetuntasan = "KETUNTASAN " . $periodLabel . " KELAS " . strtoupper($className);
+
+                    // Grafik term: capaian tiap bulan bertumpuk, garis target = target term (kumulatif).
+                    $monthColors = ['#0ea5e9', '#6366f1', '#14b8a6'];
+                    $termDatasets = [];
+                    if ($isTermChart) {
+                        foreach (array_values($periodMonths ?? []) as $i => $label) {
+                            $key = array_keys($periodMonths)[$i];
+                            $termDatasets[] = [
+                                'label' => 'CAPAIAN ' . strtoupper($label),
+                                'data' => collect($studentReports)->map(fn ($rep) => (float) ($rep['monthly_capaian'][$key] ?? 0))->all(),
+                                'color' => $monthColors[$i % count($monthColors)],
+                            ];
+                        }
+                    }
                 @endphp
 
                 @if (!empty($isGrade10))
@@ -278,6 +294,11 @@
                                         <h3 class="text-base font-bold text-gray-900 dark:text-white">
                                             {{ $titleCapaian }}
                                         </h3>
+                                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                                            {{ $isTermChart
+                                                ? 'Capaian tiap bulan ditumpuk menjadi capaian term; garis = target baris term (kumulatif).'
+                                                : 'Capaian & target baris bulan ini saja.' }}
+                                        </p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" onclick="downloadChart('capaianChart', '{{ $titleCapaian }}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-zinc-800 text-teal-700 dark:text-teal-400 text-xs font-bold rounded-lg border border-teal-200 dark:border-zinc-700 transition cursor-pointer">
@@ -305,7 +326,7 @@
                                             {{ $titleKetuntasan }}
                                         </h3>
                                         <p class="text-xs text-gray-550 dark:text-zinc-400 mt-1">
-                                            Persentase ketuntasan target bulanan kelas.
+                                            {{ $isTermChart ? 'Persentase ketuntasan target term kelas (capaian term ≥ target term).' : 'Persentase ketuntasan target bulanan kelas.' }}
                                         </p>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -684,7 +705,30 @@
                         data: {
                             labels: @json($names),
                             datasets: [
-                                {
+                                ...@json($termDatasets).map((set, i, all) => ({
+                                    label: set.label,
+                                    type: 'bar',
+                                    data: set.data,
+                                    backgroundColor: set.color,
+                                    borderWidth: 0,
+                                    borderRadius: i === all.length - 1 ? { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 } : 0,
+                                    borderSkipped: false,
+                                    barPercentage: 0.65,
+                                    categoryPercentage: 0.85,
+                                    stack: 'capaian',
+                                    order: 2,
+                                    datalabels: {
+                                        // Angka total di puncak tumpukan terakhir saja.
+                                        display: i === all.length - 1,
+                                        anchor: 'end',
+                                        align: 'top',
+                                        offset: 2,
+                                        color: isDark ? '#38bdf8' : '#0284c7',
+                                        formatter: (value, ctx) => Math.round(all.reduce((sum, s) => sum + (s.data[ctx.dataIndex] || 0), 0) * 10) / 10,
+                                        font: { family: 'Outfit, Inter, sans-serif', weight: 'bold', size: 10 },
+                                    },
+                                })),
+                                ...(@json($isTermChart) ? [] : [{
                                     label: 'CAPAIAN BARIS',
                                     type: 'bar',
                                     data: @json($capaians),
@@ -712,9 +756,9 @@
                                             size: 10
                                         }
                                     }
-                                },
+                                }]),
                                 {
-                                    label: 'TARGET BARIS',
+                                    label: @json($isTermChart ? 'TARGET BARIS TERM' : 'TARGET BARIS'),
                                     type: 'line',
                                     data: @json($targets),
                                     borderColor: '#f97316', // Sunset Amber
@@ -779,6 +823,7 @@
                             },
                             scales: {
                                 y: {
+                                    stacked: @json($isTermChart),
                                     grid: {
                                         color: gridColor,
                                         borderDash: [4, 4]
@@ -794,6 +839,7 @@
                                     beginAtZero: true
                                 },
                                 x: {
+                                    stacked: @json($isTermChart),
                                     grid: {
                                         display: false
                                     },

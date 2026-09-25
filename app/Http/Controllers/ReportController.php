@@ -1001,6 +1001,17 @@ class ReportController extends Controller
             || preg_match('/\b10\b/i', $selectedClassLevel)
         ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
+        // Bulan-bulan dalam periode (Y-m => nama bulan) dan label periode untuk judul grafik.
+        $monthNames = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+        $periodMonths = [];
+        for ($cursor = Carbon::parse($startDate)->startOfMonth(); $cursor->lte(Carbon::parse($endDate)); $cursor->addMonthNoOverflow()) {
+            $periodMonths[$cursor->format('Y-m')] = $monthNames[$cursor->month];
+        }
+        $periodMonthKeys = array_keys($periodMonths);
+        $periodLabel = $periodType === 'monthly'
+            ? 'BULAN '.strtoupper(reset($periodMonths)).' '.Carbon::parse($startDate)->year
+            : 'TERM '.$selectedQuarter.' ('.strtoupper(reset($periodMonths)).' – '.strtoupper(end($periodMonths)).' '.Carbon::parse($endDate)->year.')';
+
         // Detailed student list
         $studentReports = [];
         $tuntasCount = 0;
@@ -1173,8 +1184,19 @@ class ReportController extends Controller
             $alpa = $stAttendances->where('status', 'alpa')->count();
             $hadir = $stAttendances->where('status', 'hadir')->count();
 
+            // Periode term: capaian baris per bulan (untuk grafik term bertumpuk & kumulatif).
+            $monthlyCapaian = [];
+            if ($periodType !== 'monthly') {
+                foreach ($periodMonthKeys as $monthKey) {
+                    $monthlyCapaian[$monthKey] = round((float) $studentHafalan
+                        ->filter(fn ($rec) => $rec->surah && Carbon::parse($rec->submitted_at)->format('Y-m') === $monthKey)
+                        ->sum('lines_count'), 1);
+                }
+            }
+
             $studentReports[] = [
                 'student' => $student,
+                'monthly_capaian' => $monthlyCapaian,
                 'total_hafalan' => $studentHafalan->count(),
                 'total_murajaah' => $studentMurajaah->count(),
                 'avg_score' => $avgScore,
@@ -1225,6 +1247,8 @@ class ReportController extends Controller
             'selectedYear' => $selectedYear,
             'tuntasCount' => $tuntasCount,
             'tidakTuntasCount' => $tidakTuntasCount,
+            'periodMonths' => $periodMonths,
+            'periodLabel' => $periodLabel,
             'monthsList' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
