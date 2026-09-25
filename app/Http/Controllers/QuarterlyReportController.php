@@ -874,7 +874,8 @@ class QuarterlyReportController extends Controller
                         })->filter(fn ($r) => $r->surah);
 
                         if ($dayRecords->isNotEmpty()) {
-                            $lines = $dayRecords->sum('lines_count');
+                            // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
+                            $lines = $dayRecords->where('status', 'passed')->sum('lines_count');
                             $surahLabel = $dayRecords
                                 ->map(fn ($r) => "{$r->surah->name_latin} ({$r->ayah_start}-{$r->ayah_end})")
                                 ->implode(', ');
@@ -941,7 +942,8 @@ class QuarterlyReportController extends Controller
                         ];
                         $totalCapaianLines += $lines;
                     } elseif ($weekRecords->isNotEmpty()) {
-                        $lines = $weekRecords->sum('lines_count');
+                        // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
+                        $lines = $weekRecords->where('status', 'passed')->sum('lines_count');
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                         $pekanRecords[$p] = [
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),

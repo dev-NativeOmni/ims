@@ -135,14 +135,24 @@ class ProgramTest extends TestCase
             'status' => 'active',
         ]);
 
-        // 4. View report of daily student (5 lines * 20 meetings = 100 lines/month)
-        $response1 = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $dailyStudent));
-        $response1->assertStatus(200);
-        $response1->assertSee('Target: 5 baris/pertemuan x 20 pertemuan = 100 baris/bulan');
+        // 4. Target rapor = pertemuan aktif triwulan (kalender) x baris per level.
+        $parse = function ($student) {
+            $response = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $student));
+            $response->assertStatus(200);
+            $this->assertMatchesRegularExpression('/^Target Triwulan \d \([^)]+\): (\d+) baris x (\d+) pertemuan = (\d+) baris/', $response->viewData('termTargetText'));
+            preg_match('/: (\d+) baris x (\d+) pertemuan = (\d+) baris/', $response->viewData('termTargetText'), $m);
+            $this->assertSame((int) $m[1] * (int) $m[2], (int) $m[3]);
 
-        // 5. View report of weekly student (3 lines * 4 meetings = 12 lines/month)
-        $response2 = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $weeklyStudent));
-        $response2->assertStatus(200);
-        $response2->assertSee('Target: 3 baris/pertemuan x 4 pertemuan = 12 baris/bulan');
+            return [(int) $m[1], (int) $m[2]];
+        };
+
+        [$dailyLines, $dailyMeetings] = $parse($dailyStudent);
+        $this->assertSame(5, $dailyLines);
+
+        // 5. Program seminggu sekali: paling banyak satu pertemuan per pekan (<= 14 per triwulan).
+        [$weeklyLines, $weeklyMeetings] = $parse($weeklyStudent);
+        $this->assertSame(3, $weeklyLines);
+        $this->assertLessThanOrEqual(14, $weeklyMeetings);
+        $this->assertGreaterThan($weeklyMeetings, $dailyMeetings);
     }
 }

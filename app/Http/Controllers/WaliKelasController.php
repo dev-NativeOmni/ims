@@ -116,6 +116,8 @@ class WaliKelasController extends Controller
         $termTarget = [];
 
         foreach ($months as $monthKey => $range) {
+            // Bulan yang belum berjalan belum bisa dinilai tuntas/tidak (tetap ikut rekap term).
+            $notStarted = $range['start']->gt($today);
             $rows = collect();
 
             foreach ($students as $student) {
@@ -144,6 +146,10 @@ class WaliKelasController extends Controller
                         'target_baris' => $target,
                     ]);
                 }
+            }
+
+            if ($notStarted) {
+                continue;
             }
 
             $monthly[$monthKey] = [

@@ -1012,6 +1012,16 @@ class ReportController extends Controller
             ? 'BULAN '.strtoupper(reset($periodMonths)).' '.Carbon::parse($startDate)->year
             : 'TERM '.$selectedQuarter.' ('.strtoupper(reset($periodMonths)).' – '.strtoupper(end($periodMonths)).' '.Carbon::parse($endDate)->year.')';
 
+        // Target guru di triwulan periode ini, sekali ambil untuk semua murid (kelas 11 & 12).
+        $termMonths = app(AcademicCalendarService::class)->termMonths(Carbon::parse($startDate));
+        $periodTermTargets = HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->whereNotNull('surah_id')
+            ->whereBetween('target_date', [reset($termMonths)['start']->toDateString(), end($termMonths)['end']->toDateString().' 23:59:59'])
+            ->get()
+            ->groupBy('student_id');
+
         // Detailed student list
         $studentReports = [];
         $tuntasCount = 0;
@@ -1117,13 +1127,7 @@ class ReportController extends Controller
             // kumulatif satu triwulan. Kelas 10/Ummi: seperti semula.
             $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
             if (! $isGrade10 && $levelBaris !== null) {
-                $termMonths = app(AcademicCalendarService::class)->termMonths(Carbon::parse($startDate));
-                $termTargets = HafalanTarget::query()
-                    ->with('surah')
-                    ->where('student_id', $student->id)
-                    ->whereBetween('target_date', [reset($termMonths)['start']->toDateString(), end($termMonths)['end']->toDateString().' 23:59:59'])
-                    ->get()
-                    ->filter(fn ($target) => $target->surah !== null);
+                $termTargets = $periodTermTargets->get($student->id, collect());
 
                 $student->setRelation('classRoom', $selectedClass);
                 $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, Carbon::parse($endDate)->endOfDay());

@@ -7,35 +7,46 @@ use App\Models\HafalanTarget;
 
 class HafalanTargetAutoCompletionService
 {
+    /**
+     * Tandai target guru (surah & ayat) yang sudah tercapai menjadi completed dengan aturan yang
+     * sama dengan Target Triwulan: semua ayat dari setoran pertama triwulan target sampai ayat
+     * target sudah lulus disetor (HafalanProgressService::evaluate).
+     */
     public function syncExistingTargets(bool $dryRun = false): int
     {
         $matchedTargets = 0;
+        $calendar = app(AcademicCalendarService::class);
+        $progress = app(HafalanProgressService::class);
 
         HafalanTarget::query()
+            ->with(['student', 'surah'])
             ->where('status', 'active')
+            ->whereNotNull('surah_id')
             ->orderBy('id')
-            ->chunkById(100, function ($targets) use (&$matchedTargets, $dryRun) {
+            ->chunkById(100, function ($targets) use (&$matchedTargets, $dryRun, $calendar, $progress) {
                 foreach ($targets as $target) {
-                    $record = $this->matchingPassedRecordForTarget($target);
+                    if (! $target->student || ! $target->surah || ! $target->target_date) {
+                        continue;
+                    }
 
-                    if (! $record) {
+                    $months = $calendar->termMonths($target->target_date);
+                    $reached = $progress->evaluate(
+                        $target->student, (int) $target->surah->number, (int) $target->ayah,
+                        reset($months)['start'], end($months)['end'], now()
+                    )['position_reached'];
+
+                    if (! $reached) {
                         continue;
                     }
 
                     $matchedTargets++;
 
-                    if ($dryRun) {
-                        continue;
+                    if (! $dryRun) {
+                        $target->update([
+                            'status' => 'completed',
+                            'completed_at' => $this->matchingPassedRecordForTarget($target)?->hafalanRecord?->submitted_at?->copy()->endOfDay() ?? now(),
+                        ]);
                     }
-
-                    $submittedAt = $record->hafalanRecord?->submitted_at;
-
-                    $target->update([
-                        'status' => 'completed',
-                        'completed_at' => $submittedAt
-                            ? $submittedAt->copy()->endOfDay()
-                            : now(),
-                    ]);
                 }
             });
 

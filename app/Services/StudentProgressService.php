@@ -299,16 +299,9 @@ class StudentProgressService
             // ─── Reguler Program Details (For Grade 11 & 12) ───
             $levelBaris = TargetRules::linesForLevel($tahfizhLevel) ?? TargetRules::linesForLevel('reguler');
 
-            $isWeeklyProgram = ($meetingFrequency === 'seminggu sekali')
-                || str_contains($programName, 'reguler')
-                || (bool) preg_match('/F[2-9]\b/i', $classRoomName);
-
-            if ($isTahfizhProgram) {
-                $isWeeklyProgram = false;
-            }
-
-            $meetingsPerMonth = $isWeeklyProgram ? 4 : 20;
-            $targetBarisMonth = $levelBaris * $meetingsPerMonth;
+            // Target baris bulan ini = pertemuan aktif kelas bulan ini (kalender) x baris per level,
+            // sama dengan Target Triwulan & laporan.
+            $targetBarisMonth = app(HafalanProgressService::class)->targetLines($student, now()->startOfMonth(), now()->endOfMonth());
 
             $startOfMonth = now()->startOfMonth()->toDateString();
             $endOfMonth = now()->endOfMonth()->toDateString();

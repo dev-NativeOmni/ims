@@ -264,4 +264,38 @@ class WaliKelasTest extends TestCase
         $response->assertSessionHasErrors('wali_kelas_user_id');
         $this->assertNull($otherClass->fresh()->wali_kelas_user_id);
     }
+
+    #[Test]
+    public function months_that_have_not_started_are_not_listed_yet(): void
+    {
+        Carbon::setTestNow('2026-08-10');
+
+        $response = $this->actingAs($this->waliKelasUser)->get(route('wali-kelas.index'));
+
+        $response->assertViewHas('monthlyTuntas', fn ($monthly) => array_keys($monthly) === ['2026-07', '2026-08']);
+
+        Carbon::setTestNow();
+    }
+
+    #[Test]
+    public function nightly_completion_needs_every_ayah_up_to_the_target(): void
+    {
+        $setoran = function (string $date, int $from, int $to) {
+            $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => $date]);
+            $record->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => $from, 'ayah_end' => $to, 'submission_type' => 'new', 'status' => 'passed']);
+        };
+        $setoran('2026-07-06', 1, 3);
+        $setoran('2026-07-13', 6, 7); // ayat 4-5 terlewat
+        $target = HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id, 'ayah' => 7, 'target_date' => '2026-07-31', 'status' => 'active',
+        ]);
+
+        $this->artisan('tad:sync-completed-targets')->assertSuccessful();
+        $this->assertSame('active', $target->fresh()->status, 'Ayat 4-5 belum disetor.');
+
+        $setoran('2026-07-20', 4, 5);
+        $this->artisan('tad:sync-completed-targets')->assertSuccessful();
+        $this->assertSame('completed', $target->fresh()->status);
+    }
 }

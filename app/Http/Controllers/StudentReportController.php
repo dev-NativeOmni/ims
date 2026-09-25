@@ -432,43 +432,24 @@ class StudentReportController extends Controller
             if ($isUmmiProgram) {
                 $termTargetText = 'Metode Bacaan Ummi (Target diisi Musyrif)';
             } else {
-                $levelBaris = TargetRules::linesForLevel($student->tahfizh_level) ?? TargetRules::linesForLevel('reguler');
-
-                $programName = strtolower($student->classRoom?->program?->name ?? '');
-                $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
-
-                $isWeeklyProgram = ($meetingFrequency === 'seminggu sekali')
-                    || str_contains($programName, 'reguler')
-                    || (bool) preg_match('/F[2-9]\b/i', $classRoomName);
-
-                if (str_contains($programName, 'tahfizh') || (bool) preg_match('/F1\b/i', $classRoomName)) {
-                    $isWeeklyProgram = false;
-                }
-
-                $meetings = $isWeeklyProgram ? 4 : 20;
-                $totalTargetBaris = $levelBaris * $meetings;
-
-                $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
-
-                // Target guru di triwulan rapor (Target Triwulan): target baris = pertemuan aktif x
-                // level, capaian = baris setoran lulus di triwulan.
+                // Target triwulan rapor: pertemuan aktif x baris per level (sama dengan Target Triwulan &
+                // Laporan Triwulan), capaian = baris setoran lulus, plus target surah & ayat guru bila ada.
                 $raporTerm = self::resolveTanseTerm($academicYear, $semester, $term);
-                $termTarget = HafalanTarget::query()
+                $termMonths = app(AcademicCalendarService::class)->termMonths($raporTerm['start']);
+                $termTargets = HafalanTarget::query()
                     ->with('surah')
                     ->where('student_id', $student->id)
                     ->whereBetween('target_date', [$raporTerm['start']->toDateString(), $raporTerm['end']->toDateString().' 23:59:59'])
-                    ->orderBy('target_date')
-                    ->orderBy('id')
                     ->get()
-                    ->filter(fn ($t) => $t->surah)
-                    ->last();
-                if ($termTarget) {
-                    $termMonths = app(AcademicCalendarService::class)->termMonths($raporTerm['start']);
-                    $breakdown = app(HafalanProgressService::class)->termBreakdown(
-                        $student, collect([$termTarget]), $termMonths, now()->min($raporTerm['end'])
-                    );
-                    $termTargetText = "Target {$raporTerm['label']}: QS. {$termTarget->surah->name_latin} ayat {$termTarget->ayah} · "
-                        .($breakdown['evaluation']['target_lines'] + 0).' baris · Capaian '.($breakdown['evaluation']['achieved_lines'] + 0).' baris';
+                    ->filter(fn ($t) => $t->surah);
+                $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, now()->min($raporTerm['end']));
+                $levelBaris = TargetRules::linesForLevel($student->tahfizh_level);
+                $termMeetings = $levelBaris ? intdiv((int) $breakdown['evaluation']['target_lines'], $levelBaris) : 0;
+
+                $termTargetText = "Target {$raporTerm['label']}: {$levelBaris} baris x {$termMeetings} pertemuan = "
+                    .$breakdown['evaluation']['target_lines'].' baris · Capaian '.($breakdown['evaluation']['achieved_lines'] + 0).' baris';
+                if ($breakdown['target']) {
+                    $termTargetText .= " · Target hafalan QS. {$breakdown['target']->surah->name_latin} ayat {$breakdown['target']->ayah}";
                 }
             }
         }
