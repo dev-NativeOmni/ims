@@ -659,7 +659,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>
-                                <strong class="font-semibold">Informasi:</strong> Target Semester Kelas 11 &amp; 12 dihitung otomatis: mulai dari surah &amp; ayat pertama yang disetorkan di term ini, maju sejauh total baris target (jumlah pertemuan &times; baris per level murid). Kelas 10 (UMMI) memakai Target Hafalan terbaru yang dibuat Guru. Capaian Akhir diambil dari Setoran Hafalan terakhir yang Lulus (Passed) milik murid.
+                                <strong class="font-semibold">Informasi:</strong> Target Triwulan Kelas 11 &amp; 12 dihitung otomatis: dari setoran pertama triwulan sejauh (pertemuan aktif × baris per level), mengikuti urutan hafalan Juz 30 → 29 → … (atau pindah ke Juz 1 sesuai pilihan murid). TUNTAS bila capaian terjauh yang lulus sudah sampai posisi target; bila tidak ada target posisi, dinilai dari jumlah baris. Kelas 10 (UMMI) memakai target buatan guru.
                             </span>
                         </div>
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
@@ -668,7 +668,7 @@
                                     <tr>
                                         <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
                                         <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[180px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
-                                        <th colspan="2" class="px-3 py-2 border-b border-r dark:border-zinc-700">Target Semester</th>
+                                        <th colspan="2" class="px-3 py-2 border-b border-r dark:border-zinc-700">Target Triwulan</th>
                                         <th colspan="2" class="px-3 py-2 border-b border-r dark:border-zinc-700">Capaian Akhir</th>
                                         <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Baris</th>
                                         <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Ketercapaian</th>

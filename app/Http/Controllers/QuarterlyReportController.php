@@ -1059,8 +1059,10 @@ class QuarterlyReportController extends Controller
             $targetLines = $rows->sum('target_lines');
             $studentAtt = $gAttendances->where('student_id', $student->id);
 
-            // Ketercapaian: tuntas bila total baris memenuhi target, atau bila posisi capaian
-            // (surah & ayat terakhir yang lulus) sudah sampai/melewati posisi target.
+            // Ketercapaian: bila murid punya target posisi (surah & ayat), tuntas HANYA jika capaian
+            // terjauh yang lulus sudah sampai/melewati posisi itu menurut urutan hafalan. Jumlah baris
+            // hanya dipakai bila tidak ada target posisi (mis. Kelas 10/Ummi atau belum ada target),
+            // supaya "Tuntas" selalu sejalan dengan kolom Target & Capaian yang ditampilkan.
             $studentTarget = $latestTargets->get($student->id)?->first();
             $studentCapaian = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()), $student->hafalan_direction);
             $reachedByPosition = $positionCheck
@@ -1084,7 +1086,9 @@ class QuarterlyReportController extends Controller
                 'capaian_ayat' => $first['capaian_ayat'] ?? '-',
                 'total_lines' => $totalLines,
                 'target_lines' => $targetLines,
-                'is_tuntas' => $totalLines >= $targetLines || $reachedByPosition,
+                'is_tuntas' => ($positionCheck && $studentTarget?->surah)
+                    ? (bool) $reachedByPosition
+                    : $totalLines >= $targetLines,
                 'alpa' => $studentAtt->where('status', 'alpa')->count(),
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),
