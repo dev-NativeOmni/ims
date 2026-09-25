@@ -241,6 +241,53 @@ class StudentReportController extends Controller
      *
      * @return array{term: int, terms: array<int, string>, label: string, start: Carbon, end: Carbon}
      */
+    /**
+     * Tanggal BLP (titimangsa rapor) per semester: ASTS & ASAS (semester 1), ASTS & ASAT
+     * (semester 2). Diatur per tahun ajaran di Pengaturan Rapor.
+     */
+    public const BLP_EXAMS = [
+        1 => ['1_asts' => 'ASTS', '1_asas' => 'ASAS'],
+        2 => ['2_asts' => 'ASTS', '2_asat' => 'ASAT'],
+    ];
+
+    /**
+     * Tanggal BLP tersimpan untuk satu tahun ajaran: ['1_asts' => 'Y-m-d'|null, ...].
+     *
+     * @return array<string, string|null>
+     */
+    public static function blpDates(string $academicYear): array
+    {
+        $saved = json_decode((string) Setting::get(self::blpSettingKey($academicYear)), true) ?: [];
+        $keys = array_merge(array_keys(self::BLP_EXAMS[1]), array_keys(self::BLP_EXAMS[2]));
+
+        return collect($keys)->mapWithKeys(fn ($key) => [$key => $saved[$key] ?? null])->all();
+    }
+
+    public static function blpSettingKey(string $academicYear): string
+    {
+        return 'report_blp_dates_'.str_replace('/', '-', $academicYear);
+    }
+
+    /**
+     * Titimangsa rapor: triwulan pertama semester memakai tanggal ASTS, triwulan kedua
+     * memakai ASAS (semester 1) / ASAT (semester 2). Belum diatur = tanggal hari ini.
+     *
+     * @return array{date: string, exam: string, is_set: bool}
+     */
+    public static function reportDate(string $academicYear, int $semester, int $term): array
+    {
+        $exams = self::BLP_EXAMS[$semester === 2 ? 2 : 1];
+        $isSecondTerm = in_array($term, [2, 4], true);
+        $key = array_keys($exams)[$isSecondTerm ? 1 : 0];
+        $saved = self::blpDates($academicYear)[$key];
+
+        return [
+            'date' => Carbon::parse($saved ?? now())->locale('id')->translatedFormat('d F Y'),
+            'exam' => $exams[$key],
+            'is_set' => $saved !== null,
+        ];
+    }
+
     public static function resolveTanseTerm(string $academicYear, int $semester, ?int $requested = null): array
     {
         $startYear = (int) explode('/', $academicYear)[0];
@@ -469,6 +516,7 @@ class StudentReportController extends Controller
 
         // Tanse (Ketahanan Sekolah): hanya poin dalam triwulan terpilih.
         $tanseTerm = self::resolveTanseTerm($academicYear, $semester, $term);
+        $reportDate = self::reportDate($academicYear, $semester, $tanseTerm['term']);
         $inTanseTerm = fn ($point) => $point->date?->between($tanseTerm['start'], $tanseTerm['end']);
         $violations = $violations->filter($inTanseTerm)->values();
         $rewards = $rewards->filter($inTanseTerm)->values();
@@ -516,6 +564,7 @@ class StudentReportController extends Controller
             'tanseScore',
             'tanseGrade',
             'tanseTerm',
+            'reportDate',
             'report'
         );
     }
@@ -548,8 +597,10 @@ class StudentReportController extends Controller
         $coordTanseName = Setting::get('report_coord_tanse_name', 'Yatim Hermawan, S.E., S.Kom');
         $coordTanseNik = Setting::get('report_coord_tanse_nik', '15.06.0393');
 
+        $blpDates = self::blpDates($academicYear);
+
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse',
+            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -560,6 +611,15 @@ class StudentReportController extends Controller
 
     public function updateSettings(Request $request)
     {
+        $request->validate(['blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date']);
+
+        // Tanggal BLP disimpan untuk tahun ajaran yang sedang diatur di form ini.
+        $academicYear = (string) $request->input('academic_year', '2025/2026');
+        $blp = collect(self::blpDates($academicYear))
+            ->map(fn ($old, $key) => $request->input("blp_dates.{$key}") ?: null)
+            ->all();
+        Setting::set(self::blpSettingKey($academicYear), json_encode($blp));
+
         Setting::set('academic_year', $request->input('academic_year', '2025/2026'));
         Setting::set('semester', $request->input('semester', 1));
         Setting::set('report_show_tahfizh', $request->has('report_show_tahfizh') ? '1' : '0');

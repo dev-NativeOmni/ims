@@ -2,7 +2,6 @@
 
 namespace App\Exports\QuarterlyReport\Concerns;
 
-use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -11,8 +10,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * Blok tanda tangan di bawah tiap tabel halaqoh (Jurnal & Capaian Hafalan), seperti
  * template sekolah: kiri "Mengetahui, Kepala Sekolah", kanan "Kota, tanggal / Guru
  * Pengampu", masing-masing dengan gambar tanda tangan (bila sudah diunggah) dan nama.
+ * Tanggal = tanggal terakhir triwulan (sama untuk semua blok).
  *
- * $signatureContext (dari QuarterlyReportExport): city, headmaster_title, headmaster_name,
+ * $signatureContext (dari QuarterlyReportExport): city, date, headmaster_title, headmaster_name,
  * headmaster_nik, headmaster_signature (path absolut|null), teacher_signatures
  * (berkas relatif => path absolut). Kosong = blok tidak dibuat.
  */
@@ -31,14 +31,14 @@ trait SignatureBlock
      * @param  array{0: string, 1: string}  $left  kolom awal & akhir blok kiri, mis. ['B', 'C']
      * @param  array{0: string, 1: string}  $right  kolom awal & akhir blok kanan
      */
-    private function appendSignatureBlock(array &$rows, int &$row, array $halaqah, ?string $monthEnd, array $left, array $right): void
+    private function appendSignatureBlock(array &$rows, int &$row, array $halaqah, array $left, array $right): void
     {
         $ctx = $this->signatureContext;
         if ($ctx === []) {
             return;
         }
 
-        $date = $monthEnd ? Carbon::parse($monthEnd)->locale('id')->translatedFormat('j F Y') : '';
+        $date = $ctx['date'] ?? '';
         $teacherSignature = $ctx['teacher_signatures'][$halaqah['musyrif_signature'] ?? ''] ?? null;
 
         $lines = [

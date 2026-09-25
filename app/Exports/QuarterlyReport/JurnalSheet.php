@@ -81,7 +81,7 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNu
 
                     $rows[] = [''];
                     $row++;
-                    $this->appendSignatureBlock($rows, $row, $halaqah, $halaqah['monthly'][$mCode]['end_date'] ?? null, ['B', 'C'], ['D', 'E']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
                 }
             }
         }

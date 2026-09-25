@@ -117,7 +117,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                     $rows[] = [''];
                     $row++;
-                    $this->appendSignatureBlock($rows, $row, $halaqah, $month['end_date'] ?? null, ['B', 'C'], ['U', 'AD']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['U', 'AD']);
                 }
             }
         }
@@ -197,7 +197,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                         $row++;
                     }
 
-                    $this->appendSignatureBlock($rows, $row, $halaqah, $halaqah['monthly'][$mCode]['end_date'] ?? null, ['B', 'C'], ['G', 'J']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['G', 'J']);
                 }
             }
         }

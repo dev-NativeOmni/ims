@@ -109,7 +109,7 @@ class SignatureTest extends TestCase
             $this->assertTrue($cells->contains('Guru Pengampu'), "{$title}: ada 'Guru Pengampu'.");
             $this->assertTrue($cells->contains('Moh. Pandoyo, S.Si., M.Pd., Gr.'), "{$title}: nama kepala sekolah.");
             $this->assertTrue($cells->contains($this->teacherUser->name), "{$title}: nama guru pengampu.");
-            $this->assertTrue($cells->contains('Sukoharjo, 31 Juli 2026'), "{$title}: kota & akhir bulan.");
+            $this->assertTrue($cells->contains('Sukoharjo, 30 September 2026'), "{$title}: kota & tanggal akhir triwulan.");
             // 3 bulan x (kepala sekolah + guru)
             $this->assertCount(6, $sheet->getDrawingCollection(), "{$title}: gambar tanda tangan ditanam.");
         }

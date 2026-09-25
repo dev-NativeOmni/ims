@@ -9,6 +9,7 @@ use App\Exports\QuarterlyReport\SetoranSheet;
 use App\Exports\QuarterlyReport\TermIndexSheet;
 use App\Models\Setting;
 use App\Support\Signatures;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 /**
@@ -31,6 +32,10 @@ class QuarterlyReportExport implements WithMultipleSheets
 
         return [
             'city' => (string) Setting::get('report_city', 'Sukoharjo'),
+            // Titimangsa: tanggal terakhir triwulan yang dilaporkan.
+            'date' => ! empty($this->data['termEndDate'])
+                ? Carbon::parse($this->data['termEndDate'])->locale('id')->translatedFormat('j F Y')
+                : '',
             'headmaster_title' => (string) Setting::get('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo'),
             'headmaster_name' => $headmaster['name'],
             'headmaster_nik' => $headmaster['nik'],

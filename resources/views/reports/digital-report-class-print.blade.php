@@ -343,14 +343,14 @@
                 <!-- Row 1 -->
                 <div class="grid grid-cols-2 gap-8 text-center">
                     <div>
-                        <p class="invisible select-none">{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                        <p class="invisible select-none">{{ $reportCity }}, {{ $data['reportDate']['date'] }}</p>
                         <p class="font-semibold">Koordinator Tahfidz</p>
                         @include('reports.partials.signature-slot', ['uri' => $signatureUris['coord_tahfizh']])
                         <p class="font-bold underline text-black">{{ $coordTahfizhName }}</p>
                         <p class="text-[10px] text-gray-650">NIK. {{ $coordTahfizhNik }}</p>
                     </div>
                     <div>
-                        <p>{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                        <p>{{ $reportCity }}, {{ $data['reportDate']['date'] }}</p>
                         <p class="font-semibold">Koordinator Keagamaan</p>
                         @include('reports.partials.signature-slot', ['uri' => $signatureUris['coord_keagamaan']])
                         <p class="font-bold underline text-black">{{ $coordKeagamaanName }}</p>

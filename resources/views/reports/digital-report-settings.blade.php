@@ -94,6 +94,30 @@
                                     </label>
                                 </div>
                             </div>
+
+                            {{-- Tanggal BLP: titimangsa rapor, dipilih otomatis menurut triwulan rapor. --}}
+                            <div class="border-t pt-4 mt-4 dark:border-zinc-800 space-y-2.5">
+                                <label class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider">
+                                    Tanggal BLP (Titimangsa Rapor) &middot; Tahun Ajaran <span x-text="academicYear"></span>
+                                </label>
+                                <p class="text-[11px] text-gray-500 dark:text-zinc-400">
+                                    Rapor triwulan pertama tiap semester memakai tanggal ASTS, triwulan kedua memakai ASAS (Semester 1) / ASAT (Semester 2). Bila kosong, rapor memakai tanggal hari ini.
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach (\App\Http\Controllers\StudentReportController::BLP_EXAMS as $blpSemester => $exams)
+                                        <div class="p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2">
+                                            <p class="text-xs font-bold text-gray-800 dark:text-zinc-200">Semester {{ $blpSemester }}</p>
+                                            @foreach ($exams as $key => $examLabel)
+                                                <div class="flex items-center gap-2">
+                                                    <label for="blp_{{ $key }}" class="w-12 shrink-0 text-xs font-semibold text-gray-600 dark:text-zinc-400">{{ $examLabel }}</label>
+                                                    <input type="date" name="blp_dates[{{ $key }}]" id="blp_{{ $key }}" value="{{ $blpDates[$key] }}"
+                                                           class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
 
                         {{-- 2. Header & Kop Surat Rapor --}}

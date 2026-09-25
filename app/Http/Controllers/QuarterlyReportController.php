@@ -456,6 +456,7 @@ class QuarterlyReportController extends Controller
 
         return [
             'isTeacherView' => (bool) $teacher,
+            'termEndDate' => $termEndDate,
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'isTahfizhProgram' => $isTahfizhProgram,
@@ -535,6 +536,7 @@ class QuarterlyReportController extends Controller
 
         return [
             'isTahfizhProgram' => $isTahfizhProgram,
+            'termEndDate' => $termEndDate,
             'academicYear' => $termContext['academicYear'],
             'selectedTerm' => $termContext['selectedTerm'],
             'monthsMap' => $monthsMap,
@@ -1029,7 +1031,6 @@ class QuarterlyReportController extends Controller
 
         return [
             'label' => $range['label'],
-            'end_date' => $range['end'],
             'presensi' => $presensiData,
             'jurnal' => $jurnalData,
             'tahfizh_records' => $tahfizhRecords,
