@@ -15,6 +15,7 @@ use App\Models\StudentReport;
 use App\Models\UmmiRecord;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -213,7 +214,7 @@ class StudentReportController extends Controller
     }
 
     /**
-     * Deskripsi Tanse di rapor, berdasarkan predikat (lihat tanseGrade()).
+     * Deskripsi Tanse bawaan per predikat; bisa diubah di Pengaturan Rapor (lihat tanseRules()).
      */
     public const TANSE_NOTES = [
         'A' => 'Alhamdulillah ananda sudah Sangat Baik dalam menerapkan budaya sekolah, disiplin, bertanggung jawab, santun, peduli, dan menjadi teladan bagi lingkungan sekitar. Semoga tetap istiqomah dalam menjalankan pembiasaan budaya sekolah dan berprestasi',
@@ -221,16 +222,43 @@ class StudentReportController extends Controller
         'C' => 'Alhamdulillah ananda sudah Cukup Baik dalam menerapkan budaya sekolah, namun masih memerlukan bimbingan, pendampingan, pembiasaan dan konsistensi dalam kedisiplinan, tanggung jawab, dan sikap santun.',
     ];
 
+    public const TANSE_DEFAULT_A_MIN = 90;
+
+    public const TANSE_DEFAULT_B_MIN = 80;
+
     /**
-     * Predikat Tanse dari skor (100 - poin pelanggaran triwulan): A >= 90, B >= 80, selain itu C.
+     * Batas nilai & deskripsi predikat Tanse dari Pengaturan Rapor (default di atas).
+     *
+     * @return array{a_min: int, b_min: int, notes: array{A: string, B: string, C: string}}
+     */
+    public static function tanseRules(): array
+    {
+        $notes = json_decode((string) Setting::get('report_tanse_notes'), true) ?: [];
+
+        return [
+            'a_min' => (int) Setting::get('report_tanse_a_min', self::TANSE_DEFAULT_A_MIN),
+            'b_min' => (int) Setting::get('report_tanse_b_min', self::TANSE_DEFAULT_B_MIN),
+            'notes' => collect(self::TANSE_NOTES)->map(fn ($default, $grade) => trim((string) ($notes[$grade] ?? '')) ?: $default)->all(),
+        ];
+    }
+
+    /**
+     * Predikat Tanse dari skor (100 - poin pelanggaran triwulan): A >= batas A, B >= batas B, selain itu C.
      */
     public static function tanseGrade(int $score): string
     {
+        $rules = self::tanseRules();
+
         return match (true) {
-            $score >= 90 => 'A',
-            $score >= 80 => 'B',
+            $score >= $rules['a_min'] => 'A',
+            $score >= $rules['b_min'] => 'B',
             default => 'C',
         };
+    }
+
+    public static function tanseNote(string $grade): string
+    {
+        return self::tanseRules()['notes'][$grade] ?? self::TANSE_NOTES['C'];
     }
 
     /**
@@ -402,12 +430,7 @@ class StudentReportController extends Controller
             if ($isUmmiProgram) {
                 $termTargetText = 'Metode Bacaan Ummi (Target diisi Musyrif)';
             } else {
-                $levelBaris = match ($student->tahfizh_level) {
-                    'tahsin' => 3,
-                    'reguler' => 5,
-                    'akselerasi' => 7,
-                    default => 5,
-                };
+                $levelBaris = TargetRules::linesForLevel($student->tahfizh_level) ?? TargetRules::linesForLevel('reguler');
 
                 $programName = strtolower($student->classRoom?->program?->name ?? '');
                 $meetingFrequency = $student->classRoom?->program?->meeting_frequency ?? 'setiap hari';
@@ -536,7 +559,7 @@ class StudentReportController extends Controller
 
         $tanseScore = max(0, 100 - $totalViolationPoints);
         $tanseGrade = self::tanseGrade($tanseScore);
-        $autoTanseNotes = self::TANSE_NOTES[$tanseGrade];
+        $autoTanseNotes = self::tanseNote($tanseGrade);
 
         return compact(
             'student',
@@ -606,9 +629,10 @@ class StudentReportController extends Controller
         $coordTanseNik = Setting::get('report_coord_tanse_nik', '15.06.0393');
 
         $blpDates = self::blpDates($academicYear);
+        $tanseRules = self::tanseRules();
 
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates',
+            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -619,7 +643,20 @@ class StudentReportController extends Controller
 
     public function updateSettings(Request $request)
     {
-        $request->validate(['blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date']);
+        $request->validate([
+            'blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date',
+            'tanse_a_min' => 'nullable|integer|between:1,100',
+            'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
+            'tanse_notes' => 'nullable|array', 'tanse_notes.*' => 'nullable|string|max:1000',
+        ], ['tanse_b_min.lt' => 'Batas predikat B harus lebih kecil dari batas predikat A.']);
+
+        if ($request->filled('tanse_a_min')) {
+            Setting::set('report_tanse_a_min', (string) $request->integer('tanse_a_min'));
+            Setting::set('report_tanse_b_min', (string) $request->integer('tanse_b_min'));
+            Setting::set('report_tanse_notes', json_encode(collect(self::TANSE_NOTES)
+                ->map(fn ($default, $grade) => trim((string) $request->input("tanse_notes.{$grade}")) ?: $default)
+                ->all()));
+        }
 
         // Tanggal BLP disimpan untuk tahun ajaran yang sedang diatur di form ini.
         $academicYear = (string) $request->input('academic_year', '2025/2026');

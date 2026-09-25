@@ -76,7 +76,7 @@
                             @endphp
                             <tr class="align-top">
                                 <td class="px-4 py-3">
-                                    <p class="font-bold text-gray-900 dark:text-white">{{ $row['student']->name }}</p>
+                                    <a href="{{ route('hafalan-targets.juz-orders', $row['student']) }}" class="font-bold text-gray-900 dark:text-white hover:text-indigo-600 hover:underline" title="Lihat & atur urutan hafalan per juz">{{ $row['student']->name }}</a>
                                     <p class="text-[11px] text-gray-500">{{ ucfirst($row['student']->tahfizh_level ?? 'reguler') }} · {{ $plan['level_baris'] }} baris/pertemuan</p>
                                     {{-- Arah hafalan: pindah ke depan (Juz 1) setelah Juz 29/28/27, atau terus ke belakang. --}}
                                     <form method="POST" action="{{ route('hafalan-targets.direction', $row['student']) }}" class="mt-1.5">

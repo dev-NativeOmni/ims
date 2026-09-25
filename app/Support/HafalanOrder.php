@@ -5,8 +5,9 @@ namespace App\Support;
 use Illuminate\Support\Collection;
 
 /**
- * Urutan hafalan sekolah. Juz 30 dan 29 wajib; setelah itu murid memilih
- * (Student::hafalan_direction), paling lambat setelah Juz 27:
+ * Urutan hafalan sekolah. Juz 30 sampai juz wajib (Pengaturan Target, default 29) harus
+ * dulu; setelah itu murid memilih (Student::hafalan_direction), paling lambat setelah
+ * batas pindah (default Juz 27):
  * - 'backward' (default): terus ke belakang, Juz 28 -> 27 -> 26 -> ... -> 1;
  * - 'front_29' / 'front_28' / 'front_27': setelah juz itu pindah ke depan,
  *   Juz 1 -> 2 -> ... sampai juz sebelum titik pindah (mis. front_29: 30, 29, 1..28).
@@ -33,9 +34,6 @@ class HafalanOrder
     /** Pindah ke depan setelah Juz 27 (batas paling akhir). */
     public const FORWARD = 'front_27';
 
-    /** Juz setelah mana murid boleh pindah ke depan (Juz 1). */
-    public const SWITCH_JUZ = [29, 28, 27];
-
     /**
      * Pilihan arah untuk form: nilai => label.
      *
@@ -44,7 +42,7 @@ class HafalanOrder
     public static function directionOptions(): array
     {
         $options = [self::BACKWARD => 'Lanjut ke belakang (Juz 28, 27, 26, …)'];
-        foreach (self::SWITCH_JUZ as $juz) {
+        foreach (TargetRules::switchOptions() as $juz) {
             $options["front_{$juz}"] = "Setelah Juz {$juz} pindah ke depan (Juz 1, 2, …)";
         }
 
@@ -123,7 +121,10 @@ class HafalanOrder
             return self::FORWARD; // nilai lama: pindah setelah Juz 27
         }
 
-        return array_key_exists((string) $direction, self::directionOptions()) ? $direction : self::BACKWARD;
+        // Titik pindah yang sudah tersimpan tetap sah walau pilihan di pengaturan berubah.
+        return preg_match('/^front_(\d{1,2})$/', (string) $direction, $m) && (int) $m[1] >= 2 && (int) $m[1] <= 30
+            ? $direction
+            : self::BACKWARD;
     }
 
     /**

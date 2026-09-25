@@ -6,8 +6,10 @@ use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Services\SchoolCalendar;
 use App\Support\Signatures;
+use App\Support\TargetRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
@@ -197,6 +199,7 @@ class SettingController extends Controller
             'classRooms' => $classRooms,
             'locks' => $locks,
             'permissions' => $permissions,
+            'adabDays' => $calendar->adabDays(),
             'prevMonth' => $prevMonth,
             'prevYear' => $prevYear,
             'nextMonth' => $nextMonth,
@@ -243,6 +246,26 @@ class SettingController extends Controller
         return redirect()
             ->route('academic-calendar.index', ['year' => $year, 'month' => $month])
             ->with('success', 'Kalender akademik berhasil diperbarui.');
+    }
+
+    /**
+     * Hari pengisian kuisioner Adab (Admin & Koordinator Keagamaan).
+     */
+    public function calendarAdabDays(Request $request)
+    {
+        $validated = $request->validate([
+            'adab_days' => ['required', 'array', 'min:1'],
+            'adab_days.*' => ['integer', 'between:1,7'],
+            'year' => ['nullable', 'integer'],
+            'month' => ['nullable', 'integer'],
+        ], ['adab_days.required' => 'Pilih minimal satu hari pengisian Adab.']);
+        abort_unless($this->calendarPermissions($request, (int) date('Y'), (int) date('n'))['edit_adab_days'], 403);
+
+        app(SchoolCalendar::class)->saveAdabDays($validated['adab_days']);
+
+        return redirect()
+            ->route('academic-calendar.index', array_filter(['year' => $validated['year'] ?? null, 'month' => $validated['month'] ?? null]))
+            ->with('success', 'Hari pengisian Adab diperbarui.');
     }
 
     public function calendarLock(Request $request)
@@ -295,6 +318,7 @@ class SettingController extends Controller
             'lock_tahfizh' => $isAdmin && ! $tahfizhLocked,
             'lock_adab' => ($isAdmin || $isAdabCoordinator) && ! $adabLocked,
             'unlock' => $isAdmin,
+            'edit_adab_days' => $isAdmin || $isAdabCoordinator,
         ];
     }
 
@@ -304,7 +328,35 @@ class SettingController extends Controller
 
         return view('settings.hafalan-targets', [
             'config' => $config,
+            'levelLines' => TargetRules::levelLines(),
+            'mandatoryUntil' => TargetRules::mandatoryUntil(),
+            'latestSwitch' => TargetRules::latestSwitch(),
+            'canEditTargetRules' => request()->user()?->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh']) ?? false,
         ]);
+    }
+
+    /**
+     * Aturan target otomatis (baris per level, juz wajib, batas pindah ke depan), lalu
+     * hitung ulang target otomatis triwulan berjalan untuk semua kelas 11/12.
+     */
+    public function targetRulesUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'level_lines' => ['required', 'array'],
+            'level_lines.*' => ['required', 'integer', 'between:1,60'],
+            'mandatory_until' => ['required', 'integer', 'between:2,30'],
+            'latest_switch' => ['required', 'integer', 'between:2,30', 'lte:mandatory_until'],
+        ], [
+            'latest_switch.lte' => 'Batas pindah paling akhir harus sama dengan atau setelah juz wajib (nomor juz lebih kecil atau sama).',
+        ]);
+
+        TargetRules::save($validated['level_lines'], (int) $validated['mandatory_until'], (int) $validated['latest_switch']);
+
+        @set_time_limit(300);
+        Artisan::call('tad:sync-auto-targets');
+
+        return redirect()->route('settings.hafalan-targets')
+            ->with('success', 'Aturan target otomatis disimpan dan target triwulan berjalan sudah dihitung ulang.');
     }
 
     public function hafalanTargetsUpdate(Request $request)

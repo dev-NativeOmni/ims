@@ -40,6 +40,7 @@
         classDays: {{ json_encode((object) $classHolidays) }},
         canTahfizh: @js($permissions['edit_tahfizh']),
         canAdab: @js($permissions['edit_adab']),
+        adabDays: @js($adabDays),
 
         modal: { isOpen: false, dateStr: '', dayNum: '', isoDay: 1, tahfizh: 'on', adab: 'on', selectedClasses: [] },
 
@@ -170,6 +171,29 @@
                 @endforeach
             </div>
 
+            <!-- Hari pengisian Adab -->
+            <form method="POST" action="{{ route('academic-calendar.adab-days') }}" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center gap-3">
+                @csrf
+                <input type="hidden" name="year" value="{{ $year }}">
+                <input type="hidden" name="month" value="{{ $month }}">
+                <div class="md:w-56 shrink-0">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">Hari Pengisian Adab</p>
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400">Berlaku untuk perhitungan kehadiran kuisioner semua bulan.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 flex-1">
+                    @foreach (\App\Services\SchoolCalendar::DAY_NAMES as $dayNumber => $dayName)
+                        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-gray-700 dark:text-zinc-300 {{ $permissions['edit_adab_days'] ? 'cursor-pointer' : 'opacity-70' }}">
+                            <input type="checkbox" name="adab_days[]" value="{{ $dayNumber }}" @checked(in_array($dayNumber, $adabDays, true)) @disabled(! $permissions['edit_adab_days']) class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                            {{ $dayName }}
+                        </label>
+                    @endforeach
+                </div>
+                @if ($permissions['edit_adab_days'])
+                    <button type="submit" onclick="return confirm('Ubah hari pengisian Adab? Perhitungan kehadiran kuisioner semua bulan ikut menyesuaikan.')" class="shrink-0 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-sm cursor-pointer">Simpan Hari Adab</button>
+                @endif
+            </form>
+            @error('adab_days') <p class="text-xs text-red-600 -mt-3">{{ $message }}</p> @enderror
+
             <!-- Academic Calendar Form -->
             <form id="calendar-form" method="POST" action="{{ route('academic-calendar.update') }}">
                 @csrf
@@ -218,7 +242,7 @@
                                 <!-- Current Month Active Date Cell -->
                                 @php
                                     $isoDay = $day['date']->dayOfWeekIso;
-                                    $isAdabWeekday = in_array($isoDay, \App\Services\SchoolCalendar::ADAB_DAYS, true);
+                                    $isAdabWeekday = in_array($isoDay, $adabDays, true);
                                 @endphp
                                 <div
                                     @click="openModal('{{ $dateStr }}', {{ $dayNum }}, {{ $isoDay }})"
@@ -271,7 +295,7 @@
                                         </template>
                                     </div>
 
-                                    <!-- Hari aktif: Tahfizh (Senin-Jumat, mengikuti jadwal kelas) & Adab (Selasa-Jumat) -->
+                                    <!-- Hari aktif: Tahfizh (Senin-Jumat, mengikuti jadwal kelas) & Adab (hari pengisian Adab) -->
                                     @unless ($isWeekend)
                                         <div class="mt-1 flex flex-wrap gap-1 text-[9px] font-bold uppercase tracking-wide">
                                             <span x-show="! tahfizhOff('{{ $dateStr }}')" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">Tahfizh</span>
@@ -372,15 +396,15 @@
                      <!-- Adab -->
                      <div class="space-y-2 pt-3 border-t dark:border-zinc-800">
                          <div class="flex items-center justify-between">
-                             <label class="block text-xs font-bold text-gray-400 dark:text-zinc-400 uppercase tracking-wider">Adab <span class="normal-case font-semibold">(Selasa&ndash;Jumat)</span></label>
+                             <label class="block text-xs font-bold text-gray-400 dark:text-zinc-400 uppercase tracking-wider">Adab <span class="normal-case font-semibold">({{ collect($adabDays)->map(fn ($d) => \App\Services\SchoolCalendar::DAY_NAMES[$d])->implode(', ') }})</span></label>
                              @if (in_array(\App\Services\SchoolCalendar::SCOPE_ADAB, $locks, true))
                                  <span class="text-[10px] font-bold text-amber-600 inline-flex items-center gap-1"><x-heroicon-o-lock-closed class="w-3 h-3" /> Terkunci</span>
                              @endif
                          </div>
-                         <template x-if="modal.isoDay < 2 || modal.isoDay > 5">
+                         <template x-if="! adabDays.includes(modal.isoDay)">
                              <p class="text-xs text-gray-500 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800/50 rounded-xl px-3 py-2">Bukan hari pengisian Adab.</p>
                          </template>
-                         <template x-if="modal.isoDay >= 2 && modal.isoDay <= 5 && canAdab">
+                         <template x-if="adabDays.includes(modal.isoDay) && canAdab">
                              <div class="grid grid-cols-2 gap-2">
                                  @foreach (['on' => ['Aktif', 'border-violet-500 bg-violet-50/40 text-violet-800 dark:text-violet-400 dark:border-violet-800'], 'off' => ['Libur Adab', 'border-rose-500 bg-rose-50/40 text-rose-800 dark:text-rose-400 dark:border-rose-800']] as $value => [$label, $color])
                                      <label class="border border-gray-200 dark:border-zinc-800 rounded-xl p-2.5 text-center cursor-pointer transition select-none text-[11px] font-bold"
@@ -391,7 +415,7 @@
                                  @endforeach
                              </div>
                          </template>
-                         <template x-if="modal.isoDay >= 2 && modal.isoDay <= 5 && ! canAdab">
+                         <template x-if="adabDays.includes(modal.isoDay) && ! canAdab">
                              <p class="text-xs text-gray-600 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-800/50 rounded-xl px-3 py-2">
                                  <span x-text="adabOff(modal.dateStr) ? 'Libur Adab' : 'Aktif'"></span>
                                  <span class="block text-[10px] text-gray-400 mt-0.5">Terkunci &mdash; buka kunci Adab untuk mengubah.</span>

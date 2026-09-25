@@ -120,4 +120,30 @@ class JuzOrderAndCoverageTest extends TestCase
 
         $this->assertFalse($result['reached']);
     }
+
+    #[Test]
+    public function juz_order_page_lists_every_juz_with_coverage_and_detected_order(): void
+    {
+        $this->setoran('2026-07-01', 57, 1, 29);
+        $this->setoran('2026-07-08', 56, 1, 20);
+
+        $response = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.juz-orders', $this->student));
+
+        $response->assertOk();
+        $rows = $response->viewData('juzRows')->keyBy('juz');
+        $this->assertCount(30, $rows);
+        $this->assertSame('desc', $rows[27]['order']);
+        $this->assertSame('auto', $rows[27]['source']);
+        $this->assertGreaterThan(0, $rows[27]['covered_percent']);
+        $this->assertSame(0, $rows[1]['covered_percent']);
+        $response->assertSee('otomatis dari setoran');
+    }
+
+    #[Test]
+    public function juz_order_page_is_limited_to_visible_students(): void
+    {
+        $this->student->update(['teacher_id' => null]);
+
+        $this->actingAs($this->teacherUser)->get(route('hafalan-targets.juz-orders', $this->student))->assertForbidden();
+    }
 }

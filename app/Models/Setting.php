@@ -120,7 +120,7 @@ class Setting extends Model
     }
 
     /**
-     * Hari efektif kuisioner Adab: Selasa-Jumat, bukan libur Adab (lihat SchoolCalendar).
+     * Hari efektif kuisioner Adab: hari pengisian Adab (Kalender), bukan libur Adab (lihat SchoolCalendar).
      */
     public static function isEffectiveAdabDay(Carbon $date): bool
     {
@@ -136,7 +136,7 @@ class Setting extends Model
     }
 
     /**
-     * Calculate count of effective workdays (Selasa-Jumat, excluding national holidays) for a month.
+     * Jumlah hari efektif kuisioner Adab dalam sebulan (lihat SchoolCalendar::isAdabEffectiveDay).
      */
     public static function getEffectiveDaysCount(int $year, int $month, ?string $untilDate = null): int
     {

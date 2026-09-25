@@ -156,7 +156,7 @@
                     </div>
 
                     @if (! $adabToday['is_effective_day'])
-                        <p class="text-xs text-gray-500 dark:text-zinc-400 italic">Hari ini bukan hari efektif pengisian kuisioner adab (Selasa-Jumat, di luar libur nasional).</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 italic">Hari ini bukan hari efektif pengisian kuisioner adab ({{ collect(app(\App\Services\SchoolCalendar::class)->adabDays())->map(fn ($d) => \App\Services\SchoolCalendar::DAY_NAMES[$d])->implode(', ') }}, di luar libur Adab).</p>
                     @elseif ($adabToday['missing']->isEmpty())
                         <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Semua murid sudah mengisi kuisioner adab hari ini. 🎉</p>
                     @else

@@ -130,4 +130,20 @@ class CalendarScopeAndLockTest extends TestCase
         $lock($this->admin, 'adab', 'unlock')->assertRedirect();
         $this->assertFalse($this->calendar()->isMonthLocked(2026, 10, 'adab'));
     }
+
+    #[Test]
+    public function adab_days_can_be_changed_by_admin_and_adab_coordinator_only(): void
+    {
+        $this->actingAs($this->admin)->post(route('academic-calendar.adab-days'), ['adab_days' => [1, 2, 3]])->assertRedirect();
+
+        $this->assertSame([1, 2, 3], $this->calendar()->adabDays());
+        $this->assertTrue($this->calendar()->isAdabEffectiveDay(Carbon::parse('2026-10-12')), 'Senin kini hari Adab.');
+        $this->assertFalse($this->calendar()->isAdabEffectiveDay(Carbon::parse('2026-10-16')), 'Jumat bukan lagi hari Adab.');
+
+        $this->actingAs($this->adabCoordinator)->post(route('academic-calendar.adab-days'), ['adab_days' => [2, 3, 4, 5]])->assertRedirect();
+        $this->assertSame([2, 3, 4, 5], $this->calendar()->adabDays());
+
+        $this->actingAs($this->teacherUser)->post(route('academic-calendar.adab-days'), ['adab_days' => [1]])->assertForbidden();
+        $this->actingAs($this->admin)->post(route('academic-calendar.adab-days'), ['adab_days' => []])->assertSessionHasErrors('adab_days');
+    }
 }

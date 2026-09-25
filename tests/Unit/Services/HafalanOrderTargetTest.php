@@ -142,7 +142,8 @@ class HafalanOrderTargetTest extends TestCase
     public function legacy_and_unknown_directions_are_normalised(): void
     {
         $this->assertSame('front_27', HafalanOrder::normalizeDirection('forward'));
-        $this->assertSame('backward', HafalanOrder::normalizeDirection('front_30'), 'Juz 30 tidak boleh jadi titik pindah.');
+        $this->assertSame('backward', HafalanOrder::normalizeDirection('front_31'), 'Titik pindah di luar Juz 2-30 tidak sah.');
+        $this->assertSame('front_30', HafalanOrder::normalizeDirection('front_30'), 'Boleh bila pengaturan juz wajib = Juz 30.');
         $this->assertSame('backward', HafalanOrder::normalizeDirection(null));
         $this->assertNull(HafalanOrder::switchJuz('backward'));
         $this->assertSame(28, HafalanOrder::switchJuz('front_28'));

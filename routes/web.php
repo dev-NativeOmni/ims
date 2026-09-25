@@ -208,6 +208,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('academic-calendar', [SettingController::class, 'calendarIndex'])->name('academic-calendar.index');
         Route::post('academic-calendar/update', [SettingController::class, 'calendarUpdate'])->name('academic-calendar.update');
         Route::post('academic-calendar/lock', [SettingController::class, 'calendarLock'])->name('academic-calendar.lock');
+        Route::post('academic-calendar/adab-days', [SettingController::class, 'calendarAdabDays'])->name('academic-calendar.adab-days');
     });
 
     Route::middleware(['role:super_admin,admin'])->group(function () {
@@ -271,6 +272,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
     });
 
+    Route::middleware(['role:super_admin,admin,coordinator_tahfizh'])->group(function () {
+        Route::post('/hafalan-target-settings/aturan', [SettingController::class, 'targetRulesUpdate'])->name('settings.target-rules.update');
+    });
+
     Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('/pengaturan-penilaian-tahfizh', [SettingController::class, 'tahfizhScoringIndex'])->name('settings.tahfizh-scoring');
         Route::post('/pengaturan-penilaian-tahfizh', [SettingController::class, 'tahfizhScoringUpdate'])->name('settings.tahfizh-scoring.update');
@@ -323,6 +328,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('hafalan-targets.direction');
         Route::patch('/hafalan-targets/urutan-juz/{student}', [HafalanTargetController::class, 'updateJuzOrder'])
             ->name('hafalan-targets.juz-order');
+        Route::get('/hafalan-targets/urutan/{student}', [HafalanTargetController::class, 'juzOrders'])
+            ->name('hafalan-targets.juz-orders');
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 

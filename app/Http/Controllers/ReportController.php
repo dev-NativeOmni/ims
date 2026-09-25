@@ -19,6 +19,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\SchoolCalendar;
+use App\Support\TargetRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -1077,13 +1078,7 @@ class ReportController extends Controller
             }
 
             // Calculate Target Baris
-            $levelBaris = match ($student->tahfizh_level) {
-                'tahsin' => 3,
-                'reguler' => 5,
-                'akselerasi' => 7,
-                'ummi' => null,
-                default => 5,
-            };
+            $levelBaris = TargetRules::linesForLevel($student->tahfizh_level);
 
             if ($levelBaris === null) {
                 $targetBaris = 0;

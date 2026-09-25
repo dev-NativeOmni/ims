@@ -7,6 +7,7 @@ use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Support\HafalanOrder;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -32,15 +33,12 @@ class AutoHafalanTargetService
         private readonly HafalanProgressService $progress,
     ) {}
 
+    /**
+     * Baris per pertemuan (Pengaturan Target Hafalan); null untuk Ummi.
+     */
     public static function levelBaris(?string $tahfizhLevel): ?int
     {
-        return match ($tahfizhLevel) {
-            'tahsin' => 3,
-            'reguler' => 5,
-            'akselerasi' => 7,
-            'ummi' => null,
-            default => 5,
-        };
+        return TargetRules::linesForLevel($tahfizhLevel);
     }
 
     /**

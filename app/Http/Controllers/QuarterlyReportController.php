@@ -15,6 +15,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -970,13 +971,7 @@ class QuarterlyReportController extends Controller
                 }
             }
 
-            $levelBaris = match ($student->tahfizh_level) {
-                'tahsin' => 3,
-                'reguler' => 5,
-                'akselerasi' => 7,
-                'ummi' => null,
-                default => 5,
-            };
+            $levelBaris = TargetRules::linesForLevel($student->tahfizh_level);
             $targetLines = ($levelBaris === null) ? 0 : ($levelBaris * $scheduledMeetings);
             $isTuntas = ($levelBaris === null) ? true : ($totalCapaianLines >= $targetLines);
 

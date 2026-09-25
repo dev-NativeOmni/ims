@@ -9,6 +9,7 @@ use App\Models\Program;
 use App\Models\Surah;
 use App\Services\AutoHafalanTargetService;
 use App\Support\HafalanOrder;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -158,5 +159,32 @@ class TargetTriwulanTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
         $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
         $this->assertSame('Surah 67', $termRecord['target_surah']);
+    }
+
+    #[Test]
+    public function target_rules_are_editable_and_drive_the_calculation(): void
+    {
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-01', 78, 1, 5);
+
+        $this->actingAs($this->admin)->post(route('settings.target-rules.update'), [
+            'level_lines' => ['tahsin' => 2, 'reguler' => 4, 'akselerasi' => 8],
+            'mandatory_until' => 30, 'latest_switch' => 28,
+        ])->assertRedirect(route('settings.hafalan-targets'));
+
+        $this->assertSame(4, TargetRules::linesForLevel('reguler'));
+        $this->assertSame([30, 29, 28], TargetRules::switchOptions());
+        $this->assertArrayHasKey('front_30', HafalanOrder::directionOptions());
+        $this->assertSame([30, 1, 2], array_slice(HafalanOrder::juzSequence('front_30'), 0, 3), 'Pindah setelah Juz 30 langsung ke Juz 1.');
+
+        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-08-01'));
+        $this->assertSame(14 * 4, $plan['target_lines'], '14 pertemuan x 4 baris (pengaturan baru).');
+
+        $this->actingAs($this->teacherUser)->post(route('settings.target-rules.update'), [
+            'level_lines' => ['tahsin' => 1, 'reguler' => 1, 'akselerasi' => 1], 'mandatory_until' => 29, 'latest_switch' => 27,
+        ])->assertForbidden();
+        $this->actingAs($this->admin)->post(route('settings.target-rules.update'), [
+            'level_lines' => ['tahsin' => 3, 'reguler' => 5, 'akselerasi' => 7], 'mandatory_until' => 27, 'latest_switch' => 29,
+        ])->assertSessionHasErrors('latest_switch');
     }
 }

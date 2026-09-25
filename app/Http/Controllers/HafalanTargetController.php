@@ -9,7 +9,9 @@ use App\Models\Surah;
 use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
+use App\Services\HafalanProgressService;
 use App\Services\StudentProgressService;
+use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -727,6 +729,48 @@ class HafalanTargetController extends Controller
         $targets->syncStudent($student->fresh(), Carbon::parse($validated['period'] ?? today()));
 
         return back()->with('success', "Urutan Juz {$validated['juz']} untuk {$student->name} diperbarui dan target dihitung ulang.");
+    }
+
+    /**
+     * Urutan hafalan satu murid: 30 juz dalam urutan arah murid, cakupan ayat tiap juz,
+     * urutan di dalam juz (terdeteksi / diatur guru) yang bisa dikoreksi.
+     */
+    public function juzOrders(Request $request, Student $student, HafalanProgressService $progress): View
+    {
+        abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
+
+        $records = $progress->records($student);
+        $coverage = $progress->coverage($records);
+        $detected = $progress->detectedJuzOrders($records);
+        $effective = $progress->juzOrders($student, $records);
+        $manual = array_map('intval', array_keys($student->juz_orders ?? []));
+
+        $juzRows = collect(HafalanOrder::juzSequence($student->hafalan_direction))->map(function (int $juz) use ($coverage, $detected, $effective, $manual, $records) {
+            $totalAyat = 0;
+            $coveredAyat = 0;
+            foreach (HafalanOrder::JUZ_RANGES[$juz] as $range) {
+                $totalAyat += $range['end'] - $range['start'] + 1;
+                foreach (AyahCoverage::covered($coverage[$range['surah']] ?? [], $range['start'], $range['end']) as [$a, $b]) {
+                    $coveredAyat += $b - $a + 1;
+                }
+            }
+            $surahsInJuz = collect(HafalanOrder::JUZ_RANGES[$juz])->pluck('surah')->all();
+
+            return [
+                'juz' => $juz,
+                'surah_range' => [reset($surahsInJuz), end($surahsInJuz)],
+                'covered_percent' => $totalAyat > 0 ? (int) round($coveredAyat / $totalAyat * 100) : 0,
+                'setoran_count' => $records->where('status', 'passed')->filter(fn ($r) => in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
+                'order' => $effective[$juz] ?? HafalanOrder::defaultJuzOrder($juz),
+                'source' => in_array($juz, $manual, true) ? 'manual' : (isset($detected[$juz]) ? 'auto' : 'default'),
+            ];
+        });
+
+        return view('hafalan-targets.juz-orders', [
+            'student' => $student->load('classRoom'),
+            'juzRows' => $juzRows,
+            'surahNames' => $progress->surahs()->map->name_latin,
+        ]);
     }
 
     private function visibleStudentIds(?User $user): Collection

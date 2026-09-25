@@ -17,7 +17,7 @@ use Carbon\CarbonInterface;
  * Tahfizh efektif = hari ada di jadwal kelas pekan itu (jadwal khusus/arsip pekan di
  *                   class_week_schedules, selain itu tahfizh_days) DAN bukan libur Tahfizh
  *                   (global atau khusus kelas itu).
- * Adab efektif    = Selasa-Jumat DAN bukan libur Adab global.
+ * Adab efektif    = hari pengisian Adab (Kalender, default Selasa-Jumat) DAN bukan libur Adab global.
  *
  * Tahun yang belum pernah diatur admin memakai DEFAULT_TOTAL_HOLIDAYS sebagai Libur Total.
  */
@@ -27,8 +27,13 @@ class SchoolCalendar
 
     public const SCOPE_ADAB = 'adab';
 
-    /** Hari kuisioner Adab: Selasa-Jumat (ISO). */
+    /** Hari kuisioner Adab bawaan: Selasa-Jumat (ISO); bisa diubah di Kalender (adabDays()). */
     public const ADAB_DAYS = [2, 3, 4, 5];
+
+    public const DAY_NAMES = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+
+    /** @var array<int, int>|null */
+    private ?array $adabDaysCache = null;
 
     /** Libur Total bawaan untuk tahun yang belum diatur ('m-d'). */
     private const DEFAULT_TOTAL_HOLIDAYS = ['01-01', '05-01', '06-01', '08-17', '12-25'];
@@ -340,7 +345,7 @@ class SchoolCalendar
 
     public function isAdabEffectiveDay(CarbonInterface $date): bool
     {
-        return in_array($date->dayOfWeekIso, self::ADAB_DAYS, true)
+        return in_array($date->dayOfWeekIso, $this->adabDays(), true)
             && ! ($this->globalDays($date->year)[$date->toDateString()]['adab_off'] ?? false);
     }
 
@@ -475,6 +480,35 @@ class SchoolCalendar
         unset($this->lockCache["{$year}-{$month}"]);
     }
 
+    /**
+     * Hari pengisian kuisioner Adab (ISO 1-7).
+     *
+     * @return array<int, int>
+     */
+    public function adabDays(): array
+    {
+        if ($this->adabDaysCache !== null) {
+            return $this->adabDaysCache;
+        }
+
+        $saved = json_decode((string) Setting::get('adab_days'), true);
+
+        return $this->adabDaysCache = is_array($saved) && $saved !== []
+            ? array_values(array_map('intval', $saved))
+            : self::ADAB_DAYS;
+    }
+
+    /**
+     * @param  array<int, int|string>  $days
+     */
+    public function saveAdabDays(array $days): void
+    {
+        $days = array_values(array_unique(array_filter(array_map('intval', $days), fn ($d) => $d >= 1 && $d <= 7)));
+        sort($days);
+        Setting::set('adab_days', json_encode($days));
+        $this->flush();
+    }
+
     public function flush(): void
     {
         $this->globalCache = [];
@@ -482,6 +516,7 @@ class SchoolCalendar
         $this->adabDatesCache = [];
         $this->lockCache = [];
         $this->weekCache = [];
+        $this->adabDaysCache = null;
         Setting::flushCalendarCaches();
     }
 

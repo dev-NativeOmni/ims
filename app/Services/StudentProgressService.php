@@ -15,6 +15,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\UmmiRecordSurah;
 use App\Models\User;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -296,12 +297,7 @@ class StudentProgressService
             $ummiJilidPercent = min(100.0, round(($totalPagesCompleted / 120) * 100, 1));
 
             // ─── Reguler Program Details (For Grade 11 & 12) ───
-            $levelBaris = match ($tahfizhLevel) {
-                'tahsin' => 3,
-                'reguler' => 5,
-                'akselerasi' => 7,
-                default => 5,
-            };
+            $levelBaris = TargetRules::linesForLevel($tahfizhLevel) ?? TargetRules::linesForLevel('reguler');
 
             $isWeeklyProgram = ($meetingFrequency === 'seminggu sekali')
                 || str_contains($programName, 'reguler')

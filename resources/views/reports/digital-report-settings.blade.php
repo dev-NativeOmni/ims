@@ -120,6 +120,32 @@
                             </div>
                         </div>
 
+                        {{-- Predikat & Deskripsi Tanse --}}
+                        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
+                                <x-heroicon-o-shield-check class="w-5 h-5 text-rose-500" />
+                                <span>Predikat &amp; Deskripsi Tanse</span>
+                            </h3>
+                            <p class="text-[11px] text-gray-500 dark:text-zinc-400">Skor Tanse = 100 − poin pelanggaran triwulan. Deskripsi tercetak di kolom Deskripsi bagian Tanse rapor.</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="tanse_a_min" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Predikat A jika skor ≥</label>
+                                    <input type="number" min="1" max="100" name="tanse_a_min" id="tanse_a_min" value="{{ old('tanse_a_min', $tanseRules['a_min']) }}" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="tanse_b_min" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Predikat B jika skor ≥</label>
+                                    <input type="number" min="0" max="100" name="tanse_b_min" id="tanse_b_min" value="{{ old('tanse_b_min', $tanseRules['b_min']) }}" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                            @error('tanse_b_min') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                            @foreach (['A', 'B', 'C'] as $grade)
+                                <div>
+                                    <label for="tanse_note_{{ $grade }}" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Deskripsi Predikat {{ $grade }}</label>
+                                    <textarea name="tanse_notes[{{ $grade }}]" id="tanse_note_{{ $grade }}" rows="3" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">{{ old('tanse_notes.'.$grade, $tanseRules['notes'][$grade]) }}</textarea>
+                                </div>
+                            @endforeach
+                        </div>
+
                         {{-- 2. Header & Kop Surat Rapor --}}
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 mb-5 dark:border-zinc-800 flex items-center gap-2">
