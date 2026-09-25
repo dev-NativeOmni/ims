@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\HafalanOrder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -68,7 +69,7 @@ class StoreStudentRequest extends FormRequest
             ],
             'hafalan_direction' => [
                 'nullable',
-                Rule::in(['backward', 'forward']),
+                Rule::in(array_keys(HafalanOrder::directionOptions())),
             ],
             'parent_ids' => [
                 'nullable',

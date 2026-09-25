@@ -116,10 +116,10 @@ class TargetTriwulanTest extends TestCase
         $this->student->update(['teacher_id' => $this->teacherProfile->id]);
 
         $this->actingAs($this->teacherUser)
-            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'forward', 'period' => '2026-07-01'])
+            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'front_29', 'period' => '2026-07-01'])
             ->assertRedirect();
 
-        $this->assertSame('forward', $this->student->fresh()->hafalan_direction);
+        $this->assertSame('front_29', $this->student->fresh()->hafalan_direction);
     }
 
     #[Test]
@@ -128,7 +128,7 @@ class TargetTriwulanTest extends TestCase
         $this->student->update(['teacher_id' => null]);
 
         $this->actingAs($this->teacherUser)
-            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'forward'])
+            ->patch(route('hafalan-targets.direction', $this->student), ['hafalan_direction' => 'front_29'])
             ->assertForbidden();
         $this->assertSame('backward', $this->student->fresh()->hafalan_direction);
     }

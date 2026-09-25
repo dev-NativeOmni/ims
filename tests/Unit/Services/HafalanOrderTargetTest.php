@@ -123,6 +123,32 @@ class HafalanOrderTargetTest extends TestCase
     }
 
     #[Test]
+    public function students_can_move_to_juz_1_right_after_juz_29_or_28(): void
+    {
+        $after29 = $this->service->targetPosition(67, 1, $this->juzLines(29) + 2, $this->surahs, [], 'front_29');
+        $this->assertSame(1, $after29['surah']->number, 'Pindah setelah Juz 29: lanjut Al-Fatihah, bukan Juz 28.');
+
+        $after28 = $this->service->targetPosition(58, 1, $this->juzLines(28) + 2, $this->surahs, [], 'front_28');
+        $this->assertSame(1, $after28['surah']->number);
+
+        // front_29: Juz 28 & 27 tidak dilewati selamanya -- ada di ujung urutan setelah Juz 26.
+        $this->assertSame([30, 29, 1], array_slice(HafalanOrder::juzSequence('front_29'), 0, 3));
+        $this->assertSame([27, 28], array_slice(HafalanOrder::juzSequence('front_29'), -2));
+        $this->assertTrue($this->service->hasReached(2, 5, 77, 50, 'front_29'), 'Juz 1 melewati akhir Juz 29.');
+        $this->assertFalse($this->service->hasReached(2, 5, 58, 1, 'front_29'), 'Juz 28 datang setelah Juz 1..27, jadi Juz 1 belum mencapainya.');
+    }
+
+    #[Test]
+    public function legacy_and_unknown_directions_are_normalised(): void
+    {
+        $this->assertSame('front_27', HafalanOrder::normalizeDirection('forward'));
+        $this->assertSame('backward', HafalanOrder::normalizeDirection('front_30'), 'Juz 30 tidak boleh jadi titik pindah.');
+        $this->assertSame('backward', HafalanOrder::normalizeDirection(null));
+        $this->assertNull(HafalanOrder::switchJuz('backward'));
+        $this->assertSame(28, HafalanOrder::switchJuz('front_28'));
+    }
+
+    #[Test]
     public function juz_30_to_27_always_come_first_in_both_directions(): void
     {
         $this->assertSame([30, 29, 28, 27, 26], array_slice(HafalanOrder::juzSequence(HafalanOrder::BACKWARD), 0, 5));

@@ -174,17 +174,18 @@
                         </div>
                         <div>
                             <label for="hafalan_direction" class="block text-sm font-medium text-gray-700">
-                                Arah Hafalan Setelah Juz 27
+                                Arah Hafalan
                             </label>
                             <select
                                 id="hafalan_direction"
                                 name="hafalan_direction"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                             >
-                                <option value="backward" @selected(old('hafalan_direction', 'backward') === 'backward')>Lanjut ke belakang (Juz 26, 25, …)</option>
-                                <option value="forward" @selected(old('hafalan_direction', 'backward') === 'forward')>Pindah ke depan (Juz 1, 2, …)</option>
+                                @foreach (\App\Support\HafalanOrder::directionOptions() as $value => $label)
+                                    <option value="{{ $value }}" @selected(\App\Support\HafalanOrder::normalizeDirection(old('hafalan_direction', 'backward')) === $value)>{{ $label }}</option>
+                                @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-gray-500">Juz 30 → 27 selalu lebih dulu. Dipakai untuk menghitung target otomatis.</p>
+                            <p class="mt-1 text-xs text-gray-500">Juz 30 &amp; 29 selalu lebih dulu; pindah ke depan paling lambat setelah Juz 27. Dipakai untuk menghitung target otomatis.</p>
                             @error('hafalan_direction')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror

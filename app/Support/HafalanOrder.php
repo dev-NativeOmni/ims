@@ -5,10 +5,11 @@ namespace App\Support;
 use Illuminate\Support\Collection;
 
 /**
- * Urutan hafalan sekolah. Bagian "belakang" wajib: Juz 30 -> 29 -> 28 -> 27. Setelah
- * Juz 27 murid memilih arah (Student::hafalan_direction):
- * - 'backward' (default): lanjut ke belakang, Juz 26 -> 25 -> ... -> 1;
- * - 'forward': pindah ke depan, Juz 1 -> 2 -> ... -> 26.
+ * Urutan hafalan sekolah. Juz 30 dan 29 wajib; setelah itu murid memilih
+ * (Student::hafalan_direction), paling lambat setelah Juz 27:
+ * - 'backward' (default): terus ke belakang, Juz 28 -> 27 -> 26 -> ... -> 1;
+ * - 'front_29' / 'front_28' / 'front_27': setelah juz itu pindah ke depan,
+ *   Juz 1 -> 2 -> ... sampai juz sebelum titik pindah (mis. front_29: 30, 29, 1..28).
  *
  * - Selain Juz 30, tiap juz selalu dimulai dari AWAL juz dan berjalan maju (mis. Juz 29:
  *   Al-Mulk 1 -> Al-Mursalat 50, lalu Juz 28: Al-Mujadilah 1 -> At-Tahrim 12).
@@ -21,10 +22,36 @@ class HafalanOrder
 {
     public const BACKWARD = 'backward';
 
-    public const FORWARD = 'forward';
+    /** Pindah ke depan setelah Juz 27 (batas paling akhir). */
+    public const FORWARD = 'front_27';
 
-    /** Juz terakhir bagian belakang yang wajib sebelum murid memilih arah. */
-    public const BACK_LIMIT_JUZ = 27;
+    /** Juz setelah mana murid boleh pindah ke depan (Juz 1). */
+    public const SWITCH_JUZ = [29, 28, 27];
+
+    /**
+     * Pilihan arah untuk form: nilai => label.
+     *
+     * @return array<string, string>
+     */
+    public static function directionOptions(): array
+    {
+        $options = [self::BACKWARD => 'Lanjut ke belakang (Juz 28, 27, 26, …)'];
+        foreach (self::SWITCH_JUZ as $juz) {
+            $options["front_{$juz}"] = "Setelah Juz {$juz} pindah ke depan (Juz 1, 2, …)";
+        }
+
+        return $options;
+    }
+
+    /**
+     * Juz setelah mana murid pindah ke depan, atau null bila terus ke belakang.
+     */
+    public static function switchJuz(?string $direction): ?int
+    {
+        $direction = self::normalizeDirection($direction);
+
+        return $direction === self::BACKWARD ? null : (int) substr($direction, strlen('front_'));
+    }
 
     /** @var array<string, array<int, int>> arah => [juz => posisi dalam urutan] */
     private static array $sequenceIndex = [];
@@ -84,21 +111,26 @@ class HafalanOrder
 
     public static function normalizeDirection(?string $direction): string
     {
-        return $direction === self::FORWARD ? self::FORWARD : self::BACKWARD;
+        if ($direction === 'forward') {
+            return self::FORWARD; // nilai lama: pindah setelah Juz 27
+        }
+
+        return array_key_exists((string) $direction, self::directionOptions()) ? $direction : self::BACKWARD;
     }
 
     /**
-     * Urutan juz menurut arah: [30, 29, 28, 27, lalu 26..1] atau [30, 29, 28, 27, lalu 1..26].
+     * Urutan juz menurut arah, mis. backward: 30..1; front_29: 30, 29, 1..28;
+     * front_27: 30, 29, 28, 27, 1..26.
      *
      * @return array<int, int>
      */
     public static function juzSequence(?string $direction = self::BACKWARD): array
     {
-        $back = range(30, self::BACK_LIMIT_JUZ);
+        $switch = self::switchJuz($direction);
 
-        return self::normalizeDirection($direction) === self::FORWARD
-            ? array_merge($back, range(1, self::BACK_LIMIT_JUZ - 1))
-            : array_merge($back, range(self::BACK_LIMIT_JUZ - 1, 1));
+        return $switch === null
+            ? range(30, 1)
+            : array_merge(range(30, $switch), range(1, $switch - 1));
     }
 
     /**

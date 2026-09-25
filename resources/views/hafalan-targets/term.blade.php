@@ -7,8 +7,8 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Dihitung otomatis: setoran pertama triwulan + (pertemuan aktif × baris per level), mengikuti urutan hafalan
-                Juz 30 → 29 → 28 → 27 (tiap juz dari awal; Juz 30 fleksibel, dihitung dari surah yang belum disetor),
-                lalu sesuai pilihan murid: lanjut ke belakang (Juz 26, 25, …) atau pindah ke depan (Juz 1, 2, …).
+                Juz 30 → 29 lalu sesuai pilihan murid: terus ke belakang (28, 27, 26, …) atau pindah ke depan (Juz 1, 2, …)
+                setelah Juz 29, 28, atau paling lambat 27. Tiap juz dari awal; Juz 30 fleksibel (surah yang belum disetor).
             </p>
         </div>
     </x-slot>
@@ -77,15 +77,16 @@
                                 <td class="px-4 py-3">
                                     <p class="font-bold text-gray-900 dark:text-white">{{ $row['student']->name }}</p>
                                     <p class="text-[11px] text-gray-500">{{ ucfirst($row['student']->tahfizh_level ?? 'reguler') }} · {{ $plan['level_baris'] }} baris/pertemuan</p>
-                                    {{-- Arah setelah Juz 27: dipilih murid saat menyelesaikan Juz 27. --}}
+                                    {{-- Arah hafalan: pindah ke depan (Juz 1) setelah Juz 29/28/27, atau terus ke belakang. --}}
                                     <form method="POST" action="{{ route('hafalan-targets.direction', $row['student']) }}" class="mt-1.5">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="period" value="{{ $period }}">
-                                        <select name="hafalan_direction" onchange="this.form.submit()" title="Arah hafalan setelah Juz 27"
+                                        <select name="hafalan_direction" onchange="this.form.submit()" title="Arah hafalan"
                                                 class="rounded-lg border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 text-[11px] py-1 pl-2 pr-7">
-                                            <option value="backward" @selected($row['student']->hafalan_direction !== 'forward')>Setelah Juz 27: ke belakang (26, 25, …)</option>
-                                            <option value="forward" @selected($row['student']->hafalan_direction === 'forward')>Setelah Juz 27: ke depan (1, 2, …)</option>
+                                            @foreach (\App\Support\HafalanOrder::directionOptions() as $value => $label)
+                                                <option value="{{ $value }}" @selected(\App\Support\HafalanOrder::normalizeDirection($row['student']->hafalan_direction) === $value)>{{ $label }}</option>
+                                            @endforeach
                                         </select>
                                     </form>
                                 </td>

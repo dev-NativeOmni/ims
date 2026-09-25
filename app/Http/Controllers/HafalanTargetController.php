@@ -687,7 +687,7 @@ class HafalanTargetController extends Controller
     }
 
     /**
-     * Ubah arah hafalan murid setelah Juz 27 (lanjut ke belakang / pindah ke depan),
+     * Ubah arah hafalan murid (lanjut ke belakang / pindah ke depan setelah Juz 29, 28, atau 27),
      * lalu hitung ulang target otomatis triwulan yang sedang dilihat.
      */
     public function updateDirection(Request $request, Student $student, AutoHafalanTargetService $targets): RedirectResponse
@@ -695,7 +695,7 @@ class HafalanTargetController extends Controller
         abort_unless($this->visibleStudentIds($request->user())->contains($student->id), 403);
 
         $validated = $request->validate([
-            'hafalan_direction' => ['required', Rule::in([HafalanOrder::BACKWARD, HafalanOrder::FORWARD])],
+            'hafalan_direction' => ['required', Rule::in(array_keys(HafalanOrder::directionOptions()))],
             'period' => ['nullable', 'date'],
         ]);
 
