@@ -38,6 +38,14 @@ class StudentPointController extends Controller
                 ->whereHas('classRoom', fn ($q) => $q->where('wali_kelas_user_id', $user->id))
                 ->pluck('id');
             $query->whereIn('student_id', $visibleStudentIds);
+        } elseif ($user->hasRole('pendamping_adab') && ! $user->hasAnyRole(['super_admin', 'admin', 'supervisor'])) {
+            $visibleStudentIds = Student::where('status', 'active')
+                ->whereHas('classRoom', function ($q) use ($user) {
+                    $q->where('pendamping_adab_id', $user->id)
+                        ->orWhereHas('pendampingAdabList', fn ($sub) => $sub->where('users.id', $user->id));
+                })
+                ->pluck('id');
+            $query->whereIn('student_id', $visibleStudentIds);
         } else {
             $visibleStudentIds = Student::where('status', 'active')->pluck('id');
         }
@@ -82,7 +90,7 @@ class StudentPointController extends Controller
             $parent = ParentProfile::where('user_id', $user->id)->with('students')->first();
             $studentIds = $parent?->students->pluck('id')->toArray() ?? [];
             $statsQuery->whereIn('student_id', $studentIds);
-        } elseif ($user->hasRole('wali_kelas') && ! $user->hasAnyRole(['super_admin', 'admin'])) {
+        } elseif (($user->hasRole('wali_kelas') || $user->hasRole('pendamping_adab')) && ! $user->hasAnyRole(['super_admin', 'admin'])) {
             $statsQuery->whereIn('student_id', $visibleStudentIds);
         }
 
@@ -115,15 +123,15 @@ class StudentPointController extends Controller
             ->get()
             ->keyBy('achievement_level');
 
-        // Top Students (Violations vs Rewards) -- wali_kelas dibatasi ke murid kelasnya saja,
+        // Top Students (Violations vs Rewards) -- wali_kelas & pendamping_adab dibatasi ke murid kelasnya saja,
         // role lain (admin/teacher/headmaster/tanse) tetap melihat leaderboard sekolah.
-        $isWaliKelasOnly = $user->hasRole('wali_kelas') && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isScopedOnly = ($user->hasRole('wali_kelas') || $user->hasRole('pendamping_adab')) && ! $user->hasAnyRole(['super_admin', 'admin']);
 
         $topAchievers = Student::query()
             ->select('students.id', 'students.name')
             ->join('student_points', 'students.id', '=', 'student_points.student_id')
             ->where('student_points.type', 'reward')
-            ->when($isWaliKelasOnly, fn ($q) => $q->whereIn('students.id', $visibleStudentIds))
+            ->when($isScopedOnly, fn ($q) => $q->whereIn('students.id', $visibleStudentIds))
             ->selectRaw('sum(student_points.points) as total_points')
             ->groupBy('students.id', 'students.name')
             ->orderByDesc('total_points')
@@ -134,7 +142,7 @@ class StudentPointController extends Controller
             ->select('students.id', 'students.name')
             ->join('student_points', 'students.id', '=', 'student_points.student_id')
             ->whereIn('student_points.type', ['violation', 'lateness', 'attribute'])
-            ->when($isWaliKelasOnly, fn ($q) => $q->whereIn('students.id', $visibleStudentIds))
+            ->when($isScopedOnly, fn ($q) => $q->whereIn('students.id', $visibleStudentIds))
             ->selectRaw('sum(student_points.points) as total_points')
             ->groupBy('students.id', 'students.name')
             ->orderByDesc('total_points')

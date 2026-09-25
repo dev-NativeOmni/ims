@@ -360,7 +360,7 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,tanse,wali_kelas'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teacher,parent,student,headmaster,tanse,wali_kelas,pendamping_adab'])->group(function () {
         Route::get('/student-points', [StudentPointController::class, 'index'])->name('student-points.index');
         Route::get('/student-points/chart', [StudentPointController::class, 'chart'])->name('student-points.chart');
     });

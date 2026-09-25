@@ -127,7 +127,7 @@ class SidebarMenu
                 'items' => [
                     [
                         'label' => 'Poin & Disiplin', 'route' => 'student-points.index', 'icon' => 'shield-check',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'tanse', 'parent', 'student'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'tanse', 'parent', 'student', 'wali_kelas', 'pendamping_adab'],
                         'active' => ['student-points.*'],
                         'active_except' => ['student-points.chart'],
                     ],
@@ -158,7 +158,7 @@ class SidebarMenu
                     ],
                     [
                         'label' => 'Grafik Poin & Disiplin', 'route' => 'student-points.chart', 'icon' => 'chart-pie',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'headmaster', 'tanse'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'headmaster', 'tanse', 'wali_kelas', 'pendamping_adab'],
                         'active' => ['student-points.chart'],
                     ],
                     ['label' => 'Pemantauan Wali Kelas', 'route' => 'wali-kelas.index', 'icon' => 'user-circle-group', 'roles' => ['wali_kelas'], 'active' => ['wali-kelas.index']],

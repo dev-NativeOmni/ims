@@ -243,4 +243,79 @@ class StudentPointTest extends TestCase
         $this->assertTrue($viewPointsParent->contains('id', $point1->id));
         $this->assertFalse($viewPointsParent->contains('id', $point2->id));
     }
+
+    public function test_pendamping_adab_can_view_scoped_student_points_but_cannot_manage(): void
+    {
+        $rolePendamping = Role::firstOrCreate(['name' => 'pendamping_adab'], ['display_name' => 'Pendamping Adab']);
+        $pendampingUser = User::factory()->create([
+            'role_id' => $rolePendamping->id,
+            'status' => 'active',
+        ]);
+
+        $program = Program::create(['name' => 'Reguler', 'status' => 'active']);
+        $classRoomAssigned = ClassRoom::create([
+            'name' => 'Kelas Dampingan',
+            'program_id' => $program->id,
+            'level' => '10',
+            'pendamping_adab_id' => $pendampingUser->id,
+        ]);
+        $classRoomOther = ClassRoom::create([
+            'name' => 'Kelas Lain',
+            'program_id' => $program->id,
+            'level' => '10',
+        ]);
+
+        $studentInClass = Student::create([
+            'name' => 'Murid Dampingan',
+            'class_room_id' => $classRoomAssigned->id,
+            'nis' => '11111',
+            'status' => 'active',
+        ]);
+        $studentOther = Student::create([
+            'name' => 'Murid Lain',
+            'class_room_id' => $classRoomOther->id,
+            'nis' => '22222',
+            'status' => 'active',
+        ]);
+
+        $admin = User::where('username', 'admin')->first();
+        $pointAssigned = StudentPoint::create([
+            'student_id' => $studentInClass->id,
+            'type' => 'violation',
+            'points' => 15,
+            'title' => 'Terlambat Masuk',
+            'date' => now()->toDateString(),
+            'logged_by' => $admin->id,
+        ]);
+        $pointOther = StudentPoint::create([
+            'student_id' => $studentOther->id,
+            'type' => 'violation',
+            'points' => 20,
+            'title' => 'Atribut Kurang',
+            'date' => now()->toDateString(),
+            'logged_by' => $admin->id,
+        ]);
+
+        // Can view index and chart
+        $indexResponse = $this->actingAs($pendampingUser)->get('/student-points');
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee('Terlambat Masuk');
+        $indexResponse->assertDontSee('Atribut Kurang');
+        $indexResponse->assertDontSee(route('student-points.create'));
+
+        $chartResponse = $this->actingAs($pendampingUser)->get('/student-points/chart');
+        $chartResponse->assertStatus(200);
+
+        // Cannot create/edit/delete (read-only)
+        $this->actingAs($pendampingUser)->get('/student-points/create')->assertStatus(403);
+        $this->actingAs($pendampingUser)->post('/student-points', [
+            'student_id' => $studentInClass->id,
+            'type' => 'violation',
+            'points' => 10,
+            'title' => 'Test',
+            'date' => now()->toDateString(),
+        ])->assertStatus(403);
+        $this->actingAs($pendampingUser)->get("/student-points/{$pointAssigned->id}/edit")->assertStatus(403);
+        $this->actingAs($pendampingUser)->delete("/student-points/{$pointAssigned->id}")->assertStatus(403);
+    }
 }
