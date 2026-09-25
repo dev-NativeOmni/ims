@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\Surah;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
+use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -20,7 +21,8 @@ use Illuminate\Support\Collection;
  * - Urutan di dalam juz: dideteksi dari setoran (surah makin kecil = dari akhir juz),
  *   bisa dikoreksi guru (Student::juz_orders).
  * - Titik awal triwulan: setoran pertama di triwulan itu.
- * - Target baris: dari titik awal sampai target guru; capaian baris: setoran lulus di triwulan.
+ * - Target baris: pertemuan aktif x baris per level; capaian baris: setoran lulus di triwulan.
+ * - Target guru (surah & ayat): arah hafalan; tercapai bila semua ayat sampai target lulus.
  * - Tuntas: capaian baris >= target baris.
  */
 class HafalanProgressService
@@ -169,42 +171,44 @@ class HafalanProgressService
     }
 
     /**
-     * Nilai target posisi (surah, ayat) pada $cutoff:
-     * - target baris = baris dari titik awal triwulan (setoran pertama) sampai target, mengikuti
-     *   arah & urutan juz murid, ayat yang sudah dihafal sebelum triwulan dilewati;
-     * - capaian baris = baris setoran lulus sejak awal triwulan sampai $cutoff;
-     * - tuntas = capaian baris >= target baris (target yang sudah dihafal sebelum triwulan: tuntas).
+     * Target baris = pertemuan aktif kelas pada rentang x baris per pertemuan level murid
+     * (Pengaturan Target Hafalan). 0 untuk Ummi / tanpa kelas.
+     */
+    public function targetLines(Student $student, Carbon $from, Carbon $to): int
+    {
+        $level = TargetRules::linesForLevel($student->tahfizh_level);
+        $classRoom = $student->classRoom;
+        if ($level === null || ! $classRoom || $to->lt($from)) {
+            return 0;
+        }
+
+        return (int) ($level * app(AcademicCalendarService::class)->scheduledMeetings($classRoom, $from->copy()->startOfDay(), $to->copy()->startOfDay()));
+    }
+
+    /**
+     * Posisi target guru (surah, ayat): jalur dari titik awal triwulan (setoran pertama) sampai
+     * target, dan apakah semua ayat di jalur itu sudah lulus disetor pada $cutoff.
      *
-     * @return array{reached: bool, progress: int, target_lines: float, achieved_lines: float, start: array, path_start: ?array{0: int, 1: int}}
+     * @return array{position_reached: bool, start: array, path_start: ?array{0: int, 1: int}}
      */
     public function evaluate(Student $student, int $targetSurah, int $targetAyah, Carbon $termStart, Carbon $termEnd, Carbon $cutoff, ?Collection $records = null): array
     {
         $records ??= $this->records($student);
         $start = $this->startPoint($student, $records, $termStart, $termEnd);
-        $achieved = $this->passedLines($records, $termStart, $cutoff->copy()->min($termEnd->copy()->endOfDay()));
+        $coverageNow = $this->coverage($records, null, $cutoff);
 
         $pieces = $this->quran->piecesUntil(
             $start['surah'], $start['ayah'], $targetSurah, $targetAyah, $this->surahs(),
             $this->coverage($records, $termStart), $student->hafalan_direction, $this->juzOrders($student, $records)
         );
-        $targetLines = $pieces === null ? 0.0 : round($this->quran->piecesLines($pieces, $this->surahs()), 1);
-        // Ayat pertama jalur target (setelah melewati ayat yang sudah dihafal), untuk tampilan "dari ... s.d. ...".
-        $pathStart = $pieces ? [$pieces[0][0], $pieces[0][1]] : null;
-
-        if ($targetLines <= 0) {
-            // Ayat target sudah dihafal sebelum triwulan (atau di luar jalur): tuntas bila tercakup.
-            $reached = AyahCoverage::contains($this->coverage($records, null, $cutoff)[$targetSurah] ?? [], $targetAyah);
-
-            return ['reached' => $reached, 'progress' => $reached ? 100 : 0, 'target_lines' => 0.0, 'achieved_lines' => $achieved, 'start' => $start, 'path_start' => null];
-        }
 
         return [
-            'reached' => $achieved >= $targetLines,
-            'progress' => (int) min(100, round($achieved / $targetLines * 100)),
-            'target_lines' => $targetLines,
-            'achieved_lines' => $achieved,
+            'position_reached' => $pieces === null
+                ? AyahCoverage::contains($coverageNow[$targetSurah] ?? [], $targetAyah)
+                : $this->quran->piecesCovered($pieces, $coverageNow),
             'start' => $start,
-            'path_start' => $pathStart,
+            // Ayat pertama jalur target (setelah melewati ayat yang sudah dihafal), untuk tampilan "dari ... s.d. ...".
+            'path_start' => $pieces ? [$pieces[0][0], $pieces[0][1]] : null,
         ];
     }
 
@@ -229,12 +233,13 @@ class HafalanProgressService
     }
 
     /**
-     * Rincian per bulan satu triwulan dari target guru (target terakhir tiap bulan):
-     * target & capaian baris kumulatif sejak awal triwulan dan bagian bulan itu saja.
+     * Rincian per bulan satu triwulan: target baris (pertemuan aktif x level) & capaian baris
+     * (setoran lulus) per bulan dan kumulatif, target guru tiap bulan (surah & ayat), serta
+     * rekap term. Tuntas bulan/term = capaian baris >= target baris.
      *
      * @param  Collection<int, HafalanTarget>  $targets  target di dalam triwulan
      * @param  array<string, array{start: Carbon, end: Carbon}>  $months
-     * @return array{months: array<string, array>, target: ?HafalanTarget, evaluation: ?array, start: array}
+     * @return array{months: array<string, array>, target: ?HafalanTarget, evaluation: array, position: ?array, start: array}
      */
     public function termBreakdown(Student $student, Collection $targets, array $months, Carbon $cutoff, ?Collection $records = null): array
     {
@@ -242,8 +247,8 @@ class HafalanProgressService
         $termStart = reset($months)['start']->copy()->startOfDay();
         $termEnd = end($months)['end']->copy()->endOfDay();
 
-        $result = ['months' => [], 'target' => null, 'evaluation' => null, 'start' => $this->startPoint($student, $records, $termStart, $termEnd)];
-        $prevTarget = 0.0;
+        $result = ['months' => [], 'target' => null, 'evaluation' => null, 'position' => null, 'start' => $this->startPoint($student, $records, $termStart, $termEnd)];
+        $cumTarget = 0;
         $prevAchieved = 0.0;
 
         foreach ($months as $monthKey => $range) {
@@ -253,31 +258,35 @@ class HafalanProgressService
                 ->last();
             $until = $range['end']->copy()->endOfDay()->min($cutoff);
             $cumAchieved = $until->lt($range['start']) ? $prevAchieved : $this->passedLines($records, $termStart, $until);
-
-            $evaluation = $target
-                ? $this->evaluate($student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, $until, $records)
-                : null;
-            $cumTarget = $evaluation ? max($prevTarget, $evaluation['target_lines']) : $prevTarget;
+            $monthTarget = $this->targetLines($student, $range['start'], $range['end']);
+            $monthAchieved = round(max(0, $cumAchieved - $prevAchieved), 1);
+            $cumTarget += $monthTarget;
 
             $result['months'][$monthKey] = [
                 'target' => $target,
-                'target_lines' => round(max(0, $cumTarget - $prevTarget), 1),
-                'achieved_lines' => round(max(0, $cumAchieved - $prevAchieved), 1),
+                'target_lines' => $monthTarget,
+                'achieved_lines' => $monthAchieved,
                 'cumulative_target_lines' => $cumTarget,
                 'cumulative_achieved_lines' => $cumAchieved,
-                'reached' => $evaluation ? $evaluation['reached'] : null,
-                'evaluation' => $evaluation,
+                'reached' => $monthAchieved >= $monthTarget,
+                'position' => $target ? $this->evaluate($student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, $until, $records) : null,
             ];
 
             if ($target) {
                 $result['target'] = $target;
             }
-            $prevTarget = $cumTarget;
             $prevAchieved = $cumAchieved;
         }
 
+        $achieved = $this->passedLines($records, $termStart, $cutoff->copy()->min($termEnd));
+        $result['evaluation'] = [
+            'target_lines' => $cumTarget,
+            'achieved_lines' => $achieved,
+            'reached' => $achieved >= $cumTarget,
+            'progress' => $cumTarget > 0 ? (int) min(100, round($achieved / $cumTarget * 100)) : 100,
+        ];
         if ($result['target']) {
-            $result['evaluation'] = $this->evaluate($student, (int) $result['target']->surah->number, (int) $result['target']->ayah, $termStart, $termEnd, $cutoff->copy()->min($termEnd), $records);
+            $result['position'] = $this->evaluate($student, (int) $result['target']->surah->number, (int) $result['target']->ayah, $termStart, $termEnd, $cutoff->copy()->min($termEnd), $records);
         }
 
         return $result;

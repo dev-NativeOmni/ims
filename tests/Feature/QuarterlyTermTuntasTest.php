@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Program;
 use App\Models\Surah;
@@ -13,8 +14,8 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Tab Term / Indeks: bila ada target guru, target baris = baris dari titik awal triwulan
- * sampai target; TUNTAS bila capaian baris (ayat baru lulus) sudah mencapainya.
+ * Tab Term / Indeks: target baris = pertemuan aktif x baris per level; TUNTAS bila capaian
+ * baris (setoran lulus) sudah mencapainya, terlepas dari surah target guru.
  */
 class QuarterlyTermTuntasTest extends TestCase
 {
@@ -64,22 +65,27 @@ class QuarterlyTermTuntasTest extends TestCase
     }
 
     #[Test]
-    public function capaian_lines_below_the_lines_to_the_target_is_not_tuntas(): void
+    public function enough_lines_is_tuntas_even_if_the_surah_target_is_further(): void
     {
         $this->target(200);
 
         $record = $this->termRecord();
 
-        // Target baris = Al-Baqarah 1-200 (dari titik awal), capaian = 1-120.
-        $this->assertLessThan($record['target_lines'], $record['total_lines']);
-        $this->assertFalse($record['is_tuntas'], 'Capaian ayat 120 belum sampai target ayat 200.');
+        // Target baris = 14 pertemuan (Rabu) x 3 baris (tahsin) = 42; capaian Al-Baqarah 1-120.
+        $this->assertSame(42, $record['target_lines']);
+        $this->assertGreaterThanOrEqual($record['target_lines'], $record['total_lines']);
+        $this->assertTrue($record['is_tuntas']);
     }
 
     #[Test]
-    public function reaching_the_target_position_is_tuntas(): void
+    public function reaching_the_surah_target_with_too_few_lines_is_not_tuntas(): void
     {
         $this->target(100);
+        HafalanRecordSurah::query()->update(['baris' => 10]); // baris setoran yang diinput guru
 
-        $this->assertTrue($this->termRecord()['is_tuntas']);
+        $record = $this->termRecord();
+
+        $this->assertSame(10.0, (float) $record['total_lines']);
+        $this->assertFalse($record['is_tuntas']);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
 use App\Models\UmmiRecord;
+use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
@@ -449,8 +450,8 @@ class StudentReportController extends Controller
 
                 $termTargetText = "Target: {$levelBaris} baris/pertemuan x {$meetings} pertemuan = {$totalTargetBaris} baris/bulan";
 
-                // Target guru di triwulan rapor (Target Triwulan): baris dari posisi di pertemuan
-                // pertama triwulan sampai target, capaian = baris setoran lulus di triwulan.
+                // Target guru di triwulan rapor (Target Triwulan): target baris = pertemuan aktif x
+                // level, capaian = baris setoran lulus di triwulan.
                 $raporTerm = self::resolveTanseTerm($academicYear, $semester, $term);
                 $termTarget = HafalanTarget::query()
                     ->with('surah')
@@ -462,12 +463,12 @@ class StudentReportController extends Controller
                     ->filter(fn ($t) => $t->surah)
                     ->last();
                 if ($termTarget) {
-                    $evaluation = app(HafalanProgressService::class)->evaluate(
-                        $student, (int) $termTarget->surah->number, (int) $termTarget->ayah,
-                        $raporTerm['start'], $raporTerm['end'], now()->min($raporTerm['end'])
+                    $termMonths = app(AcademicCalendarService::class)->termMonths($raporTerm['start']);
+                    $breakdown = app(HafalanProgressService::class)->termBreakdown(
+                        $student, collect([$termTarget]), $termMonths, now()->min($raporTerm['end'])
                     );
-                    $termTargetText = "Target {$raporTerm['label']}: QS. {$termTarget->surah->name_latin} ayat {$termTarget->ayah} = "
-                        .($evaluation['target_lines'] + 0).' baris · Capaian '.($evaluation['achieved_lines'] + 0).' baris';
+                    $termTargetText = "Target {$raporTerm['label']}: QS. {$termTarget->surah->name_latin} ayat {$termTarget->ayah} · "
+                        .($breakdown['evaluation']['target_lines'] + 0).' baris · Capaian '.($breakdown['evaluation']['achieved_lines'] + 0).' baris';
                 }
             }
         }

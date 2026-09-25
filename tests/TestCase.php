@@ -3,10 +3,19 @@
 namespace Tests;
 
 use App\Models\CalendarDay;
+use App\Services\AcademicCalendarService;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Cache statis jumlah pertemuan tidak boleh terbawa antar test (ID kelas berulang).
+        AcademicCalendarService::flushCache();
+    }
+
     /**
      * Tandai tanggal sebagai libur untuk semua kelas (default: Libur Total).
      */

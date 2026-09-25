@@ -1112,10 +1112,9 @@ class ReportController extends Controller
             $capaianSurah = $latestHafalanPassed?->surah?->name_latin ?? '-';
             $capaianAyat = $latestHafalanPassed?->ayah_end ?? '-';
 
-            // Kelas 11 & 12 yang punya target guru di triwulan periode ini: target baris dari setoran
-            // pertama triwulan sampai target guru, capaian = baris setoran lulus. Periode bulanan
-            // hanya memakai bagian bulan itu (bukan kumulatif sejak awal triwulan). Tanpa target
-            // guru (atau Kelas 10/Ummi): pertemuan x baris per level.
+            // Kelas 11 & 12: target baris = pertemuan aktif x baris per level, capaian = baris setoran
+            // lulus; target surah & ayat = target guru. Periode bulanan hanya bulan itu, periode term
+            // kumulatif satu triwulan. Kelas 10/Ummi: seperti semula.
             $isTuntas = ($levelBaris === null) ? true : ($capaianBaris >= $targetBaris);
             if (! $isGrade10 && $levelBaris !== null) {
                 $termMonths = app(AcademicCalendarService::class)->termMonths(Carbon::parse($startDate));
@@ -1126,24 +1125,23 @@ class ReportController extends Controller
                     ->get()
                     ->filter(fn ($target) => $target->surah !== null);
 
-                if ($termTargets->isNotEmpty()) {
-                    $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, Carbon::parse($endDate)->endOfDay());
-                    $cell = $periodType === 'monthly' ? ($breakdown['months'][Carbon::parse($startDate)->format('Y-m')] ?? null) : null;
+                $student->setRelation('classRoom', $selectedClass);
+                $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, Carbon::parse($endDate)->endOfDay());
+                $cell = $periodType === 'monthly' ? ($breakdown['months'][Carbon::parse($startDate)->format('Y-m')] ?? null) : null;
 
-                    if ($cell !== null) {
-                        $shownTarget = $cell['target'];
-                        $targetBaris = $cell['target_lines'];
-                        $capaianBaris = $cell['achieved_lines'];
-                        $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
-                    } else {
-                        $shownTarget = $breakdown['target'];
-                        $targetBaris = $breakdown['evaluation']['target_lines'] ?? 0;
-                        $capaianBaris = $breakdown['evaluation']['achieved_lines'] ?? $capaianBaris;
-                        $isTuntas = $breakdown['evaluation']['reached'] ?? false;
-                    }
-                    $targetSurah = $shownTarget?->surah?->name_latin ?? '-';
-                    $targetAyat = $shownTarget?->ayah ?? '-';
+                if ($cell !== null) {
+                    $shownTarget = $cell['target'];
+                    $targetBaris = $cell['target_lines'];
+                    $capaianBaris = $cell['achieved_lines'];
+                    $isTuntas = $cell['reached'];
+                } else {
+                    $shownTarget = $breakdown['target'];
+                    $targetBaris = $breakdown['evaluation']['target_lines'];
+                    $capaianBaris = $breakdown['evaluation']['achieved_lines'];
+                    $isTuntas = $breakdown['evaluation']['reached'];
                 }
+                $targetSurah = $shownTarget?->surah?->name_latin ?? '-';
+                $targetAyat = $shownTarget?->ayah ?? '-';
             }
 
             if ($isTuntas) {

@@ -100,13 +100,12 @@ class WaliKelasController extends Controller
             ->get()
             ->groupBy('student_id');
 
-        // Kelas 11 & 12: target & capaian baris dari target guru (setoran pertama triwulan sampai
-        // target; capaian = baris setoran lulus di triwulan). Kelas 10/Ummi atau belum ada target:
-        // pertemuan x level.
+        // Kelas 11 & 12: target baris = pertemuan aktif x level, capaian = baris setoran lulus
+        // (HafalanProgressService::termBreakdown). Kelas 10/Ummi: seperti semula.
         $progress = app(HafalanProgressService::class);
         $breakdowns = $classRoom->isGradeTen() ? [] : $students
-            ->filter(fn (Student $student) => AutoHafalanTargetService::levelBaris($student->tahfizh_level) !== null
-                && $targetsByStudent->get($student->id, collect())->contains(fn ($target) => $target->surah !== null))
+            ->filter(fn (Student $student) => AutoHafalanTargetService::levelBaris($student->tahfizh_level) !== null)
+            ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom))
             ->mapWithKeys(fn (Student $student) => [$student->id => $progress->termBreakdown(
                 $student, $targetsByStudent->get($student->id, collect()), $months, $today->copy()->endOfDay()
             )])
@@ -126,7 +125,7 @@ class WaliKelasController extends Controller
                 if ($cell !== null) {
                     $capaian = $cell['achieved_lines'];
                     $target = $cell['target_lines'];
-                    $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
+                    $isTuntas = $cell['reached'];
                 } else {
                     $capaian = $termHafalan->where('student_id', $student->id)
                         ->filter(fn ($h) => Carbon::parse($h->submitted_at)->between($range['start'], $range['end']))

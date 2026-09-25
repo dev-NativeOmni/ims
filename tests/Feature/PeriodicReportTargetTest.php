@@ -59,11 +59,11 @@ class PeriodicReportTargetTest extends TestCase
     }
 
     #[Test]
-    public function periodic_report_uses_lines_up_to_the_teachers_target(): void
+    public function periodic_report_target_lines_are_meetings_times_level(): void
     {
         $this->setoran('2026-09-09', 1, 7); // Al-Fatihah sampai ayat 7 -> hanya 7 baris
 
-        $target = HafalanTarget::create([
+        HafalanTarget::create([
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacherProfile->id,
             'surah_id' => $this->surah->id,
@@ -76,14 +76,15 @@ class PeriodicReportTargetTest extends TestCase
         $report = fn () => collect($this->actingAs($this->admin)->get(route('reports.periodic', $query))->viewData('studentReports'))
             ->first(fn ($r) => $r['student']->id === $this->student->id);
 
-        // Target baris = Al-Fatihah 1-5 (dari titik awal), capaian = 1-7 -> tuntas.
+        // Target baris = 5 pertemuan (Rabu September) x 5 baris = 25; capaian 7 baris walau
+        // surah target (Al-Fatihah 5) sudah terlewati -> belum tuntas.
         $row = $report();
-        $this->assertGreaterThanOrEqual($row['target_baris'], $row['capaian_baris']);
-        $this->assertTrue($row['is_tuntas']);
+        $this->assertSame(25, $row['target_baris']);
+        $this->assertFalse($row['is_tuntas']);
 
-        // Target di surah yang lebih jauh (Al-Baqarah) belum tercapai.
-        $baqarah = Surah::where('number', 2)->first();
-        $target->update(['surah_id' => $baqarah->id, 'ayah' => 10]);
-        $this->assertFalse($report()['is_tuntas']);
+        // Tambah setoran lulus dengan baris yang cukup -> tuntas.
+        $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-09-16']);
+        $record->surahs()->create(['surah_id' => Surah::where('number', 2)->value('id'), 'ayah_start' => 1, 'ayah_end' => 10, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 20]);
+        $this->assertTrue($report()['is_tuntas']);
     }
 }

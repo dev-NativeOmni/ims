@@ -517,6 +517,7 @@ class SchoolCalendar
         $this->lockCache = [];
         $this->weekCache = [];
         $this->adabDaysCache = null;
+        AcademicCalendarService::flushCache();
         Setting::flushCalendarCaches();
     }
 

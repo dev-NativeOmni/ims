@@ -141,13 +141,25 @@ class AcademicCalendarService
     }
 
     /**
+     * Kosongkan cache jumlah pertemuan (dipanggil SchoolCalendar::flush saat kalender berubah).
+     */
+    public static function flushCache(): void
+    {
+        self::$scheduledMeetingsCache = [];
+    }
+
+    /**
      * Jumlah pertemuan terjadwal kelas dalam rentang tanggal (inklusif) menurut kalender:
      * hari kelas, libur nasional, dan libur khusus kelas. Program "seminggu sekali"
      * dihitung maksimal satu pertemuan per pekan kalender.
      */
     public function scheduledMeetings(ClassRoom $classRoom, Carbon $start, Carbon $end): int
     {
-        $cacheKey = $classRoom->id.'|'.$start->toDateString().'|'.$end->toDateString();
+        // Kunci ikut hari kelas & frekuensi program supaya perubahan jadwal kelas tidak memakai hasil lama.
+        $cacheKey = implode('|', [
+            $classRoom->id, json_encode($classRoom->tahfizh_days), $classRoom->program?->meeting_frequency,
+            $start->toDateString(), $end->toDateString(),
+        ]);
 
         if (isset(self::$scheduledMeetingsCache[$cacheKey])) {
             return self::$scheduledMeetingsCache[$cacheKey];

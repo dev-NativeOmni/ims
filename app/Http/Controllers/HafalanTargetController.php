@@ -654,12 +654,11 @@ class HafalanTargetController extends Controller
                 ]);
         }
 
-        $withTarget = $rows->filter(fn ($row) => $row['plan']['target'] !== null);
         $summary = [
             'students' => $rows->count(),
-            'with_target' => $withTarget->count(),
+            'with_target' => $rows->filter(fn ($row) => $row['plan']['target'] !== null)->count(),
             'reached' => $rows->where('plan.reached', true)->count(),
-            'avg_progress' => $withTarget->isEmpty() ? 0 : (int) round($withTarget->avg('plan.progress')),
+            'avg_progress' => $rows->isEmpty() ? 0 : (int) round($rows->avg('plan.progress')),
         ];
 
         return view('hafalan-targets.term', [

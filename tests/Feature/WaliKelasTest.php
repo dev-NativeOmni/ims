@@ -127,7 +127,7 @@ class WaliKelasTest extends TestCase
     }
 
     #[Test]
-    public function student_who_reaches_the_target_position_is_not_listed(): void
+    public function student_whose_capaian_baris_meets_the_target_is_not_listed(): void
     {
         Carbon::setTestNow('2026-09-25');
 
@@ -142,6 +142,7 @@ class WaliKelasTest extends TestCase
             'ayah_end' => 7,
             'submission_type' => 'new',
             'status' => 'passed',
+            'baris' => 200, // cukup untuk semua pertemuan Juli
         ]);
 
         HafalanTarget::create([

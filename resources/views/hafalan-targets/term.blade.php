@@ -7,8 +7,8 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Isi target surah &amp; ayat tiap bulan untuk murid yang diampu. Deadline tiap bulan = pertemuan aktif terakhir kelas di bulan itu.
-                Target baris dihitung dari setoran pertama murid di triwulan ini sampai target, mengikuti arah &amp; urutan juz murid
-                (ayat yang sudah dihafal sebelumnya dilewati). Capaian = baris setoran lulus di triwulan ini. Tercapai bila capaian baris ≥ target baris.
+                Target baris = pertemuan aktif × baris per level (per bulan &amp; triwulan). Capaian = baris setoran lulus.
+                Tuntas bila capaian baris ≥ target baris. Target surah &amp; ayat dari guru menjadi arah hafalan.
             </p>
         </div>
     </x-slot>
@@ -55,7 +55,7 @@
                 @foreach ([
                     ['Murid', $summary['students'].' murid', 'text-gray-900 dark:text-white'],
                     ['Sudah Ada Target', $summary['with_target'].' / '.$summary['students'].' murid', 'text-amber-600 dark:text-amber-400'],
-                    ['Target Tercapai', $summary['reached'].' / '.$summary['with_target'].' murid', 'text-emerald-600 dark:text-emerald-400'],
+                    ['Target Baris Tuntas', $summary['reached'].' / '.$summary['students'].' murid', 'text-emerald-600 dark:text-emerald-400'],
                     ['Rata-rata Progres', $summary['avg_progress'].'%', 'text-indigo-600 dark:text-indigo-400'],
                 ] as [$label, $value, $color])
                     <div class="rounded-xl bg-white dark:bg-zinc-900 p-4 shadow-sm border border-gray-100 dark:border-zinc-800">
@@ -129,21 +129,22 @@
                                                        class="w-16 rounded-lg text-xs py-1.5 px-2 dark:bg-zinc-800 dark:text-zinc-200 {{ $hasError ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700' }}">
                                             </div>
                                             <p class="mt-1 text-[11px] text-gray-500">
-                                                Target <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $stored ? ($cell['target_lines'] + 0).' baris' : '–' }}</span>
+                                                Target <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ ($cell['target_lines'] ?? 0) + 0 }} baris</span>
                                                 · Capaian <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ ($cell['achieved_lines'] ?? 0) + 0 }} baris</span>
                                             </p>
-                                            @if ($stored)
-                                                <div class="mt-1 flex flex-wrap gap-1">
-                                                    @if ($cell['reached'])
-                                                        <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">Tercapai</span>
-                                                    @elseif ($stored->target_date->lt(today()))
-                                                        <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Belum tercapai</span>
-                                                    @endif
-                                                    @if ($stored->auto_month !== null)
-                                                        <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-bold" title="Target lama dari perhitungan otomatis. Periksa lalu simpan untuk menjadikannya target guru.">Otomatis lama</span>
-                                                    @endif
-                                                </div>
-                                            @endif
+                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                @if (($cell['target_lines'] ?? 0) > 0 && $cell['reached'])
+                                                    <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">Baris tuntas</span>
+                                                @elseif (($cell['target_lines'] ?? 0) > 0 && $month['end']->lt(today()))
+                                                    <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Baris belum tuntas</span>
+                                                @endif
+                                                @if ($stored && ($cell['position']['position_reached'] ?? false))
+                                                    <span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 text-[10px] font-bold" title="Semua ayat sampai surah & ayat target sudah lulus disetor">Surah target tercapai</span>
+                                                @endif
+                                                @if ($stored?->auto_month !== null)
+                                                    <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-bold" title="Target lama dari perhitungan otomatis. Periksa lalu simpan untuk menjadikannya target guru.">Otomatis lama</span>
+                                                @endif
+                                            </div>
                                         </td>
                                     @endforeach
                                     <td class="px-4 py-3">
@@ -153,24 +154,20 @@
                                         @else
                                             <p class="text-xs text-amber-600">Belum ada target</p>
                                         @endif
-                                        @if ($plan['target'])
-                                            <p class="mt-1 text-[11px] text-gray-500">
-                                                <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['achieved_lines'] + 0 }}</span> dari
-                                                <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['target_lines'] + 0 }}</span> baris target
-                                            </p>
-                                        @endif
+                                        <p class="mt-1 text-[11px] text-gray-500">
+                                            <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['achieved_lines'] + 0 }}</span> dari
+                                            <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['target_lines'] + 0 }}</span> baris target
+                                        </p>
                                         <p class="mt-1 text-[11px] text-gray-500">
                                             Setoran terakhir:
                                             <span class="font-semibold text-gray-700 dark:text-zinc-300">{{ $plan['capaian'] ? $plan['capaian']['surah']?->name_latin.' : '.$plan['capaian']['ayah'] : '–' }}</span>
                                         </p>
-                                        @if ($plan['target'])
-                                            <div class="mt-1.5 flex items-center gap-2">
-                                                <div class="flex-1 h-2 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden">
-                                                    <div class="h-full rounded-full {{ $plan['reached'] ? 'bg-emerald-500' : 'bg-indigo-500' }}" style="width: {{ $plan['progress'] }}%"></div>
-                                                </div>
-                                                <span class="text-xs font-bold text-gray-700 dark:text-zinc-300">{{ $plan['progress'] }}%</span>
+                                        <div class="mt-1.5 flex items-center gap-2">
+                                            <div class="flex-1 h-2 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden">
+                                                <div class="h-full rounded-full {{ $plan['reached'] ? 'bg-emerald-500' : 'bg-indigo-500' }}" style="width: {{ $plan['progress'] }}%"></div>
                                             </div>
-                                        @endif
+                                            <span class="text-xs font-bold text-gray-700 dark:text-zinc-300">{{ $plan['progress'] }}%</span>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

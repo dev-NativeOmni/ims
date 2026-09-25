@@ -324,17 +324,15 @@ class QuarterlyReportController extends Controller
             'latestUmmiRecords' => $term['latestUmmiRecords'],
         ];
 
-        // Kelas 11 & 12 (non-Ummi) yang sudah punya target guru di triwulan ini: target & capaian baris
-        // dari target guru, dihitung dari setoran pertama triwulan
-        // (HafalanProgressService::termBreakdown). Belum ada target: pertemuan x baris per level.
+        // Kelas 11 & 12 (non-Ummi): target baris = pertemuan aktif x baris per level, capaian baris =
+        // setoran lulus, target surah & ayat = target guru (HafalanProgressService::termBreakdown).
         $termStartDay = Carbon::parse(reset($monthRanges)['start'])->startOfDay();
         $termEndDay = Carbon::parse(end($monthRanges)['end'])->endOfDay();
         $breakdownMonths = collect($monthRanges)->mapWithKeys(fn ($r) => [
             Carbon::parse($r['start'])->format('Y-m') => ['start' => Carbon::parse($r['start'])->startOfDay(), 'end' => Carbon::parse($r['end'])->startOfDay()],
         ])->all();
         $context['breakdowns'] = $positionCheck === null ? [] : $groupStudents
-            ->filter(fn ($student) => TargetRules::linesForLevel($student->tahfizh_level) !== null
-                && $term['latestTargets']->get($student->id, collect())->contains(fn ($target) => $target->surah !== null))
+            ->filter(fn ($student) => TargetRules::linesForLevel($student->tahfizh_level) !== null)
             ->mapWithKeys(fn ($student) => [$student->id => app(HafalanProgressService::class)->termBreakdown(
                 $student, $term['latestTargets']->get($student->id, collect()), $breakdownMonths, $termEndDay
             )])
@@ -971,19 +969,19 @@ class QuarterlyReportController extends Controller
 
             $studentTarget = $latestTargets->get($student->id)?->first();
 
-            // Kelas 11 & 12: target bulan = target guru bulan ini; baris target = bagian bulan ini dari
-            // setoran pertama triwulan sampai target; capaian = baris setoran lulus di bulan ini.
+            // Kelas 11 & 12: target surah & ayat = target guru bulan ini; target baris = pertemuan aktif
+            // bulan ini x level; capaian = baris setoran lulus di bulan ini.
             $breakdown = $context['breakdowns'][$student->id] ?? null;
             $monthTargetAyat = null;
             if ($breakdown !== null) {
                 $cell = $breakdown['months'][Carbon::parse($range['start'])->format('Y-m')];
                 $studentTarget = $cell['target'];
                 $monthTargetAyat = $studentTarget
-                    ? app(HafalanProgressService::class)->targetRangeLabel($cell['evaluation'], (int) $studentTarget->surah->number, (int) $studentTarget->ayah)
+                    ? app(HafalanProgressService::class)->targetRangeLabel($cell['position'], (int) $studentTarget->surah->number, (int) $studentTarget->ayah)
                     : null;
                 $targetLines = $cell['target_lines'];
                 $totalCapaianLines = $cell['achieved_lines'];
-                $isTuntas = $cell['reached'] ?? ($cell['cumulative_target_lines'] > 0 && $cell['cumulative_achieved_lines'] >= $cell['cumulative_target_lines']);
+                $isTuntas = $cell['reached'];
             }
             $studentHafalan = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()), $student->hafalan_direction);
 
@@ -1070,19 +1068,19 @@ class QuarterlyReportController extends Controller
             $targetSurah = $first['target_surah'] ?? '-';
             $targetAyat = $first['target_ayat'] ?? '-';
 
-            // Kelas 11 & 12: target triwulan = target guru bulan terakhir yang terisi; target baris dari
-            // setoran pertama triwulan sampai target; capaian = baris setoran lulus di triwulan.
+            // Kelas 11 & 12: target triwulan = target guru bulan terakhir yang terisi; target baris =
+            // pertemuan aktif triwulan x level; capaian = baris setoran lulus di triwulan.
             $breakdown = $breakdowns[$student->id] ?? null;
             if ($breakdown !== null) {
                 $termTarget = $breakdown['target'];
                 $evaluation = $breakdown['evaluation'];
                 $targetSurah = $termTarget?->surah?->name_latin ?? '-';
                 $targetAyat = $termTarget
-                    ? app(HafalanProgressService::class)->targetRangeLabel($evaluation, (int) $termTarget->surah->number, (int) $termTarget->ayah)
+                    ? app(HafalanProgressService::class)->targetRangeLabel($breakdown['position'], (int) $termTarget->surah->number, (int) $termTarget->ayah)
                     : '-';
-                $targetLines = $evaluation['target_lines'] ?? 0;
-                $totalLines = $evaluation['achieved_lines'] ?? $rows->sum('total_lines');
-                $isTuntas = $evaluation['reached'] ?? false;
+                $targetLines = $evaluation['target_lines'];
+                $totalLines = $evaluation['achieved_lines'];
+                $isTuntas = $evaluation['reached'];
             }
 
             $termRecords[] = [

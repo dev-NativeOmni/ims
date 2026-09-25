@@ -117,19 +117,17 @@ class AutoHafalanTargetService
             ];
         }
 
-        $plan['achieved_lines'] = $this->progress->passedLines($records, $termStart, now()->min($termEnd->copy()->endOfDay()));
-        if ($breakdown['evaluation']) {
-            $plan['reached'] = $breakdown['evaluation']['reached'];
-            $plan['progress'] = $breakdown['evaluation']['progress'];
-            $plan['target_lines'] = $breakdown['evaluation']['target_lines'];
-        }
+        $plan['reached'] = $breakdown['evaluation']['reached'];
+        $plan['progress'] = $breakdown['evaluation']['progress'];
+        $plan['target_lines'] = $breakdown['evaluation']['target_lines'];
+        $plan['achieved_lines'] = $breakdown['evaluation']['achieved_lines'];
 
         return $plan;
     }
 
     /**
-     * Status target setelah disimpan: completed bila semua ayat dari titik awal triwulan
-     * sampai target sudah lulus disetor.
+     * Status target guru setelah disimpan: completed bila semua ayat dari setoran pertama
+     * triwulan sampai surah & ayat target sudah lulus disetor.
      */
     public function refreshStatus(HafalanTarget $target, Carbon $termStart, Carbon $termEnd): void
     {
@@ -138,7 +136,7 @@ class AutoHafalanTargetService
             return;
         }
 
-        $reached = $this->progress->evaluate($target->student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, now())['reached'];
+        $reached = $this->progress->evaluate($target->student, (int) $target->surah->number, (int) $target->ayah, $termStart, $termEnd, now())['position_reached'];
         $target->update($reached
             ? ['status' => 'completed', 'completed_at' => $target->completed_at ?? now()]
             : ['status' => 'active', 'completed_at' => null]);

@@ -72,7 +72,7 @@ class JuzOrderAndCoverageTest extends TestCase
 
         // Target di Al-Waqi'ah tuntas walau Adz-Dzariyat (awal juz) belum disetor.
         $result = app(HafalanProgressService::class)->evaluate($this->student->fresh(), 56, 20, Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30'), Carbon::parse('2026-09-30'));
-        $this->assertTrue($result['reached']);
+        $this->assertTrue($result['position_reached']);
     }
 
     #[Test]
@@ -96,21 +96,17 @@ class JuzOrderAndCoverageTest extends TestCase
     }
 
     #[Test]
-    public function tuntas_requires_every_ayah_up_to_the_target_in_any_order(): void
+    public function surah_target_is_reached_only_when_every_ayah_up_to_it_is_passed(): void
     {
         $this->setoran('2026-07-01', 67, 1, 5);   // titik awal triwulan: Al-Mulk
         $this->setoran('2026-07-08', 67, 11, 20); // lompat
         $service = app(HafalanProgressService::class);
         $evaluate = fn () => $service->evaluate($this->student->fresh(), 67, 20, Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30'), Carbon::parse('2026-09-30'));
 
-        $gap = $evaluate();
-        $this->assertFalse($gap['reached'], 'Ayat 6-10 belum disetor.');
-        $this->assertGreaterThan(0, $gap['progress']);
-        $this->assertLessThan(100, $gap['progress']);
+        $this->assertFalse($evaluate()['position_reached'], 'Ayat 6-10 belum disetor.');
 
         $this->setoran('2026-07-15', 67, 6, 10); // ditambal belakangan
-        $this->assertTrue($evaluate()['reached']);
-        $this->assertSame(100, $evaluate()['progress']);
+        $this->assertTrue($evaluate()['position_reached']);
     }
 
     #[Test]
@@ -121,7 +117,7 @@ class JuzOrderAndCoverageTest extends TestCase
 
         $result = app(HafalanProgressService::class)->evaluate($this->student->fresh(), 67, 10, Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30'), Carbon::parse('2026-09-30'));
 
-        $this->assertFalse($result['reached']);
+        $this->assertFalse($result['position_reached']);
     }
 
     #[Test]
