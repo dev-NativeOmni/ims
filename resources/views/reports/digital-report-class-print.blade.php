@@ -54,6 +54,12 @@
     </style>
 </head>
 <body class="bg-zinc-100 text-gray-900 p-4 sm:p-8" x-data="{ paperSize: 'f4' }" :class="{ 'max-w-[215mm]': paperSize === 'f4', 'max-w-[210mm]': paperSize === 'a4' }">
+    @php
+        // Tanda tangan pejabat (Pengaturan Umum); dihitung sekali untuk seluruh halaman.
+        $signatureUris = collect(\App\Support\Signatures::OFFICIALS)
+            ->map(fn ($official, $key) => \App\Support\Signatures::dataUri(\App\Support\Signatures::officialFile($key)))
+            ->all();
+    @endphp
 
     <!-- Floating Action Toolbar for bulk print preview (hidden during print) -->
     <div class="max-w-4xl mx-auto mb-6 flex flex-wrap justify-between items-center gap-3 no-print bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg">
@@ -339,14 +345,14 @@
                     <div>
                         <p class="invisible select-none">{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                         <p class="font-semibold">Koordinator Tahfidz</p>
-                        <div class="h-16 print:h-12"></div>
+                        @include('reports.partials.signature-slot', ['uri' => $signatureUris['coord_tahfizh']])
                         <p class="font-bold underline text-black">{{ $coordTahfizhName }}</p>
                         <p class="text-[10px] text-gray-650">NIK. {{ $coordTahfizhNik }}</p>
                     </div>
                     <div>
                         <p>{{ $reportCity }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                         <p class="font-semibold">Koordinator Keagamaan</p>
-                        <div class="h-16 print:h-12"></div>
+                        @include('reports.partials.signature-slot', ['uri' => $signatureUris['coord_keagamaan']])
                         <p class="font-bold underline text-black">{{ $coordKeagamaanName }}</p>
                         <p class="text-[10px] text-gray-650">NIK. {{ $coordKeagamaanNik }}</p>
                     </div>
@@ -357,14 +363,14 @@
                     <div>
                         <p>Mengetahui,</p>
                         <p class="font-semibold">{{ $headmasterTitle }}</p>
-                        <div class="h-16 print:h-12"></div>
+                        @include('reports.partials.signature-slot', ['uri' => $signatureUris['headmaster']])
                         <p class="font-bold underline text-black">{{ $headmasterName }}</p>
                         <p class="text-[10px] text-gray-650">NIK. {{ $headmasterNik }}</p>
                     </div>
                     <div>
                         <p class="invisible select-none">Mengetahui,</p>
                         <p class="font-semibold">Koordinator Tanse</p>
-                        <div class="h-16 print:h-12"></div>
+                        @include('reports.partials.signature-slot', ['uri' => $signatureUris['coord_tanse']])
                         <p class="font-bold underline text-black">{{ $coordTanseName }}</p>
                         <p class="text-[10px] text-gray-650">NIK. {{ $coordTanseNik }}</p>
                     </div>

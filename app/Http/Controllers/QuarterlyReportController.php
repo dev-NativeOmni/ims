@@ -297,7 +297,8 @@ class QuarterlyReportController extends Controller
         array $monthsMap,
         array $term,
         AcademicCalendarService $calendar,
-        ?QuranLineTargetService $positionCheck
+        ?QuranLineTargetService $positionCheck,
+        ?string $musyrifSignature = null
     ): array {
         $gStudentIds = $groupStudents->pluck('id')->toArray();
         $gAttendances = $term['termAttendances']->whereIn('student_id', $gStudentIds);
@@ -338,6 +339,8 @@ class QuarterlyReportController extends Controller
 
         return [
             'musyrif' => $musyrifName,
+            // Berkas tanda tangan guru pengampu (Profil) -- untuk Laporan Triwulan .xlsx.
+            'musyrif_signature' => $musyrifSignature,
             'class_room_name' => $classRoom?->name ?? '-',
             'students' => $groupStudents,
             'is_tahfizh' => $isTahfizhProgram,
@@ -446,7 +449,8 @@ class QuarterlyReportController extends Controller
                 $monthsMap,
                 $term,
                 $calendar,
-                $positionCheck
+                $positionCheck,
+                $groupStudents->first()?->teacher?->user?->signature_path
             );
         }
 
@@ -524,7 +528,8 @@ class QuarterlyReportController extends Controller
                 $monthsMap,
                 $term,
                 $calendar,
-                $positionCheck
+                $positionCheck,
+                $teacherProfile->user?->signature_path
             );
         }
 
@@ -1024,6 +1029,7 @@ class QuarterlyReportController extends Controller
 
         return [
             'label' => $range['label'],
+            'end_date' => $range['end'],
             'presensi' => $presensiData,
             'jurnal' => $jurnalData,
             'tahfizh_records' => $tahfizhRecords,

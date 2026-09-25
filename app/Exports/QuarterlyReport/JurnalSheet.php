@@ -3,11 +3,14 @@
 namespace App\Exports\QuarterlyReport;
 
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
+use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -15,9 +18,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * Sheet "Jurnal": jurnal tatap muka per bulan > tingkat kelas > kelas/halaqoh,
  * sama seperti sheet "JURNAL" di template sekolah.
  */
-class JurnalSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison, WithStyles, WithTitle
+class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding;
+    use GradeBanding, SignatureBlock;
 
     /** @var int[] */
     private array $monthRows = [];
@@ -31,7 +34,13 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison
     /** @var int[] */
     private array $headerRows = [];
 
-    public function __construct(private readonly array $halaqahData) {}
+    /** @var string[] */
+    private array $mergeRanges = [];
+
+    public function __construct(
+        private readonly array $halaqahData,
+        private readonly array $signatureContext = [],
+    ) {}
 
     public function title(): string
     {
@@ -72,11 +81,25 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison
 
                     $rows[] = [''];
                     $row++;
+                    $this->appendSignatureBlock($rows, $row, $halaqah, $halaqah['monthly'][$mCode]['end_date'] ?? null, ['B', 'C'], ['D', 'E']);
                 }
             }
         }
 
         return $rows;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                foreach ($this->mergeRanges as $range) {
+                    $sheet->mergeCells($range);
+                }
+                $this->applySignatureBlocks($sheet);
+            },
+        ];
     }
 
     public function styles(Worksheet $sheet): array

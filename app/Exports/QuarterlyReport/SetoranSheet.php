@@ -4,6 +4,7 @@ namespace App\Exports\QuarterlyReport;
 
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
+use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -23,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding, PekanLabeling;
+    use GradeBanding, PekanLabeling, SignatureBlock;
 
     private const REGULER_SUBCOLS = ['Surah', 'Ayat', 'Jumlah Baris', 'Nilai', 'Kehadiran'];
 
@@ -47,6 +48,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
     public function __construct(
         private readonly array $halaqahData,
         private readonly bool $isTahfizhProgram,
+        private readonly array $signatureContext = [],
     ) {}
 
     public function title(): string
@@ -115,6 +117,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                     $rows[] = [''];
                     $row++;
+                    $this->appendSignatureBlock($rows, $row, $halaqah, $month['end_date'] ?? null, ['B', 'C'], ['U', 'AD']);
                 }
             }
         }
@@ -193,6 +196,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                         $rows[] = [''];
                         $row++;
                     }
+
+                    $this->appendSignatureBlock($rows, $row, $halaqah, $halaqah['monthly'][$mCode]['end_date'] ?? null, ['B', 'C'], ['G', 'J']);
                 }
             }
         }
@@ -257,6 +262,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                 foreach ($this->mergeRanges as $range) {
                     $sheet->mergeCells($range);
                 }
+                $this->applySignatureBlocks($sheet);
             },
         ];
     }

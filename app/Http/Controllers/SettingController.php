@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Services\SchoolCalendar;
+use App\Support\Signatures;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,11 @@ class SettingController extends Controller
             'logo' => Setting::get('logo'),
             'nama_instansi' => Setting::get('nama_instansi'),
             'login_bg' => Setting::get('login_bg'),
+            'officials' => collect(Signatures::OFFICIALS)->map(fn ($official, $key) => [
+                'label' => $official['label'],
+                'name' => Signatures::officialIdentity($key)['name'],
+                'preview' => Signatures::dataUri(Signatures::officialFile($key)),
+            ])->all(),
         ]);
     }
 
@@ -26,7 +32,22 @@ class SettingController extends Controller
             'logo' => 'nullable|image|max:2048',
             'nama_instansi' => 'nullable|string|max:255',
             'login_bg' => 'nullable|image|max:5120',
+            'signatures' => 'nullable|array',
+            'signatures.*' => Signatures::UPLOAD_RULES,
+            'reset_signatures' => 'nullable|array',
+            'reset_signatures.*' => 'in:'.implode(',', array_keys(Signatures::OFFICIALS)),
         ]);
+
+        // Tanda tangan pejabat: hapus bila dicentang, ganti bila ada unggahan baru.
+        foreach (array_keys(Signatures::OFFICIALS) as $key) {
+            $settingKey = Signatures::OFFICIALS[$key]['file'];
+            $upload = $request->file("signatures.{$key}");
+
+            if ($upload || in_array($key, (array) $request->input('reset_signatures', []), true)) {
+                Signatures::delete(Setting::get($settingKey));
+                Setting::set($settingKey, $upload ? Signatures::store($upload, 'officials') : null);
+            }
+        }
 
         if ($request->boolean('reset_logo')) {
             $oldLogo = Setting::get('logo');

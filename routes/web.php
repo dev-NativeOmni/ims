@@ -440,6 +440,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
+    Route::post('/profile/signature', [ProfileController::class, 'updateSignature'])
+        ->name('profile.signature.update');
+
+    Route::delete('/profile/signature', [ProfileController::class, 'destroySignature'])
+        ->name('profile.signature.destroy');
+
     Route::get('/quran-pdf', [QuranPdfController::class, 'index'])
         ->name('quran.pdf');
 
