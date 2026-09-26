@@ -497,7 +497,7 @@ class StudentReportController extends Controller
             }
 
             if ($latestHafalan) {
-                $latestCapaianText = 'QS. '.($latestHafalan->surah?->name_latin ?? '').' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
+                $latestCapaianText = 'QS. '.($latestHafalan->surah?->name_latin ?? '').' (Ayat '.$latestHafalan->ayah_end.')';
                 $latestCapaianNotes = $latestHafalan->notes;
             } else {
                 $latestCapaianText = 'Belum ada data setoran.';

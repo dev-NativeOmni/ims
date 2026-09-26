@@ -14,6 +14,7 @@ use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
+use App\Support\AyahLabel;
 use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -877,7 +878,7 @@ class QuarterlyReportController extends Controller
                             // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
                             $lines = $dayRecords->where('status', 'passed')->sum('lines_count');
                             $surahLabel = $dayRecords
-                                ->map(fn ($r) => "{$r->surah->name_latin} ({$r->ayah_start}-{$r->ayah_end})")
+                                ->map(fn ($r) => "{$r->surah->name_latin} ({$r->ayah_end})")
                                 ->implode(', ');
                             $avgScore = $dayRecords->whereNotNull('score')->avg('score');
                             $dailyLogs[$dayName] = [
@@ -935,7 +936,7 @@ class QuarterlyReportController extends Controller
                         $lines = (float) $weekUmmi->sum(fn ($u) => $u->lines_count);
                         $pekanRecords[$p] = [
                             'surah' => $lastUmmi->ummi_jilid ?: '-',
-                            'ayat' => $lastUmmi->ummi_halaman ?: '-',
+                            'ayat' => AyahLabel::end($lastUmmi->ummi_halaman),
                             'baris' => $lines,
                             'nilai' => $lastUmmi->nilai ?: '-',
                             'kehadiran' => 'Hadir',
@@ -947,7 +948,7 @@ class QuarterlyReportController extends Controller
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                         $pekanRecords[$p] = [
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
-                            'ayat' => $weekRecords->map(fn ($h) => "{$h->ayah_start}-{$h->ayah_end}")->implode(', '),
+                            'ayat' => $weekRecords->map(fn ($h) => (string) $h->ayah_end)->implode(', '),
                             'baris' => $lines,
                             'nilai' => self::mapScoreToGrade($avgScore),
                             'kehadiran' => 'Hadir',
@@ -978,9 +979,7 @@ class QuarterlyReportController extends Controller
             if ($breakdown !== null) {
                 $cell = $breakdown['months'][Carbon::parse($range['start'])->format('Y-m')];
                 $studentTarget = $cell['target'];
-                $monthTargetAyat = $studentTarget
-                    ? app(HafalanProgressService::class)->targetRangeLabel($cell['position'], (int) $studentTarget->surah->number, (int) $studentTarget->ayah)
-                    : null;
+                $monthTargetAyat = $studentTarget ? (string) $studentTarget->ayah : null;
                 $targetLines = $cell['target_lines'];
                 $totalCapaianLines = $cell['achieved_lines'];
                 $isTuntas = $cell['reached'];
@@ -991,7 +990,7 @@ class QuarterlyReportController extends Controller
             // (ummi_jilid terisi) -- murid Ummi bisa juga punya target Ziyadah Surah/Ayat biasa.
             if ($studentTarget?->ummi_jilid) {
                 $targetSurah = $studentTarget->ummi_jilid;
-                $targetAyat = trim('Peraga: '.($studentTarget->halaman_peraga ?: '-').' · Buku: '.($studentTarget->halaman_buku ?: '-'));
+                $targetAyat = 'Peraga: '.AyahLabel::end($studentTarget->halaman_peraga).' · Buku: '.AyahLabel::end($studentTarget->halaman_buku);
             } else {
                 $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
                 $targetAyat = $studentTarget ? ($monthTargetAyat ?? $studentTarget->ayah_range) : '-';
@@ -1002,14 +1001,14 @@ class QuarterlyReportController extends Controller
             $studentLatestUmmi = $isUmmiStudent ? $latestUmmiRecords->get($student->id, collect())->first() : null;
             if ($studentLatestUmmi) {
                 $capaianSurah = $studentLatestUmmi->ummi_jilid ?: '-';
-                $capaianAyat = $studentLatestUmmi->ummi_halaman ?: '-';
+                $capaianAyat = AyahLabel::end($studentLatestUmmi->ummi_halaman);
                 $ziyadahRecord = app(QuranLineTargetService::class)->furthestRecord($latestHafalans->get($student->id, collect()), true);
                 if ($ziyadahRecord?->surah) {
                     $capaianAyat .= ' (Ziyadah: '.$ziyadahRecord->surah->name_latin.' '.$ziyadahRecord->ayah_end.')';
                 }
             } else {
                 $capaianSurah = $studentHafalan?->surah?->name_latin ?? '-';
-                $capaianAyat = $studentHafalan ? "{$studentHafalan->ayah_start}-{$studentHafalan->ayah_end}" : '-';
+                $capaianAyat = $studentHafalan ? (string) $studentHafalan->ayah_end : '-';
             }
 
             $record = [
@@ -1077,9 +1076,7 @@ class QuarterlyReportController extends Controller
                 $termTarget = $breakdown['target'];
                 $evaluation = $breakdown['evaluation'];
                 $targetSurah = $termTarget?->surah?->name_latin ?? '-';
-                $targetAyat = $termTarget
-                    ? app(HafalanProgressService::class)->targetRangeLabel($breakdown['position'], (int) $termTarget->surah->number, (int) $termTarget->ayah)
-                    : '-';
+                $targetAyat = $termTarget ? (string) $termTarget->ayah : '-';
                 $targetLines = $evaluation['target_lines'];
                 $totalLines = $evaluation['achieved_lines'];
                 $isTuntas = $evaluation['reached'];

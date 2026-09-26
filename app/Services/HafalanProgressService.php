@@ -189,7 +189,7 @@ class HafalanProgressService
      * Posisi target guru (surah, ayat): jalur dari titik awal triwulan (setoran pertama) sampai
      * target, dan apakah semua ayat di jalur itu sudah lulus disetor pada $cutoff.
      *
-     * @return array{position_reached: bool, start: array, path_start: ?array{0: int, 1: int}}
+     * @return array{position_reached: bool, start: array}
      */
     public function evaluate(Student $student, int $targetSurah, int $targetAyah, Carbon $termStart, Carbon $termEnd, Carbon $cutoff, ?Collection $records = null): array
     {
@@ -207,29 +207,7 @@ class HafalanProgressService
                 ? AyahCoverage::contains($coverageNow[$targetSurah] ?? [], $targetAyah)
                 : $this->quran->piecesCovered($pieces, $coverageNow),
             'start' => $start,
-            // Ayat pertama jalur target (setelah melewati ayat yang sudah dihafal), untuk tampilan "dari ... s.d. ...".
-            'path_start' => $pieces ? [$pieces[0][0], $pieces[0][1]] : null,
         ];
-    }
-
-    /**
-     * Rentang ayat target untuk tampilan: dari ayat pertama jalur target sampai ayat target,
-     * mis. "21 - 40" (satu surah) atau "Al-Ma'arij 41 - Al-Jinn 12" (lintas surah).
-     */
-    public function targetRangeLabel(?array $evaluation, int $targetSurah, int $targetAyah): string
-    {
-        $pathStart = $evaluation['path_start'] ?? null;
-        if ($pathStart === null) {
-            return (string) $targetAyah;
-        }
-
-        [$surah, $ayah] = $pathStart;
-
-        $name = fn (int $number) => $this->surahs()->get($number)?->name_latin ?? "Surah {$number}";
-
-        return $surah === $targetSurah
-            ? "{$ayah} - {$targetAyah}"
-            : "{$name($surah)} {$ayah} - {$name($targetSurah)} {$targetAyah}";
     }
 
     /**

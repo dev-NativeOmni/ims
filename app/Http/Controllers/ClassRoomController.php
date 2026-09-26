@@ -173,7 +173,7 @@ class ClassRoomController extends Controller
             foreach ($records as $rec) {
                 if ($rec->surah) {
                     $surahNames[] = $rec->surah->name_latin;
-                    $ayatRanges[] = $rec->ayah_start.'-'.$rec->ayah_end;
+                    $ayatRanges[] = (string) $rec->ayah_end;
                     $totalLines += $rec->lines_count;
                 }
                 if ($rec->score !== null) {
@@ -265,7 +265,7 @@ class ClassRoomController extends Controller
             foreach ($records as $rec) {
                 if ($rec->surah) {
                     $surahNames[] = $rec->surah->name_latin;
-                    $ayatRanges[] = $rec->ayah_start.'-'.$rec->ayah_end;
+                    $ayatRanges[] = (string) $rec->ayah_end;
                     $totalLines += $rec->lines_count;
                 }
                 if ($rec->score !== null) {

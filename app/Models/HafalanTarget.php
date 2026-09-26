@@ -58,9 +58,10 @@ class HafalanTarget extends Model
         return $this->auto_month !== null;
     }
 
+    /** Target ditulis cukup ayat akhirnya (mis. "38"). */
     public function getAyahRangeAttribute(): string
     {
-        return $this->ayah ? '1 - '.$this->ayah : '-';
+        return $this->ayah ? (string) $this->ayah : '-';
     }
 
     public function getStatusLabelAttribute(): string

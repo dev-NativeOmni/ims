@@ -196,9 +196,9 @@ class QuarterlyReportTeacherExportTest extends TestCase
         $studentRow = collect($termRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($studentRow);
         $this->assertSame('Jilid 3', $studentRow[3]);
-        $this->assertStringContainsString('Peraga: Hal. 10 - 15', $studentRow[4]);
+        $this->assertStringContainsString('Peraga: 15', $studentRow[4]);
         $this->assertSame('Jilid 3', $studentRow[5]);
-        $this->assertStringContainsString('Hal. 12 - 15', $studentRow[6]);
+        $this->assertStringStartsWith('15', $studentRow[6]);
 
         // Setoran: Pekan 1 (1-7 Juli) memuat setoran Ummi 6 Juli -> selnya berisi "Jilid 3".
         $setoranRows = $spreadsheet->getSheetByName('Setoran')->toArray();

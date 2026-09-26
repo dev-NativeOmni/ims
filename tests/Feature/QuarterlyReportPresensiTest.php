@@ -274,8 +274,8 @@ class QuarterlyReportPresensiTest extends TestCase
         ]);
         $row12 = $termRow($class12->id);
         $this->assertSame('Al-Baqarah', $row12['target_surah']);
-        // Dari setoran pertama triwulan (Al-Fatihah 1) sampai Al-Baqarah 20.
-        $this->assertSame('Al-Fatihah 1 - Al-Baqarah 20', $row12['target_ayat']);
+        // Target & capaian cukup ayat akhirnya.
+        $this->assertSame('20', $row12['target_ayat']);
 
         // Kelas 10 tetap memakai Target Hafalan/Ummi yang dibuat guru, tanpa target otomatis.
         $class10 = ClassRoom::create([
@@ -320,7 +320,7 @@ class QuarterlyReportPresensiTest extends TestCase
             ->viewData('halaqahData'))->first()['term_records'])->firstWhere('student_id', $student10->id);
 
         $this->assertSame('Al-Fatihah', $row10['target_surah']);
-        $this->assertSame('1 - 5', $row10['target_ayat']);
+        $this->assertSame('5', $row10['target_ayat']);
         $this->assertSame(0, HafalanTarget::query()->where('student_id', $student10->id)->whereNotNull('auto_month')->count());
     }
 
@@ -383,9 +383,9 @@ class QuarterlyReportPresensiTest extends TestCase
             $septRow = collect($halaqah['monthly']['09']['reguler_records'])->firstWhere('student_id', $this->student->id);
 
             return $termRow['capaian_surah'] === 'Ar-Rahman'
-                && $termRow['capaian_ayat'] === '1-4'
+                && $termRow['capaian_ayat'] === '4'
                 && $septRow['capaian_surah'] === 'Ar-Rahman'
-                && $septRow['capaian_ayat'] === '1-4';
+                && $septRow['capaian_ayat'] === '4';
         });
     }
 }

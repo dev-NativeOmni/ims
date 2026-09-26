@@ -1083,7 +1083,7 @@ class ReportController extends Controller
 
             $latestProgressText = '-';
             if ($latestHafalan) {
-                $latestProgressText = 'Hafalan: '.($latestHafalan->surah?->name_latin ?? '-').' (Ayat '.$latestHafalan->ayah_start.'-'.$latestHafalan->ayah_end.')';
+                $latestProgressText = 'Hafalan: '.($latestHafalan->surah?->name_latin ?? '-').' (Ayat '.$latestHafalan->ayah_end.')';
             } elseif ($latestMurajaah) {
                 $latestProgressText = 'Murajaah: '.($latestMurajaah->surah?->name_latin ?? '-').' (Ayat '.$latestMurajaah->ayah_start.'-'.$latestMurajaah->ayah_end.')';
             }
@@ -1169,7 +1169,7 @@ class ReportController extends Controller
                 $ummiHalaman = '-';
             }
             $ummiCapaian = ($latestUmmi && $latestUmmi->surahs->isNotEmpty())
-                ? $latestUmmi->surahs_label
+                ? $latestUmmi->surahs_end_label
                 : ($latestUmmi?->materi ?? '-');
 
             $ziyadahText = '-';
@@ -1465,7 +1465,7 @@ class ReportController extends Controller
             $classUmmiJilid = $firstUmmi->ummi_jilid;
             $classUmmiHalaman = $firstUmmi->ummi_halaman;
             if ($firstUmmi->surahs->isNotEmpty()) {
-                $classUmmiHafalanSurah = $firstUmmi->surahs_label;
+                $classUmmiHafalanSurah = $firstUmmi->surahs_end_label;
             }
         }
 
@@ -1484,7 +1484,7 @@ class ReportController extends Controller
                 if ($rec->surah) {
                     $lines = $rec->lines_count;
                     $totalLines += $lines;
-                    $progressParts[] = "{$rec->surah->name_latin} ({$rec->ayah_start}-{$rec->ayah_end}) ({$lines} Baris)";
+                    $progressParts[] = "{$rec->surah->name_latin} ({$rec->ayah_end}) ({$lines} Baris)";
                 }
             }
 

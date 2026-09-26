@@ -124,7 +124,7 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             ->get(route('digital-reports.print', $this->student));
 
         $response->assertStatus(200);
-        $response->assertSee('QS. '.$this->surah->name_latin.' (Ayat 1 - 10)', false);
+        $response->assertSee('QS. '.$this->surah->name_latin.' (Ayat 10)', false);
         $response->assertDontSee('Ummi : Jilid');
     }
 }

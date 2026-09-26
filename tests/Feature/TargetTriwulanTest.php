@@ -256,7 +256,7 @@ class TargetTriwulanTest extends TestCase
 
         $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
         $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
-        $this->assertSame('21 - 40', $termRecord['target_ayat']);
+        $this->assertSame('40', $termRecord['target_ayat'], 'Target cukup ayat akhir.');
         $this->assertSame(70, $termRecord['target_lines']);
 
         // Capaian baris (baris tersimpan) mencapai 70 -> tuntas.

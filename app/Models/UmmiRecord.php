@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\AyahLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,6 +48,18 @@ class UmmiRecord extends Model
                 $label = $surah->surah?->name_latin ?? '-';
 
                 return $surah->hafalan_ayah ? "{$label} ({$surah->hafalan_ayah})" : $label;
+            })
+            ->implode(', ');
+    }
+
+    /** Label capaian untuk laporan: cukup ayat akhir tiap surah, mis. "An-Naba (38)". */
+    public function getSurahsEndLabelAttribute(): string
+    {
+        return $this->surahs
+            ->map(function (UmmiRecordSurah $surah) {
+                $label = $surah->surah?->name_latin ?? '-';
+
+                return $surah->hafalan_ayah ? $label.' ('.AyahLabel::end($surah->hafalan_ayah).')' : $label;
             })
             ->implode(', ');
     }

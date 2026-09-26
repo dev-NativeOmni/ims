@@ -6,6 +6,7 @@ use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\UmmiRecord;
+use App\Support\AyahLabel;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -204,7 +205,7 @@ class UmmiProgressService
             'hafalan_label' => $this->hafalanLabel($hafalan),
             'last_surah' => $lastSurah?->surah?->name_latin,
             'surahs_period' => $inPeriod->flatMap(fn ($r) => $r->surahs)->filter(fn ($s) => $s->surah)
-                ->map(fn ($s) => $s->surah->name_latin.($s->hafalan_ayah ? ' ('.$s->hafalan_ayah.')' : ''))->unique()->values()->all(),
+                ->map(fn ($s) => $s->surah->name_latin.($s->hafalan_ayah ? ' ('.AyahLabel::end($s->hafalan_ayah).')' : ''))->unique()->values()->all(),
             'target_book' => $targetBook,
             'target_hafalan' => $targetHafalan,
             'target_book_label' => self::pageLabel($targetBook),

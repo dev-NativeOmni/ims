@@ -377,7 +377,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertViewHas('tahfizhLevelLabel', 'Reguler');
-        $response->assertViewHas('latestCapaianText', 'QS. Al-Fatihah (Ayat 1-7)');
+        $response->assertViewHas('latestCapaianText', 'QS. Al-Fatihah (Ayat 7)');
         $response->assertViewHas('latestCapaianNotes', 'Sangat baik');
         // Regresi: totalSetoran dulu menghitung langsung dari kolom status di header
         // hafalan_records, yang sudah tidak ada lagi sejak header/detail split -- di

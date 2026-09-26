@@ -15,6 +15,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\UmmiRecordSurah;
 use App\Models\User;
+use App\Support\AyahLabel;
 use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -425,8 +426,8 @@ class StudentProgressService
                     ? ($latestUmmiSurah->surah?->name_latin ?? $latestUmmiSurah->surah?->name)
                     : ($latestHafalan?->surah?->name_latin ?? $latestHafalan?->surah?->name ?? null),
                 'latest_hafalan_ayah' => ($latestUmmiSurah && (! $latestHafalan || $latestUmmiRecord->tanggal >= ($latestHafalan->submitted_at ?? '1970-01-01')))
-                    ? ($latestUmmiSurah->hafalan_ayah ? 'Ayat '.$latestUmmiSurah->hafalan_ayah : null)
-                    : ($latestHafalan ? $latestHafalan->ayah_start.' - '.$latestHafalan->ayah_end : null),
+                    ? ($latestUmmiSurah->hafalan_ayah ? 'Ayat '.AyahLabel::end($latestUmmiSurah->hafalan_ayah) : null)
+                    : ($latestHafalan ? 'Ayat '.$latestHafalan->ayah_end : null),
                 'latest_hafalan_date' => ($latestUmmiSurah && (! $latestHafalan || $latestUmmiRecord->tanggal >= ($latestHafalan->submitted_at ?? '1970-01-01')))
                     ? $latestUmmiRecord->tanggal
                     : $latestHafalan?->submitted_at,
