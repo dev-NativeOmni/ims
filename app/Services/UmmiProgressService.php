@@ -18,6 +18,8 @@ use Illuminate\Support\Collection;
  * - Hafalan surah metode Ummi: urutan Juz 30 mundur (An-Nas -> An-Naba), lalu Juz 29, 28, ...
  *   maju dari awal juz (sama dengan HafalanOrder tanpa deteksi urutan) -> ayat ke-n dari awal.
  *
+ * Posisi = catatan Ummi terakhir sampai akhir periode (bukan posisi terjauh sepanjang riwayat).
+ *
  * Target dari Target Bulanan (Ummi): Jilid + Halaman Buku, dan Surah + Ayat (ayat kosong =
  * sampai akhir surah). Tuntas dinilai terpisah untuk buku dan hafalan.
  */
@@ -216,17 +218,21 @@ class UmmiProgressService
 
         // Term: posisi awal term + tambahan tiap bulan (ditumpuk), puncak = posisi akhir term.
         if ($isTerm) {
+            // Puncak tumpukan = posisi akhir periode: dasar & tiap bulan dibatasi posisi akhir supaya
+            // catatan lama yang keliru (lebih tinggi) tidak membuat batang melampaui capaian akhir.
             $beforeStart = $start->copy()->subDay()->endOfDay();
-            $prevBook = (int) $bookAt($beforeStart);
-            $prevHafalan = (int) $hafalanAt($beforeStart);
+            $finalBook = (int) $book;
+            $finalHafalan = (int) $hafalan;
+            $prevBook = min((int) $bookAt($beforeStart), $finalBook);
+            $prevHafalan = min((int) $hafalanAt($beforeStart), $finalHafalan);
             $row['book_base'] = $prevBook;
             $row['hafalan_base'] = $prevHafalan;
             $row['book_months'] = [];
             $row['hafalan_months'] = [];
             foreach (array_keys($periodMonths) as $monthKey) {
                 $monthEnd = Carbon::parse($monthKey.'-01')->endOfMonth()->min($end);
-                $b = max($prevBook, (int) $bookAt($monthEnd));
-                $h = max($prevHafalan, (int) $hafalanAt($monthEnd));
+                $b = min(max($prevBook, (int) $bookAt($monthEnd)), $finalBook);
+                $h = min(max($prevHafalan, (int) $hafalanAt($monthEnd)), $finalHafalan);
                 $row['book_months'][$monthKey] = $b - $prevBook;
                 $row['hafalan_months'][$monthKey] = $h - $prevHafalan;
                 [$prevBook, $prevHafalan] = [$b, $h];
@@ -236,21 +242,22 @@ class UmmiProgressService
         return $row;
     }
 
-    /** Posisi buku terjauh sampai $until (catatan tanpa jilid/halaman diabaikan). */
+    /**
+     * Posisi buku = catatan Ummi TERAKHIR sampai $until (tanggal terbaru, lalu input terakhir) yang
+     * Jilid & halamannya terbaca -- sama dengan capaian akhir di kartu Ummi, bukan posisi terjauh.
+     */
     private function bestBook(Collection $records, Carbon $until): ?int
     {
-        return $records
-            ->filter(fn ($r) => Carbon::parse($r->tanggal)->lte($until))
+        return $this->recordsUntil($records, $until)
             ->map(fn ($r) => self::pageValue($r->ummi_jilid, $r->ummi_halaman))
             ->filter()
-            ->max();
+            ->last();
     }
 
-    /** Posisi hafalan surah terjauh sampai $until. */
+    /** Posisi hafalan = surah & ayat terakhir yang dicatat sampai $until. */
     private function bestHafalan(Collection $records, Carbon $until): ?int
     {
-        return $records
-            ->filter(fn ($r) => Carbon::parse($r->tanggal)->lte($until))
+        return $this->recordsUntil($records, $until)
             ->flatMap(fn ($r) => $r->surahs)
             ->map(function ($entry) {
                 if (! $entry->surah || ! preg_match_all('/\d+/', (string) $entry->hafalan_ayah, $m)) {
@@ -260,7 +267,15 @@ class UmmiProgressService
                 return $this->hafalanValue((int) $entry->surah->number, (int) max($m[0]));
             })
             ->filter()
-            ->max();
+            ->last();
+    }
+
+    private function recordsUntil(Collection $records, Carbon $until): Collection
+    {
+        return $records
+            ->filter(fn ($r) => Carbon::parse($r->tanggal)->lte($until))
+            ->sortBy(fn ($r) => Carbon::parse($r->tanggal)->format('Y-m-d').sprintf('%010d', $r->id))
+            ->values();
     }
 
     /**

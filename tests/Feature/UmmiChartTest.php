@@ -136,4 +136,22 @@ class UmmiChartTest extends TestCase
             'target_date' => '2026-08-31',
         ])->assertSessionHasErrors('ayah');
     }
+
+    #[Test]
+    public function the_chart_uses_the_last_record_not_a_higher_mistyped_one(): void
+    {
+        $this->ummi('2026-06-10', 'Jilid 3', '2', 114, '1-6');  // catatan lama keliru (lebih tinggi)
+        $this->ummi('2026-09-15', 'Jilid 2', '21-23');
+        $this->ummi('2026-09-17', 'Jilid 2', '24-25', 86, '1-9');
+
+        $monthly = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 9, 'year' => 2026,
+        ]))->viewData('ummiChart')['rows'][0];
+        $this->assertSame('J2 h.25', $monthly['book_label'], 'Capaian akhir = catatan terakhir (Jilid 2 hal. 24-25).');
+
+        $term = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'quarterly', 'quarter' => 1, 'year' => 2026,
+        ]))->viewData('ummiChart')['rows'][0];
+        $this->assertSame(65, $term['book_base'] + array_sum($term['book_months']), 'Puncak tumpukan = J2 h.25, tidak melampaui.');
+    }
 }
