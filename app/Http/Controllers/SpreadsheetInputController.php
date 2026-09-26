@@ -192,7 +192,7 @@ class SpreadsheetInputController extends Controller
 
             // Load HafalanRecords
             $hafalanRecords = HafalanRecord::query()
-                ->with('surahs')
+                ->with('surahs.surah')
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('submitted_at', [$startDate, $endDate])
                 ->get();
@@ -216,6 +216,8 @@ class SpreadsheetInputController extends Controller
                         'score' => $scoreFormatted,
                         'status' => $surahEntry->status,
                         'submission_type' => $surahEntry->submission_type,
+                        // Isian Baris hanya terisi bila guru mengisi manual (berbeda dari kalkulator).
+                        'baris' => $this->manualBaris($surahEntry->baris, $surahEntry->surah, (int) $surahEntry->ayah_start, (int) $surahEntry->ayah_end),
                     ];
                 }
 
@@ -226,7 +228,7 @@ class SpreadsheetInputController extends Controller
 
             // Load UmmiRecords
             $ummiRecords = UmmiRecord::query()
-                ->with('surahs')
+                ->with('surahs.surah')
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('tanggal', [$startDate, $endDate])
                 ->get();
@@ -254,6 +256,7 @@ class SpreadsheetInputController extends Controller
                         'id' => $surahEntry->id,
                         'surah_id' => (string) $surahEntry->surah_id,
                         'ayah' => $surahEntry->hafalan_ayah,
+                        'baris' => $this->manualBaris($surahEntry->baris, $surahEntry->surah, ...$this->ayahRange($surahEntry->hafalan_ayah)),
                     ];
                 }
             }
@@ -549,12 +552,9 @@ class SpreadsheetInputController extends Controller
             $ayahStart = filled($hafalanData['ayah_start'] ?? null) ? (int) $hafalanData['ayah_start'] : 1;
             $ayahEnd = filled($hafalanData['ayah_end'] ?? null) ? (int) $hafalanData['ayah_end'] : $ayahStart;
 
-            $baris = ReportController::calculateLines(
-                $surah->number,
-                $ayahStart,
-                $ayahEnd,
-                $surah->total_ayah
-            );
+            // Baris manual guru bila diisi; kosong = hitungan kalkulator baris.
+            $baris = $this->manualInput($hafalanData['baris'] ?? null)
+                ?? ReportController::calculateLines($surah->number, $ayahStart, $ayahEnd, $surah->total_ayah);
 
             $rawScore = $hafalanData['score'] ?? null;
             $score = (filled($rawScore) && is_numeric($rawScore)) ? (float) $rawScore : null;
@@ -649,26 +649,10 @@ class SpreadsheetInputController extends Controller
                 continue;
             }
 
-            $baris = 0.0;
-            if (! empty($hafalanData['ayah'])) {
-                $clean = str_replace(' ', '', $hafalanData['ayah']);
-                if (str_contains($clean, '-')) {
-                    $parts = explode('-', $clean);
-                    $start = (int) $parts[0];
-                    $end = (int) $parts[1];
-                } else {
-                    $start = (int) $clean;
-                    $end = (int) $clean;
-                }
-                if ($start > 0 && $end >= $start) {
-                    $baris = ReportController::calculateLines(
-                        $surah->number,
-                        $start,
-                        $end,
-                        $surah->total_ayah
-                    );
-                }
-            }
+            // Baris manual guru bila diisi; kosong = hitungan kalkulator baris dari ayat.
+            [$start, $end] = $this->ayahRange($hafalanData['ayah'] ?? null);
+            $baris = $this->manualInput($hafalanData['baris'] ?? null)
+                ?? (($start > 0 && $end >= $start) ? ReportController::calculateLines($surah->number, $start, $end, $surah->total_ayah) : 0.0);
 
             $lineData = [
                 'surah_id' => $surah->id,
@@ -721,5 +705,46 @@ class SpreadsheetInputController extends Controller
         }
 
         return $teacherId;
+    }
+
+    /** Baris manual dari isian spreadsheet (angka >= 0), atau null bila dikosongkan. */
+    private function manualInput(mixed $value): ?float
+    {
+        if ($value === null || $value === '' || ! is_numeric(str_replace(',', '.', (string) $value))) {
+            return null;
+        }
+
+        return max(0.0, round((float) str_replace(',', '.', (string) $value), 2));
+    }
+
+    /**
+     * Baris tersimpan yang berbeda dari hitungan kalkulator = isian manual guru (ditampilkan kembali);
+     * sama dengan kalkulator = kosong (kalkulator yang dipakai).
+     */
+    private function manualBaris(mixed $stored, ?Surah $surah, int $start, int $end): string
+    {
+        if ($stored === null || ! $surah || $start < 1 || $end < $start) {
+            return $stored === null ? '' : (string) (float) $stored;
+        }
+
+        $calculated = ReportController::calculateLines($surah->number, $start, $end, $surah->total_ayah);
+
+        return abs((float) $stored - $calculated) < 0.01 ? '' : (string) (float) $stored;
+    }
+
+    /** "1-5" / "7" -> [awal, akhir]; kosong -> [0, 0]. */
+    private function ayahRange(?string $ayah): array
+    {
+        $clean = str_replace(' ', '', (string) $ayah);
+        if ($clean === '') {
+            return [0, 0];
+        }
+        if (str_contains($clean, '-')) {
+            [$start, $end] = array_map('intval', explode('-', $clean, 2));
+
+            return [$start, $end];
+        }
+
+        return [(int) $clean, (int) $clean];
     }
 }

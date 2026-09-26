@@ -34,6 +34,7 @@
                 lastHafalanMap: @json($lastHafalanMap),
                 gridData: {},
                 surahDetails: {},
+                lineMap: null,
                 isDirty: false,
                 isSaving: false,
                 isMobileView: window.innerWidth < 768,
@@ -59,6 +60,12 @@
                             }
                         }
                     });
+
+                    // Peta baris per ayat (mushaf 15 baris) untuk perkiraan kalkulator baris.
+                    fetch(@js(asset('quran_verse_lines.json')))
+                        .then(r => r.ok ? r.json() : null)
+                        .then(map => { this.lineMap = map; })
+                        .catch(() => {});
 
                     // Index surah details for fast lookup
                     this.surahs.forEach(s => {
@@ -293,6 +300,39 @@
                     const parts = dateStr.split('-');
                     if (parts.length !== 3) return dateStr;
                     return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                },
+                /**
+                 * Perkiraan baris dari kalkulator (sama dengan ReportController::calculateLines):
+                 * halaman 1-2 berisi 7 baris, halaman lain 15 baris.
+                 */
+                estimateLines(surahId, start, end) {
+                    const surah = this.surahDetails[surahId];
+                    start = parseInt(start);
+                    end = parseInt(end || start);
+                    if (!surah || !this.lineMap || !start || end < start) return null;
+                    const a = this.lineMap[surah.number + ':' + start];
+                    const b = this.lineMap[surah.number + ':' + end];
+                    if (!a || !b) return null;
+                    const capacity = (page) => (page === 1 || page === 2) ? 7 : 15;
+                    if (a.page === b.page) return Math.max(0, b.end - a.start + 1);
+                    let lines = capacity(a.page) - a.start + 1 + b.end;
+                    for (let p = a.page + 1; p < b.page; p++) lines += capacity(p);
+                    return Math.max(0, lines);
+                },
+                hafalanEstimate(h) {
+                    return this.estimateLines(h.surah_id, h.ayah_start, h.ayah_end);
+                },
+                ummiEstimate(h) {
+                    const parts = String(h.ayah || '').replace(/\s/g, '').split('-');
+                    return this.estimateLines(h.surah_id, parts[0], parts[1] || parts[0]);
+                },
+                barisHint(h, estimate) {
+                    const manual = h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '';
+                    if (estimate === null) return manual ? 'Baris manual' : 'Kalkulator: -';
+                    if (!manual) return 'Kalkulator: ' + estimate + ' baris';
+                    return Math.abs(parseFloat(String(h.baris).replace(',', '.')) - estimate) < 0.01
+                        ? 'Sesuai kalkulator'
+                        : 'Manual · kalkulator ' + estimate;
                 },
                 submitForm() {
                     if (this.isSaving) return;
@@ -602,6 +642,10 @@
                                                                         <input type="number" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" @input="autoMarkHadir(student.id, date)" placeholder="Awal" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                         <input type="number" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" @input="autoMarkHadir(student.id, date)" placeholder="Akhir" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                     </div>
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="hafalanEstimate(h) !== null ? '≈ ' + hafalanEstimate(h) : 'Baris'" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-[11px] leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && hafalanEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - hafalanEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, hafalanEstimate(h))"></span>
+                                                                    </div>
                                                                     <!-- Score & Status -->
                                                                     <div class="grid grid-cols-2 gap-1">
                                                                         <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
@@ -677,6 +721,10 @@
                                                                                     @endforeach
                                                                                 </select>
                                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Cth: 1-5" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
+                                                                                <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="ummiEstimate(h) !== null ? '≈ ' + ummiEstimate(h) : 'Baris'" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-[10px] leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && ummiEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - ummiEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, ummiEstimate(h))"></span>
+                                                                    </div>
                                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                                 <!-- Remove button -->
                                                                                 <template x-if="cell.ummiHafalans.length > 1">
@@ -708,6 +756,10 @@
                                                                                 <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_start]'" x-model.number="h.ayah_start" placeholder="Awal" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                                 <input type="number" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
                                                                             </div>
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="hafalanEstimate(h) !== null ? '≈ ' + hafalanEstimate(h) : 'Baris'" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-[11px] leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && hafalanEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - hafalanEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, hafalanEstimate(h))"></span>
+                                                                    </div>
                                                                             <!-- Score & Status -->
                                                                             <div class="grid grid-cols-2 gap-1">
                                                                                 <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
@@ -803,6 +855,10 @@
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Akhir</label>
                                                             <input type="number" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" @input="autoMarkHadir(student.id, selectedMobileDate)" placeholder="Akhir" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                         </div>
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="hafalanEstimate(h) !== null ? '≈ ' + hafalanEstimate(h) : 'Baris'" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-xs leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && hafalanEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - hafalanEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, hafalanEstimate(h))"></span>
+                                                                    </div>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">
                                                         <div>
@@ -893,6 +949,10 @@
                                                                     @endforeach
                                                                 </select>
                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Ayat (cth: 1-5)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
+                                                                                <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="ummiEstimate(h) !== null ? '≈ ' + ummiEstimate(h) : 'Baris'" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-xs leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && ummiEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - ummiEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, ummiEstimate(h))"></span>
+                                                                    </div>
                                                                 <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'ummi'">
                                                                 <!-- Remove button -->
                                                                 <template x-if="cell.ummiHafalans.length > 1">
@@ -930,6 +990,10 @@
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ayat Akhir</label>
                                                                     <input type="number" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah_end]'" x-model.number="h.ayah_end" placeholder="Akhir" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                 </div>
+                                                                    <div class="flex items-center gap-1.5">
+                                                                        <input type="text" inputmode="decimal" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][baris]'" x-model="h.baris" @input="isDirty = true" :placeholder="hafalanEstimate(h) !== null ? '≈ ' + hafalanEstimate(h) : 'Baris'" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" title="Baris manual (kosongkan untuk memakai kalkulator)" class="block w-16 shrink-0 rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs px-2 py-0.5 dark:text-white">
+                                                                        <span class="text-xs leading-tight" :class="(h.baris !== undefined && h.baris !== null && String(h.baris).trim() !== '' && hafalanEstimate(h) !== null && Math.abs(parseFloat(String(h.baris).replace(',', '.')) - hafalanEstimate(h)) >= 0.01) ? 'text-amber-600 font-semibold' : 'text-gray-400'" x-text="barisHint(h, hafalanEstimate(h))"></span>
+                                                                    </div>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-2">
                                                                 <div>
