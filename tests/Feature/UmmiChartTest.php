@@ -86,8 +86,8 @@ class UmmiChartTest extends TestCase
         ]));
 
         $response->assertOk();
-        $response->assertSee('GRAFIK BUKU UMMI BULAN AGUSTUS 2026 KELAS X E1');
-        $response->assertSee('KETUNTASAN BUKU UMMI BULAN AGUSTUS 2026 KELAS X E1');
+        $response->assertSee('GRAFIK CAPAIAN UMMI BULAN AGUSTUS 2026 KELAS X E1');
+        $response->assertSee('KETUNTASAN UMMI BULAN AGUSTUS 2026 KELAS X E1');
         $chart = $response->viewData('ummiChart');
         $row = $chart['rows'][0];
 
@@ -110,7 +110,7 @@ class UmmiChartTest extends TestCase
             'class_room_id' => $this->classRoom->id, 'period_type' => 'quarterly', 'quarter' => 1, 'year' => 2026,
         ]));
 
-        $response->assertSee('GRAFIK HAFALAN SURAH UMMI TERM 1 (JULI – SEPTEMBER 2026) KELAS X E1');
+        $response->assertSee('GRAFIK CAPAIAN UMMI TERM 1 (JULI – SEPTEMBER 2026) KELAS X E1');
         $row = $response->viewData('ummiChart')['rows'][0];
         $this->assertSame(10, $row['book_base']);
         $this->assertSame([10, 0, 15], array_values($row['book_months']));
