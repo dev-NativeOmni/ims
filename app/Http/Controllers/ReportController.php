@@ -19,6 +19,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\SchoolCalendar;
+use App\Services\UmmiProgressService;
 use App\Support\TargetRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -1251,6 +1252,10 @@ class ReportController extends Controller
             'tidakTuntasCount' => $tidakTuntasCount,
             'periodMonths' => $periodMonths,
             'periodLabel' => $periodLabel,
+            // Kelas 10 (Ummi): grafik posisi Buku Ummi & hafalan surah per murid + target guru.
+            'ummiChart' => $isGrade10
+                ? app(UmmiProgressService::class)->classChart($students, Carbon::parse($startDate), Carbon::parse($endDate), $periodType !== 'monthly', $periodMonths)
+                : null,
             'monthsList' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',

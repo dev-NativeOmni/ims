@@ -267,14 +267,18 @@
                                     <x-heroicon-o-flag class="w-3.5 h-3.5 text-teal-600" />
                                     <span>Target Surah Hafalan Ummi</span>
                                 </label>
-                                <select name="surah_id" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                                    <option value="">-- Pilih Surah (Opsional) --</option>
-                                    @foreach ($surahs as $surah)
-                                        <option value="{{ $surah->id }}">
-                                            {{ $surah->number }}. {{ $surah->name_latin }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <div class="flex gap-2">
+                                    <select name="surah_id" class="min-w-0 flex-1 rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
+                                        <option value="">-- Pilih Surah (Opsional) --</option>
+                                        @foreach ($surahs as $surah)
+                                            <option value="{{ $surah->id }}">
+                                                {{ $surah->number }}. {{ $surah->name_latin }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <input type="number" name="ayah" min="1" placeholder="Ayat" title="Sampai ayat (kosong = sampai akhir surah)" class="w-24 rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
+                                </div>
+                                <p class="mt-1 text-[11px] text-gray-500">Isi ayat target; kosongkan bila targetnya sampai akhir surah.</p>
                             </div>
 
                             <div>
@@ -484,7 +488,7 @@
                                             <div class="text-xs text-gray-600">
                                                 Peraga: {{ $target->halaman_peraga ?? '-' }} · Buku: {{ $target->halaman_buku ?? '-' }}
                                                 @if($target->surah)
-                                                    · Surah {{ $target->surah->name_latin }}
+                                                    · Surah {{ $target->surah->name_latin }}{{ $target->ayah ? ' ayat '.$target->ayah : '' }}
                                                 @endif
                                             </div>
                                         @else

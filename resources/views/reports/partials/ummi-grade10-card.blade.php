@@ -42,7 +42,11 @@
                 KELAS {{ $selectedClass?->name ?? '10' }}
             </div>
             <div class="bg-amber-600 text-white font-extrabold text-xs px-4 py-1 rounded-lg shadow-sm border border-amber-500 uppercase" style="background-color: #d97706 !important; color: #ffffff !important;">
-                BULAN {{ strtoupper($monthName ?? (isset($monthsList, $selectedMonth) ? ($monthsList[$selectedMonth] ?? '') : date('F'))) }} {{ $selectedYear ?? date('Y') }}
+                @if (! empty($periodLabel))
+                    {{ $periodLabel }}
+                @else
+                    BULAN {{ strtoupper($monthName ?? (isset($monthsList, $selectedMonth) ? ($monthsList[$selectedMonth] ?? '') : date('F'))) }} {{ $selectedYear ?? date('Y') }}
+                @endif
             </div>
         </div>
     </div>

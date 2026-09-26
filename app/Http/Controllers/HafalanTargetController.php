@@ -272,9 +272,16 @@ class HafalanTargetController extends Controller
             'halaman_peraga' => ['nullable', 'string', 'max:100'],
             'halaman_buku' => ['nullable', 'string', 'max:100'],
             'surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'ayah' => ['nullable', 'integer', 'min:1'],
             'target_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        // Ayat target hafalan Ummi tidak boleh melebihi jumlah ayat surah (kosong = sampai akhir surah).
+        if (! empty($validated['ayah']) && ! empty($validated['surah_id'])
+            && (int) $validated['ayah'] > (int) Surah::query()->whereKey($validated['surah_id'])->value('total_ayah')) {
+            return back()->withInput()->withErrors(['ayah' => 'Ayat tidak boleh melebihi jumlah ayat surah.']);
+        }
 
         $user = $request->user();
         if ($user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']) && $user->teacherProfile) {
@@ -315,7 +322,7 @@ class HafalanTargetController extends Controller
                 'halaman_peraga' => $validated['halaman_peraga'] ?? null,
                 'halaman_buku' => $validated['halaman_buku'] ?? null,
                 'surah_id' => $validated['surah_id'] ?? null,
-                'ayah' => null,
+                'ayah' => ! empty($validated['surah_id']) ? ($validated['ayah'] ?? null) : null,
                 'target_date' => $validated['target_date'],
                 'notes' => $validated['notes'] ?? null,
                 'status' => $this->defaultOpenTargetStatus(),

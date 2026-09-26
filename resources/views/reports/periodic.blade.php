@@ -256,6 +256,9 @@
                 @if (!empty($isGrade10))
                     <!-- Grade 10 Ummi Capaian Tahfidz Card View -->
                     <div class="space-y-4">
+                        @if (!empty($ummiChart))
+                            @include('reports.partials.ummi-chart')
+                        @endif
                         <div class="flex justify-between items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-wrap gap-3">
                             <div>
                                 <h3 class="text-base font-bold text-gray-900 dark:text-white">
