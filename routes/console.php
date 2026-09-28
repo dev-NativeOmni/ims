@@ -15,8 +15,8 @@ Schedule::command('notifications:generate')
     ->dailyAt('06:00')
     ->withoutOverlapping();
 
-// Sinkronisasi otomatis target hafalan: tandai 'completed' jika sudah ada
-// setoran hafalan lulus yang mencakup seluruh range ayat target.
+// Status target hafalan otomatis: Selesai bila sudah tercapai, Terlewat bila deadline lewat
+// dan belum tercapai (saat setoran disimpan juga langsung dievaluasi per murid).
 Schedule::command('tad:sync-completed-targets')
     ->dailyAt('01:00')
     ->withoutOverlapping();
