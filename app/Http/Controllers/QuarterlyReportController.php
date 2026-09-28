@@ -351,7 +351,8 @@ class QuarterlyReportController extends Controller
             $gViolations,
             $term['latestTargets'],
             $term['latestHafalans'],
-            $context['breakdowns']
+            $context['breakdowns'],
+            $term['latestUmmiRecords']
         );
 
         return [
@@ -367,6 +368,8 @@ class QuarterlyReportController extends Controller
                 : [],
             'monthly' => $monthly,
             'term_records' => $termRecords,
+            // Ada murid Ummi (Kelas 10) -> tabel Term/Indeks menambah kolom Jilid|Halaman.
+            'has_ummi' => $groupStudents->contains(fn ($student) => $student->tahfizh_level === 'ummi'),
             'months' => array_values($monthsMap),
             'total_students' => count($groupStudents),
             'tuntas_count' => collect($termRecords)->where('is_tuntas', true)->count(),
@@ -1081,9 +1084,10 @@ class QuarterlyReportController extends Controller
     /**
      * Rekap satu term per murid: baris & target dijumlahkan dari semua bulan, absensi dan pelanggaran dihitung sepanjang term.
      */
-    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, array $breakdowns): array
+    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, array $breakdowns, $latestUmmiRecords = null): array
     {
         $termRecords = [];
+        $latestUmmiRecords ??= collect();
 
         foreach ($groupStudents as $student) {
             $rows = collect($monthly)->map(function ($month) use ($student) {
@@ -1128,9 +1132,54 @@ class QuarterlyReportController extends Controller
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),
                 'pelanggaran' => $gViolations->where('student_id', $student->id)->count(),
+                'ummi' => $student->tahfizh_level === 'ummi'
+                    ? $this->buildUmmiTermPosition(
+                        $latestTargets->get($student->id, collect()),
+                        $latestUmmiRecords->get($student->id, collect()),
+                        $latestHafalans->get($student->id, collect())
+                    )
+                    : null,
             ];
         }
 
         return $termRecords;
+    }
+
+    /**
+     * Target & capaian murid Ummi di tabel Term/Indeks, dipecah jadi Jilid|Halaman dan Surah|Ayat.
+     * Target = target guru terakhir di triwulan ini; capaian = posisi terakhir yang tercatat
+     * (Jilid/Halaman dari setoran Ummi terakhir, Surah/Ayat dari hafalan sesi Ummi terakhir,
+     * kalau belum ada dari setoran Ziyadah terjauh).
+     *
+     * @return array{target_jilid: string, target_halaman: string, target_surah: string, target_ayat: string, capaian_jilid: string, capaian_halaman: string, capaian_surah: string, capaian_ayat: string}
+     */
+    private function buildUmmiTermPosition($targets, $ummiRecords, $hafalans): array
+    {
+        $bookTarget = $targets->first(fn ($t) => filled($t->ummi_jilid));
+        $surahTarget = $targets->first(fn ($t) => $t->surah_id !== null);
+
+        $lastBook = $ummiRecords->first(fn ($u) => filled($u->ummi_jilid));
+        $lastSurah = $ummiRecords
+            ->map(fn ($u) => $u->surahs->filter(fn ($s) => $s->surah_id !== null)->last())
+            ->first(fn ($s) => $s !== null);
+
+        $capaianSurah = $lastSurah?->surah?->name_latin;
+        $capaianAyat = $lastSurah ? AyahLabel::end($lastSurah->hafalan_ayah) : '-';
+        if ($lastSurah === null) {
+            $ziyadah = app(QuranLineTargetService::class)->furthestRecord($hafalans, true);
+            $capaianSurah = $ziyadah?->surah?->name_latin;
+            $capaianAyat = $ziyadah ? (string) $ziyadah->ayah_end : '-';
+        }
+
+        return [
+            'target_jilid' => $bookTarget?->ummi_jilid ?: '-',
+            'target_halaman' => $bookTarget ? AyahLabel::end($bookTarget->halaman_buku) : '-',
+            'target_surah' => $surahTarget?->surah?->name_latin ?? '-',
+            'target_ayat' => $surahTarget ? $surahTarget->ayah_range : '-',
+            'capaian_jilid' => $lastBook?->ummi_jilid ?: '-',
+            'capaian_halaman' => $lastBook ? AyahLabel::end($lastBook->ummi_halaman) : '-',
+            'capaian_surah' => $capaianSurah ?? '-',
+            'capaian_ayat' => $capaianSurah !== null ? $capaianAyat : '-',
+        ];
     }
 }

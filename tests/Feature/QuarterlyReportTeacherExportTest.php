@@ -7,6 +7,7 @@ use App\Models\HafalanTarget;
 use App\Models\Program;
 use App\Models\Role;
 use App\Models\Student;
+use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
@@ -189,22 +190,76 @@ class QuarterlyReportTeacherExportTest extends TestCase
             'nilai' => 'A',
         ]);
 
+        // Setoran Ummi terakhir (Jilid/Halaman + hafalan surah) dipakai sebagai capaian.
+        $anNaba = Surah::firstOrCreate(
+            ['number' => 78],
+            ['name_ar' => 'النبأ', 'name_latin' => 'An-Naba', 'total_ayah' => 40, 'juz_start' => 30, 'juz_end' => 30]
+        );
+        $latest = UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 2,
+            'tanggal' => '2026-08-10',
+            'ummi_jilid' => 'Jilid 4',
+            'ummi_halaman' => 'Hal. 3 - 6',
+            'nilai' => 'B',
+        ]);
+        $latest->surahs()->create(['surah_id' => $anNaba->id, 'hafalan_ayah' => '1-12']);
+
         $spreadsheet = $this->downloadMine($this->teacherUser, 'reguler');
 
-        // Term-Indeks: [No, Nama Murid, Level, Target Surah, Target Ayat, Capaian Surah, Capaian Ayat, ...]
+        // Kelas ber-murid Ummi: [No, Nama, Level, T.Jilid, T.Halaman, T.Surah, T.Ayat, C.Jilid, C.Halaman, C.Surah, C.Ayat, ...]
         $termRows = $spreadsheet->getSheetByName('Term-Indeks')->toArray();
+        $header = collect($termRows)->first(fn ($r) => ($r[3] ?? null) === 'Target Jilid');
+        $this->assertNotNull($header);
+        $this->assertSame(['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat'], array_slice($header, 3, 8));
+
         $studentRow = collect($termRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($studentRow);
         $this->assertSame('Jilid 3', $studentRow[3]);
-        $this->assertSame('Buku hal. 20', $studentRow[4], 'Halaman Peraga tidak dipakai lagi.');
-        $this->assertSame('Jilid 3', $studentRow[5]);
-        $this->assertStringStartsWith('15', $studentRow[6]);
+        $this->assertSame('20', $studentRow[4], 'Halaman Peraga tidak dipakai; cukup halaman akhir buku.');
+        $this->assertSame('-', $studentRow[5]);
+        $this->assertSame('-', $studentRow[6]);
+        $this->assertSame('Jilid 4', $studentRow[7], 'Capaian = Jilid setoran Ummi terakhir.');
+        $this->assertSame('6', $studentRow[8], 'Capaian = halaman akhir setoran Ummi terakhir.');
+        $this->assertSame('An-Naba', $studentRow[9]);
+        $this->assertSame('12', $studentRow[10], 'Capaian = ayat akhir hafalan terakhir.');
 
         // Setoran: Pekan 1 (1-7 Juli) memuat setoran Ummi 6 Juli -> selnya berisi "Jilid 3".
         $setoranRows = $spreadsheet->getSheetByName('Setoran')->toArray();
         $ummiRow = collect($setoranRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($ummiRow);
         $this->assertTrue(collect($ummiRow)->contains(fn ($v) => str_contains((string) $v, 'Jilid 3')));
+    }
+
+    #[Test]
+    public function on_screen_term_tab_shows_jilid_halaman_columns_only_for_ummi_classes(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classX = ClassRoom::create(['program_id' => $program->id, 'name' => 'X E2', 'level' => 'X', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classX->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'ummi']);
+
+        UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-07-06',
+            'ummi_jilid' => 'Jilid 5',
+            'ummi_halaman' => '8',
+            'nilai' => 'A',
+        ]);
+
+        $query = ['academic_year' => '2026/2027', 'term' => '1', 'class_room_id' => $classX->id];
+        $this->actingAs($this->admin)->get(route('reports.quarterly', $query))
+            ->assertOk()
+            ->assertSee('>Jilid</th>', false)
+            ->assertSee('>Halaman</th>', false)
+            ->assertSee('Jilid 5');
+
+        $this->student->update(['tahfizh_level' => 'reguler']);
+        $this->actingAs($this->admin)->get(route('reports.quarterly', $query))
+            ->assertOk()
+            ->assertDontSee('>Halaman</th>', false);
     }
 
     #[Test]

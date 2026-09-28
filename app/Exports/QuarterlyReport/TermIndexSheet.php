@@ -52,40 +52,55 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                 $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
                 $this->classRows[] = ++$row;
 
-                $rows[] = [
-                    'No', 'Nama Murid', 'Level',
-                    'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat',
-                    'Capaian Baris', 'Target Baris', 'Ketercapaian',
-                    'Alpa', 'Izin', 'Sakit', 'Pelanggaran',
-                ];
+                $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false);
+
+                $rows[] = array_merge(
+                    ['No', 'Nama Murid', 'Level'],
+                    $hasUmmi
+                        ? ['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat']
+                        : ['Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat'],
+                    ['Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran']
+                );
                 $this->headerRows[] = ++$row;
 
                 foreach ($halaqah['term_records'] as $idx => $termRow) {
-                    $rows[] = [
-                        $idx + 1,
-                        $termRow['name'],
-                        $termRow['level'],
-                        $termRow['target_surah'],
-                        $termRow['target_ayat'],
-                        $termRow['capaian_surah'],
-                        $termRow['capaian_ayat'],
-                        $termRow['total_lines'],
-                        $termRow['target_lines'],
-                        $termRow['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
-                        $termRow['alpa'],
-                        $termRow['izin'],
-                        $termRow['sakit'],
-                        $termRow['pelanggaran'],
-                    ];
+                    $ummi = $termRow['ummi'] ?? null;
+                    $position = $hasUmmi
+                        ? [
+                            $ummi['target_jilid'] ?? '-',
+                            $ummi['target_halaman'] ?? '-',
+                            $ummi['target_surah'] ?? $termRow['target_surah'],
+                            $ummi['target_ayat'] ?? $termRow['target_ayat'],
+                            $ummi['capaian_jilid'] ?? '-',
+                            $ummi['capaian_halaman'] ?? '-',
+                            $ummi['capaian_surah'] ?? $termRow['capaian_surah'],
+                            $ummi['capaian_ayat'] ?? $termRow['capaian_ayat'],
+                        ]
+                        : [$termRow['target_surah'], $termRow['target_ayat'], $termRow['capaian_surah'], $termRow['capaian_ayat']];
+
+                    $rows[] = array_merge(
+                        [$idx + 1, $termRow['name'], $termRow['level']],
+                        $position,
+                        [
+                            $termRow['total_lines'],
+                            $termRow['target_lines'],
+                            $termRow['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
+                            $termRow['alpa'],
+                            $termRow['izin'],
+                            $termRow['sakit'],
+                            $termRow['pelanggaran'],
+                        ]
+                    );
                     $row++;
                 }
 
                 $total = count($halaqah['term_records']);
                 $tuntas = collect($halaqah['term_records'])->where('is_tuntas', true)->count();
                 $tuntasPct = $total > 0 ? round(($tuntas / $total) * 100) : 0;
-                $summaryRow = ['', '', '', '', '', '', '', '', '', ''];
+                $tuntasColumn = 9 + ($hasUmmi ? 4 : 0);
+                $summaryRow = array_fill(0, $tuntasColumn + 1, '');
                 $summaryRow[0] = "Tuntas: {$tuntas} ({$tuntasPct}%)";
-                $summaryRow[9] = 'Tidak Tuntas: '.($total - $tuntas).' ('.(100 - $tuntasPct).'%)';
+                $summaryRow[$tuntasColumn] = 'Tidak Tuntas: '.($total - $tuntas).' ('.(100 - $tuntasPct).'%)';
                 $rows[] = $summaryRow;
                 $this->summaryRows[] = ++$row;
 
