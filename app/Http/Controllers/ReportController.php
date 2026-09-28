@@ -1180,8 +1180,12 @@ class ReportController extends Controller
             // Violations count during the period
             $violationsCount = $allViolations->get($student->id, collect())->count();
 
-            // Attendance counts during the period
-            $stAttendances = $allAttendances->get($student->id, collect());
+            // Attendance counts during the period (hanya pada hari efektif pertemuan kelas)
+            $calendar = app(SchoolCalendar::class);
+            $stAttendances = $allAttendances->get($student->id, collect())
+                ->filter(function ($a) use ($calendar, $selectedClass) {
+                    return $selectedClass === null || $calendar->isTahfizhEffectiveDay($selectedClass, Carbon::parse($a->tanggal));
+                });
             $sakit = $stAttendances->where('status', 'sakit')->count();
             $izin = $stAttendances->where('status', 'izin')->count();
             $alpa = $stAttendances->where('status', 'alpa')->count();

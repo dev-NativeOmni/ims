@@ -15,6 +15,8 @@
     <div class="py-8" x-data="{ activeDay: '{{ array_key_first($daysOfWeek) }}', tab: '{{ $activeTab }}' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            @include('partials.academic-calendar-tabs')
+
             <!-- Success Alert Notification -->
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex items-center gap-3">

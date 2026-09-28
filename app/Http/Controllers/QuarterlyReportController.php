@@ -363,7 +363,7 @@ class QuarterlyReportController extends Controller
             'is_tahfizh' => $isTahfizhProgram,
             // Grid presensi 3 bulan (khusus program Tahfizh); Reguler memakai presensi per bulan di 'monthly'.
             'presensi' => $isTahfizhProgram
-                ? $this->buildTahfizhPresensiGrid($monthRanges, $groupStudents, $term['termAttendances'], $term['termHafalanRecords'])
+                ? $this->buildTahfizhPresensiGrid($monthRanges, $groupStudents, $term['termAttendances'], $term['termHafalanRecords'], $classRoom, $calendar)
                 : [],
             'monthly' => $monthly,
             'term_records' => $termRecords,
@@ -558,38 +558,43 @@ class QuarterlyReportController extends Controller
     /**
      * Presensi Tahfizh: satu grid untuk seluruh bulan dalam term (maks. 12 pertemuan per bulan).
      */
-    private function buildTahfizhPresensiGrid(array $monthRanges, $groupStudents, $classAttendances, $classHafalanRecords): array
-    {
+    private function buildTahfizhPresensiGrid(
+        array $monthRanges,
+        $groupStudents,
+        $classAttendances,
+        $classHafalanRecords,
+        ?ClassRoom $classRoom = null,
+        ?AcademicCalendarService $calendar = null
+    ): array {
+        $calendar ??= new AcademicCalendarService;
         $grid = [];
 
         foreach ($groupStudents as $student) {
+            $studentClass = $classRoom ?? $student->classRoom;
             $studentAtt = $classAttendances->where('student_id', $student->id);
             $studentHaf = $classHafalanRecords->where('student_id', $student->id);
             $studentPresensi = [];
 
             foreach ($monthRanges as $range) {
-                $mAtt = $studentAtt->filter(fn ($a) => $this->inRange($a->tanggal, $range));
-                $mHaf = $studentHaf->filter(fn ($h) => $this->inRange($h->submitted_at, $range));
+                $monthStart = Carbon::parse($range['start']);
+                $daysInMonth = $monthStart->daysInMonth;
 
-                $mUniqueDates = $classAttendances->filter(fn ($a) => $this->inRange($a->tanggal, $range))
-                    ->pluck('tanggal')
-                    ->map(fn ($d) => $this->dateString($d))
-                    ->merge(
-                        $classHafalanRecords->filter(fn ($h) => $this->inRange($h->submitted_at, $range))
-                            ->pluck('submitted_at')
-                            ->map(fn ($d) => $this->dateString($d))
-                    )
-                    ->unique()
-                    ->sort()
-                    ->values()
-                    ->toArray();
-                $mMeetings = array_slice($mUniqueDates, 0, 12);
+                // Tanggal pertemuan efektif terjadwal di bulan ini untuk kelas ini (jadwal kelas x kalender akademik)
+                $scheduledDates = [];
+                for ($d = 1; $d <= $daysInMonth; $d++) {
+                    $date = $monthStart->copy()->day($d);
+                    if ($studentClass && $calendar->isEffectiveDay($studentClass, $date)) {
+                        $scheduledDates[] = $date->toDateString();
+                    }
+                }
+
+                $mMeetings = array_slice($scheduledDates, 0, 12);
 
                 $mDays = [];
                 for ($i = 1; $i <= 12; $i++) {
                     $date = $mMeetings[$i - 1] ?? null;
                     if ($date) {
-                        $att = $mAtt->first(fn ($a) => $this->dateString($a->tanggal) === $date);
+                        $att = $studentAtt->first(fn ($a) => $this->dateString($a->tanggal) === $date);
                         if ($att) {
                             $mDays[$i] = match ($att->status) {
                                 'hadir' => 'H',
@@ -599,7 +604,7 @@ class QuarterlyReportController extends Controller
                                 default => 'H'
                             };
                         } else {
-                            $hasSetoran = $mHaf->contains(fn ($h) => $h->submitted_at->toDateString() === $date);
+                            $hasSetoran = $studentHaf->contains(fn ($h) => $h->submitted_at->toDateString() === $date);
                             $mDays[$i] = $hasSetoran ? 'H' : '-';
                         }
                     } else {
@@ -607,11 +612,13 @@ class QuarterlyReportController extends Controller
                     }
                 }
 
+                $mAttEffective = $studentAtt->filter(fn ($a) => $this->inRange($a->tanggal, $range) && in_array($this->dateString($a->tanggal), $scheduledDates, true));
+
                 $studentPresensi[$range['label']] = [
                     'days' => $mDays,
-                    'sakit' => $mAtt->where('status', 'sakit')->count(),
-                    'izin' => $mAtt->where('status', 'izin')->count(),
-                    'alpa' => $mAtt->where('status', 'alpa')->count(),
+                    'sakit' => $mAttEffective->where('status', 'sakit')->count(),
+                    'izin' => $mAttEffective->where('status', 'izin')->count(),
+                    'alpa' => $mAttEffective->where('status', 'alpa')->count(),
                 ];
             }
 
@@ -637,7 +644,7 @@ class QuarterlyReportController extends Controller
         $gUmmiRecords = ($context['gUmmiRecords'] ?? collect())->filter(fn ($u) => $this->inRange($u->tanggal, $range));
         $violations = $context['gViolations']->filter(fn ($v) => $this->inRange($v->date, $range));
 
-        // Tanggal unik (presensi atau setoran) sekelas pada bulan ini -- dasar jurnal tatap muka.
+        // Tanggal unik (presensi atau setoran) sekelas pada bulan ini.
         $uniqueDates = $context['classAttendances']->filter(fn ($a) => $this->inRange($a->tanggal, $range))
             ->pluck('tanggal')
             ->map(fn ($d) => $this->dateString($d))
@@ -656,10 +663,14 @@ class QuarterlyReportController extends Controller
         // tapi musyrif belum mengisi).
         $monthStart = Carbon::parse($range['start']);
         $daysInMonth = $monthStart->daysInMonth;
+        $classRoom = $context['classRoom'] ?? $groupStudents->first()?->classRoom;
+        $calendar = $context['calendar'];
         $effectiveByDay = [];
         for ($d = 1; $d <= $daysInMonth; $d++) {
-            $effectiveByDay[$d] = $context['classRoom'] === null
-                || $context['calendar']->isEffectiveDay($context['classRoom'], $monthStart->copy()->day($d));
+            $date = $monthStart->copy()->day($d);
+            $effectiveByDay[$d] = $classRoom !== null
+                ? $calendar->isEffectiveDay($classRoom, $date)
+                : false;
         }
         $emptyPekanState = function (int $pStart, int $pEnd) use ($effectiveByDay, $daysInMonth): string {
             for ($d = $pStart; $d <= min($pEnd, $daysInMonth); $d++) {
@@ -701,7 +712,7 @@ class QuarterlyReportController extends Controller
         // Jumlah pertemuan terjadwal bulan ini menurut kalender akademik & jadwal kelas
         // (bukan dari data yang sudah diinput musyrif) -- pengali target baris per bulan.
         // Program "seminggu sekali" dihitung maksimal satu pertemuan per pekan kalender.
-        $isWeeklyProgram = $context['classRoom']?->program?->meeting_frequency === 'seminggu sekali';
+        $isWeeklyProgram = $classRoom?->program?->meeting_frequency === 'seminggu sekali';
         $scheduledMeetings = 0;
         $countedWeeks = [];
         foreach ($effectiveByDay as $day => $isEffective) {
@@ -725,10 +736,24 @@ class QuarterlyReportController extends Controller
                 $pekan = [];
                 $sAtt = $gAttendances->where('student_id', $student->id);
                 $sHaf = $gHafalanRecords->where('student_id', $student->id);
+                $sUmmi = $gUmmiRecords->where('student_id', $student->id);
 
                 for ($p = 1; $p <= 5; $p++) {
                     $pStart = 1 + ($p - 1) * 7;
-                    $pEnd = $p === 5 ? 31 : $p * 7;
+                    $pEnd = min($p === 5 ? $daysInMonth : $p * 7, $daysInMonth);
+
+                    $hasEffectiveInWeek = false;
+                    for ($d = $pStart; $d <= $pEnd; $d++) {
+                        if ($effectiveByDay[$d] ?? false) {
+                            $hasEffectiveInWeek = true;
+                            break;
+                        }
+                    }
+
+                    if (! $hasEffectiveInWeek) {
+                        $pekan[$p] = 'Libur';
+                        continue;
+                    }
 
                     $att = $sAtt->first(function ($a) use ($pStart, $pEnd) {
                         $dayNum = (int) date('d', strtotime($a->tanggal));
@@ -749,66 +774,78 @@ class QuarterlyReportController extends Controller
                             $dayNum = (int) $h->submitted_at->format('d');
 
                             return $dayNum >= $pStart && $dayNum <= $pEnd;
+                        }) || $sUmmi->contains(function ($u) use ($pStart, $pEnd) {
+                            $dayNum = (int) Carbon::parse($u->tanggal)->day;
+
+                            return $dayNum >= $pStart && $dayNum <= $pEnd;
                         });
-                        // Tidak ada presensi tercatat untuk pekan ini: anggap hadir
-                        // hanya kalau memang ada setoran nyata. Selain itu, pekan tanpa
-                        // hari efektif = "Libur", pekan dengan hari efektif tapi belum
-                        // diisi = "Belum di input" -- bukan otomatis hadir.
-                        $pekan[$p] = $hasSetoran ? 'Hadir' : $emptyPekanState($pStart, $pEnd);
+
+                        $pekan[$p] = $hasSetoran ? 'Hadir' : 'Belum di input';
                     }
                 }
+
+                $effectiveAtt = $sAtt->filter(function ($a) use ($effectiveByDay) {
+                    $dayNum = (int) date('d', strtotime($a->tanggal));
+
+                    return $effectiveByDay[$dayNum] ?? false;
+                });
 
                 $presensiData[$student->id] = [
                     'pekan' => $pekan,
                     'hadir' => collect($pekan)->filter(fn ($status) => $status === 'Hadir')->count(),
-                    'sakit' => $sAtt->where('status', 'sakit')->count(),
-                    'izin' => $sAtt->where('status', 'izin')->count(),
-                    'alpa' => $sAtt->where('status', 'alpa')->count(),
+                    'sakit' => $effectiveAtt->where('status', 'sakit')->count(),
+                    'izin' => $effectiveAtt->where('status', 'izin')->count(),
+                    'alpa' => $effectiveAtt->where('status', 'alpa')->count(),
                 ];
             }
         }
 
         // B. Jurnal
         $jurnalData = [];
-        if ($isTahfizhProgram) {
+        // Tanggal pertemuan efektif terjadwal kelas bulan ini (jadwal kelas x kalender akademik)
+        $meetingDates = [];
+        foreach ($effectiveByDay as $day => $isEffective) {
+            if (! $isEffective) {
+                continue;
+            }
+            $date = $monthStart->copy()->day($day);
+            $meetingDates[$isWeeklyProgram ? $date->format('o-W') : $date->toDateString()] ??= $date->toDateString();
+        }
+        if ($isWeeklyProgram) {
             foreach ($uniqueDates as $date) {
+                $key = Carbon::parse($date)->format('o-W');
+                if (isset($meetingDates[$key]) && ! in_array($meetingDates[$key], $uniqueDates, true)) {
+                    $meetingDates[$key] = $date;
+                }
+            }
+        }
+        $meetingDates = collect($meetingDates)->values()->sort()->values();
+
+        if ($isTahfizhProgram) {
+            foreach ($meetingDates as $date) {
+                $dayAttendances = $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date);
+                $daySetorans = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date);
+                $held = $dayAttendances->isNotEmpty() || $daySetorans->isNotEmpty();
+                $carbonDate = Carbon::parse($date);
+
                 $jurnalData[] = [
-                    'tanggal' => date('d-m-Y', strtotime($date)),
+                    'tanggal' => $dayNames[$carbonDate->dayOfWeekIso - 1].', '.$carbonDate->format('d-m-Y'),
                     'materi' => "Muroja'ah & Ziyadah Hafalan",
-                    'jumlah_murid' => $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date)->where('status', 'hadir')->count() ?: count($groupStudents),
-                    'paraf' => '✓',
+                    'jumlah_murid' => $held
+                        ? ($dayAttendances->isNotEmpty() ? $dayAttendances->where('status', 'hadir')->count() : $daySetorans->pluck('student_id')->unique()->count())
+                        : null,
+                    'paraf' => $held ? '✓' : '-',
                 ];
             }
             if (empty($jurnalData)) {
                 $jurnalData[] = [
-                    'tanggal' => 'Belum ada kegiatan',
-                    'materi' => "Muroja'ah & Ziyadah Hafalan",
-                    'jumlah_murid' => 0,
+                    'tanggal' => 'Tidak ada pertemuan terjadwal',
+                    'materi' => '-',
+                    'jumlah_murid' => null,
                     'paraf' => '-',
                 ];
             }
         } else {
-            // Reguler: satu baris per hari pertemuan aktif kelas (jadwal kelas x kalender
-            // akademik), ditambah tanggal lain yang ternyata ada presensi/setorannya.
-            // Program seminggu sekali: satu pertemuan per pekan -- tanggal yang ada datanya,
-            // kalau belum ada, hari efektif pertama pekan itu.
-            $meetingDates = [];
-            foreach ($effectiveByDay as $day => $isEffective) {
-                if (! $isEffective) {
-                    continue;
-                }
-                $date = $monthStart->copy()->day($day);
-                $meetingDates[$isWeeklyProgram ? $date->format('o-W') : $date->toDateString()] ??= $date->toDateString();
-            }
-            foreach ($uniqueDates as $date) {
-                $key = $isWeeklyProgram ? Carbon::parse($date)->format('o-W') : $date;
-                if ($isWeeklyProgram && isset($meetingDates[$key]) && ! in_array($meetingDates[$key], $uniqueDates, true)) {
-                    $meetingDates[$key] = $date;
-                }
-                $meetingDates[$key] ??= $date;
-            }
-            $meetingDates = collect($meetingDates)->unique()->sort()->values();
-
             foreach ($meetingDates as $date) {
                 $dayAttendances = $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date);
                 $daySetoranStudents = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date)
@@ -851,7 +888,7 @@ class QuarterlyReportController extends Controller
 
             for ($p = 1; $p <= 5; $p++) {
                 $pStart = 1 + ($p - 1) * 7;
-                $pEnd = $p === 5 ? 31 : $p * 7;
+                $pEnd = min($p === 5 ? $daysInMonth : $p * 7, $daysInMonth);
 
                 if ($isTahfizhProgram) {
                     $sAtt = $sAttAll;
@@ -868,6 +905,7 @@ class QuarterlyReportController extends Controller
                     $dayMap = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat'];
 
                     foreach ($days as $dayName) {
+                        $isoDay = array_search($dayName, $dayMap);
                         $dayRecords = $pRecords->filter(function ($r) use ($dayName, $dayMap) {
                             $wDay = (int) date('w', strtotime($r->submitted_at));
 
@@ -890,9 +928,9 @@ class QuarterlyReportController extends Controller
                             ];
                             $weekLines += $lines;
                         } else {
-                            $attRecord = $sAtt->first(function ($a) use ($dayName, $dayMap, $pStart, $pEnd) {
+                            $attRecord = $sAtt->first(function ($a) use ($dayName, $dayMap, $pStart, $pEnd, $effectiveByDay) {
                                 $dayNum = (int) date('d', strtotime($a->tanggal));
-                                if ($dayNum < $pStart || $dayNum > $pEnd) {
+                                if ($dayNum < $pStart || $dayNum > $pEnd || ! ($effectiveByDay[$dayNum] ?? false)) {
                                     return false;
                                 }
                                 $wDay = (int) date('w', strtotime($a->tanggal));
@@ -903,7 +941,7 @@ class QuarterlyReportController extends Controller
                             $dailyLogs[$dayName] = [
                                 'surah' => ($attRecord && $attRecord->status !== 'hadir')
                                     ? ucfirst($attRecord->status)
-                                    : $emptyDayState(array_search($dayName, $dayMap), $pStart, $pEnd),
+                                    : $emptyDayState($isoDay, $pStart, $pEnd),
                                 'ayat_start' => '',
                                 'ayat_end' => '',
                                 'baris' => 0,
