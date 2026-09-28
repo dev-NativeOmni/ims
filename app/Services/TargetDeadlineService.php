@@ -10,7 +10,8 @@ use Carbon\CarbonInterface;
  * Deadline target hafalan = hari aktif terakhir di bulannya: Senin-Jumat terakhir yang bukan
  * libur untuk semua kelas di Kalender Akademik (sama untuk seluruh sekolah); bila tidak ada,
  * tanggal terakhir bulan. Semua target Aktif mengikuti aturan ini dan disesuaikan ulang saat
- * Kalender Akademik diubah (SchoolCalendar::saveMonth) dan tiap malam.
+ * Kalender Akademik diubah (SchoolCalendar::saveMonth) dan tiap malam. Deadline manual
+ * (deadline_manual, diatur guru) lebih tinggi: tidak ikut disesuaikan.
  */
 class TargetDeadlineService
 {
@@ -41,6 +42,7 @@ class TargetDeadlineService
 
         return HafalanTarget::query()
             ->where('status', 'active')
+            ->where('deadline_manual', false)
             ->whereBetween('target_date', [$monthStart->toDateString(), $monthStart->copy()->endOfMonth()->toDateString().' 23:59:59'])
             ->whereDate('target_date', '!=', $deadline)
             ->update(['target_date' => $deadline]);
@@ -53,6 +55,7 @@ class TargetDeadlineService
     {
         return HafalanTarget::query()
             ->where('status', 'active')
+            ->where('deadline_manual', false)
             ->whereNotNull('target_date')
             ->pluck('target_date')
             ->map(fn ($date) => Carbon::parse($date)->format('Y-m'))

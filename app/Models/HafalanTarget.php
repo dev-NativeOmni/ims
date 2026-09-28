@@ -21,6 +21,7 @@ class HafalanTarget extends Model
         'surah_id',
         'ayah',
         'target_date',
+        'deadline_manual',
         'status',
         'book_status',
         'surah_status',
@@ -37,18 +38,20 @@ class HafalanTarget extends Model
             'surah_id' => 'integer',
             'ayah' => 'integer',
             'target_date' => 'date',
+            'deadline_manual' => 'boolean',
             'completed_at' => 'datetime',
         ];
     }
 
     /**
      * Target Aktif: deadline selalu hari aktif terakhir di bulannya (TargetDeadlineService),
-     * dari mana pun target disimpan (form, simpan massal, Target Triwulan/Ummi, API).
+     * dari mana pun target disimpan (form, simpan massal, Target Triwulan/Ummi, API) —
+     * kecuali deadline manual (deadline_manual) yang diatur guru: itu lebih tinggi dan tidak diubah.
      */
     protected static function booted(): void
     {
         static::saving(function (HafalanTarget $target) {
-            if ($target->target_date && in_array($target->status, [null, 'active'], true)) {
+            if ($target->target_date && ! $target->deadline_manual && in_array($target->status, [null, 'active'], true)) {
                 $target->target_date = app(TargetDeadlineService::class)->forMonth($target->target_date)->toDateString();
             }
         });

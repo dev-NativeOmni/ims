@@ -56,10 +56,10 @@ class UmmiTargetTest extends TestCase
         return (int) Surah::where('number', $number)->value('id');
     }
 
-    private function save(array $targets)
+    private function save(array $targets, ?string $deadline = null)
     {
         return $this->actingAs($this->teacherUser)->post(route('hafalan-targets.ummi.store'), [
-            'month' => '2026-09', 'teacher_id' => $this->teacherProfile->id, 'targets' => $targets,
+            'month' => '2026-09', 'teacher_id' => $this->teacherProfile->id, 'targets' => $targets, 'deadline' => $deadline,
         ]);
     }
 
@@ -142,5 +142,63 @@ class UmmiTargetTest extends TestCase
         $this->save([$this->other->id => ['jilid' => 'Jilid 1', 'halaman' => '5']]);
 
         $this->assertSame(0, HafalanTarget::count());
+    }
+
+    #[Test]
+    public function a_manual_deadline_overrides_the_automatic_one_until_reset(): void
+    {
+        $row = [$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30']];
+        $this->save($row, '2026-09-18')->assertSessionHas('success');
+
+        $target = HafalanTarget::where('student_id', $this->student->id)->first();
+        $this->assertSame(['2026-09-18', true], [$target->target_date->toDateString(), $target->deadline_manual]);
+
+        $page = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.ummi', ['month' => '2026-09']));
+        $this->assertSame('2026-09-18', $page->viewData('deadline')->toDateString());
+        $this->assertTrue($page->viewData('deadlineManual'));
+
+        // Penyesuaian otomatis (kalender/malam) tidak menimpa deadline manual.
+        $this->artisan('tad:sync-completed-targets')->assertSuccessful();
+        $target->update(['notes' => 'x']);
+        $this->assertSame('2026-09-18', $target->fresh()->target_date->toDateString());
+
+        // Kembali ke otomatis: pilih tanggal otomatis (atau kosong).
+        $this->save($row, '2026-09-30');
+        $this->assertSame(['2026-09-30', false], [$target->fresh()->target_date->toDateString(), $target->fresh()->deadline_manual]);
+    }
+
+    #[Test]
+    public function the_manual_deadline_must_stay_in_the_target_month(): void
+    {
+        $this->save([$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30']], '2026-10-02')
+            ->assertSessionHasErrors('deadline');
+
+        $this->assertSame(0, HafalanTarget::count());
+    }
+
+    #[Test]
+    public function extending_a_passed_deadline_reevaluates_missed_parts(): void
+    {
+        $row = [$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30']];
+        $this->save($row, '2026-09-04');
+        $target = HafalanTarget::where('student_id', $this->student->id)->first();
+        $this->assertSame(['missed', 'missed'], [$target->book_status, $target->status], 'Deadline 4 Sep sudah lewat.');
+
+        $this->save($row, '2026-09-25');
+        $this->assertSame(['active', 'active'], [$target->fresh()->book_status, $target->fresh()->status]);
+    }
+
+    #[Test]
+    public function the_edit_form_marks_a_different_date_as_manual(): void
+    {
+        $this->save([$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30']]);
+        $target = HafalanTarget::where('student_id', $this->student->id)->first();
+        $form = ['ummi_jilid' => 'Jilid 2', 'halaman_buku' => '30', 'status' => 'active'];
+
+        $this->actingAs($this->teacherUser)->put(route('hafalan-targets.update', $target), $form + ['target_date' => '2026-09-22'])->assertRedirect();
+        $this->assertSame(['2026-09-22', true], [$target->fresh()->target_date->toDateString(), $target->fresh()->deadline_manual]);
+
+        $this->actingAs($this->teacherUser)->put(route('hafalan-targets.update', $target), $form + ['target_date' => '2026-09-30'])->assertRedirect();
+        $this->assertFalse($target->fresh()->deadline_manual);
     }
 }

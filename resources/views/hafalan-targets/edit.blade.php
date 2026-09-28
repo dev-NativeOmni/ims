@@ -92,7 +92,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tanggal Target</label>
                                 <input type="date" name="target_date" value="{{ old('target_date', $target->target_date?->format('Y-m-d')) }}" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
-                            <p class="mt-1 text-xs text-gray-500">Deadline otomatis menjadi hari aktif terakhir di bulan yang dipilih (Senin–Jumat, bukan libur).</p>
+                            <p class="mt-1 text-xs text-gray-500">Otomatis: hari aktif terakhir di bulan itu (Senin–Jumat, bukan libur). Tanggal lain = deadline manual, tidak diubah otomatis lagi.@if ($target->deadline_manual) <span class="font-semibold text-amber-700">Saat ini: manual.</span>@endif</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Status</label>
@@ -249,7 +249,7 @@
                             <input type="date" name="target_date"
                                    value="{{ old('target_date', $target->target_date?->format('Y-m-d')) }}"
                                    required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
-                            <p class="mt-1 text-xs text-gray-500">Deadline otomatis menjadi hari aktif terakhir di bulan yang dipilih (Senin–Jumat, bukan libur).</p>
+                            <p class="mt-1 text-xs text-gray-500">Otomatis: hari aktif terakhir di bulan itu (Senin–Jumat, bukan libur). Tanggal lain = deadline manual, tidak diubah otomatis lagi.@if ($target->deadline_manual) <span class="font-semibold text-amber-700">Saat ini: manual.</span>@endif</p>
                         </div>
 
                         <div>

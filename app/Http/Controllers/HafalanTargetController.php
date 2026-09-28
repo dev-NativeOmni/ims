@@ -546,6 +546,13 @@ class HafalanTargetController extends Controller
         // Target otomatis yang diedit guru menjadi target guru: tidak ditimpa lagi oleh perhitungan otomatis.
         $data['auto_month'] = null;
 
+        // Deadline: sama dengan hari aktif terakhir bulannya = otomatis; tanggal lain = manual (lebih tinggi).
+        if (! empty($data['target_date'])) {
+            $date = Carbon::parse($data['target_date'])->toDateString();
+            $data['target_date'] = $date;
+            $data['deadline_manual'] = $date !== app(TargetDeadlineService::class)->forMonth(Carbon::parse($date))->toDateString();
+        }
+
         // Tanggal selesai mengikuti status.
         if (($data['status'] ?? $hafalanTarget->status) === 'completed') {
             $data['completed_at'] = $hafalanTarget->completed_at ?? now();
@@ -819,7 +826,8 @@ class HafalanTargetController extends Controller
                     continue;
                 }
 
-                $deadline = $month['deadline']->toDateString();
+                // Deadline manual yang diatur guru dipertahankan.
+                $deadline = $current?->deadline_manual ? $current->target_date->toDateString() : $month['deadline']->toDateString();
                 if ($current
                     && (int) $current->surah_id === $surah->id
                     && (int) $current->ayah === $ayah
@@ -993,7 +1001,12 @@ class HafalanTargetController extends Controller
             ->keyBy('student_id');
 
         $positions = $ummi->positionsFor($students->pluck('id')->all(), now());
-        $deadline = app(TargetDeadlineService::class)->forMonth($monthStart);
+        $autoDeadline = app(TargetDeadlineService::class)->forMonth($monthStart);
+        // Deadline manual yang sudah disimpan di tabel ini (terbanyak) lebih tinggi dari otomatis.
+        $manualDeadline = $targets->where('deadline_manual', true)
+            ->map(fn (HafalanTarget $target) => $target->target_date?->toDateString())
+            ->filter()->countBy()->sortDesc()->keys()->first();
+        $deadline = $manualDeadline ? Carbon::parse($manualDeadline) : $autoDeadline;
 
         return view('hafalan-targets.ummi', [
             'month' => $month,
@@ -1005,6 +1018,10 @@ class HafalanTargetController extends Controller
             'targets' => $targets,
             'positions' => $positions,
             'deadline' => $deadline,
+            'autoDeadline' => $autoDeadline,
+            'deadlineManual' => $manualDeadline !== null,
+            'monthStart' => $monthStart,
+            'monthEnd' => $monthEnd,
             'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
             'canEdit' => $request->user()->can('create', HafalanTarget::class),
         ]);
@@ -1019,6 +1036,17 @@ class HafalanTargetController extends Controller
         $students = $students->keyBy('id');
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = (array) $request->input('targets', []);
+
+        $request->validate([
+            'deadline' => ['nullable', 'date', 'after_or_equal:'.$monthStart->toDateString(), 'before_or_equal:'.$monthEnd->toDateString()],
+        ], [
+            'deadline.after_or_equal' => 'Deadline harus di bulan yang sama dengan target.',
+            'deadline.before_or_equal' => 'Deadline harus di bulan yang sama dengan target.',
+        ]);
+        // Deadline dari pil hijau: sama dengan otomatis = ikut otomatis; berbeda = manual (lebih tinggi).
+        $autoDeadline = app(TargetDeadlineService::class)->forMonth($monthStart)->toDateString();
+        $deadline = $request->filled('deadline') ? Carbon::parse($request->input('deadline'))->toDateString() : $autoDeadline;
+        $deadlineManual = $deadline !== $autoDeadline;
 
         // Validasi semua baris dulu; simpan hanya bila semuanya benar.
         $errors = [];
@@ -1052,7 +1080,7 @@ class HafalanTargetController extends Controller
         }
 
         $saved = 0;
-        DB::transaction(function () use ($rows, $monthStart, $monthEnd, $request, $status, &$saved) {
+        DB::transaction(function () use ($rows, $monthStart, $monthEnd, $request, $status, $deadline, $deadlineManual, &$saved) {
             foreach ($rows as [$student, $values]) {
                 $existing = HafalanTarget::query()
                     ->where('student_id', $student->id)
@@ -1072,8 +1100,7 @@ class HafalanTargetController extends Controller
                     continue;
                 }
 
-                $deadline = app(TargetDeadlineService::class)->forMonth($monthStart);
-                $values += ['target_date' => $deadline->toDateString(), 'halaman_peraga' => null, 'auto_month' => null];
+                $values += ['target_date' => $deadline, 'deadline_manual' => $deadlineManual, 'halaman_peraga' => null, 'auto_month' => null];
 
                 if ($existing && collect($values)->every(fn ($value, $key) => (string) ($key === 'target_date' ? $existing->target_date?->toDateString() : $existing->{$key}) === (string) $value)) {
                     continue;
