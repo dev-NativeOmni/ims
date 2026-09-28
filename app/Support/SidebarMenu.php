@@ -87,9 +87,9 @@ class SidebarMenu
                     ['label' => 'Ujian Tahfizh', 'route' => 'tahfizh-exams.index', 'icon' => 'document', 'roles' => self::ALL_STAFF, 'active' => ['tahfizh-exams.*']],
                     [
                         'label' => 'Target Bulanan', 'route' => 'hafalan-targets.index', 'icon' => 'badge-check', 'roles' => self::ALL_STAFF,
-                        'active' => ['hafalan-targets.*'], 'active_except' => ['hafalan-targets.term'],
+                        // Target Triwulan & Target Ummi dibuka lewat tab di halaman ini.
+                        'active' => ['hafalan-targets.*'],
                     ],
-                    ['label' => 'Target Triwulan', 'route' => 'hafalan-targets.term', 'icon' => 'chart-pie', 'roles' => self::ALL_STAFF, 'active' => ['hafalan-targets.term']],
                     [
                         'label' => 'Progress', 'route' => 'progress.index', 'icon' => 'trending-up',
                         'roles' => [...self::ALL_STAFF, 'parent', 'student'],
