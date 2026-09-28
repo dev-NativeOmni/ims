@@ -44,6 +44,81 @@
                     };
                 </script>
 
+                @if ($target->ummi_jilid)
+                    {{-- Target Ummi: Jilid & Halaman (Peraga/Buku) + target hafalan surah/ayat opsional. --}}
+                    <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="back" value="{{ request('back') }}">
+
+                        <div class="rounded-lg bg-teal-50 border border-teal-100 px-4 py-3 text-sm">
+                            <p class="font-bold text-teal-900">{{ $target->student?->name }}</p>
+                            <p class="text-xs text-teal-700">{{ $target->student?->classRoom?->name }} · Target Ummi</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jilid</label>
+                                <select name="ummi_jilid" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                                    @foreach (['Jilid 1', 'Jilid 2', 'Jilid 3'] as $jilid)
+                                        <option value="{{ $jilid }}" @selected(old('ummi_jilid', $target->ummi_jilid) === $jilid)>{{ $jilid }} (Dewasa)</option>
+                                    @endforeach
+                                    @unless (in_array(old('ummi_jilid', $target->ummi_jilid), ['Jilid 1', 'Jilid 2', 'Jilid 3'], true))
+                                        <option value="{{ old('ummi_jilid', $target->ummi_jilid) }}" selected>{{ old('ummi_jilid', $target->ummi_jilid) }}</option>
+                                    @endunless
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Halaman Peraga</label>
+                                <input type="text" name="halaman_peraga" value="{{ old('halaman_peraga', $target->halaman_peraga) }}" placeholder="Contoh: 10 - 15" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Halaman Buku</label>
+                                <input type="text" name="halaman_buku" value="{{ old('halaman_buku', $target->halaman_buku) }}" placeholder="Contoh: 15 - 20" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Target Surah Hafalan Ummi (opsional)</label>
+                            <div class="mt-1 flex gap-2">
+                                <select name="surah_id" class="min-w-0 flex-1 rounded-lg border-gray-300 text-sm">
+                                    <option value="">-- Tanpa target surah --</option>
+                                    @foreach ($surahs as $surah)
+                                        <option value="{{ $surah->id }}" @selected((string) old('surah_id', $target->surah_id) === (string) $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat</option>
+                                    @endforeach
+                                </select>
+                                <input type="number" name="ayah" min="1" value="{{ old('ayah', $target->ayah) }}" placeholder="Ayat" class="w-28 rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Kosongkan ayat bila targetnya sampai akhir surah.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Target</label>
+                                <input type="date" name="target_date" value="{{ old('target_date', $target->target_date?->format('Y-m-d')) }}" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Status</label>
+                                <select name="status" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                                    <option value="active" @selected(old('status', $target->status) === 'active')>Aktif</option>
+                                    <option value="completed" @selected(old('status', $target->status) === 'completed')>Selesai</option>
+                                    <option value="missed" @selected(old('status', $target->status) === 'missed')>Terlewat</option>
+                                    <option value="cancelled" @selected(old('status', $target->status) === 'cancelled')>Dibatalkan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Catatan</label>
+                            <textarea name="notes" rows="3" class="mt-1 w-full rounded-lg border-gray-300 text-sm">{{ old('notes', $target->notes) }}</textarea>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
+                            <a href="{{ request('back') ?: route('hafalan-targets.index', ['program' => 'ummi']) }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</a>
+                            <button type="submit" class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                @else
                 <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6" x-data="{
                     selectedClass: '',
                     selectedStudent: '{{ old('student_id', $target->student_id) }}',
@@ -62,6 +137,7 @@
                 }">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="back" value="{{ request('back') }}">
 
                     <div>
                         <label for="class_room_filter" class="block text-sm font-medium text-gray-700">Saring Berdasarkan Kelas</label>
@@ -196,7 +272,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
-                        <a href="{{ route('hafalan-targets.index') }}"
+                        <a href="{{ request('back') ?: route('hafalan-targets.index') }}"
                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                             Batal
                         </a>
@@ -207,6 +283,7 @@
                         </button>
                     </div>
                 </form>
+                @endif
             </div>
         </div>
     </div>
@@ -216,6 +293,7 @@
             const surahSelect = document.querySelector('[data-surah-select]');
             const ayah = document.querySelector('[data-ayah]');
             const totalLabel = document.querySelector('[data-total-ayah-label]');
+            if (! surahSelect) return;
 
             function syncAyahLimit() {
                 const selectedOption = surahSelect.options[surahSelect.selectedIndex];

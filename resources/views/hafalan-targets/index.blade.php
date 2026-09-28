@@ -350,6 +350,26 @@
                 </div>
 
                 <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Bulan (Deadline)</p>
+                    @php
+                        $monthUrl = function ($value) {
+                            $params = request()->except(['month', 'page']);
+                            if ($value !== '') {
+                                $params['month'] = $value;
+                            }
+
+                            return request()->url().'?'.http_build_query($params);
+                        };
+                    @endphp
+                    <select onchange="window.location.href=this.value" class="w-full sm:w-64 rounded-lg border-zinc-300 bg-transparent text-xs font-semibold text-zinc-900 shadow-sm">
+                        <option value="{{ $monthUrl('') }}" @selected(! request('month'))>Semua Bulan</option>
+                        @foreach ($monthOptions as $value => $label)
+                            <option value="{{ $monthUrl($value) }}" @selected(request('month') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Status</p>
                     <x-filter-toggle
                         name="status"
@@ -518,6 +538,12 @@
 
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-end gap-2">
+                                            @can('update', $target)
+                                                <a href="{{ route('hafalan-targets.edit', ['hafalan_target' => $target, 'back' => request()->fullUrl()]) }}"
+                                                   class="btn-action-edit">
+                                                    Edit
+                                                </a>
+                                            @endcan
                                             @if ($target->status !== 'completed')
                                                 <form method="POST" action="{{ route('hafalan-targets.complete', $target) }}">
                                                     @csrf

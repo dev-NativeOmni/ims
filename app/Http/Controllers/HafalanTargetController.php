@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class HafalanTargetController extends Controller
@@ -80,6 +81,11 @@ class HafalanTargetController extends Controller
             })
             ->when($request->filled('date_to'), function ($query) use ($request) {
                 $query->whereDate('target_date', '<=', $request->input('date_to'));
+            })
+            // Filter bulan deadline (Y-m).
+            ->when(preg_match('/^\d{4}-\d{2}$/', (string) $request->input('month')), function ($query) use ($request) {
+                $month = Carbon::createFromFormat('Y-m-d', $request->input('month').'-01');
+                $query->whereBetween('target_date', [$month->copy()->startOfMonth()->toDateString(), $month->copy()->endOfMonth()->toDateString().' 23:59:59']);
             });
 
         $targets = (clone $query)
@@ -195,6 +201,15 @@ class HafalanTargetController extends Controller
 
         $statusOptions = $this->targetStatuses();
 
+        // Pilihan filter bulan: 12 bulan ke belakang s.d. 2 bulan ke depan (terbaru di atas).
+        $monthOptions = collect(range(2, -12))
+            ->mapWithKeys(function ($offset) {
+                $month = now()->startOfMonth()->addMonthsNoOverflow($offset);
+
+                return [$month->format('Y-m') => $month->locale('id')->translatedFormat('F Y')];
+            })
+            ->all();
+
         return view('hafalan-targets.index', compact(
             'targets',
             'students',
@@ -207,7 +222,8 @@ class HafalanTargetController extends Controller
             'statusOptions',
             'activeProgram',
             'currentTeacherId',
-            'isTeacherOnly'
+            'isTeacherOnly',
+            'monthOptions'
         ));
     }
 
@@ -511,22 +527,35 @@ class HafalanTargetController extends Controller
 
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
-        $validated = $this->validateTarget($request, $visibleStudentIds);
+        if ($hafalanTarget->ummi_jilid) {
+            // Target Ummi (Jilid & Halaman + surah/ayat opsional); murid tetap.
+            $data = $this->validateUmmiTarget($request);
+        } else {
+            $validated = $this->validateTarget($request, $visibleStudentIds);
+            $student = Student::query()->findOrFail($validated['student_id']);
 
-        $student = Student::query()->findOrFail($validated['student_id']);
-
-        $data = $this->targetPayload($validated);
-        $data['student_id'] = $student->id;
-
-        $data['teacher_id'] = $this->resolveTeacherId($request, $student);
+            $data = $this->targetPayload($validated);
+            $data['student_id'] = $student->id;
+            $data['teacher_id'] = $this->resolveTeacherId($request, $student);
+        }
 
         // Target otomatis yang diedit guru menjadi target guru: tidak ditimpa lagi oleh perhitungan otomatis.
         $data['auto_month'] = null;
 
+        // Tanggal selesai mengikuti status.
+        if (($data['status'] ?? $hafalanTarget->status) === 'completed') {
+            $data['completed_at'] = $hafalanTarget->completed_at ?? now();
+        } elseif (isset($data['status'])) {
+            $data['completed_at'] = null;
+        }
+
         $hafalanTarget->update($data);
 
+        // Kembali ke daftar dengan filter yang sama (hanya URL aplikasi ini).
+        $back = (string) $request->input('back');
+
         return redirect()
-            ->route('hafalan-targets.index')
+            ->to(str_starts_with($back, url('/hafalan-targets')) ? $back : route('hafalan-targets.index'))
             ->with('success', 'Target hafalan berhasil diperbarui.');
     }
 
@@ -612,6 +641,34 @@ class HafalanTargetController extends Controller
         });
 
         return $validator->validate();
+    }
+
+    /**
+     * Validasi edit target Ummi: Jilid wajib, halaman peraga/buku & surah/ayat opsional
+     * (ayat tidak boleh melebihi jumlah ayat surah; kosong = sampai akhir surah).
+     */
+    private function validateUmmiTarget(Request $request): array
+    {
+        $validated = $request->validate([
+            'ummi_jilid' => ['required', 'string', 'max:100'],
+            'halaman_peraga' => ['nullable', 'string', 'max:100'],
+            'halaman_buku' => ['nullable', 'string', 'max:100'],
+            'surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'ayah' => ['nullable', 'integer', 'min:1'],
+            'target_date' => ['required', 'date'],
+            'status' => ['nullable', Rule::in($this->targetStatuses())],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        if (! empty($validated['ayah']) && ! empty($validated['surah_id'])
+            && (int) $validated['ayah'] > (int) Surah::query()->whereKey($validated['surah_id'])->value('total_ayah')) {
+            throw ValidationException::withMessages(['ayah' => 'Ayat tidak boleh melebihi jumlah ayat surah.']);
+        }
+
+        $validated['ayah'] = ! empty($validated['surah_id']) ? ($validated['ayah'] ?? null) : null;
+        $validated['surah_id'] = $validated['surah_id'] ?? null;
+
+        return $validated;
     }
 
     private function targetPayload(array $validated): array
