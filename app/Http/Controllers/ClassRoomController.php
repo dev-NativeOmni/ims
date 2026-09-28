@@ -8,7 +8,6 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
-use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Program;
 use App\Models\UmmiRecord;
@@ -932,8 +931,7 @@ class ClassRoomController extends Controller
                             ->get();
 
                         foreach ($records as $record) {
-                            $timeStr = $record->submitted_at ? $record->submitted_at->format('H:i:s') : '08:00:00';
-                            $newSubmittedAt = Carbon::parse("{$toStr} {$timeStr}");
+                            $newSubmittedAt = Carbon::parse($toStr);
                             $record->update(['submitted_at' => $newSubmittedAt]);
                             $movedHafalan++;
                         }

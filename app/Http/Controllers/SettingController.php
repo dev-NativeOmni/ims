@@ -181,6 +181,27 @@ class SettingController extends Controller
         $locks = $calendar->monthLocks($year, $month);
         $permissions = $this->calendarPermissions($request, $year, $month);
 
+        foreach ($gridDates as &$gridItem) {
+            if ($gridItem['isCurrentMonth']) {
+                $d = $gridItem['date'];
+                $activeClasses = [];
+                foreach ($classRooms as $class) {
+                    $meetingDays = $calendar->classMeetingDays($class, $d);
+                    if (in_array($d->dayOfWeekIso, $meetingDays, true)) {
+                        $activeClasses[] = [
+                            'id' => $class->id,
+                            'name' => $class->name,
+                            'program' => $class->program?->name,
+                        ];
+                    }
+                }
+                $gridItem['scheduledClasses'] = $activeClasses;
+            } else {
+                $gridItem['scheduledClasses'] = [];
+            }
+        }
+        unset($gridItem);
+
         return view('settings.calendar', [
             'gridDates' => $gridDates,
             'year' => $year,

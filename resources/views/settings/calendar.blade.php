@@ -84,8 +84,6 @@
                 </div>
             @endif
 
-            @include('partials.academic-calendar-tabs')
-
             <!-- Google Calendar Top Control Toolbar -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                 
@@ -297,12 +295,48 @@
                                         </template>
                                     </div>
 
-                                    <!-- Hari aktif: Tahfizh (Senin-Jumat, mengikuti jadwal kelas) & Adab (hari pengisian Adab) -->
+                                    <!-- Hari aktif: Daftar Kelas Aktif & Adab -->
                                     @unless ($isWeekend)
-                                        <div class="mt-1 flex flex-wrap gap-1 text-[9px] font-bold uppercase tracking-wide">
-                                            <span x-show="! tahfizhOff('{{ $dateStr }}')" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">Tahfizh</span>
+                                        <div class="mt-2 space-y-1">
+                                            <!-- Logo / Badge Kelas Aktif Tahfizh -->
+                                            <div x-show="! tahfizhOff('{{ $dateStr }}')" class="flex flex-wrap gap-1 items-center">
+                                                @forelse ($day['scheduledClasses'] as $scClass)
+                                                    @php
+                                                        $cName = $scClass['name'];
+                                                        $badgeStyle = 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800/60';
+                                                        $dotColor = 'bg-teal-500';
+                                                        if (preg_match('/^X\b/i', $cName)) {
+                                                            $badgeStyle = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60';
+                                                            $dotColor = 'bg-blue-500';
+                                                        } elseif (preg_match('/^XI\b/i', $cName)) {
+                                                            $badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60';
+                                                            $dotColor = 'bg-amber-500';
+                                                        } elseif (preg_match('/^XII\b/i', $cName)) {
+                                                            $badgeStyle = 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800/60';
+                                                            $dotColor = 'bg-purple-500';
+                                                        }
+                                                    @endphp
+                                                    <span
+                                                        x-show="! ((classDays['{{ $dateStr }}'] || []).includes({{ $scClass['id'] }}))"
+                                                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold border {{ $badgeStyle }} shadow-2xs"
+                                                        title="{{ $scClass['name'] }} ({{ $scClass['program'] ?? 'Reguler' }})"
+                                                    >
+                                                        <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
+                                                        <span>{{ $scClass['name'] }}</span>
+                                                    </span>
+                                                @empty
+                                                    <span class="text-[9px] text-gray-400 italic">Tidak ada jadwal kelas</span>
+                                                @endforelse
+                                            </div>
+
+                                            <!-- Pengisian Adab -->
                                             @if ($isAdabWeekday)
-                                                <span x-show="! adabOff('{{ $dateStr }}')" class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-400">Adab</span>
+                                                <div x-show="! adabOff('{{ $dateStr }}')" class="pt-0.5">
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300 text-[9px] font-extrabold border border-violet-200 dark:border-violet-800/60">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+                                                        <span>Adab</span>
+                                                    </span>
+                                                </div>
                                             @endif
                                         </div>
                                     @endunless

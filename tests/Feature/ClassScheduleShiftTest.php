@@ -128,8 +128,6 @@ class ClassScheduleShiftTest extends TestCase
             'student_id' => $this->student->id,
             'teacher_id' => $this->teacher->id,
             'submitted_at' => $thursday,
-            'score' => 90,
-            'score_letter' => 'A',
             'notes' => 'Lancar',
         ]);
         HafalanRecordSurah::create([
