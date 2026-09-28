@@ -40,15 +40,7 @@ class SettingController extends Controller
         ]);
 
         // Tanda tangan pejabat: hapus bila dicentang, ganti bila ada unggahan baru.
-        foreach (array_keys(Signatures::OFFICIALS) as $key) {
-            $settingKey = Signatures::OFFICIALS[$key]['file'];
-            $upload = $request->file("signatures.{$key}");
-
-            if ($upload || in_array($key, (array) $request->input('reset_signatures', []), true)) {
-                Signatures::delete(Setting::get($settingKey));
-                Setting::set($settingKey, $upload ? Signatures::store($upload, 'officials') : null);
-            }
-        }
+        Signatures::saveOfficialUploads($request);
 
         if ($request->boolean('reset_logo')) {
             $oldLogo = Setting::get('logo');

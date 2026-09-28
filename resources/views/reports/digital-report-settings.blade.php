@@ -34,7 +34,20 @@
         headmasterNik: '{{ addslashes($headmasterNik) }}',
         coordTanseName: '{{ addslashes($coordTanseName) }}',
         coordTanseNik: '{{ addslashes($coordTanseNik) }}',
-        todayDate: '{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}'
+        todayDate: '{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}',
+        // Tanda tangan pejabat: sig = yang tampil di preview, sigSaved = yang tersimpan.
+        sig: @js($officialSignatures),
+        sigSaved: @js($officialSignatures),
+        pickSignature(key, event) {
+            const file = event.target.files[0];
+            if (! file) { this.sig[key] = this.sigSaved[key]; return; }
+            const reader = new FileReader();
+            reader.onload = (e) => { this.sig[key] = e.target.result; };
+            reader.readAsDataURL(file);
+        },
+        resetSignature(key, checked) {
+            this.sig[key] = checked ? null : this.sigSaved[key];
+        }
     }">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-6">
 
@@ -50,7 +63,7 @@
                 
                 {{-- LEFT COLUMN: Settings Form (7 cols) --}}
                 <div class="lg:col-span-7 space-y-6">
-                    <form method="POST" action="{{ route('digital-reports.settings.update') }}" class="space-y-6">
+                    <form method="POST" action="{{ route('digital-reports.settings.update') }}" enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
                         {{-- 1. Periode & Modul Komponen --}}
@@ -191,6 +204,7 @@
                                         <label for="report_coord_tahfizh_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
                                         <input type="text" name="report_coord_tahfizh_nik" id="report_coord_tahfizh_nik" x-model="coordTahfizhNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
                                     </div>
+                                    @include('reports.partials.signature-upload', ['key' => 'coord_tahfizh', 'canEdit' => $canEditSignatures])
                                 </div>
 
                                 {{-- Baris Atas: Kanan (Koordinator Keagamaan) --}}
@@ -204,6 +218,7 @@
                                         <label for="report_coord_keagamaan_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
                                         <input type="text" name="report_coord_keagamaan_nik" id="report_coord_keagamaan_nik" x-model="coordKeagamaanNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
                                     </div>
+                                    @include('reports.partials.signature-upload', ['key' => 'coord_keagamaan', 'canEdit' => $canEditSignatures])
                                 </div>
 
                                 {{-- Baris Bawah: Kiri (Kepala Sekolah) --}}
@@ -221,6 +236,7 @@
                                         <label for="report_headmaster_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
                                         <input type="text" name="report_headmaster_nik" id="report_headmaster_nik" x-model="headmasterNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
                                     </div>
+                                    @include('reports.partials.signature-upload', ['key' => 'headmaster', 'canEdit' => $canEditSignatures])
                                 </div>
 
                                 {{-- Baris Bawah: Kanan (Koordinator Tanse) --}}
@@ -234,6 +250,7 @@
                                         <label for="report_coord_tanse_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
                                         <input type="text" name="report_coord_tanse_nik" id="report_coord_tanse_nik" x-model="coordTanseNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
                                     </div>
+                                    @include('reports.partials.signature-upload', ['key' => 'coord_tanse', 'canEdit' => $canEditSignatures])
                                 </div>
 
                             </div>
@@ -382,14 +399,18 @@
                                 <div>
                                     <p class="invisible leading-tight" x-text="reportCity + ', ' + todayDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Tahfidz</p>
-                                    <div class="h-6"></div>
+                                    <div class="h-6 flex items-center justify-center">
+                                        <template x-if="sig['coord_tahfizh']"><img :src="sig['coord_tahfizh']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
+                                    </div>
                                     <p class="font-black underline leading-tight" x-text="coordTahfizhName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTahfizhNik"></span></p>
                                 </div>
                                 <div>
                                     <p class="leading-tight" x-text="reportCity + ', ' + todayDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Keagamaan</p>
-                                    <div class="h-6"></div>
+                                    <div class="h-6 flex items-center justify-center">
+                                        <template x-if="sig['coord_keagamaan']"><img :src="sig['coord_keagamaan']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
+                                    </div>
                                     <p class="font-black underline leading-tight" x-text="coordKeagamaanName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordKeagamaanNik"></span></p>
                                 </div>
@@ -400,14 +421,18 @@
                                 <div>
                                     <p class="leading-tight">Mengetahui,</p>
                                     <p class="font-bold leading-tight truncate" x-text="headmasterTitle"></p>
-                                    <div class="h-6"></div>
+                                    <div class="h-6 flex items-center justify-center">
+                                        <template x-if="sig['headmaster']"><img :src="sig['headmaster']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
+                                    </div>
                                     <p class="font-black underline leading-tight truncate" x-text="headmasterName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="headmasterNik"></span></p>
                                 </div>
                                 <div>
                                     <p class="invisible leading-tight">Mengetahui,</p>
                                     <p class="font-bold leading-tight">Koordinator Tanse</p>
-                                    <div class="h-6"></div>
+                                    <div class="h-6 flex items-center justify-center">
+                                        <template x-if="sig['coord_tanse']"><img :src="sig['coord_tanse']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
+                                    </div>
                                     <p class="font-black underline leading-tight truncate" x-text="coordTanseName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTanseNik"></span></p>
                                 </div>

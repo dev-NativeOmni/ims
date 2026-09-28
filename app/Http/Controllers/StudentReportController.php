@@ -17,6 +17,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
+use App\Support\Signatures;
 use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -635,13 +636,18 @@ class StudentReportController extends Controller
         $blpDates = self::blpDates($academicYear);
         $tanseRules = self::tanseRules();
 
+        // Tanda tangan pejabat (sama dengan Pengaturan Umum); hanya Super Admin yang boleh mengganti.
+        $officialSignatures = Signatures::officialPreviews();
+        $canEditSignatures = $request->user()->hasRole('super_admin');
+
         return view('reports.digital-report-settings', compact(
             'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
             'headmasterTitle', 'headmasterName', 'headmasterNik',
-            'coordTanseName', 'coordTanseNik'
+            'coordTanseName', 'coordTanseNik',
+            'officialSignatures', 'canEditSignatures'
         ));
     }
 
@@ -652,7 +658,14 @@ class StudentReportController extends Controller
             'tanse_a_min' => 'nullable|integer|between:1,100',
             'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
             'tanse_notes' => 'nullable|array', 'tanse_notes.*' => 'nullable|string|max:1000',
+            'signatures' => 'nullable|array', 'signatures.*' => Signatures::UPLOAD_RULES,
+            'reset_signatures' => 'nullable|array', 'reset_signatures.*' => 'in:'.implode(',', array_keys(Signatures::OFFICIALS)),
         ], ['tanse_b_min.lt' => 'Batas predikat B harus lebih kecil dari batas predikat A.']);
+
+        // Tanda tangan pejabat: hanya Super Admin (unggahan dari Admin diabaikan).
+        if ($request->user()->hasRole('super_admin')) {
+            Signatures::saveOfficialUploads($request);
+        }
 
         if ($request->filled('tanse_a_min')) {
             Setting::set('report_tanse_a_min', (string) $request->integer('tanse_a_min'));

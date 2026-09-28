@@ -139,4 +139,63 @@ class SignatureTest extends TestCase
         $this->assertSame(1, substr_count($response->getContent(), 'alt="Tanda tangan"'));
         $response->assertSee('data:image/', false);
     }
+
+    /** Isian wajib Pengaturan Rapor (nama/NIK pejabat) + tambahan. */
+    private function raporSettings(array $extra = []): array
+    {
+        return $extra + [
+            'academic_year' => '2026/2027', 'semester' => 1,
+            'report_coord_tahfizh_name' => 'Zainal Arifin, S.Pd', 'report_coord_tahfizh_nik' => '06.0577',
+            'report_coord_keagamaan_name' => 'Rifqi Ihsan, S.Pd., Gr.', 'report_coord_keagamaan_nik' => '15.06.0393',
+            'report_headmaster_title' => 'Kepala SMA Islam Al Azhar 7 Sukoharjo',
+            'report_headmaster_name' => 'Moh Pandoyo, S.Si., M.Pd., Gr.', 'report_headmaster_nik' => '08.04.0160',
+            'report_coord_tanse_name' => 'Yatim Hermawan, S.E., S.Kom', 'report_coord_tanse_nik' => '12.06.0280',
+        ];
+    }
+
+    #[Test]
+    public function super_admin_manages_official_signatures_from_rapor_settings_with_preview(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->post(route('digital-reports.settings.update'), $this->raporSettings(['signatures' => ['headmaster' => $this->png(), 'coord_tanse' => $this->png()]]))
+            ->assertRedirect();
+
+        $path = Signatures::officialFile('headmaster');
+        $this->assertNotNull($path);
+        Storage::disk('local')->assertExists($path);
+
+        $page = $this->actingAs($this->superAdmin)->get(route('digital-reports.settings'));
+        $page->assertOk();
+        $this->assertStringStartsWith('data:image/', $page->viewData('officialSignatures')['headmaster']);
+        $this->assertTrue($page->viewData('canEditSignatures'));
+        $page->assertSee('signatures[headmaster]', false);
+
+        // Data sama dengan Pengaturan Umum.
+        $this->actingAs($this->superAdmin)->get(route('settings.index'))->assertSee('data:image/', false);
+
+        $this->actingAs($this->superAdmin)->post(route('digital-reports.settings.update'), $this->raporSettings(['reset_signatures' => ['headmaster']]));
+        $this->assertNull(Signatures::officialFile('headmaster'));
+        $this->assertNotNull(Signatures::officialFile('coord_tanse'), 'Tanda tangan lain tidak ikut terhapus.');
+    }
+
+    #[Test]
+    public function admin_sees_signatures_in_rapor_settings_but_cannot_change_them(): void
+    {
+        $this->actingAs($this->superAdmin)->post(route('digital-reports.settings.update'), $this->raporSettings(['signatures' => ['headmaster' => $this->png()]]));
+        $original = Signatures::officialFile('headmaster');
+
+        $page = $this->actingAs($this->admin)->get(route('digital-reports.settings'));
+        $page->assertOk()->assertSee('Diatur oleh Super Admin');
+        $page->assertDontSee('signatures[headmaster]', false);
+        $this->assertFalse($page->viewData('canEditSignatures'));
+
+        $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), $this->raporSettings([
+            'report_headmaster_name' => 'Nama Baru',
+            'signatures' => ['headmaster' => $this->png('lain.png')],
+            'reset_signatures' => ['headmaster'],
+        ]))->assertRedirect();
+
+        $this->assertSame($original, Signatures::officialFile('headmaster'), 'Unggahan/hapus dari Admin diabaikan.');
+        $this->assertSame('Nama Baru', Setting::get('report_headmaster_name'), 'Nama/NIK tetap tersimpan.');
+    }
 }

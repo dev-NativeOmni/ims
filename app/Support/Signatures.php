@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,8 +12,8 @@ use Illuminate\Support\Facades\Storage;
  *
  * Berkas disimpan di disk privat 'local' (tidak bisa diakses lewat URL publik):
  * di halaman web disematkan sebagai data URI, di Excel ditanam sebagai gambar.
- * Tanda tangan pejabat diatur Super Admin di Pengaturan Umum; nama/NIK/jabatannya
- * tetap dari Pengaturan Rapor. Tanda tangan guru diunggah sendiri di Profil.
+ * Tanda tangan pejabat diatur Super Admin di Pengaturan Umum maupun Pengaturan Rapor
+ * (data yang sama); nama/NIK/jabatannya dari Pengaturan Rapor. Tanda tangan guru diunggah sendiri di Profil.
  */
 class Signatures
 {
@@ -51,6 +52,36 @@ class Signatures
             'name' => (string) Setting::get($official['name'], $official['default']),
             'nik' => (string) Setting::get($official['nik'], ''),
         ];
+    }
+
+    /**
+     * Simpan unggahan tanda tangan pejabat dari form (Pengaturan Umum / Pengaturan Rapor):
+     * `reset_signatures[]` menghapus, `signatures[key]` mengganti. Pejabat lain tidak disentuh.
+     */
+    public static function saveOfficialUploads(Request $request): void
+    {
+        $resets = (array) $request->input('reset_signatures', []);
+
+        foreach (self::OFFICIALS as $key => $official) {
+            $upload = $request->file("signatures.{$key}");
+
+            if ($upload || in_array($key, $resets, true)) {
+                self::delete(Setting::get($official['file']));
+                Setting::set($official['file'], $upload ? self::store($upload, 'officials') : null);
+            }
+        }
+    }
+
+    /**
+     * Tanda tangan pejabat sebagai data URI untuk pratinjau (key => data URI atau null).
+     *
+     * @return array<string, ?string>
+     */
+    public static function officialPreviews(): array
+    {
+        return collect(self::OFFICIALS)
+            ->map(fn ($official, $key) => self::dataUri(self::officialFile($key)))
+            ->all();
     }
 
     public static function store(UploadedFile $file, string $folder): string
