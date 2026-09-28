@@ -26,6 +26,11 @@ class HafalanTargetAutoCompletionService
      */
     public function syncExistingTargets(bool $dryRun = false): array
     {
+        // Deadline disamakan dulu dengan hari aktif terakhir bulannya (Kalender bisa berubah).
+        if (! $dryRun) {
+            app(TargetDeadlineService::class)->syncAll();
+        }
+
         return $this->syncQuery($this->activeTargets(), $dryRun);
     }
 

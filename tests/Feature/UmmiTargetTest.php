@@ -70,7 +70,7 @@ class UmmiTargetTest extends TestCase
 
         $response->assertOk()->assertSee('Murid Kedua')->assertSee('Terapkan ke semua baris')->assertDontSee('Halaman Peraga');
         $this->assertCount(2, $response->viewData('students'));
-        $this->assertSame('2026-09-30', $response->viewData('deadlines')[$this->classRoom->id]->toDateString(), 'Pertemuan Ummi (Senin-Kamis) terakhir September.');
+        $this->assertSame('2026-09-30', $response->viewData('deadline')->toDateString(), 'Hari aktif terakhir September.');
     }
 
     #[Test]

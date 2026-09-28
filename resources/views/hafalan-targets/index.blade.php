@@ -65,7 +65,7 @@
                                 <x-heroicon-o-table-cells class="w-5 h-5 text-indigo-600" />
                                 <span>Input Target Reguler Spreadsheet Per-Kelas</span>
                             </h3>
-                            <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus.</p>
+                            <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus. Deadline otomatis menjadi hari aktif terakhir di bulan tanggal yang dipilih.</p>
                         </div>
 
                         <form method="GET" action="{{ route('hafalan-targets.index') }}" class="flex items-center gap-2">

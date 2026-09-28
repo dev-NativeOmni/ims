@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\TargetDeadlineService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +39,19 @@ class HafalanTarget extends Model
             'target_date' => 'date',
             'completed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Target Aktif: deadline selalu hari aktif terakhir di bulannya (TargetDeadlineService),
+     * dari mana pun target disimpan (form, simpan massal, Target Triwulan/Ummi, API).
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (HafalanTarget $target) {
+            if ($target->target_date && in_array($target->status, [null, 'active'], true)) {
+                $target->target_date = app(TargetDeadlineService::class)->forMonth($target->target_date)->toDateString();
+            }
+        });
     }
 
     public function student(): BelongsTo

@@ -7,7 +7,7 @@
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
                 Target bulanan murid Kelas 10: Jilid &amp; Halaman Buku, serta Surah &amp; Ayat (opsional). Isi serentak untuk satu halaqah,
-                lalu ubah baris murid yang capaiannya berbeda. Deadline = pertemuan Ummi terakhir di bulan itu.
+                lalu ubah baris murid yang capaiannya berbeda. Deadline = hari aktif terakhir di bulan itu (Senin–Jumat, bukan libur).
             </p>
         </div>
     </x-slot>
@@ -63,6 +63,9 @@
                         <option value="{{ $class->id }}" @selected((int) request('class_room_id') === $class->id)>{{ $class->name }}</option>
                     @endforeach
                 </select>
+                <div class="sm:ml-auto self-center rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900 px-3 py-2 text-xs font-semibold text-teal-800 dark:text-teal-300">
+                    Deadline: {{ $deadline->locale('id')->translatedFormat('l, d F Y') }}
+                </div>
             </form>
 
             <form method="POST" action="{{ route('hafalan-targets.ummi.store') }}">
@@ -112,7 +115,6 @@
                                 @php
                                     $target = $targets->get($student->id);
                                     $position = $positions[$student->id] ?? null;
-                                    $deadline = $deadlines[$student->class_room_id] ?? null;
                                     $old = fn ($field, $default) => old("targets.{$student->id}.{$field}", $default);
                                     $jilidValue = (string) $old('jilid', $target?->ummi_jilid);
                                     $pageValue = $old('halaman', $target ? \App\Support\AyahLabel::end($target->halaman_buku, '') : '');
@@ -125,9 +127,7 @@
                                 <tr class="align-top {{ $hasError ? 'bg-rose-50/60' : '' }}" data-ummi-row>
                                     <td class="sticky left-0 z-10 bg-white dark:bg-zinc-900 px-4 py-3">
                                         <p class="font-bold text-gray-900 dark:text-white">{{ $student->name }}</p>
-                                        <p class="text-[11px] text-gray-500">{{ $student->classRoom?->name }}
-                                            @if ($deadline) · deadline {{ $deadline->locale('id')->translatedFormat('D, d M') }} @endif
-                                        </p>
+                                        <p class="text-[11px] text-gray-500">{{ $student->classRoom?->name }}</p>
                                     </td>
                                     <td class="px-3 py-3 whitespace-nowrap text-xs">
                                         <p><span class="text-gray-400">Buku</span> <span class="font-semibold text-sky-700 dark:text-sky-400">{{ $position['book_label'] ?? '-' }}</span></p>

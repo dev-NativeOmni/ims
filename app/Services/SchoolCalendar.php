@@ -402,6 +402,9 @@ class SchoolCalendar
         }
 
         $this->flush();
+
+        // Deadline target Aktif bulan ini mengikuti hari aktif terakhir yang baru.
+        app(TargetDeadlineService::class)->syncMonth($year, $month);
     }
 
     /**

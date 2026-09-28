@@ -79,7 +79,7 @@ class TargetTriwulanTest extends TestCase
     }
 
     #[Test]
-    public function term_page_shows_three_months_with_deadline_on_the_last_active_meeting(): void
+    public function term_page_shows_three_months_with_deadline_on_the_last_active_weekday(): void
     {
         $response = $this->actingAs($this->admin)->get(route('hafalan-targets.term', ['period' => '2026-07-01', 'class_room_id' => $this->classRoom->id]));
 
@@ -87,9 +87,10 @@ class TargetTriwulanTest extends TestCase
         $response->assertSee($this->student->name);
         $this->assertFalse($response->viewData('classRooms')->contains(fn ($c) => $c->isGradeTen()));
 
-        // Kelas hanya Rabu: pertemuan terakhir 29 Jul, 26 Agu, 30 Sep 2026.
+        // Deadline = hari aktif terakhir (Senin-Jumat, bukan libur), tidak bergantung hari kelas (Rabu):
+        // Jum 31 Jul, Sen 31 Agu, Rab 30 Sep 2026.
         $deadlines = collect($response->viewData('months'))->map(fn ($m) => $m['deadline']->toDateString())->all();
-        $this->assertSame(['2026-07' => '2026-07-29', '2026-08' => '2026-08-26', '2026-09' => '2026-09-30'], $deadlines);
+        $this->assertSame(['2026-07' => '2026-07-31', '2026-08' => '2026-08-31', '2026-09' => '2026-09-30'], $deadlines);
     }
 
     #[Test]
@@ -106,7 +107,7 @@ class TargetTriwulanTest extends TestCase
         ])->assertRedirect(route('hafalan-targets.term', ['period' => '2026-07-01', 'class_room_id' => $this->classRoom->id]));
 
         $targets = HafalanTarget::where('student_id', $this->student->id)->orderBy('target_date')->get();
-        $this->assertSame(['2026-07-29', '2026-08-26', '2026-09-30'], $targets->map(fn ($t) => $t->target_date->toDateString())->all());
+        $this->assertSame(['2026-07-31', '2026-08-31', '2026-09-30'], $targets->map(fn ($t) => $t->target_date->toDateString())->all());
         $this->assertTrue($targets->every(fn ($t) => $t->auto_month === null));
         $this->assertSame('completed', $targets[0]->status, 'An-Naba 1-40 sudah lulus disetor.');
         $this->assertSame('active', $targets[2]->status);
@@ -140,7 +141,7 @@ class TargetTriwulanTest extends TestCase
         $old->refresh();
         $this->assertSame(20, $old->ayah);
         $this->assertNull($old->auto_month);
-        $this->assertSame('2026-07-29', $old->target_date->toDateString());
+        $this->assertSame('2026-07-31', $old->target_date->toDateString());
         $this->assertSame(2, HafalanTarget::where('student_id', $this->student->id)->count());
 
         $this->saveTerm([

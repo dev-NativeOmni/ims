@@ -42,14 +42,15 @@ class AutoHafalanTargetService
     {
         $months = [];
         foreach ($this->calendar->termMonths($date) as $monthKey => $range) {
-            $last = $this->calendar->lastMeetingDate($classRoom, $range['start'], $range['end']);
+            $meetings = $this->calendar->scheduledMeetings($classRoom, $range['start'], $range['end']);
             $months[$monthKey] = [
                 'label' => $range['start']->locale('id')->translatedFormat('F Y'),
                 'start' => $range['start'],
                 'end' => $range['end'],
-                'meetings' => $this->calendar->scheduledMeetings($classRoom, $range['start'], $range['end']),
-                'deadline' => $last ?? $range['end']->copy(),
-                'has_meeting' => $last !== null,
+                'meetings' => $meetings,
+                // Deadline = hari aktif terakhir bulan itu (Senin-Jumat, bukan libur semua kelas).
+                'deadline' => app(TargetDeadlineService::class)->forMonth($range['start']),
+                'has_meeting' => $meetings > 0,
             ];
         }
 

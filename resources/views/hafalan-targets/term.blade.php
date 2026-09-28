@@ -6,7 +6,7 @@
                 <span>Target Triwulan</span>
             </h2>
             <p class="text-sm text-gray-600 dark:text-zinc-400">
-                Isi target surah &amp; ayat tiap bulan untuk murid yang diampu. Deadline tiap bulan = pertemuan aktif terakhir kelas di bulan itu.
+                Isi target surah &amp; ayat tiap bulan untuk murid yang diampu. Deadline tiap bulan = hari aktif terakhir di bulan itu (Senin–Jumat, bukan libur).
                 Target baris = pertemuan aktif × baris per level (per bulan &amp; triwulan). Capaian = baris setoran lulus.
                 Tuntas bila capaian baris ≥ target baris. Target surah &amp; ayat dari guru menjadi arah hafalan.
             </p>

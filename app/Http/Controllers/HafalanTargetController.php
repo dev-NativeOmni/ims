@@ -13,6 +13,7 @@ use App\Services\AutoHafalanTargetService;
 use App\Services\HafalanProgressService;
 use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
+use App\Services\TargetDeadlineService;
 use App\Services\UmmiProgressService;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
@@ -973,8 +974,8 @@ class HafalanTargetController extends Controller
 
     /**
      * Target Ummi (Kelas 10) per bulan: tabel per murid dengan isi serentak. Satu target per murid
-     * per bulan (Jilid + Halaman Buku, Surah + Ayat opsional), deadline = pertemuan Ummi terakhir
-     * bulan itu. Status Buku & Hafalan dinilai terpisah (HafalanTargetAutoCompletionService).
+     * per bulan (Jilid + Halaman Buku, Surah + Ayat opsional), deadline = hari aktif terakhir
+     * bulan itu (TargetDeadlineService). Status Buku & Hafalan dinilai terpisah (HafalanTargetAutoCompletionService).
      */
     public function ummi(Request $request, AcademicCalendarService $calendar, UmmiProgressService $ummi): View
     {
@@ -992,9 +993,7 @@ class HafalanTargetController extends Controller
             ->keyBy('student_id');
 
         $positions = $ummi->positionsFor($students->pluck('id')->all(), now());
-        $deadlines = $classRooms->mapWithKeys(fn (ClassRoom $class) => [
-            $class->id => $calendar->lastMeetingDate($class, $monthStart, $monthEnd, true) ?? $monthEnd->copy()->startOfDay(),
-        ]);
+        $deadline = app(TargetDeadlineService::class)->forMonth($monthStart);
 
         return view('hafalan-targets.ummi', [
             'month' => $month,
@@ -1005,7 +1004,7 @@ class HafalanTargetController extends Controller
             'students' => $students,
             'targets' => $targets,
             'positions' => $positions,
-            'deadlines' => $deadlines,
+            'deadline' => $deadline,
             'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
             'canEdit' => $request->user()->can('create', HafalanTarget::class),
         ]);
@@ -1053,7 +1052,7 @@ class HafalanTargetController extends Controller
         }
 
         $saved = 0;
-        DB::transaction(function () use ($rows, $classRooms, $calendar, $monthStart, $monthEnd, $request, $status, &$saved) {
+        DB::transaction(function () use ($rows, $monthStart, $monthEnd, $request, $status, &$saved) {
             foreach ($rows as [$student, $values]) {
                 $existing = HafalanTarget::query()
                     ->where('student_id', $student->id)
@@ -1073,8 +1072,7 @@ class HafalanTargetController extends Controller
                     continue;
                 }
 
-                $class = $classRooms->firstWhere('id', $student->class_room_id);
-                $deadline = ($class ? $calendar->lastMeetingDate($class, $monthStart, $monthEnd, true) : null) ?? $monthEnd->copy()->startOfDay();
+                $deadline = app(TargetDeadlineService::class)->forMonth($monthStart);
                 $values += ['target_date' => $deadline->toDateString(), 'halaman_peraga' => null, 'auto_month' => null];
 
                 if ($existing && collect($values)->every(fn ($value, $key) => (string) ($key === 'target_date' ? $existing->target_date?->toDateString() : $existing->{$key}) === (string) $value)) {

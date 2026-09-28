@@ -288,7 +288,7 @@ class HafalanTargetTest extends TestCase
             'teacher_id' => $this->teacherProfile->id,
             'surah_id' => $this->surah->id,
             'ayah' => 7,
-            'target_date' => now()->subDays(5), // sudah lewat
+            'target_date' => now()->subMonthNoOverflow(), // deadline bulan lalu sudah lewat
             'status' => 'active',
         ]);
 
