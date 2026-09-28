@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClassRoomRequest;
 use App\Http\Requests\UpdateClassRoomRequest;
+use App\Models\Attendance;
 use App\Models\ClassRoom;
+use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
+use App\Models\HafalanTarget;
+use App\Models\MurajaahRecord;
 use App\Models\Program;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Services\AcademicCalendarService;
 use App\Services\SchoolCalendar;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
 use App\Services\StudentProgressService;
+use App\Services\TargetDeadlineService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -594,7 +600,55 @@ class ClassRoomController extends Controller
         $weekStates = $classRooms->mapWithKeys(fn (ClassRoom $class) => [$class->id => $calendar->weekState($class, $weekStart)]);
         $activeTab = $request->input('tab') === 'weekly' ? 'weekly' : 'default';
 
-        return view('class-rooms.schedules', compact('scheduleBoard', 'classRooms', 'daysOfWeek', 'weekStart', 'weekStates', 'activeTab'));
+        $currentYear = (int) $request->input('year', $weekStart->year);
+        $currentMonth = (int) $request->input('month', $weekStart->month);
+        $isMonthLocked = $calendar->isMonthLocked($currentYear, $currentMonth, SchoolCalendar::SCOPE_TAHFIZH);
+
+        return view('class-rooms.schedules', compact(
+            'scheduleBoard',
+            'classRooms',
+            'daysOfWeek',
+            'weekStart',
+            'weekStates',
+            'activeTab',
+            'currentYear',
+            'currentMonth',
+            'isMonthLocked'
+        ));
+    }
+
+    /**
+     * Kunci / buka kunci jadwal pelajaran tahfizh bulanan.
+     */
+    public function scheduleMonthLock(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'month' => ['required', 'integer', 'between:1,12'],
+            'action' => ['required', 'in:lock,unlock'],
+            'tab' => ['nullable', 'string'],
+            'week' => ['nullable', 'string'],
+        ]);
+
+        $calendar = app(SchoolCalendar::class);
+        $monthName = Carbon::create($validated['year'], $validated['month'], 1)->translatedFormat('F');
+
+        if ($validated['action'] === 'lock') {
+            $calendar->lockMonth($validated['year'], $validated['month'], SchoolCalendar::SCOPE_TAHFIZH, $request->user()?->id);
+            $message = "Jadwal kelas bulan {$monthName} {$validated['year']} berhasil dikunci.";
+        } else {
+            $calendar->unlockMonth($validated['year'], $validated['month'], SchoolCalendar::SCOPE_TAHFIZH);
+            $message = "Kunci jadwal kelas bulan {$monthName} {$validated['year']} berhasil dibuka.";
+        }
+
+        $params = array_filter([
+            'tab' => $validated['tab'] ?? null,
+            'week' => $validated['week'] ?? null,
+            'year' => $validated['year'],
+            'month' => $validated['month'],
+        ]);
+
+        return redirect()->route('class-schedules.index', $params)->with('success', $message);
     }
 
     /**
@@ -610,6 +664,13 @@ class ClassRoomController extends Controller
         ]);
         $calendar = app(SchoolCalendar::class);
         $weekStart = $calendar->weekStart(Carbon::parse($validated['week']));
+
+        if ($calendar->isMonthLocked($weekStart->year, $weekStart->month, SchoolCalendar::SCOPE_TAHFIZH)) {
+            return redirect()
+                ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
+                ->with('error', "Jadwal bulan {$weekStart->translatedFormat('F Y')} sedang terkunci. Buka kunci bulan terlebih dahulu untuk mengubah jadwal.");
+        }
+
         $lockedCount = 0;
 
         // Kelas tanpa centang = tidak ada pertemuan pekan itu (mis. pekan ASTS).
@@ -678,5 +739,314 @@ class ClassRoomController extends Controller
         return redirect()
             ->route('class-schedules.index')
             ->with('success', 'Jadwal pelajaran tahfizh berhasil diperbarui.');
+    }
+
+    /**
+     * Tampilan formulir & preview pemindahan / koreksi jadwal catatan setoran.
+     */
+    public function scheduleShiftIndex(Request $request): View
+    {
+        $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
+
+        $currentYear = (int) $request->input('year', date('Y'));
+        $currentMonth = (int) $request->input('month', date('n'));
+        $selectedClassId = $request->input('class_room_id');
+        $fromDay = (int) $request->input('from_day', 4); // Default Kamis
+        $toDay = (int) $request->input('to_day', 2);     // Default Selasa
+
+        $daysOfWeek = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        $monthsList = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        $previewData = null;
+        $selectedClass = null;
+
+        if ($selectedClassId) {
+            $selectedClass = ClassRoom::query()->with('students')->find($selectedClassId);
+            if ($selectedClass && $fromDay !== $toDay) {
+                $previewData = $this->calculateShiftPreview(
+                    $selectedClass,
+                    $currentYear,
+                    $currentMonth,
+                    $fromDay,
+                    $toDay
+                );
+            }
+        }
+
+        $calendar = app(SchoolCalendar::class);
+        $isMonthLocked = $calendar->isMonthLocked($currentYear, $currentMonth, SchoolCalendar::SCOPE_TAHFIZH);
+
+        return view('class-rooms.shift-records', compact(
+            'classRooms',
+            'currentYear',
+            'currentMonth',
+            'selectedClassId',
+            'selectedClass',
+            'fromDay',
+            'toDay',
+            'daysOfWeek',
+            'monthsList',
+            'previewData',
+            'isMonthLocked'
+        ));
+    }
+
+    /**
+     * Menghitung preview jumlah catatan yang akan bergeser tanggal.
+     */
+    private function calculateShiftPreview(ClassRoom $classRoom, int $year, int $month, int $fromDay, int $toDay): array
+    {
+        $startDate = Carbon::create($year, $month, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth();
+        $studentIds = $classRoom->students()->pluck('id')->all();
+
+        $dates = [];
+        $totalHafalan = 0;
+        $totalUmmi = 0;
+        $totalMurajaah = 0;
+        $totalAttendance = 0;
+
+        $cursor = $startDate->copy();
+        while ($cursor->lte($endDate)) {
+            if ($cursor->dayOfWeekIso === $fromDay) {
+                $fromDate = $cursor->copy();
+                $toDate = $fromDate->copy()->startOfWeek(Carbon::MONDAY)->addDays($toDay - 1);
+
+                $hafalanCount = HafalanRecord::query()
+                    ->whereIn('student_id', $studentIds)
+                    ->whereDate('submitted_at', $fromDate->toDateString())
+                    ->count();
+
+                $ummiCount = UmmiRecord::query()
+                    ->whereIn('student_id', $studentIds)
+                    ->whereDate('tanggal', $fromDate->toDateString())
+                    ->count();
+
+                $murajaahCount = MurajaahRecord::query()
+                    ->whereIn('student_id', $studentIds)
+                    ->whereDate('reviewed_at', $fromDate->toDateString())
+                    ->count();
+
+                $attendanceCount = Attendance::query()
+                    ->where(function ($q) use ($classRoom, $studentIds) {
+                        $q->where('class_room_id', $classRoom->id)
+                            ->orWhereIn('student_id', $studentIds);
+                    })
+                    ->whereDate('tanggal', $fromDate->toDateString())
+                    ->count();
+
+                $totalHafalan += $hafalanCount;
+                $totalUmmi += $ummiCount;
+                $totalMurajaah += $murajaahCount;
+                $totalAttendance += $attendanceCount;
+
+                $dates[] = [
+                    'from_date' => $fromDate,
+                    'to_date' => $toDate,
+                    'hafalan_count' => $hafalanCount,
+                    'ummi_count' => $ummiCount,
+                    'murajaah_count' => $murajaahCount,
+                    'attendance_count' => $attendanceCount,
+                    'total' => $hafalanCount + $ummiCount + $murajaahCount + $attendanceCount,
+                ];
+            }
+            $cursor->addDay();
+        }
+
+        return [
+            'dates' => $dates,
+            'total_hafalan' => $totalHafalan,
+            'total_ummi' => $totalUmmi,
+            'total_murajaah' => $totalMurajaah,
+            'total_attendance' => $totalAttendance,
+            'total_records' => $totalHafalan + $totalUmmi + $totalMurajaah + $totalAttendance,
+            'students_count' => count($studentIds),
+        ];
+    }
+
+    /**
+     * Eksekusi pemindahan catatan setoran & presensi dari hari asal ke hari tujuan.
+     */
+    public function scheduleShiftExecute(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'month' => ['required', 'integer', 'between:1,12'],
+            'from_day' => ['required', 'integer', 'between:1,7'],
+            'to_day' => ['required', 'integer', 'between:1,7', 'different:from_day'],
+            'shift_types' => ['nullable', 'array'],
+            'shift_types.*' => ['string', 'in:hafalan,ummi,murajaah,attendance'],
+            'update_schedule' => ['nullable', 'boolean'],
+        ], [
+            'to_day.different' => 'Hari tujuan harus berbeda dari hari asal.',
+        ]);
+
+        $classRoom = ClassRoom::query()->with('students')->findOrFail($validated['class_room_id']);
+        $shiftTypes = $validated['shift_types'] ?? ['hafalan', 'ummi', 'murajaah', 'attendance'];
+        $year = (int) $validated['year'];
+        $month = (int) $validated['month'];
+        $fromDay = (int) $validated['from_day'];
+        $toDay = (int) $validated['to_day'];
+        $updateSchedule = (bool) ($validated['update_schedule'] ?? false);
+
+        $startDate = Carbon::create($year, $month, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth();
+        $studentIds = $classRoom->students()->pluck('id')->all();
+
+        $calendar = app(SchoolCalendar::class);
+        $academicService = app(AcademicCalendarService::class);
+
+        $movedHafalan = 0;
+        $movedUmmi = 0;
+        $movedMurajaah = 0;
+        $movedAttendance = 0;
+
+        DB::beginTransaction();
+        try {
+            $cursor = $startDate->copy();
+            while ($cursor->lte($endDate)) {
+                if ($cursor->dayOfWeekIso === $fromDay) {
+                    $fromDate = $cursor->copy();
+                    $toDate = $fromDate->copy()->startOfWeek(Carbon::MONDAY)->addDays($toDay - 1);
+                    $fromStr = $fromDate->toDateString();
+                    $toStr = $toDate->toDateString();
+
+                    // 1. Shift HafalanRecord
+                    if (in_array('hafalan', $shiftTypes, true) && ! empty($studentIds)) {
+                        $records = HafalanRecord::whereIn('student_id', $studentIds)
+                            ->whereDate('submitted_at', $fromStr)
+                            ->get();
+
+                        foreach ($records as $record) {
+                            $timeStr = $record->submitted_at ? $record->submitted_at->format('H:i:s') : '08:00:00';
+                            $newSubmittedAt = Carbon::parse("{$toStr} {$timeStr}");
+                            $record->update(['submitted_at' => $newSubmittedAt]);
+                            $movedHafalan++;
+                        }
+                    }
+
+                    // 2. Shift UmmiRecord
+                    if (in_array('ummi', $shiftTypes, true) && ! empty($studentIds)) {
+                        $ummiRecords = UmmiRecord::whereIn('student_id', $studentIds)
+                            ->whereDate('tanggal', $fromStr)
+                            ->get();
+
+                        foreach ($ummiRecords as $ummiRec) {
+                            $newTatapMuka = $academicService->tatapMukaNumber($classRoom, $toDate, forUmmi: true);
+                            $ummiRec->update([
+                                'tanggal' => $toStr,
+                                'tatap_muka' => $newTatapMuka,
+                            ]);
+                            $movedUmmi++;
+                        }
+                    }
+
+                    // 3. Shift MurajaahRecord
+                    if (in_array('murajaah', $shiftTypes, true) && ! empty($studentIds)) {
+                        $murajaahRecords = MurajaahRecord::whereIn('student_id', $studentIds)
+                            ->whereDate('reviewed_at', $fromStr)
+                            ->get();
+
+                        foreach ($murajaahRecords as $mRec) {
+                            $mRec->update(['reviewed_at' => $toStr]);
+                            $movedMurajaah++;
+                        }
+                    }
+
+                    // 4. Shift Attendance
+                    if (in_array('attendance', $shiftTypes, true)) {
+                        $attendances = Attendance::where(function ($q) use ($classRoom, $studentIds) {
+                            $q->where('class_room_id', $classRoom->id)
+                                ->orWhereIn('student_id', $studentIds);
+                        })
+                            ->whereDate('tanggal', $fromStr)
+                            ->get();
+
+                        foreach ($attendances as $att) {
+                            $att->update(['tanggal' => $toStr]);
+                            $movedAttendance++;
+                        }
+                    }
+                }
+                $cursor->addDay();
+            }
+
+            // Opsi: Perbarui jadwal kelas jika dicentang
+            if ($updateSchedule) {
+                // Update default schedule: replace fromDay with toDay
+                $days = $classRoom->tahfizh_days;
+                $days = array_diff($days, [$fromDay]);
+                $days[] = $toDay;
+                $days = array_values(array_unique($days));
+                sort($days);
+                $classRoom->tahfizh_days = $days;
+                $classRoom->save();
+
+                // Update weekly schedules in that month if any
+                $cursor = $startDate->copy();
+                while ($cursor->lte($endDate)) {
+                    $weekStart = $calendar->weekStart($cursor);
+                    $row = ClassWeekSchedule::where('class_room_id', $classRoom->id)
+                        ->where('week_start', $weekStart->toDateString())
+                        ->first();
+                    if ($row) {
+                        $wDays = array_map('intval', $row->days);
+                        if (in_array($fromDay, $wDays, true)) {
+                            $wDays = array_diff($wDays, [$fromDay]);
+                            $wDays[] = $toDay;
+                            sort($wDays);
+                            $row->update(['days' => array_values(array_unique($wDays))]);
+                        }
+                    }
+                    $cursor->addWeek();
+                }
+            }
+
+            // Flush caches & sync deadline targets
+            app(SchoolCalendar::class)->flush();
+            app(TargetDeadlineService::class)->syncMonth($year, $month);
+            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents($studentIds);
+            \App\Observers\HafalanTargetStatusObserver::flush();
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal memindahkan catatan setoran: '.$e->getMessage());
+        }
+
+        $totalMoved = $movedHafalan + $movedUmmi + $movedMurajaah + $movedAttendance;
+        $dayNames = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+        $monthNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        $summary = "Berhasil memindahkan {$totalMoved} catatan kelas {$classRoom->name} dari hari {$dayNames[$fromDay]} ke hari {$dayNames[$toDay]} pada bulan {$monthNames[$month]} {$year} (Hafalan: {$movedHafalan}, Ummi: {$movedUmmi}, Muraja'ah: {$movedMurajaah}, Presensi: {$movedAttendance}).";
+
+        return redirect()
+            ->route('class-schedules.shift', [
+                'class_room_id' => $classRoom->id,
+                'year' => $year,
+                'month' => $month,
+                'from_day' => $fromDay,
+                'to_day' => $toDay,
+            ])
+            ->with('success', $summary);
     }
 }

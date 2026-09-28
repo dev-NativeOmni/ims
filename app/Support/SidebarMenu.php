@@ -173,7 +173,7 @@ class SidebarMenu
                 'items' => [
                     ['label' => 'Program', 'route' => 'programs.index', 'icon' => 'academic-cap', 'roles' => ['super_admin', 'admin'], 'active' => ['programs.*']],
                     ['label' => 'Kelas', 'route' => 'class-rooms.index', 'icon' => 'building', 'roles' => ['super_admin', 'admin'], 'active' => ['class-rooms.*']],
-                    ['label' => 'Jadwal Kelas', 'route' => 'class-schedules.index', 'icon' => 'calendar', 'roles' => ['super_admin', 'admin'], 'active' => ['class-schedules.index']],
+                    ['label' => 'Jadwal Kelas', 'route' => 'class-schedules.index', 'icon' => 'calendar', 'roles' => ['super_admin', 'admin'], 'active' => ['class-schedules.*']],
                     ['label' => 'Kalender Akademik', 'route' => 'academic-calendar.index', 'icon' => 'clock', 'roles' => ['super_admin', 'admin'], 'active' => ['academic-calendar.*']],
                     ['label' => 'Guru', 'route' => 'teachers.index', 'icon' => 'briefcase', 'roles' => ['super_admin', 'admin'], 'active' => ['teachers.*']],
                     ['label' => 'Orangtua', 'route' => 'parents.index', 'icon' => 'heart', 'roles' => ['super_admin', 'admin'], 'active' => ['parents.*']],

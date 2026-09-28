@@ -84,6 +84,8 @@
                 </div>
             @endif
 
+            @include('partials.academic-calendar-tabs')
+
             <!-- Google Calendar Top Control Toolbar -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                 
