@@ -45,6 +45,12 @@ class HafalanRecordController extends Controller
                         $q->where('class_room_id', $request->integer('class_room_id'));
                     });
                 })
+                // Filter guru pengampu (halaqah) untuk admin/koordinator; guru sudah dibatasi di atas.
+                ->when($request->filled('teacher_id') && ! $user->hasRole('teacher'), function ($query) use ($request) {
+                    $query->whereHas('student', function ($q) use ($request) {
+                        $q->where('teacher_id', $request->integer('teacher_id'));
+                    });
+                })
                 ->when($request->filled('student_id'), function ($query) use ($request) {
                     $query->where('student_id', $request->integer('student_id'));
                 })
@@ -90,6 +96,12 @@ class HafalanRecordController extends Controller
                         $q->where('class_room_id', $request->integer('class_room_id'));
                     });
                 })
+                // Filter guru pengampu (halaqah) untuk admin/koordinator; guru sudah dibatasi di atas.
+                ->when($request->filled('teacher_id') && ! $user->hasRole('teacher'), function ($query) use ($request) {
+                    $query->whereHas('student', function ($q) use ($request) {
+                        $q->where('teacher_id', $request->integer('teacher_id'));
+                    });
+                })
                 ->when($request->filled('student_id'), function ($query) use ($request) {
                     $query->where('student_id', $request->integer('student_id'));
                 })
@@ -124,11 +136,27 @@ class HafalanRecordController extends Controller
                 ->withQueryString();
         }
 
+        $formData = $this->formData($user, $category);
+
+        // Pilihan guru pengampu: hanya guru yang punya murid di daftar (tab Ummi: murid Kelas 10).
+        $classIds = $formData['classRooms']->pluck('id');
+        $studentsInTab = $formData['students']->whereIn('class_room_id', $classIds);
+        $teacherOptions = $user->hasRole('teacher')
+            ? collect()
+            : $formData['teachers']->whereIn('id', $studentsInTab->pluck('teacher_id')->filter()->unique())->values();
+
+        // Guru dipilih: pilihan kelas menyempit ke kelas murid guru itu.
+        if ($request->filled('teacher_id') && $teacherOptions->isNotEmpty()) {
+            $teacherClassIds = $studentsInTab->where('teacher_id', $request->integer('teacher_id'))->pluck('class_room_id')->unique();
+            $formData['classRooms'] = $formData['classRooms']->whereIn('id', $teacherClassIds)->values();
+        }
+
         return view('hafalan-records.index', array_merge(
             [
                 'hafalanRecords' => $hafalanRecords,
+                'teacherOptions' => $teacherOptions,
             ],
-            $this->formData($user, $category)
+            $formData
         ));
     }
 

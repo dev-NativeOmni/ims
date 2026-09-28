@@ -114,8 +114,19 @@
 
                 <!-- Filter Section -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ request('category') === 'ummi' ? 'lg:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-6' }} gap-2.5 sm:gap-3">
+                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ request('category') === 'ummi' ? 'lg:grid-cols-5' : 'lg:grid-cols-4 xl:grid-cols-7' }} gap-2.5 sm:gap-3">
                         <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
+
+                        @if ($teacherOptions->isNotEmpty())
+                            <select name="teacher_id" onchange="this.form.class_room_id.value = ''; this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
+                                <option value="">Semua Guru Pengampu</option>
+                                @foreach ($teacherOptions as $teacher)
+                                    <option value="{{ $teacher->id }}" @selected((string) request('teacher_id') === (string) $teacher->id)>
+                                        {{ $teacher->user?->name ?? 'Guru #'.$teacher->id }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
 
                         <select name="class_room_id" onchange="this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
                             <option value="">Semua Kelas</option>
