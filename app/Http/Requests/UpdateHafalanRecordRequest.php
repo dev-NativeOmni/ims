@@ -189,6 +189,44 @@ class UpdateHafalanRecordRequest extends FormRequest
                     );
                 }
             }
+
+            // Duplicate passed setoran prevention on the same date (excluding current record)
+            $submittedAt = $this->input('submitted_at');
+            $studentId = $this->input('student_id');
+            $statuses = $this->input('statuses') ?: [];
+            $currentRecordId = $this->route('hafalanRecord')?->id ?? $this->route('hafalan_record');
+
+            if ($submittedAt && $studentId) {
+                foreach ($surahIds as $idx => $surahId) {
+                    $surah = Surah::find($surahId);
+                    $aStart = (int) ($ayahStarts[$idx] ?? 1);
+                    $aEnd = (int) ($ayahEnds[$idx] ?? 1);
+                    $status = $statuses[$idx] ?? 'passed';
+
+                    if ($surah && $status === 'passed') {
+                        $duplicateQuery = \App\Models\HafalanRecordSurah::query()
+                            ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+                            ->whereNull('hafalan_records.deleted_at')
+                            ->where('hafalan_records.student_id', $studentId)
+                            ->whereDate('hafalan_records.submitted_at', $submittedAt)
+                            ->where('hafalan_record_surahs.surah_id', $surahId)
+                            ->where('hafalan_record_surahs.ayah_start', $aStart)
+                            ->where('hafalan_record_surahs.ayah_end', $aEnd)
+                            ->where('hafalan_record_surahs.status', 'passed');
+
+                        if ($currentRecordId) {
+                            $duplicateQuery->where('hafalan_records.id', '!=', $currentRecordId);
+                        }
+
+                        if ($duplicateQuery->exists()) {
+                            $validator->errors()->add(
+                                "surah_ids.{$idx}",
+                                "Setoran untuk surah {$surah->name_latin} ayat {$aStart}-{$aEnd} pada tanggal ini sudah tercatat pada data lain."
+                            );
+                        }
+                    }
+                }
+            }
         });
     }
 

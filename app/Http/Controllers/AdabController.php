@@ -396,7 +396,7 @@ class AdabController extends Controller
     /* -----------------------------------------------------------------------
      | CREATE — show questionnaire form
      * -------------------------------------------------------------------- */
-    public function create(Student $student): View|RedirectResponse
+    public function create(Student $student, Request $request): View|RedirectResponse
     {
         $user = Auth::user();
 
@@ -408,9 +408,51 @@ class AdabController extends Controller
 
         abort_unless($isOwn || $isAdminOrSupervisor || $isPendampingAdab || $isTeacher || $isWaliKelas, 403);
 
+        $isStaff = $isAdminOrSupervisor || $isPendampingAdab || $isTeacher || $isWaliKelas;
+
+        $inputDate = $request->input('date');
+        if ($inputDate && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $inputDate)) {
+            $assessmentDate = min($inputDate, now()->toDateString());
+        } else {
+            $assessmentDate = now()->toDateString();
+        }
+
+        $parsedDate = Carbon::parse($assessmentDate);
+        $year = $parsedDate->year;
+        $month = $parsedDate->month;
+
+        // Fetch existing record for this student and date (if any)
+        $existingRecord = AdabRecord::where('student_id', $student->id)
+            ->where('assessment_date', $assessmentDate)
+            ->first();
+
+        // Calculate missing effective dates for this student in the current month
+        $effectiveDatesSet = Setting::getEffectiveDatesSet($year, $month);
+        $filledDates = AdabRecord::where('student_id', $student->id)
+            ->whereBetween('assessment_date', [
+                Carbon::createFromDate($year, $month, 1)->toDateString(),
+                Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString(),
+            ])
+            ->pluck('assessment_date')
+            ->map(fn ($d) => is_string($d) ? substr($d, 0, 10) : (is_object($d) ? $d->format('Y-m-d') : ''))
+            ->toArray();
+        $filledDatesSet = array_flip($filledDates);
+
+        $todayStr = now()->toDateString();
+        $missingDatesThisMonth = [];
+        foreach ($effectiveDatesSet as $dateStr => $val) {
+            if ($dateStr <= $todayStr && ! isset($filledDatesSet[$dateStr])) {
+                $missingDatesThisMonth[] = [
+                    'date' => $dateStr,
+                    'day' => (int) substr($dateStr, 8, 2),
+                    'label' => Carbon::parse($dateStr)->translatedFormat('d M Y (l)'),
+                ];
+            }
+        }
+
         $categories = Setting::getAdabQuestions();
 
-        return view('adab.create', compact('student', 'categories'));
+        return view('adab.create', compact('student', 'categories', 'assessmentDate', 'existingRecord', 'missingDatesThisMonth', 'isStaff'));
     }
 
     /* -----------------------------------------------------------------------
@@ -431,7 +473,15 @@ class AdabController extends Controller
                 ->with('error', 'Anda tidak memiliki izin untuk menyimpan data ini.');
         }
 
-        $today = now()->toDateString();
+        $isStaff = $isAdminOrSupervisor || $isPendampingAdab || $isTeacher || $isWaliKelas;
+
+        $requestedDate = $request->input('assessment_date') ?: $request->input('date');
+        if ($isStaff && $requestedDate && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $requestedDate)) {
+            $assessmentDate = min($requestedDate, now()->toDateString());
+        } else {
+            $assessmentDate = now()->toDateString();
+        }
+
         $categories = Setting::getAdabQuestions();
 
         $answers = [];
@@ -458,7 +508,7 @@ class AdabController extends Controller
         AdabRecord::updateOrCreate(
             [
                 'student_id' => $student->id,
-                'assessment_date' => $today,
+                'assessment_date' => $assessmentDate,
             ],
             [
                 'evaluator_id' => $user->id,
@@ -469,8 +519,10 @@ class AdabController extends Controller
             ]
         );
 
+        $formattedDate = Carbon::parse($assessmentDate)->translatedFormat('d F Y');
+
         return redirect()->route('adab.show', $student)
-            ->with('success', 'Kuisioner adab harian berhasil disimpan.');
+            ->with('success', "Kuisioner adab harian untuk tanggal {$formattedDate} berhasil disimpan.");
     }
 
     /* -----------------------------------------------------------------------
@@ -872,6 +924,7 @@ class AdabController extends Controller
 
         // Fetch mentor assessments for this month
         $mentorAssessments = AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->with('mentor')
             ->where('year', $year)
             ->where('month', $month)
             ->get()
@@ -938,6 +991,15 @@ class AdabController extends Controller
                 $mentorScoredCount++;
             }
 
+            if ($mentorScore !== null) {
+                $finalScore = round(($attendanceRate * 0.40) + ($mentorScore * 0.60), 1);
+            } else {
+                $finalScore = $attendanceRate;
+            }
+
+            $grade = Setting::getAdabGrade($finalScore);
+            $gradeLabel = Setting::getAdabGradeLabel($grade);
+
             $studentRows[] = [
                 'student_id' => $student->id,
                 'student_name' => $student->name,
@@ -949,7 +1011,12 @@ class AdabController extends Controller
                 'missed_dates' => $missedDates,
                 'attendance_rate' => $attendanceRate,
                 'mentor_score' => $mentorScore,
+                'final_score' => $finalScore,
+                'grade' => $grade,
+                'grade_label' => $gradeLabel,
                 'mentor_notes' => $mentorAssessment?->notes ?? '',
+                'mentor_name' => $mentorAssessment?->mentor?->name ?? null,
+                'mentor_updated_at' => $mentorAssessment?->updated_at?->format('d M Y H:i'),
                 'has_mentor_scored' => $mentorAssessment !== null,
                 'has_missed' => $missedEffectiveCount > 0,
             ];

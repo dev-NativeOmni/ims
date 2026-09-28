@@ -29,6 +29,42 @@
                 </div>
             @endif
 
+            {{-- PERINGATAN SANTRI TANPA TARGET --}}
+            @if (data_get($stats, 'students_without_target_count', 0) > 0)
+                <div class="bg-amber-500/10 border border-amber-500/30 dark:bg-amber-950/40 dark:border-amber-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <x-heroicon-o-exclamation-triangle class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-amber-900 dark:text-amber-200">
+                                Perhatian: {{ data_get($stats, 'students_without_target_count') }} Santri Bimbingan Belum Memiliki Target ({{ data_get($stats, 'current_month_name') }})
+                            </h4>
+                            <p class="text-xs text-amber-800/80 dark:text-amber-400/80 mt-0.5">
+                                Segera tetapkan target agar grafik progres dan raport bulanan santri terhitung dengan akurat.
+                            </p>
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                @foreach (collect(data_get($stats, 'students_without_target', []))->take(8) as $noTargetStudent)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                        {{ $noTargetStudent->name }}
+                                    </span>
+                                @endforeach
+                                @if (data_get($stats, 'students_without_target_count') > 8)
+                                    <span class="text-[11px] font-bold text-amber-700 dark:text-amber-400 self-center">
+                                        +{{ data_get($stats, 'students_without_target_count') - 8 }} lainnya
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 self-stretch md:self-center shrink-0">
+                        <a href="{{ route('hafalan-targets.term') }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs transition active:scale-95 w-full md:w-auto">
+                            Isi Target Triwulan &rarr;
+                        </a>
+                    </div>
+                </div>
+            @endif
+
             {{-- TEACHER HERO BENTO WITH CLASS CIRCULAR PROGRESS RING --}}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
                 

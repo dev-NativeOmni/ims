@@ -63,11 +63,23 @@ class WaliKelasController extends Controller
 
         [$monthlyTuntas, $termTuntas] = $this->buildHafalanTuntas($classRoom, $students, $studentIds, $today, $calendar, $positionCheck);
 
+        $currentMonthStart = $today->copy()->startOfMonth()->toDateString();
+        $currentMonthEnd = $today->copy()->endOfMonth()->toDateString();
+
+        $studentsWithTargetIds = HafalanTarget::query()
+            ->whereIn('student_id', $studentIds)
+            ->whereBetween('target_date', [$currentMonthStart, $currentMonthEnd])
+            ->pluck('student_id')
+            ->unique();
+
+        $studentsWithoutTarget = $students->whereNotIn('id', $studentsWithTargetIds)->values();
+
         return view('wali-kelas.index', [
             'classRoom' => $classRoom,
             'students' => $students,
             'monthlyTuntas' => $monthlyTuntas,
             'termTuntas' => $termTuntas,
+            'studentsWithoutTarget' => $studentsWithoutTarget,
             'adabToday' => $this->buildAdabToday($students, $studentIds, $today),
             'discipline' => $this->buildDiscipline($students, $studentIds, $today),
         ]);

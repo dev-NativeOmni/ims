@@ -192,11 +192,24 @@ class DashboardService
                 ->whereIn('status', ['repeat', 'needs_improvement'])
                 ->count();
 
+            $currentMonthStart = Carbon::today()->startOfMonth()->toDateString();
+            $currentMonthEnd = Carbon::today()->endOfMonth()->toDateString();
+            $studentsWithTargetIds = HafalanTarget::query()
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('target_date', [$currentMonthStart, $currentMonthEnd])
+                ->pluck('student_id')
+                ->unique();
+
+            $studentsWithoutTarget = $students->whereNotIn('id', $studentsWithTargetIds)->values();
+
             return [
                 'teacher' => $teacher,
                 'students' => $students,
                 'students_progress' => $this->studentsProgress($students),
                 'total_students' => $students->count(),
+                'students_without_target' => $studentsWithoutTarget,
+                'students_without_target_count' => $studentsWithoutTarget->count(),
+                'current_month_name' => Carbon::today()->translatedFormat('F Y'),
 
                 'hafalan_today' => $hafalanToday,
                 'murajaah_today' => $murajaahToday,

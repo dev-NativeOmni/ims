@@ -270,6 +270,40 @@ class StoreHafalanRecordRequest extends FormRequest
                 }
             }
 
+            // Duplicate passed setoran prevention on the same date
+            $submittedAt = $this->input('submitted_at');
+            $studentId = $this->input('student_id');
+            $statuses = $this->input('statuses') ?: [];
+
+            if ($submittedAt && $studentId) {
+                foreach ($surahIds as $idx => $surahId) {
+                    $surah = Surah::find($surahId);
+                    $aStart = (int) ($ayahStarts[$idx] ?? 1);
+                    $aEnd = (int) ($ayahEnds[$idx] ?? 1);
+                    $status = $statuses[$idx] ?? 'passed';
+
+                    if ($surah && $status === 'passed') {
+                        $duplicateExists = \App\Models\HafalanRecordSurah::query()
+                            ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+                            ->whereNull('hafalan_records.deleted_at')
+                            ->where('hafalan_records.student_id', $studentId)
+                            ->whereDate('hafalan_records.submitted_at', $submittedAt)
+                            ->where('hafalan_record_surahs.surah_id', $surahId)
+                            ->where('hafalan_record_surahs.ayah_start', $aStart)
+                            ->where('hafalan_record_surahs.ayah_end', $aEnd)
+                            ->where('hafalan_record_surahs.status', 'passed')
+                            ->exists();
+
+                        if ($duplicateExists) {
+                            $validator->errors()->add(
+                                "surah_ids.{$idx}",
+                                "Setoran untuk surah {$surah->name_latin} ayat {$aStart}-{$aEnd} pada tanggal ini sudah tercatat sebelumnya. Harap periksa kembali untuk menghindari duplikasi."
+                            );
+                        }
+                    }
+                }
+            }
+
             if ($isSingle) {
                 $errors = $validator->errors();
 

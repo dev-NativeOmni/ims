@@ -74,6 +74,28 @@
                     </div>
                 </div>
 
+                @if (isset($studentsWithoutTarget) && $studentsWithoutTarget->isNotEmpty())
+                    <div class="bg-amber-500/10 border border-amber-500/30 dark:bg-amber-950/40 dark:border-amber-800 rounded-xl p-4 space-y-2.5">
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">
+                                Perhatian: {{ $studentsWithoutTarget->count() }} Murid Belum Memiliki Target Bulan Ini ({{ now()->translatedFormat('F Y') }})
+                            </h3>
+                        </div>
+                        <p class="text-xs text-amber-800/80 dark:text-amber-400/80">
+                            Murid-murid berikut belum ditetapkan target bulanannya oleh guru pengampu / musyrif:
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            @foreach ($studentsWithoutTarget as $noTargetStudent)
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
+                                    <span>{{ $noTargetStudent->name }}</span>
+                                    <span class="text-[10px] opacity-75 font-normal">({{ $noTargetStudent->teacher?->user?->name ?: 'Belum ada guru' }})</span>
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Ketuntasan Hafalan -->
                 <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-5 space-y-4">
                     <div>

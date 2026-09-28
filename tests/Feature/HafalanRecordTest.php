@@ -412,4 +412,31 @@ class HafalanRecordTest extends TestCase
         $response->assertSee($this->surah->name_latin);
         $response->assertSee($surah2->name_latin);
     }
+
+    #[Test]
+    public function store_fails_when_duplicate_passed_record_submitted_on_same_date(): void
+    {
+        $today = now()->toDateString();
+        // Create first passed record
+        $this->createHafalanRecord([
+            'ayah_start' => 1,
+            'ayah_end' => 7,
+            'status' => 'passed',
+            'submitted_at' => $today,
+        ]);
+
+        // Attempt to submit identical passed record on same date
+        $response = $this->actingAs($this->admin)->post(route('hafalan-records.store'), [
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_ids' => [$this->surah->id],
+            'ayah_starts' => [1],
+            'ayah_ends' => [7],
+            'submission_types' => ['new'],
+            'statuses' => ['passed'],
+            'submitted_at' => $today,
+        ]);
+
+        $response->assertSessionHasErrors('surah_ids.0');
+    }
 }

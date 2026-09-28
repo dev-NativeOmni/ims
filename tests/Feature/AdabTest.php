@@ -446,6 +446,9 @@ class AdabTest extends TestCase
                     'missed_dates',
                     'attendance_rate',
                     'mentor_score',
+                    'final_score',
+                    'grade',
+                    'grade_label',
                     'has_mentor_scored',
                     'has_missed',
                 ],
@@ -467,5 +470,52 @@ class AdabTest extends TestCase
         $this->assertNotNull($s2);
         $this->assertTrue($s1['filled_count'] >= 2);
         $this->assertTrue($s2['filled_count'] >= 1);
+    }
+
+    public function test_authorized_staff_can_assist_and_fill_missed_date_for_student(): void
+    {
+        $admin = User::factory()->create([
+            'role_id' => Role::where('name', 'admin')->first()->id,
+            'username' => 'testadmin_adab',
+            'status' => 'active',
+        ]);
+
+        $student = Student::create([
+            'name' => 'Santri Missed Date',
+            'student_number' => 'ST_MISSED_01',
+        ]);
+
+        $pastDate = now()->subDays(2)->toDateString();
+
+        // Admin opens create form with ?date=...
+        $this->actingAs($admin)
+            ->get(route('adab.create', ['student' => $student, 'date' => $pastDate]))
+            ->assertStatus(200)
+            ->assertSee($pastDate);
+
+        // Admin submits questionnaire for that past date
+        $data = [
+            'assessment_date' => $pastDate,
+            'notes' => 'Bantu isi tanggal bolong',
+        ];
+        for ($c = 0; $c < 4; $c++) {
+            for ($q = 0; $q < 5; $q++) {
+                $data["cat_{$c}_q{$q}"] = 1;
+            }
+        }
+
+        $response = $this->actingAs($admin)
+            ->post(route('adab.store', $student), $data);
+
+        $response->assertRedirect(route('adab.show', $student));
+
+        $record = \App\Models\AdabRecord::where('student_id', $student->id)
+            ->whereDate('assessment_date', $pastDate)
+            ->first();
+
+        $this->assertNotNull($record);
+        $this->assertEquals($admin->id, $record->evaluator_id);
+        $this->assertEquals(100.0, $record->student_score);
+        $this->assertEquals('Bantu isi tanggal bolong', $record->notes);
     }
 }

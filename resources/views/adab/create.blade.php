@@ -38,13 +38,58 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
                     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 sm:p-6 flex flex-col justify-between">
                         <div>
-                            <span class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Tanggal Pengisian</span>
-                            <div class="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500">Tanggal Pengisian</span>
+                                @if ($existingRecord)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                        Sudah Diisi (Edit)
+                                    </span>
+                                @endif
                             </div>
+
+                            @if ($isStaff)
+                                <div class="space-y-2">
+                                    <input
+                                        type="date"
+                                        name="assessment_date"
+                                        id="assessment_date"
+                                        value="{{ $assessmentDate }}"
+                                        max="{{ now()->toDateString() }}"
+                                        onchange="window.location.href = '{{ route('adab.create', $student) }}?date=' + this.value"
+                                        class="w-full text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+                                    >
+                                    <p class="text-[11px] text-zinc-400">
+                                        Periode: <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ \Carbon\Carbon::parse($assessmentDate)->translatedFormat('l, d F Y') }}</span>
+                                    </p>
+                                </div>
+                            @else
+                                <input type="hidden" name="assessment_date" value="{{ $assessmentDate }}">
+                                <div class="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                    {{ \Carbon\Carbon::parse($assessmentDate)->translatedFormat('d F Y') }}
+                                </div>
+                            @endif
                         </div>
-                        <div class="mt-3 sm:mt-6 p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border border-zinc-200 dark:border-zinc-800">
-                            <strong>Petunjuk:</strong> Jawab semua pertanyaan dengan jujur. Pengisian kuisioner harian ini mencatat kehadiran dan keaktifan Adab Anda untuk hari ini.
+
+                        {{-- Missing Dates Chips (Bantu Isi Tanggal Bolong) --}}
+                        @if ($isStaff && !empty($missingDatesThisMonth))
+                            <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                                <span class="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 block mb-1.5">
+                                    Pilih Tanggal Belum Terisi (Bulan Ini):
+                                </span>
+                                <div class="flex flex-wrap gap-1 max-h-28 overflow-y-auto pr-1">
+                                    @foreach ($missingDatesThisMonth as $missed)
+                                        <a href="{{ route('adab.create', ['student' => $student, 'date' => $missed['date']]) }}"
+                                           class="inline-flex items-center px-2 py-1 rounded text-[11px] font-bold transition {{ $assessmentDate === $missed['date'] ? 'bg-amber-600 text-white ring-2 ring-amber-500' : 'bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800' }}"
+                                           title="Bantu isi untuk {{ $missed['label'] }}">
+                                            Tgl {{ $missed['day'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mt-3 p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border border-zinc-200 dark:border-zinc-800">
+                            <strong>Petunjuk:</strong> Pengisian kuisioner ini mencatat kehadiran dan pembiasaan adab murid pada tanggal yang dipilih.
                         </div>
                     </div>
 
@@ -56,7 +101,12 @@
                             </svg>
                         </div>
                         <div class="relative z-10">
-                            <h4 class="text-xs sm:text-sm font-semibold uppercase text-indigo-200 tracking-wider">Status Pengisian Hari Ini</h4>
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs sm:text-sm font-semibold uppercase text-indigo-200 tracking-wider">Status Pengisian Kuisioner</h4>
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-white/20 text-white">
+                                    {{ \Carbon\Carbon::parse($assessmentDate)->translatedFormat('d M Y') }}
+                                </span>
+                            </div>
                             <div class="flex items-baseline gap-2 sm:gap-3 mt-2 sm:mt-4">
                                 <span class="text-4xl sm:text-6xl font-black tracking-tight" id="liveScore">0</span>
                                 <div class="flex flex-col">
@@ -90,6 +140,7 @@
                                 @php
                                     $questionCounter++;
                                     $inputName = "cat_{$catIdx}_q{$qIdx}";
+                                    $existingVal = isset($existingRecord->answers["cat_{$catIdx}"][$qIdx]) ? (int) $existingRecord->answers["cat_{$catIdx}"][$qIdx] : null;
                                 @endphp
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-3 first:pt-0 gap-3">
                                     <div class="flex items-start gap-2.5 flex-1">
@@ -101,12 +152,12 @@
 
                                     <div class="flex items-center gap-2 self-stretch sm:self-center shrink-0">
                                         <label class="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 sm:py-1.5 border rounded-lg cursor-pointer text-xs font-bold transition select-none border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-emerald-300 dark:hover:border-emerald-700 min-h-[38px] active:scale-95" data-label-type="ya">
-                                            <input type="radio" name="{{ $inputName }}" value="1" class="sr-only adab-radio" data-input="{{ $inputName }}" required>
+                                            <input type="radio" name="{{ $inputName }}" value="1" class="sr-only adab-radio" data-input="{{ $inputName }}" @checked($existingVal === 1) required>
                                             <x-heroicon-o-check class="w-3.5 h-3.5 stroke-[2.5]" />
                                             <span>Ya</span>
                                         </label>
                                         <label class="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 sm:py-1.5 border rounded-lg cursor-pointer text-xs font-bold transition select-none border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-rose-300 dark:hover:border-rose-700 min-h-[38px] active:scale-95" data-label-type="tidak">
-                                            <input type="radio" name="{{ $inputName }}" value="0" class="sr-only adab-radio" data-input="{{ $inputName }}" required>
+                                            <input type="radio" name="{{ $inputName }}" value="0" class="sr-only adab-radio" data-input="{{ $inputName }}" @checked($existingVal === 0) required>
                                             <x-heroicon-o-x-mark class="w-3.5 h-3.5 stroke-[2.5]" />
                                             <span>Tidak</span>
                                         </label>
@@ -124,9 +175,9 @@
                         name="notes"
                         id="notes"
                         rows="3"
-                        placeholder="Tuliskan refleksi singkat Anda hari ini..."
+                        placeholder="Tuliskan refleksi singkat Anda..."
                         class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
-                    ></textarea>
+                    >{{ old('notes', $existingRecord->notes ?? '') }}</textarea>
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-2">

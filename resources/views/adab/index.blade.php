@@ -194,11 +194,9 @@
                                             </a>
 
                                             @if ($isAdmin || $isSupervisor || Auth::user()->hasAnyRole(['teacher', 'pendamping_adab', 'wali_kelas']))
-                                                @if (!$student->today_record)
-                                                    <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition duration-150">
-                                                        Bantu Isi
-                                                    </a>
-                                                @endif
+                                                <a href="{{ route('adab.create', $student) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white {{ !$student->today_record ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-700/80 hover:bg-indigo-800' }} rounded-md transition duration-150" title="Bantu isi kuisioner hari ini atau tanggal susulan yang belum terisi">
+                                                    {{ !$student->today_record ? 'Bantu Isi' : 'Bantu Isi / Susulan' }}
+                                                </a>
                                             @endif
                                         </td>
                                     </tr>
@@ -715,10 +713,11 @@
                                                 <template x-if="st.missed_dates.length > 0">
                                                     <div class="flex flex-wrap gap-1 max-w-[220px]">
                                                         <template x-for="dNum in st.missed_dates" :key="dNum">
-                                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                                                                  :title="'Belum mengisi pada tgl ' + dNum + ' ' + monthName">
+                                                            <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + getFormattedDate(dNum)"
+                                                               class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 hover:bg-rose-200 text-rose-700 dark:bg-rose-950/60 dark:hover:bg-rose-900 dark:text-rose-300 transition cursor-pointer"
+                                                               :title="'Bantu isi kuisioner tgl ' + dNum + ' ' + monthName">
                                                                 <span x-text="'Tgl ' + dNum"></span>
-                                                            </span>
+                                                            </a>
                                                         </template>
                                                     </div>
                                                 </template>
@@ -734,18 +733,20 @@
                                                     
                                                     <!-- State 1: Filled (Green) -->
                                                     <template x-if="st.daily_status[day.day]?.status === 'filled'">
-                                                        <div class="w-5.5 h-5.5 mx-auto rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-default"
-                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Sudah isi (' + (st.daily_status[day.day]?.score || 100) + ' poin)'">
+                                                        <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + day.date"
+                                                           class="w-5.5 h-5.5 mx-auto rounded-md bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-pointer transition active:scale-95"
+                                                           :title="'Tgl ' + day.day + ' ' + monthName + ': Sudah isi (' + (st.daily_status[day.day]?.score || 100) + ' poin) - Klik untuk lihat/edit'">
                                                             ✓
-                                                        </div>
+                                                        </a>
                                                     </template>
 
                                                     <!-- State 2: Missed on effective day (Red) -->
                                                     <template x-if="st.daily_status[day.day]?.status === 'missed'">
-                                                        <div class="w-5.5 h-5.5 mx-auto rounded-md bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-default"
-                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Terlewat / Belum Mengisi'">
+                                                        <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + day.date"
+                                                           class="w-5.5 h-5.5 mx-auto rounded-md bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-pointer transition active:scale-95 animate-pulse"
+                                                           :title="'Tgl ' + day.day + ' ' + monthName + ': Terlewat / Belum Mengisi (Klik untuk bantu isi)'">
                                                             ✕
-                                                        </div>
+                                                        </a>
                                                     </template>
 
                                                     <!-- State 3: Off / Holiday / Weekend -->
@@ -787,7 +788,7 @@
                                 </span>
                                 <span class="inline-flex items-center gap-1.5">
                                     <span class="w-4 h-4 rounded bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[9px]">✕</span>
-                                    <span class="font-medium text-rose-700 dark:text-rose-300 font-bold">Terlewat / Bolong</span>
+                                    <span class="font-medium text-rose-700 dark:text-rose-300 font-bold">Terlewat / Bolong (Klik untuk Bantu Isi)</span>
                                 </span>
                                 <span class="inline-flex items-center gap-1.5">
                                     <span class="w-4 h-4 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center text-[10px]">-</span>
@@ -799,10 +800,135 @@
                                 </span>
                             </div>
                             <div>
-                                <em>Klik nama murid untuk melihat rincian riwayat lengkap per kuisioner.</em>
+                                <em>Klik ikon silang (✕) pada tanggal merah untuk langsung membuka formulir Bantu Isi.</em>
                             </div>
                         </div>
 
+                    </div>
+
+                    <!-- ═══════════════ TABEL KETERANGAN NILAI PENDAMPING & EVALUASI AKHIR ═══════════════ -->
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                            <div>
+                                <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                    <x-heroicon-o-clipboard-document-check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                    <span>Tabel Keterangan Nilai Pendamping & Rekapitulasi (<span x-text="monthName + ' ' + selectedYear"></span>)</span>
+                                </h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    Monitoring kelengkapan nilai pembina/pendamping adab dan skor akhir komposit (40% Kehadiran Mandiri + 60% Nilai Pendamping).
+                                </p>
+                            </div>
+
+                            <!-- Filter Status Nilai Pendamping -->
+                            <div class="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl self-start sm:self-auto text-xs font-semibold">
+                                <button type="button" @click="mentorFilter = 'all'" :class="mentorFilter === 'all' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'" class="px-2.5 py-1 rounded-lg transition cursor-pointer">
+                                    Semua (<span x-text="students.length"></span>)
+                                </button>
+                                <button type="button" @click="mentorFilter = 'unscored'" :class="mentorFilter === 'unscored' ? 'bg-white dark:bg-zinc-700 text-amber-700 dark:text-amber-300 shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-amber-600'" class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
+                                    <span>Belum Dinilai</span>
+                                    <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 text-[10px] font-bold" x-text="(students.length - (summary.mentor_scored_count || 0))"></span>
+                                </button>
+                                <button type="button" @click="mentorFilter = 'scored'" :class="mentorFilter === 'scored' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-emerald-300 shadow-2xs' : 'text-zinc-500 dark:text-zinc-400 hover:text-emerald-600'" class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
+                                    <span>Sudah Dinilai</span>
+                                    <span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold" x-text="summary.mentor_scored_count || 0"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-xs">
+                                <thead class="bg-zinc-50 dark:bg-zinc-800/60 font-bold text-zinc-600 dark:text-zinc-300">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-center w-12">No</th>
+                                        <th class="px-4 py-2.5 text-left">Nama Murid</th>
+                                        <th class="px-3 py-2.5 text-center">Presensi Mandiri (40%)</th>
+                                        <th class="px-3 py-2.5 text-center text-purple-700 dark:text-purple-400">Nilai Pendamping (60%)</th>
+                                        <th class="px-3 py-2.5 text-center">Nilai Akhir Adab</th>
+                                        <th class="px-3 py-2.5 text-center">Predikat</th>
+                                        <th class="px-4 py-2.5 text-left min-w-[200px]">Catatan Pembina / Catatan Perkembangan</th>
+                                        <th class="px-3 py-2.5 text-center">Status & Penilai</th>
+                                        <th class="px-3 py-2.5 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                                    <template x-for="(st, idx) in tableStudents" :key="st.student_id">
+                                        <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/30 transition">
+                                            <td class="px-3 py-2.5 text-center text-zinc-400 font-semibold" x-text="idx + 1"></td>
+                                            <td class="px-4 py-2.5">
+                                                <a :href="'{{ url('adab/student') }}/' + st.student_id" class="font-bold text-zinc-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline block">
+                                                    <span x-text="st.student_name"></span>
+                                                </a>
+                                                <div class="text-[10px] text-zinc-400 mt-0.5">NIS: <span x-text="st.student_number"></span></div>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <div class="font-bold text-zinc-800 dark:text-zinc-200" x-text="st.attendance_rate + '%'"></div>
+                                                <div class="text-[10px] text-zinc-400" x-text="st.filled_count + '/' + totalEffectiveDays + ' hari'"></div>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <template x-if="st.has_mentor_scored">
+                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800" x-text="st.mentor_score"></span>
+                                                </template>
+                                                <template x-if="!st.has_mentor_scored">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                                        Belum Dinilai
+                                                    </span>
+                                                </template>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <span class="font-black text-sm" :class="st.final_score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : (st.final_score >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400')" x-text="st.final_score"></span>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full font-black text-xs"
+                                                      :class="{
+                                                          'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300': st.grade === 'A',
+                                                          'bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300': st.grade === 'B',
+                                                          'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300': st.grade === 'C',
+                                                          'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300': st.grade === 'D',
+                                                          'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300': st.grade === 'E'
+                                                      }"
+                                                      :title="st.grade_label"
+                                                      x-text="st.grade"></span>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-zinc-600 dark:text-zinc-300">
+                                                <span x-text="st.mentor_notes ? st.mentor_notes : '-'" class="italic text-xs"></span>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center">
+                                                <template x-if="st.has_mentor_scored">
+                                                    <div>
+                                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                                            <x-heroicon-m-check-circle class="w-3.5 h-3.5" />
+                                                            <span>Dinilai</span>
+                                                        </span>
+                                                        <div class="text-[9px] text-zinc-400 mt-0.5 truncate max-w-[110px] mx-auto" :title="st.mentor_name" x-text="st.mentor_name || 'Pembina'"></div>
+                                                    </div>
+                                                </template>
+                                                <template x-if="!st.has_mentor_scored">
+                                                    <span class="inline-flex items-center text-[10px] font-bold text-zinc-400">
+                                                        -
+                                                    </span>
+                                                </template>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-center whitespace-nowrap space-x-1">
+                                                <a :href="'{{ url('adab/student') }}/' + st.student_id" class="inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition">
+                                                    Rincian
+                                                </a>
+                                                <button type="button" @click="tab = 'monthly_mentor'; $nextTick(() => window.scrollTo({top: 0, behavior: 'smooth'}))" class="inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 transition cursor-pointer">
+                                                    Nilai Cepat
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="tableStudents.length === 0 && !isLoading">
+                                        <tr>
+                                            <td colspan="9" class="px-6 py-8 text-center text-zinc-400 dark:text-zinc-500">
+                                                Tidak ada data santri yang sesuai dengan filter.
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -1063,6 +1189,7 @@
                 selectedYear: {{ (int) request('year', now()->format('Y')) }},
                 searchQuery: '',
                 onlyMissed: false,
+                mentorFilter: 'all',
                 isLoading: false,
                 monthName: '',
                 daysInMonth: 30,
@@ -1071,10 +1198,32 @@
                 students: [],
                 summary: {},
 
+                get formattedMonthPadded() {
+                    return String(this.selectedMonth).padStart(2, '0');
+                },
+
+                getFormattedDate(dayNum) {
+                    return `${this.selectedYear}-${this.formattedMonthPadded}-${String(dayNum).padStart(2, '0')}`;
+                },
+
                 get filteredStudents() {
                     let list = this.students;
                     if (this.onlyMissed) {
                         list = list.filter(s => s.has_missed);
+                    }
+                    if (this.searchQuery && this.searchQuery.trim() !== '') {
+                        const q = this.searchQuery.toLowerCase().trim();
+                        list = list.filter(s => (s.student_name && s.student_name.toLowerCase().includes(q)) || (s.student_number && s.student_number.includes(q)));
+                    }
+                    return list;
+                },
+
+                get tableStudents() {
+                    let list = this.students;
+                    if (this.mentorFilter === 'scored') {
+                        list = list.filter(s => s.has_mentor_scored);
+                    } else if (this.mentorFilter === 'unscored') {
+                        list = list.filter(s => !s.has_mentor_scored);
                     }
                     if (this.searchQuery && this.searchQuery.trim() !== '') {
                         const q = this.searchQuery.toLowerCase().trim();
