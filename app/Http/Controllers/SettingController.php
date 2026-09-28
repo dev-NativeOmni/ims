@@ -341,6 +341,7 @@ class SettingController extends Controller
         return view('settings.hafalan-targets', [
             'config' => $config,
             'levelLines' => TargetRules::levelLines(),
+            'termLines' => TargetRules::termLines(),
             'mandatoryUntil' => TargetRules::mandatoryUntil(),
             'latestSwitch' => TargetRules::latestSwitch(),
             'canEditTargetRules' => request()->user()?->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh']) ?? false,
@@ -355,13 +356,15 @@ class SettingController extends Controller
         $validated = $request->validate([
             'level_lines' => ['required', 'array'],
             'level_lines.*' => ['required', 'integer', 'between:1,60'],
+            'term_lines' => ['nullable', 'array'],
+            'term_lines.*' => ['nullable', 'integer', 'between:1,2000'],
             'mandatory_until' => ['required', 'integer', 'between:2,30'],
             'latest_switch' => ['required', 'integer', 'between:2,30', 'lte:mandatory_until'],
         ], [
             'latest_switch.lte' => 'Batas pindah paling akhir harus sama dengan atau setelah juz wajib (nomor juz lebih kecil atau sama).',
         ]);
 
-        TargetRules::save($validated['level_lines'], (int) $validated['mandatory_until'], (int) $validated['latest_switch']);
+        TargetRules::save($validated['level_lines'], (int) $validated['mandatory_until'], (int) $validated['latest_switch'], $validated['term_lines'] ?? []);
 
         return redirect()->route('settings.hafalan-targets')
             ->with('success', 'Aturan baris & urutan hafalan disimpan.');

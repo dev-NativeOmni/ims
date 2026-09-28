@@ -445,10 +445,13 @@ class StudentReportController extends Controller
                     ->filter(fn ($t) => $t->surah);
                 $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, now()->min($raporTerm['end']));
                 $levelBaris = TargetRules::linesForLevel($student->tahfizh_level);
+                $fixedTermLines = TargetRules::termLinesForLevel($student->tahfizh_level);
                 $termMeetings = $levelBaris ? intdiv((int) $breakdown['evaluation']['target_lines'], $levelBaris) : 0;
 
-                $termTargetText = "Target {$raporTerm['label']}: {$levelBaris} baris x {$termMeetings} pertemuan = "
-                    .$breakdown['evaluation']['target_lines'].' baris · Capaian '.($breakdown['evaluation']['achieved_lines'] + 0).' baris';
+                $termTargetText = $fixedTermLines !== null
+                    ? "Target {$raporTerm['label']}: {$breakdown['evaluation']['target_lines']} baris per triwulan · Capaian ".($breakdown['evaluation']['achieved_lines'] + 0).' baris'
+                    : "Target {$raporTerm['label']}: {$levelBaris} baris x {$termMeetings} pertemuan = "
+                        .$breakdown['evaluation']['target_lines'].' baris · Capaian '.($breakdown['evaluation']['achieved_lines'] + 0).' baris';
                 if ($breakdown['target']) {
                     $termTargetText .= " · Target hafalan QS. {$breakdown['target']->surah->name_latin} ayat {$breakdown['target']->ayah}";
                 }

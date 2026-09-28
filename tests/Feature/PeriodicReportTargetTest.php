@@ -76,15 +76,16 @@ class PeriodicReportTargetTest extends TestCase
         $report = fn () => collect($this->actingAs($this->admin)->get(route('reports.periodic', $query))->viewData('studentReports'))
             ->first(fn ($r) => $r['student']->id === $this->student->id);
 
-        // Target baris = 5 pertemuan (Rabu September) x 5 baris = 25; capaian 7 baris walau
+        // Target baris September = bagian target paten Reguler (195/triwulan) untuk bulan ini = 70;
+        // capaian 7 baris walau
         // surah target (Al-Fatihah 5) sudah terlewati -> belum tuntas.
         $row = $report();
-        $this->assertSame(25, $row['target_baris']);
+        $this->assertSame(70, $row['target_baris']);
         $this->assertFalse($row['is_tuntas']);
 
         // Tambah setoran lulus dengan baris yang cukup -> tuntas.
         $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-09-16']);
-        $record->surahs()->create(['surah_id' => Surah::where('number', 2)->value('id'), 'ayah_start' => 1, 'ayah_end' => 10, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 20]);
+        $record->surahs()->create(['surah_id' => Surah::where('number', 2)->value('id'), 'ayah_start' => 1, 'ayah_end' => 10, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 70]);
         $this->assertTrue($report()['is_tuntas']);
     }
 }

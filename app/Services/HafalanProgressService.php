@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Controllers\ReportController;
+use App\Models\ClassRoom;
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
@@ -171,8 +172,11 @@ class HafalanProgressService
     }
 
     /**
-     * Target baris = pertemuan aktif kelas pada rentang x baris per pertemuan level murid
-     * (Pengaturan Target Hafalan). 0 untuk Ummi / tanpa kelas.
+     * Target baris pada rentang tanggal. Reguler & Akselerasi memakai target paten per triwulan
+     * (TargetRules::termLinesForLevel: 195 / 240), dibagi ke bulan sesuai jumlah pertemuan aktif
+     * (pembulatan kumulatif, jadi jumlah tiga bulan selalu tepat sama dengan target triwulan).
+     * Level tanpa angka paten (Tahsin) = pertemuan aktif x baris per pertemuan. 0 untuk Ummi /
+     * tanpa kelas.
      */
     public function targetLines(Student $student, Carbon $from, Carbon $to): int
     {
@@ -182,7 +186,65 @@ class HafalanProgressService
             return 0;
         }
 
+        $termLines = TargetRules::termLinesForLevel($student->tahfizh_level);
+        if ($termLines !== null) {
+            return $this->fixedTermTargetLines($classRoom, $termLines, $from->copy()->startOfDay(), $to->copy()->startOfDay());
+        }
+
         return (int) ($level * app(AcademicCalendarService::class)->scheduledMeetings($classRoom, $from->copy()->startOfDay(), $to->copy()->startOfDay()));
+    }
+
+    /**
+     * Bagian target paten triwulan yang jatuh pada rentang (per bulan; bulan yang hanya terpotong
+     * sebagian dihitung proporsional menurut pertemuan aktif di rentang itu).
+     */
+    private function fixedTermTargetLines(ClassRoom $classRoom, int $termLines, Carbon $from, Carbon $to): int
+    {
+        $calendar = app(AcademicCalendarService::class);
+        $total = 0;
+        $cursor = $from->copy()->startOfMonth();
+
+        while ($cursor->lte($to)) {
+            $monthStart = $cursor->copy()->startOfMonth();
+            $monthEnd = $cursor->copy()->endOfMonth()->startOfDay();
+            $monthTarget = $this->fixedMonthTarget($classRoom, $termLines, $monthStart);
+
+            if ($from->lte($monthStart) && $to->gte($monthEnd)) {
+                $total += $monthTarget;
+            } else {
+                $inMonth = $calendar->scheduledMeetings($classRoom, $monthStart, $monthEnd);
+                $inRange = $calendar->scheduledMeetings($classRoom, $from->gt($monthStart) ? $from : $monthStart, $to->lt($monthEnd) ? $to : $monthEnd);
+                $total += $inMonth > 0 ? (int) round($monthTarget * $inRange / $inMonth) : 0;
+            }
+
+            $cursor->addMonth();
+        }
+
+        return $total;
+    }
+
+    /** Target satu bulan = selisih pembulatan kumulatif triwulan menurut pertemuan aktif tiap bulan. */
+    private function fixedMonthTarget(ClassRoom $classRoom, int $termLines, Carbon $monthStart): int
+    {
+        $calendar = app(AcademicCalendarService::class);
+        $termStart = $calendar->termStartDate($monthStart);
+        $index = (($monthStart->year - $termStart->year) * 12) + ($monthStart->month - $termStart->month);
+
+        $meetings = [];
+        for ($i = 0; $i < 3; $i++) {
+            $start = $termStart->copy()->addMonths($i)->startOfMonth();
+            $meetings[$i] = $calendar->scheduledMeetings($classRoom, $start, $start->copy()->endOfMonth()->startOfDay());
+        }
+
+        $termMeetings = array_sum($meetings);
+        if ($termMeetings === 0 || $index < 0 || $index > 2) {
+            return 0;
+        }
+
+        $before = array_sum(array_slice($meetings, 0, $index));
+        $through = $before + $meetings[$index];
+
+        return (int) (round($termLines * $through / $termMeetings) - round($termLines * $before / $termMeetings));
     }
 
     /**

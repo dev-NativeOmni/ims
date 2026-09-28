@@ -90,8 +90,24 @@
                         </select>
                     </div>
                 </div>
-                @if ($errors->hasAny(['level_lines.*', 'mandatory_until', 'latest_switch']))
-                    <p class="text-xs text-red-600">{{ $errors->first('latest_switch') ?: $errors->first('mandatory_until') ?: $errors->first('level_lines.*') }}</p>
+                <div>
+                    <p class="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-2">Target paten per triwulan (baris)</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        @foreach (\App\Support\TargetRules::LEVELS as $level => $label)
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 dark:text-zinc-300 mb-1">{{ $label }} <span class="font-normal">(baris/triwulan)</span></label>
+                                <input type="number" min="1" max="2000" name="term_lines[{{ $level }}]" value="{{ old('term_lines.'.$level, $termLines[$level]) }}" placeholder="Kosong = pakai baris/pertemuan" @disabled(! $canEditTargetRules)
+                                       class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm">
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Level yang diisi memakai target paten ini per triwulan (dibagi ke tiap bulan sesuai pertemuan aktif); baris/pertemuan di atas
+                        tidak dipakai untuk level itu. Kosongkan untuk kembali memakai baris/pertemuan x pertemuan aktif.
+                    </p>
+                </div>
+                @if ($errors->hasAny(['level_lines.*', 'term_lines.*', 'mandatory_until', 'latest_switch']))
+                    <p class="text-xs text-red-600">{{ $errors->first('latest_switch') ?: $errors->first('mandatory_until') ?: $errors->first('level_lines.*') ?: $errors->first('term_lines.*') }}</p>
                 @endif
                 <p class="text-xs text-gray-500">
                     Pilihan murid saat ini: terus ke belakang, atau pindah ke depan setelah

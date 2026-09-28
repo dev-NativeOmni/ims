@@ -127,27 +127,27 @@ class QuarterlyReportPresensiTest extends TestCase
                 return false;
             }
 
-            // Target baris = level (reguler=5) x jumlah pertemuan terjadwal bulan itu
-            // (Rabu 2, 16, 23, 30 September; 9 September libur) = 4, walau hanya
-            // 2 pertemuan yang sudah diinput musyrif.
+            // Target baris = bagian target paten Reguler (195/triwulan) menurut pertemuan terjadwal
+            // (Rabu Juli 5, Agustus 4, September 4 -- 9 September libur) = 15 baris x 4 = 60, walau
+            // hanya 2 pertemuan yang sudah diinput musyrif.
             $regulerRow = collect($september['reguler_records'])
                 ->firstWhere('student_id', $this->student->id);
 
-            if ($regulerRow['target_lines'] !== 20) {
+            if ($regulerRow['target_lines'] !== 60) {
                 return false;
             }
 
             // Juli & Agustus belum ada input sama sekali, tapi tetap punya target dari
-            // kalender: Rabu Juli = 5, Agustus = 4 (masing-masing x 5 baris).
-            if ($halaqah['monthly']['07']['reguler_records'][0]['target_lines'] !== 25
-                || $halaqah['monthly']['08']['reguler_records'][0]['target_lines'] !== 20) {
+            // kalender: Juli 5 pertemuan = 75, Agustus 4 pertemuan = 60.
+            if ($halaqah['monthly']['07']['reguler_records'][0]['target_lines'] !== 75
+                || $halaqah['monthly']['08']['reguler_records'][0]['target_lines'] !== 60) {
                 return false;
             }
 
             // Rekap term menjumlahkan target semua bulan.
             $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
 
-            return $termRow['target_lines'] === 65 && $termRow['total_lines'] > 0;
+            return $termRow['target_lines'] === 195 && $termRow['total_lines'] > 0;
         });
     }
 
@@ -263,7 +263,7 @@ class QuarterlyReportPresensiTest extends TestCase
 
         // Target tidak lagi dibuat otomatis: tanpa target guru kolom target kosong.
         $row12 = $termRow($class12->id);
-        $this->assertSame(70, $row12['target_lines']);
+        $this->assertSame(195, $row12['target_lines']);
         $this->assertSame('-', $row12['target_surah']);
         $this->assertSame(0, HafalanTarget::where('student_id', $this->student->id)->count());
 

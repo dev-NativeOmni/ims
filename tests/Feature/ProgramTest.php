@@ -135,7 +135,8 @@ class ProgramTest extends TestCase
             'status' => 'active',
         ]);
 
-        // 4. Target rapor = pertemuan aktif triwulan (kalender) x baris per level.
+        // 4. Target rapor: Reguler = target paten 195 baris/triwulan; Tahsin (tanpa angka paten) =
+        //    pertemuan aktif triwulan (kalender) x baris per level.
         $parse = function ($student) {
             $response = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $student));
             $response->assertStatus(200);
@@ -146,13 +147,13 @@ class ProgramTest extends TestCase
             return [(int) $m[1], (int) $m[2]];
         };
 
-        [$dailyLines, $dailyMeetings] = $parse($dailyStudent);
-        $this->assertSame(5, $dailyLines);
+        $dailyResponse = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $dailyStudent));
+        $dailyResponse->assertStatus(200);
+        $this->assertMatchesRegularExpression('/^Target Triwulan \d \([^)]+\): 195 baris per triwulan/', $dailyResponse->viewData('termTargetText'));
 
         // 5. Program seminggu sekali: paling banyak satu pertemuan per pekan (<= 14 per triwulan).
         [$weeklyLines, $weeklyMeetings] = $parse($weeklyStudent);
         $this->assertSame(3, $weeklyLines);
         $this->assertLessThanOrEqual(14, $weeklyMeetings);
-        $this->assertGreaterThan($weeklyMeetings, $dailyMeetings);
     }
 }

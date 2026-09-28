@@ -248,9 +248,9 @@ class TargetTriwulanTest extends TestCase
 
         $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
 
-        // Kelas Rabu saja, reguler 5 baris: Jul 5, Agu 4, Sep 5 pertemuan.
-        $this->assertSame([25, 20, 25], array_values(array_map(fn ($m) => $m['target_lines'], $plan['months'])));
-        $this->assertSame(70, $plan['target_lines'], 'Target baris tidak bergantung pada jauhnya surah target.');
+        // Kelas Rabu saja, reguler: target paten 195/triwulan dibagi menurut pertemuan (Jul 5, Agu 4, Sep 5).
+        $this->assertSame([70, 55, 70], array_values(array_map(fn ($m) => $m['target_lines'], $plan['months'])));
+        $this->assertSame(195, $plan['target_lines'], 'Target baris tidak bergantung pada jauhnya surah target.');
         $this->assertSame(round($this->lines(78, 21, 30), 1), $plan['achieved_lines']);
         $this->assertFalse($plan['reached']);
         $this->assertSame(21, $plan['start']['ayah'], 'Titik awal = setoran pertama triwulan.');
@@ -258,11 +258,11 @@ class TargetTriwulanTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $this->classRoom->id, 'academic_year' => '2026/2027', 'term' => '1']));
         $termRecord = $response->viewData('halaqahData')[0]['term_records'][0];
         $this->assertSame('40', $termRecord['target_ayat'], 'Target cukup ayat akhir.');
-        $this->assertSame(70, $termRecord['target_lines']);
+        $this->assertSame(195, $termRecord['target_lines']);
 
-        // Capaian baris (baris tersimpan) mencapai 70 -> tuntas.
+        // Capaian baris (baris tersimpan) mencapai 195 -> tuntas.
         $big = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-09-09']);
-        $big->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 31, 'ayah_end' => 40, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 70]);
+        $big->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 31, 'ayah_end' => 40, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 195]);
         $this->assertTrue(app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'))['reached']);
     }
 
@@ -299,12 +299,12 @@ class TargetTriwulanTest extends TestCase
         ]))->viewData('studentReports'))->first(fn ($r) => $r['student']->id === $this->student->id);
 
         $september = $row(9);
-        $this->assertSame(25, $september['target_baris'], 'September saja: 5 pertemuan x 5 baris.');
+        $this->assertSame(70, $september['target_baris'], 'September saja: bagian target paten 195 untuk bulan ini.');
         $this->assertSame(round($this->lines(78, 21, 30), 1), (float) $september['capaian_baris']);
         $this->assertSame('Surah 78', $september['target_surah']);
 
         $august = $row(8);
-        $this->assertSame(20, $august['target_baris']);
+        $this->assertSame(55, $august['target_baris']);
         $this->assertSame(0.0, (float) $august['capaian_baris']);
         $this->assertFalse($august['is_tuntas']);
     }
@@ -327,7 +327,7 @@ class TargetTriwulanTest extends TestCase
         $this->assertFalse($termRecord['is_tuntas']);
 
         $july = collect($halaqah['monthly']['07']['reguler_records'] ?: $halaqah['monthly']['07']['tahfizh_records'])->firstWhere('student_id', $this->student->id);
-        $this->assertSame(25, $july['target_lines']);
+        $this->assertSame(70, $july['target_lines']);
         $this->assertSame('Surah 78', $july['target_surah']);
     }
 
@@ -350,7 +350,7 @@ class TargetTriwulanTest extends TestCase
         $row = collect($response->viewData('studentReports'))->first(fn ($r) => $r['student']->id === $this->student->id);
         $this->assertSame(round($this->lines(78, 1, 20), 1), $row['monthly_capaian']['2026-07']);
         $this->assertSame(0.0, $row['monthly_capaian']['2026-08']);
-        $this->assertSame(70, $row['target_baris'], 'Target term = 14 pertemuan x 5 baris.');
+        $this->assertSame(195, $row['target_baris'], 'Target term Reguler = 195 baris (paten).');
 
         $monthly = $this->actingAs($this->admin)->get(route('reports.periodic', [
             'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 8, 'year' => 2026,
