@@ -62,7 +62,10 @@ class HafalanTargetController extends Controller
                 });
             })
             ->when($request->filled('teacher_id'), function ($query) use ($request) {
-                $query->where('teacher_id', $request->integer('teacher_id'));
+                $query->where(function ($q) use ($request) {
+                    $q->where('teacher_id', $request->integer('teacher_id'))
+                        ->orWhereHas('student', fn ($sq) => $sq->where('teacher_id', $request->integer('teacher_id')));
+                });
             })
             ->when($request->filled('student_id'), function ($query) use ($request, $visibleStudentIds) {
                 $studentId = (int) $request->input('student_id');
@@ -174,8 +177,10 @@ class HafalanTargetController extends Controller
                 ->with('user')
                 ->whereHas('user')
                 ->orderBy('id')
-                ->get();
-            $currentTeacherId = (int) ($request->input('teacher_id') ?: ($user->teacherProfile?->id ?? $teachers->first()?->id));
+                ->get()
+                ->sortBy(fn ($t) => $t->user?->name)
+                ->values();
+            $currentTeacherId = $request->filled('teacher_id') ? (int) $request->input('teacher_id') : null;
         }
 
         $studentsQuery = Student::query()
@@ -185,7 +190,7 @@ class HafalanTargetController extends Controller
             ->when($request->filled('class_room_id'), function ($q) use ($request) {
                 $q->where('class_room_id', $request->integer('class_room_id'));
             })
-            ->when($request->filled('teacher_id') || $isTeacherOnly, function ($q) use ($currentTeacherId) {
+            ->when($currentTeacherId, function ($q) use ($currentTeacherId) {
                 $q->where('teacher_id', $currentTeacherId);
             });
 
@@ -721,15 +726,37 @@ class HafalanTargetController extends Controller
      */
     public function term(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar): View
     {
-        $visibleStudentIds = $this->visibleStudentIds($request->user());
+        $user = $request->user();
+        $visibleStudentIds = $this->visibleStudentIds($user);
         [$periods, $period] = $this->termPeriods($request->input('period'), $calendar);
-        $classRooms = $this->termClassRooms($visibleStudentIds);
+
+        $gradeElevenTwelveStudents = Student::query()
+            ->with(['classRoom.program', 'teacher.user'])
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->get()
+            ->reject(fn (Student $student) => $student->classRoom?->isGradeTen())
+            ->values();
+
+        $isTeacherOnly = $user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']);
+        $teachers = TeacherProfile::query()
+            ->with('user')
+            ->whereIn('id', $gradeElevenTwelveStudents->pluck('teacher_id')->filter()->unique())
+            ->get()
+            ->sortBy(fn ($teacher) => $teacher->user?->name)
+            ->values();
+
+        $currentTeacherId = $isTeacherOnly
+            ? $user->teacherProfile?->id
+            : ($request->filled('teacher_id') ? (int) $request->input('teacher_id') : null);
+
+        $classRooms = $this->termClassRooms($visibleStudentIds, $currentTeacherId);
         $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
 
         $months = $selectedClass ? $targets->termMonths($selectedClass, Carbon::parse($period)) : [];
         $rows = collect();
         if ($selectedClass) {
-            $rows = $this->termStudents($selectedClass, $visibleStudentIds)
+            $rows = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId)
                 ->map(fn (Student $student) => [
                     'student' => $student,
                     'plan' => $targets->termPlan($student, Carbon::parse($period), $selectedClass, $months),
@@ -746,6 +773,9 @@ class HafalanTargetController extends Controller
         return view('hafalan-targets.term', [
             'periods' => $periods,
             'period' => $period,
+            'teachers' => $isTeacherOnly && $currentTeacherId ? $teachers->where('id', $currentTeacherId)->values() : $teachers,
+            'currentTeacherId' => $currentTeacherId,
+            'isTeacherOnly' => $isTeacherOnly,
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'months' => $months,
@@ -764,13 +794,20 @@ class HafalanTargetController extends Controller
     {
         $this->authorize('create', HafalanTarget::class);
 
-        $visibleStudentIds = $this->visibleStudentIds($request->user());
+        $user = $request->user();
+        $isTeacherOnly = $user?->hasRole('teacher') && ! $user?->hasAnyRole(['super_admin', 'admin']);
+        $currentTeacherId = $isTeacherOnly
+            ? $user->teacherProfile?->id
+            : ($request->filled('teacher_id') ? (int) $request->input('teacher_id') : null);
+
+        $visibleStudentIds = $this->visibleStudentIds($user);
         [, $period] = $this->termPeriods($request->input('period'), $calendar);
-        $selectedClass = $this->termClassRooms($visibleStudentIds)->firstWhere('id', (int) $request->input('class_room_id'));
+        $selectedClass = $this->termClassRooms($visibleStudentIds, $currentTeacherId)->firstWhere('id', (int) $request->input('class_room_id'))
+            ?? $this->termClassRooms($visibleStudentIds)->firstWhere('id', (int) $request->input('class_room_id'));
         abort_unless($selectedClass, 403, 'Kelas tidak boleh diakses oleh akun ini.');
 
         $months = $targets->termMonths($selectedClass, Carbon::parse($period));
-        $students = $this->termStudents($selectedClass, $visibleStudentIds)->keyBy('id');
+        $students = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId)->keyBy('id');
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = $request->input('targets', []);
 
@@ -852,7 +889,7 @@ class HafalanTargetController extends Controller
         });
 
         return redirect()
-            ->route('hafalan-targets.term', ['period' => $period, 'class_room_id' => $selectedClass->id])
+            ->route('hafalan-targets.term', array_filter(['period' => $period, 'class_room_id' => $selectedClass->id, 'teacher_id' => $request->input('teacher_id')]))
             ->with('success', $saved > 0 ? "Target triwulan {$selectedClass->name} disimpan ({$saved} perubahan)." : 'Tidak ada perubahan target.');
     }
 
@@ -875,23 +912,33 @@ class HafalanTargetController extends Controller
         return [$periods, $periods->has($requested) ? $requested : $currentStart->toDateString()];
     }
 
-    private function termClassRooms(Collection $visibleStudentIds): Collection
+    private function termClassRooms(Collection $visibleStudentIds, ?int $teacherId = null): Collection
     {
+        $studentsQuery = Student::query()
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active');
+
+        if ($teacherId) {
+            $studentsQuery->where('teacher_id', $teacherId);
+        }
+
         return ClassRoom::query()
             ->with('program')
-            ->whereIn('id', Student::query()->whereIn('id', $visibleStudentIds)->where('status', 'active')->select('class_room_id'))
+            ->whereIn('id', $studentsQuery->select('class_room_id'))
             ->orderBy('name')
             ->get()
             ->reject(fn (ClassRoom $class) => $class->isGradeTen())
             ->values();
     }
 
-    private function termStudents(ClassRoom $classRoom, Collection $visibleStudentIds): Collection
+    private function termStudents(ClassRoom $classRoom, Collection $visibleStudentIds, ?int $teacherId = null): Collection
     {
         return Student::query()
+            ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
             ->where('class_room_id', $classRoom->id)
             ->where('status', 'active')
+            ->when($teacherId, fn ($q) => $q->where('teacher_id', $teacherId))
             ->orderBy('name')
             ->get()
             ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom));

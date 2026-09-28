@@ -509,6 +509,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/adab/student/{student}/mentor-score', [AdabController::class, 'storeMentorScore'])->name('adab.store-mentor-score');
         Route::post('/adab/batch-mentor-score', [AdabController::class, 'batchStoreMentorScores'])->name('adab.batch-mentor-score');
         Route::get('/adab/mentor-class-data', [AdabController::class, 'getMentorClassData'])->name('adab.mentor-class-data');
+        Route::get('/adab/attendance-matrix-data', [AdabController::class, 'getAttendanceMatrixData'])->name('adab.attendance-matrix-data');
 
         Route::middleware(['role:super_admin,admin,supervisor'])->group(function () {
             Route::delete('/adab/{adabRecord}', [AdabController::class, 'destroy'])->name('adab.destroy');

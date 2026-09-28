@@ -177,9 +177,16 @@ class AdabController extends Controller
 
         $canEvaluateMentor = ! $user->hasAnyRole(['student', 'parent']);
 
+        $allMonths = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+            10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
         return view('adab.index', compact(
             'students', 'classRooms', 'isAdmin', 'isSupervisor', 'canEvaluateMentor',
-            'today', 'year', 'month', 'catStats', 'categories', 'classRankings', 'fillStatus'
+            'today', 'year', 'month', 'catStats', 'categories', 'classRankings', 'fillStatus', 'allMonths'
         ));
     }
 
@@ -775,6 +782,209 @@ class AdabController extends Controller
             'year' => $year,
             'month' => $month,
             'students' => $data,
+        ]);
+    }
+
+    /* -----------------------------------------------------------------------
+     | ATTENDANCE MATRIX DATA — Rekap Presensi Kuisioner Harian Bulanan per Kelas
+     * -------------------------------------------------------------------- */
+    public function getAttendanceMatrixData(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        abort_if($user->hasRole('student') || $user->hasRole('parent'), 403, 'Akses ditolak.');
+
+        $classRoomId = $request->integer('class_room_id');
+        $year = $request->integer('year', (int) now()->format('Y'));
+        $month = $request->integer('month', (int) now()->format('n'));
+
+        $classRoom = ClassRoom::with(['students' => fn ($q) => $q->where('status', 'active')->orderBy('name'), 'program'])
+            ->find($classRoomId);
+
+        if (! $classRoom) {
+            return response()->json(['error' => 'Kelas tidak ditemukan.'], 404);
+        }
+
+        // Authorization check for pendamping / wali kelas
+        $isAdmin = $user->hasAnyRole(['super_admin', 'admin', 'supervisor', 'headmaster']);
+        if (! $isAdmin) {
+            if ($user->hasRole('pendamping_adab') && ! $this->isUserAssignedPendamping($user, $classRoom)) {
+                abort(403, 'Anda tidak memiliki akses ke kelas ini.');
+            }
+            if ($user->hasRole('wali_kelas') && ! $this->isWaliKelasOf($user, $classRoom)) {
+                abort(403, 'Anda tidak memiliki akses ke kelas ini.');
+            }
+        }
+
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+        $daysInMonth = (int) $startDate->daysInMonth;
+        $todayStr = now()->toDateString();
+        $effectiveDatesSet = Setting::getEffectiveDatesSet($year, $month);
+
+        $dayNamesShort = [
+            1 => 'Sen',
+            2 => 'Sel',
+            3 => 'Rab',
+            4 => 'Kam',
+            5 => 'Jum',
+            6 => 'Sab',
+            7 => 'Min',
+        ];
+
+        $daysMetadata = [];
+        $totalEffectiveDays = 0;
+        $effectiveDayCountUntilToday = 0;
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = Carbon::createFromDate($year, $month, $d);
+            $dateStr = $date->toDateString();
+            $dayOfWeek = (int) $date->dayOfWeekIso;
+            $isEffective = isset($effectiveDatesSet[$dateStr]);
+            $isPastOrToday = $dateStr <= $todayStr;
+
+            if ($isEffective) {
+                $totalEffectiveDays++;
+                if ($isPastOrToday) {
+                    $effectiveDayCountUntilToday++;
+                }
+            }
+
+            $daysMetadata[] = [
+                'day' => $d,
+                'date' => $dateStr,
+                'day_name_short' => $dayNamesShort[$dayOfWeek] ?? '',
+                'day_of_week' => $dayOfWeek,
+                'is_effective' => $isEffective,
+                'is_today' => $dateStr === $todayStr,
+                'is_past_or_today' => $isPastOrToday,
+                'is_future' => $dateStr > $todayStr,
+            ];
+        }
+
+        $students = $classRoom->students;
+        $studentIds = $students->pluck('id');
+
+        // Fetch all adab records for this class & month
+        $adabRecords = AdabRecord::whereIn('student_id', $studentIds)
+            ->whereBetween('assessment_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get()
+            ->groupBy('student_id');
+
+        // Fetch mentor assessments for this month
+        $mentorAssessments = AdabMentorAssessment::whereIn('student_id', $studentIds)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->get()
+            ->keyBy('student_id');
+
+        $studentRows = [];
+        $totalFilledEffectiveAll = 0;
+        $perfectCount = 0;
+        $studentsWithMissedCount = 0;
+        $mentorScoredCount = 0;
+
+        foreach ($students as $student) {
+            $records = $adabRecords->get($student->id, collect())->keyBy(function ($r) {
+                return $r->assessment_date ? substr((string) $r->assessment_date, 0, 10) : '';
+            });
+
+            $dailyStatus = [];
+            $filledEffectiveCount = 0;
+            $missedDates = [];
+
+            foreach ($daysMetadata as $dayMeta) {
+                $dateStr = $dayMeta['date'];
+                $hasRecord = $records->has($dateStr);
+                $record = $hasRecord ? $records->get($dateStr) : null;
+                $score = $record ? ($record->student_score ?? $record->total_score ?? 100) : null;
+
+                if ($dayMeta['is_effective']) {
+                    if ($hasRecord) {
+                        $filledEffectiveCount++;
+                        $status = 'filled';
+                    } elseif ($dayMeta['is_past_or_today']) {
+                        $missedDates[] = $dayMeta['day'];
+                        $status = 'missed';
+                    } else {
+                        $status = 'future';
+                    }
+                } else {
+                    $status = 'off';
+                }
+
+                $dailyStatus[$dayMeta['day']] = [
+                    'status' => $status,
+                    'score' => $score,
+                    'has_record' => $hasRecord,
+                ];
+            }
+
+            $missedEffectiveCount = count($missedDates);
+            $attendanceRate = $totalEffectiveDays > 0
+                ? round(($filledEffectiveCount / $totalEffectiveDays) * 100, 1)
+                : 100.0;
+
+            $totalFilledEffectiveAll += $filledEffectiveCount;
+
+            if ($missedEffectiveCount > 0) {
+                $studentsWithMissedCount++;
+            } else {
+                $perfectCount++;
+            }
+
+            $mentorAssessment = $mentorAssessments->get($student->id);
+            $mentorScore = $mentorAssessment?->mentor_score !== null ? (int) $mentorAssessment->mentor_score : null;
+            if ($mentorAssessment !== null) {
+                $mentorScoredCount++;
+            }
+
+            $studentRows[] = [
+                'student_id' => $student->id,
+                'student_name' => $student->name,
+                'student_number' => $student->student_number ?? '-',
+                'gender' => $student->gender,
+                'daily_status' => $dailyStatus,
+                'filled_count' => $filledEffectiveCount,
+                'missed_count' => $missedEffectiveCount,
+                'missed_dates' => $missedDates,
+                'attendance_rate' => $attendanceRate,
+                'mentor_score' => $mentorScore,
+                'mentor_notes' => $mentorAssessment?->notes ?? '',
+                'has_mentor_scored' => $mentorAssessment !== null,
+                'has_missed' => $missedEffectiveCount > 0,
+            ];
+        }
+
+        $allMonths = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+            10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        $classAvgRate = count($students) > 0 && $totalEffectiveDays > 0
+            ? round(($totalFilledEffectiveAll / (count($students) * $totalEffectiveDays)) * 100, 1)
+            : 0;
+
+        return response()->json([
+            'class_room_id' => $classRoom->id,
+            'class_room_name' => $classRoom->name,
+            'program_name' => $classRoom->program?->name ?? '',
+            'month' => $month,
+            'month_name' => $allMonths[$month] ?? '',
+            'year' => $year,
+            'days_in_month' => $daysInMonth,
+            'total_effective_days' => $totalEffectiveDays,
+            'effective_until_today' => $effectiveDayCountUntilToday,
+            'days_metadata' => $daysMetadata,
+            'students' => $studentRows,
+            'summary' => [
+                'total_students' => count($students),
+                'class_avg_rate' => $classAvgRate,
+                'perfect_count' => $perfectCount,
+                'students_with_missed' => $studentsWithMissedCount,
+                'mentor_scored_count' => $mentorScoredCount,
+            ],
         ]);
     }
 

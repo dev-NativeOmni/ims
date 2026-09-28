@@ -449,4 +449,25 @@ class HafalanTargetTest extends TestCase
         $this->assertSoftDeleted('hafalan_targets', ['id' => $target1->id]);
         $this->assertSoftDeleted('hafalan_targets', ['id' => $target2->id]);
     }
+
+    #[Test]
+    public function target_index_can_filter_by_teacher_and_halaqah(): void
+    {
+        $target1 = HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'surah_id' => $this->surah->id,
+            'ayah' => 5,
+            'target_date' => now()->addDays(3)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('hafalan-targets.index', [
+            'teacher_id' => $this->teacherProfile->id,
+        ]));
+
+        $response->assertOk();
+        $response->assertViewHas('teachers');
+        $this->assertTrue($response->viewData('targets')->contains('id', $target1->id));
+    }
 }

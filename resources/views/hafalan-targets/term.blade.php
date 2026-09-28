@@ -41,6 +41,19 @@
                         <option value="{{ $value }}" @selected($value === $period)>{{ $label }}</option>
                     @endforeach
                 </select>
+                <select name="teacher_id" onchange="this.form.submit()" @disabled($teachers->count() <= 1 && $isTeacherOnly) class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm font-semibold">
+                    @if (! $isTeacherOnly)
+                        <option value="">Semua Guru Pengampu / Halaqah</option>
+                    @endif
+                    @forelse ($teachers as $teacher)
+                        <option value="{{ $teacher->id }}" @selected($teacher->id === (int) $currentTeacherId)>Halaqah {{ $teacher->user?->name ?? 'Musyrif #'.$teacher->id }}</option>
+                    @empty
+                        <option value="">Tidak ada halaqah</option>
+                    @endforelse
+                </select>
+                @if ($teachers->count() <= 1 && $currentTeacherId && $isTeacherOnly)
+                    <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
+                @endif
                 <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm font-semibold">
                     @forelse ($classRooms as $class)
                         <option value="{{ $class->id }}" @selected($selectedClass?->id === $class->id)>{{ $class->name }} ({{ $class->program?->name }})</option>
@@ -69,6 +82,9 @@
                 @csrf
                 <input type="hidden" name="period" value="{{ $period }}">
                 <input type="hidden" name="class_room_id" value="{{ $selectedClass?->id }}">
+                @if ($currentTeacherId)
+                    <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
+                @endif
 
                 <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-x-auto">
                     <table class="min-w-full text-sm">

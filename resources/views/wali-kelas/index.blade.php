@@ -31,6 +31,9 @@
                         <a href="{{ route('adab.chart') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition">
                             Grafik Adab Kelas
                         </a>
+                        <a href="{{ route('adab.index', ['tab' => 'matrix', 'class_room_id' => $classRoom->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-950/50 transition">
+                            Matriks Presensi Adab
+                        </a>
                         <a href="{{ route('student-points.chart', ['class_room_id' => $classRoom->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition">
                             Grafik Kedisiplinan Kelas
                         </a>
@@ -150,9 +153,14 @@
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white">Kuisioner Adab Hari Ini</h3>
                             <p class="text-xs text-gray-500 dark:text-zinc-400">{{ now()->translatedFormat('l, d F Y') }}</p>
                         </div>
-                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-bold border border-indigo-500/20">
-                            Terisi {{ $adabToday['submitted_count'] }} / {{ $adabToday['total_count'] }} murid
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-bold border border-indigo-500/20">
+                                Terisi {{ $adabToday['submitted_count'] }} / {{ $adabToday['total_count'] }} murid
+                            </span>
+                            <a href="{{ route('adab.index', ['tab' => 'matrix', 'class_room_id' => $classRoom->id]) }}" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                Matriks Presensi Bulanan &rarr;
+                            </a>
+                        </div>
                     </div>
 
                     @if (! $adabToday['is_effective_day'])

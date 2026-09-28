@@ -46,6 +46,14 @@
                         <x-heroicon-o-bolt class="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
                         <span>Penilaian Bulanan Pendamping</span>
                     </button>
+                    <button 
+                        @click="tab = 'matrix'"
+                        :class="tab === 'matrix' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 font-medium' "
+                        class="py-3 px-1 border-b-2 text-xs sm:text-sm transition-all focus:outline-none flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                        <x-heroicon-o-calendar-days class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span>Matriks Presensi Harian</span>
+                    </button>
                 @endif
                 <button 
                     @click="tab = 'dashboard'"
@@ -487,6 +495,316 @@
                     </div>
 
                 </div>
+
+                <!-- ═══════════════ MATRIKS PRESENSI ADAB HARIAN TAB ═══════════════ -->
+                <div x-show="tab === 'matrix'" x-transition class="space-y-5" x-data="attendanceMatrixManager()" x-init="init()">
+                    
+                    <!-- Filter Bar -->
+                    <div class="bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Pilih Kelas
+                                </label>
+                                <select x-model="selectedClassId" @change="fetchMatrixData()" 
+                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    @foreach ($classRooms as $class)
+                                        <option value="{{ $class->id }}" @selected((string) request('class_room_id', '') === (string) $class->id)>
+                                            {{ $class->program?->name ? $class->program->name . ' - ' : '' }}{{ $class->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Bulan
+                                </label>
+                                <select x-model="selectedMonth" @change="fetchMatrixData()"
+                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    @foreach ($allMonths as $mNum => $mName)
+                                        <option value="{{ $mNum }}" @selected($mNum == (int) request('month', now()->format('n')))>
+                                            {{ $mName }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Tahun
+                                </label>
+                                <select x-model="selectedYear" @change="fetchMatrixData()"
+                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    @for ($y = (int) now()->format('Y') + 1; $y >= 2024; $y--)
+                                        <option value="{{ $y }}" @selected($y == (int) request('year', now()->format('Y')))>
+                                            {{ $y }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Cari Nama Murid
+                                </label>
+                                <div class="relative">
+                                    <input type="text" x-model="searchQuery" placeholder="Ketik nama murid..."
+                                           class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold pl-8 pr-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                                    <x-heroicon-o-magnifying-glass class="w-4 h-4 text-zinc-400 absolute left-2.5 top-3" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filter & Options Bar -->
+                        <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <div class="flex items-center gap-3">
+                                <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                    <input type="checkbox" x-model="onlyMissed" class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800">
+                                    <span class="font-bold text-amber-700 dark:text-amber-400">Tampilkan hanya murid yang memiliki tanggal terlewat/bolong</span>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="fetchMatrixData()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs transition cursor-pointer">
+                                    <span :class="isLoading ? 'animate-spin' : ''" class="inline-flex items-center">
+                                        <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
+                                    </span>
+                                    <span>Segarkan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Summary Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-xs">
+                            <span class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block">Total Murid</span>
+                            <span class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white" x-text="summary.total_students || 0">0</span>
+                        </div>
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-xs">
+                            <span class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block">Hari Efektif Adab</span>
+                            <div class="flex items-baseline gap-1 mt-0.5">
+                                <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400" x-text="totalEffectiveDays || 0">0</span>
+                                <span class="text-xs text-zinc-400">Hari</span>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-xs">
+                            <span class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block">Rata-rata Kelas</span>
+                            <span class="text-xl sm:text-2xl font-black text-teal-600 dark:text-teal-400" x-text="(summary.class_avg_rate || 0) + '%'">0%</span>
+                        </div>
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-xs">
+                            <span class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block">Santri Ada Terlewat</span>
+                            <span class="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400" x-text="summary.students_with_missed || 0">0</span>
+                        </div>
+                        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-xs col-span-2 sm:col-span-1">
+                            <span class="text-[10px] uppercase font-bold text-zinc-400 dark:text-zinc-500 block">Nilai Pendamping</span>
+                            <div class="flex items-baseline gap-1 mt-0.5">
+                                <span class="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400" x-text="(summary.mentor_scored_count || 0) + ' / ' + (summary.total_students || 0)">0</span>
+                                <span class="text-[10px] text-zinc-400 font-semibold" x-text="summary.mentor_scored_count === summary.total_students && summary.total_students > 0 ? '✓ Lengkap' : 'Belum Lengkap'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Matrix Table -->
+                    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden relative">
+                        
+                        <!-- Loading Overlay -->
+                        <div x-show="isLoading" x-cloak class="absolute inset-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs flex items-center justify-center z-30">
+                            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-zinc-800 shadow-md border dark:border-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-200">
+                                <svg class="animate-spin h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                                <span>Memuat matriks presensi...</span>
+                            </div>
+                        </div>
+
+                        <!-- Table Container -->
+                        <div class="overflow-x-auto max-h-[70vh] border-b border-zinc-100 dark:border-zinc-800">
+                            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-xs border-collapse">
+                                <thead class="bg-zinc-50 dark:bg-zinc-900/80 sticky top-0 z-20 backdrop-blur-xs shadow-2xs">
+                                    <tr class="divide-x divide-zinc-200 dark:divide-zinc-800">
+                                        <!-- Sticky Left Header -->
+                                        <th class="px-3 py-2.5 text-left font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider sticky left-0 z-20 bg-zinc-50 dark:bg-zinc-900 min-w-[190px] sm:min-w-[220px] shadow-r">
+                                            Nama Murid
+                                        </th>
+                                        <th class="px-2 py-2 text-center font-bold text-zinc-600 dark:text-zinc-300 min-w-[55px]">
+                                            Terisi
+                                        </th>
+                                        <th class="px-2 py-2 text-center font-bold text-zinc-600 dark:text-zinc-300 min-w-[60px]">
+                                            Terlewat
+                                        </th>
+                                        <th class="px-2 py-2 text-center font-bold text-zinc-600 dark:text-zinc-300 min-w-[60px]">
+                                            % Hadir
+                                        </th>
+                                        <th class="px-2 py-2 text-center font-bold text-purple-700 dark:text-purple-400 min-w-[75px]">
+                                            Nilai Mentor
+                                        </th>
+                                        <th class="px-3 py-2 text-left font-bold text-amber-700 dark:text-amber-400 min-w-[150px]">
+                                            Tanggal Terlewat
+                                        </th>
+
+                                        <!-- Days Columns (1..DaysInMonth) -->
+                                        <template x-for="day in daysMetadata" :key="day.day">
+                                            <th :class="[
+                                                    day.is_today ? 'bg-indigo-100/70 dark:bg-indigo-950/60 ring-1 ring-indigo-500' : '',
+                                                    day.is_effective ? 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200' : 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-600'
+                                                ]"
+                                                class="px-1 py-1.5 text-center min-w-[32px] max-w-[34px] select-none font-bold"
+                                                :title="day.date + ' (' + (day.is_effective ? 'Hari Efektif Adab' : 'Libur / Non-Efektif') + ')'">
+                                                <div class="text-[11px]" x-text="day.day"></div>
+                                                <div class="text-[9px] font-normal uppercase opacity-75" x-text="day.day_name_short"></div>
+                                            </th>
+                                        </template>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-900">
+                                    <template x-for="(st, sIdx) in filteredStudents" :key="st.student_id">
+                                        <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/30 divide-x divide-zinc-100 dark:divide-zinc-800/60 transition duration-75">
+                                            
+                                            <!-- Sticky Left Column: Student Name -->
+                                            <td class="px-3 py-2 sticky left-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/40 shadow-r">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <div class="min-w-0 flex-1">
+                                                        <a :href="'{{ url('adab/student') }}/' + st.student_id" 
+                                                           class="font-bold text-zinc-800 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline truncate block text-xs">
+                                                            <span x-text="st.student_name"></span>
+                                                        </a>
+                                                        <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                                                            <span x-text="'NIS: ' + st.student_number"></span>
+                                                        </div>
+                                                    </div>
+                                                    <template x-if="st.has_missed">
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 shrink-0">
+                                                            <span x-text="st.missed_count + ' bolong'"></span>
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </td>
+
+                                            <!-- Summary: Terisi -->
+                                            <td class="px-2 py-2 text-center font-bold text-emerald-600 dark:text-emerald-400" x-text="st.filled_count"></td>
+
+                                            <!-- Summary: Terlewat -->
+                                            <td :class="st.missed_count > 0 ? 'text-rose-600 dark:text-rose-400 font-black bg-rose-50/40 dark:bg-rose-950/20' : 'text-zinc-400 font-semibold'" 
+                                                class="px-2 py-2 text-center" x-text="st.missed_count > 0 ? st.missed_count : '0'"></td>
+
+                                            <!-- Summary: % Kehadiran -->
+                                            <td class="px-2 py-2 text-center font-bold">
+                                                <span :class="st.attendance_rate >= 85 ? 'text-emerald-600 dark:text-emerald-400' : (st.attendance_rate >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400')"
+                                                      x-text="st.attendance_rate + '%'"></span>
+                                            </td>
+
+                                            <!-- Summary: Nilai Mentor -->
+                                            <td class="px-2 py-2 text-center">
+                                                <template x-if="st.has_mentor_scored">
+                                                    <span class="inline-flex items-center justify-center font-bold text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-[11px]" x-text="st.mentor_score"></span>
+                                                </template>
+                                                <template x-if="!st.has_mentor_scored">
+                                                    <span class="text-[10px] font-semibold text-zinc-400 italic">Belum</span>
+                                                </template>
+                                            </td>
+
+                                            <!-- Summary: Tanggal Terlewat Pills -->
+                                            <td class="px-2.5 py-2 text-left">
+                                                <template x-if="st.missed_dates.length === 0">
+                                                    <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                                                        <x-heroicon-m-check-circle class="w-3.5 h-3.5" />
+                                                        <span>Tertib 100%</span>
+                                                    </span>
+                                                </template>
+                                                <template x-if="st.missed_dates.length > 0">
+                                                    <div class="flex flex-wrap gap-1 max-w-[220px]">
+                                                        <template x-for="dNum in st.missed_dates" :key="dNum">
+                                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
+                                                                  :title="'Belum mengisi pada tgl ' + dNum + ' ' + monthName">
+                                                                <span x-text="'Tgl ' + dNum"></span>
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </td>
+
+                                            <!-- Days Cells (1..DaysInMonth) -->
+                                            <template x-for="day in daysMetadata" :key="day.day">
+                                                <td :class="[
+                                                        day.is_today ? 'ring-1 ring-indigo-400 dark:ring-indigo-600' : '',
+                                                        st.daily_status[day.day]?.status === 'off' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-300 dark:text-zinc-700' : ''
+                                                    ]"
+                                                    class="p-0.5 text-center align-middle">
+                                                    
+                                                    <!-- State 1: Filled (Green) -->
+                                                    <template x-if="st.daily_status[day.day]?.status === 'filled'">
+                                                        <div class="w-5.5 h-5.5 mx-auto rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-default"
+                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Sudah isi (' + (st.daily_status[day.day]?.score || 100) + ' poin)'">
+                                                            ✓
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- State 2: Missed on effective day (Red) -->
+                                                    <template x-if="st.daily_status[day.day]?.status === 'missed'">
+                                                        <div class="w-5.5 h-5.5 mx-auto rounded-md bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-default"
+                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Terlewat / Belum Mengisi'">
+                                                            ✕
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- State 3: Off / Holiday / Weekend -->
+                                                    <template x-if="st.daily_status[day.day]?.status === 'off'">
+                                                        <span class="text-zinc-300 dark:text-zinc-700 select-none text-[10px]">-</span>
+                                                    </template>
+
+                                                    <!-- State 4: Future effective day -->
+                                                    <template x-if="st.daily_status[day.day]?.status === 'future'">
+                                                        <div class="w-3.5 h-3.5 mx-auto rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-300 dark:text-zinc-600 flex items-center justify-center text-[8px]"
+                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Jadwal Mendatang'">
+                                                            ○
+                                                        </div>
+                                                    </template>
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+
+                                    <!-- Empty State -->
+                                    <template x-if="filteredStudents.length === 0 && !isLoading">
+                                        <tr>
+                                            <td :colspan="6 + daysMetadata.length" class="px-6 py-12 text-center text-zinc-400 dark:text-zinc-500">
+                                                <span x-text="onlyMissed ? 'Tidak ada murid yang memiliki tanggal terlewat pada kelas ini. Semua tertib! 🎉' : 'Tidak ada data murid ditemukan.'"></span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Legend Footer -->
+                        <div class="p-3.5 bg-zinc-50/70 dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-[11px] text-zinc-500 dark:text-zinc-400">
+                            <div class="flex flex-wrap items-center gap-4">
+                                <span class="font-bold uppercase tracking-wider text-zinc-400">Keterangan:</span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-[9px]">✓</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">Terisi (Hari Efektif)</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="w-4 h-4 rounded bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[9px]">✕</span>
+                                    <span class="font-medium text-rose-700 dark:text-rose-300 font-bold">Terlewat / Bolong</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="w-4 h-4 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center text-[10px]">-</span>
+                                    <span class="font-medium">Libur Adab / Non-Efektif</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="w-3.5 h-3.5 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-[8px]">○</span>
+                                    <span class="font-medium">Jadwal Mendatang</span>
+                                </span>
+                            </div>
+                            <div>
+                                <em>Klik nama murid untuk melihat rincian riwayat lengkap per kuisioner.</em>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             @endif
 
             <!-- Dashboard Visual Tab Content -->
@@ -733,6 +1051,77 @@
                         this.alertMessage = 'Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan pada server.');
                     } finally {
                         this.isSubmitting = false;
+                    }
+                }
+            };
+        }
+
+        function attendanceMatrixManager() {
+            return {
+                selectedClassId: {{ (int) request('class_room_id', $classRooms->first()?->id ?? 0) }},
+                selectedMonth: {{ (int) request('month', now()->format('n')) }},
+                selectedYear: {{ (int) request('year', now()->format('Y')) }},
+                searchQuery: '',
+                onlyMissed: false,
+                isLoading: false,
+                monthName: '',
+                daysInMonth: 30,
+                totalEffectiveDays: 0,
+                daysMetadata: [],
+                students: [],
+                summary: {},
+
+                get filteredStudents() {
+                    let list = this.students;
+                    if (this.onlyMissed) {
+                        list = list.filter(s => s.has_missed);
+                    }
+                    if (this.searchQuery && this.searchQuery.trim() !== '') {
+                        const q = this.searchQuery.toLowerCase().trim();
+                        list = list.filter(s => (s.student_name && s.student_name.toLowerCase().includes(q)) || (s.student_number && s.student_number.includes(q)));
+                    }
+                    return list;
+                },
+
+                init() {
+                    if (this.selectedClassId) {
+                        this.fetchMatrixData();
+                    }
+                },
+
+                async fetchMatrixData() {
+                    if (!this.selectedClassId) return;
+
+                    this.isLoading = true;
+
+                    try {
+                        const url = new URL('{{ route('adab.attendance-matrix-data') }}', window.location.origin);
+                        url.searchParams.set('class_room_id', this.selectedClassId);
+                        url.searchParams.set('month', this.selectedMonth);
+                        url.searchParams.set('year', this.selectedYear);
+
+                        const response = await fetch(url.toString(), {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Gagal memuat data matriks presensi.');
+                        }
+
+                        const data = await response.json();
+                        this.monthName = data.month_name;
+                        this.daysInMonth = data.days_in_month;
+                        this.totalEffectiveDays = data.total_effective_days;
+                        this.daysMetadata = data.days_metadata || [];
+                        this.students = data.students || [];
+                        this.summary = data.summary || {};
+                    } catch (err) {
+                        console.error('Matrix load error:', err);
+                    } finally {
+                        this.isLoading = false;
                     }
                 }
             };

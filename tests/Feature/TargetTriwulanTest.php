@@ -357,4 +357,21 @@ class TargetTriwulanTest extends TestCase
         ]));
         $monthly->assertSee('GRAFIK CAPAIAN BULAN AGUSTUS 2026 KELAS XII F3');
     }
+
+    #[Test]
+    public function term_page_can_filter_by_teacher_and_halaqah(): void
+    {
+        $this->student->update(['teacher_id' => $this->teacherProfile->id]);
+
+        $response = $this->actingAs($this->admin)->get(route('hafalan-targets.term', [
+            'class_room_id' => $this->classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'period' => '2026-07-01',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewHas('teachers');
+        $response->assertViewHas('currentTeacherId', $this->teacherProfile->id);
+        $this->assertCount(1, $response->viewData('rows'));
+    }
 }

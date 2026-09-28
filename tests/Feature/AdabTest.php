@@ -369,4 +369,103 @@ class AdabTest extends TestCase
             'mentor_score' => 90,
         ]);
     }
+
+    public function test_attendance_matrix_data_returns_correct_daily_breakdown_and_missed_dates(): void
+    {
+        $roleWali = Role::firstOrCreate(['name' => 'wali_kelas'], ['display_name' => 'Wali Kelas']);
+        $waliUser = User::factory()->create(['role_id' => $roleWali->id, 'status' => 'active']);
+
+        $classRoom = ClassRoom::first();
+        $classRoom->update(['wali_kelas_user_id' => $waliUser->id]);
+
+        $student1 = Student::create([
+            'name' => 'Santri Rajin',
+            'student_number' => 'SR1',
+            'class_room_id' => $classRoom->id,
+            'status' => 'active',
+        ]);
+        $student2 = Student::create([
+            'name' => 'Santri Ada Bolong',
+            'student_number' => 'SB2',
+            'class_room_id' => $classRoom->id,
+            'status' => 'active',
+        ]);
+
+        // Effective dates set for September 2026
+        $effectiveDates = Setting::getEffectiveDatesSet(2026, 9);
+        $datesList = array_keys($effectiveDates);
+        $firstEffectiveDate = $datesList[0] ?? '2026-09-01';
+        $secondEffectiveDate = $datesList[1] ?? '2026-09-02';
+
+        // Student 1 fills both days
+        \App\Models\AdabRecord::create([
+            'student_id' => $student1->id,
+            'assessment_date' => $firstEffectiveDate,
+            'student_score' => 100,
+            'total_score' => 100,
+        ]);
+        \App\Models\AdabRecord::create([
+            'student_id' => $student1->id,
+            'assessment_date' => $secondEffectiveDate,
+            'student_score' => 90,
+            'total_score' => 90,
+        ]);
+
+        // Student 2 fills only first day
+        \App\Models\AdabRecord::create([
+            'student_id' => $student2->id,
+            'assessment_date' => $firstEffectiveDate,
+            'student_score' => 85,
+            'total_score' => 85,
+        ]);
+
+        $response = $this->actingAs($waliUser)->getJson(route('adab.attendance-matrix-data', [
+            'class_room_id' => $classRoom->id,
+            'year' => 2026,
+            'month' => 9,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'class_room_id',
+            'class_room_name',
+            'month',
+            'month_name',
+            'year',
+            'days_in_month',
+            'total_effective_days',
+            'days_metadata',
+            'students' => [
+                '*' => [
+                    'student_id',
+                    'student_name',
+                    'student_number',
+                    'daily_status',
+                    'filled_count',
+                    'missed_count',
+                    'missed_dates',
+                    'attendance_rate',
+                    'mentor_score',
+                    'has_mentor_scored',
+                    'has_missed',
+                ],
+            ],
+            'summary' => [
+                'total_students',
+                'class_avg_rate',
+                'perfect_count',
+                'students_with_missed',
+                'mentor_scored_count',
+            ],
+        ]);
+
+        $studentsData = collect($response->json('students'));
+        $s1 = $studentsData->firstWhere('student_id', $student1->id);
+        $s2 = $studentsData->firstWhere('student_id', $student2->id);
+
+        $this->assertNotNull($s1);
+        $this->assertNotNull($s2);
+        $this->assertTrue($s1['filled_count'] >= 2);
+        $this->assertTrue($s2['filled_count'] >= 1);
+    }
 }

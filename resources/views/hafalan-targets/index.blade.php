@@ -68,10 +68,24 @@
                             <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus. Deadline otomatis menjadi hari aktif terakhir di bulan tanggal yang dipilih.</p>
                         </div>
 
-                        <form method="GET" action="{{ route('hafalan-targets.index') }}" class="flex items-center gap-2">
+                        <form method="GET" action="{{ route('hafalan-targets.index') }}" class="flex flex-wrap items-center gap-2">
                             <input type="hidden" name="program" value="reguler">
-                            <label class="text-xs font-bold text-gray-600 uppercase tracking-wider">Pilih Kelas:</label>
-                            <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-gray-300 text-sm font-semibold focus:ring-indigo-500 focus:border-indigo-500">
+
+                            <select name="teacher_id" onchange="this.form.submit()" @disabled($teachers->count() <= 1 && $isTeacherOnly) class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500">
+                                @if (! $isTeacherOnly)
+                                    <option value="">Semua Guru / Halaqah</option>
+                                @endif
+                                @foreach ($teachers as $t)
+                                    <option value="{{ $t->id }}" @selected((string) request('teacher_id') === (string) $t->id)>
+                                        Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if ($isTeacherOnly && $currentTeacherId)
+                                <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
+                            @endif
+
+                            <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">-- Pilih Kelas --</option>
                                 @foreach ($classRooms as $class)
                                     <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
@@ -195,6 +209,30 @@
             </div>
 
             <div class="rounded-xl bg-white p-4 shadow-sm border border-gray-100 space-y-4">
+                <div>
+                    <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Musyrif / Guru Pengampu</p>
+                    @php
+                        $teacherUrl = function ($value) {
+                            $params = request()->except(['teacher_id', 'page']);
+                            if ($value !== '') {
+                                $params['teacher_id'] = $value;
+                            }
+
+                            return request()->url().'?'.http_build_query($params);
+                        };
+                    @endphp
+                    <select onchange="window.location.href=this.value" @disabled($teachers->count() <= 1 && $isTeacherOnly) class="w-full sm:w-64 rounded-lg border-zinc-300 bg-transparent text-xs font-semibold text-zinc-900 shadow-sm">
+                        @if (! $isTeacherOnly)
+                            <option value="{{ $teacherUrl('') }}" @selected(! request('teacher_id'))>Semua Musyrif / Guru</option>
+                        @endif
+                        @foreach ($teachers as $t)
+                            <option value="{{ $teacherUrl($t->id) }}" @selected((string) request('teacher_id') === (string) $t->id)>
+                                Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Filter Kelas</p>
                     <x-filter-toggle
