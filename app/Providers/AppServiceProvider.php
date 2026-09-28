@@ -6,6 +6,7 @@ use App\Models\CalendarMonthLock;
 use App\Models\ClassRoom;
 use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
@@ -14,6 +15,7 @@ use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use App\Observers\HafalanRecordObserver;
+use App\Observers\HafalanTargetStatusObserver;
 use App\Observers\ModelAuditObserver;
 use App\Policies\HafalanRecordPolicy;
 use App\Policies\HafalanTargetPolicy;
@@ -53,6 +55,10 @@ class AppServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         HafalanRecord::observe(HafalanRecordObserver::class);
+
+        // Status target (Selesai/Terlewat) langsung dievaluasi saat setoran disimpan.
+        HafalanRecord::observe(HafalanTargetStatusObserver::class);
+        HafalanRecordSurah::observe(HafalanTargetStatusObserver::class);
 
         /*
         |--------------------------------------------------------------------------

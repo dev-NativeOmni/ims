@@ -4,53 +4,98 @@ namespace App\Services;
 
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Status otomatis target guru (surah & ayat):
+ * - Selesai  : semua ayat dari setoran pertama triwulan target sampai ayat target sudah lulus
+ *              disetor (aturan yang sama dengan Target Triwulan), termasuk bila capaian melampaui;
+ * - Terlewat : deadline sudah lewat (sebelum hari ini) dan target belum tercapai.
+ * Dijalankan tiap malam (tad:sync-completed-targets) dan langsung saat setoran disimpan
+ * (HafalanTargetStatusObserver). Target Ummi (Jilid/Halaman) belum diotomasi.
+ */
 class HafalanTargetAutoCompletionService
 {
     /**
-     * Tandai target guru (surah & ayat) yang sudah tercapai menjadi completed dengan aturan yang
-     * sama dengan Target Triwulan: semua ayat dari setoran pertama triwulan target sampai ayat
-     * target sudah lulus disetor (HafalanProgressService::evaluate).
+     * Evaluasi semua target aktif (tiap malam).
+     *
+     * @return array{completed: int, missed: int}
      */
-    public function syncExistingTargets(bool $dryRun = false): int
+    public function syncExistingTargets(bool $dryRun = false): array
     {
-        $matchedTargets = 0;
-        $calendar = app(AcademicCalendarService::class);
-        $progress = app(HafalanProgressService::class);
+        return $this->syncQuery($this->activeTargets(), $dryRun);
+    }
 
-        HafalanTarget::query()
+    /**
+     * Evaluasi target aktif murid tertentu (setelah setoran disimpan/dihapus).
+     *
+     * @param  array<int, int>  $studentIds
+     * @return array{completed: int, missed: int}
+     */
+    public function syncStudents(array $studentIds): array
+    {
+        return $studentIds === []
+            ? ['completed' => 0, 'missed' => 0]
+            : $this->syncQuery($this->activeTargets()->whereIn('student_id', $studentIds), false);
+    }
+
+    /**
+     * Status baru untuk satu target: 'completed', 'missed', atau null (tetap aktif).
+     */
+    public function evaluate(HafalanTarget $target): ?string
+    {
+        if (! $target->student || ! $target->surah || ! $target->target_date) {
+            return null;
+        }
+
+        $months = app(AcademicCalendarService::class)->termMonths($target->target_date);
+        $reached = app(HafalanProgressService::class)->evaluate(
+            $target->student, (int) $target->surah->number, (int) ($target->ayah ?: $target->surah->total_ayah),
+            reset($months)['start'], end($months)['end'], now()
+        )['position_reached'];
+
+        if ($reached) {
+            return 'completed';
+        }
+
+        return $target->target_date->lt(today()) ? 'missed' : null;
+    }
+
+    private function activeTargets(): Builder
+    {
+        return HafalanTarget::query()
             ->with(['student', 'surah'])
             ->where('status', 'active')
             ->whereNotNull('surah_id')
-            ->orderBy('id')
-            ->chunkById(100, function ($targets) use (&$matchedTargets, $dryRun, $calendar, $progress) {
-                foreach ($targets as $target) {
-                    if (! $target->student || ! $target->surah || ! $target->target_date) {
-                        continue;
-                    }
+            ->whereNull('ummi_jilid');
+    }
 
-                    $months = $calendar->termMonths($target->target_date);
-                    $reached = $progress->evaluate(
-                        $target->student, (int) $target->surah->number, (int) $target->ayah,
-                        reset($months)['start'], end($months)['end'], now()
-                    )['position_reached'];
+    /**
+     * @return array{completed: int, missed: int}
+     */
+    private function syncQuery(Builder $query, bool $dryRun): array
+    {
+        $counts = ['completed' => 0, 'missed' => 0];
 
-                    if (! $reached) {
-                        continue;
-                    }
-
-                    $matchedTargets++;
-
-                    if (! $dryRun) {
-                        $target->update([
-                            'status' => 'completed',
-                            'completed_at' => $this->matchingPassedRecordForTarget($target)?->hafalanRecord?->submitted_at?->copy()->endOfDay() ?? now(),
-                        ]);
-                    }
+        $query->orderBy('id')->chunkById(100, function ($targets) use (&$counts, $dryRun) {
+            foreach ($targets as $target) {
+                $status = $this->evaluate($target);
+                if ($status === null) {
+                    continue;
                 }
-            });
 
-        return $matchedTargets;
+                $counts[$status]++;
+                if ($dryRun) {
+                    continue;
+                }
+
+                $target->update($status === 'completed'
+                    ? ['status' => 'completed', 'completed_at' => $this->matchingPassedRecordForTarget($target)?->hafalanRecord?->submitted_at?->copy()->endOfDay() ?? now()]
+                    : ['status' => 'missed']);
+            }
+        });
+
+        return $counts;
     }
 
     public function matchingPassedRecordForTarget(HafalanTarget $target): ?HafalanRecordSurah

@@ -11,7 +11,7 @@ class SyncCompletedHafalanTargets extends Command
 
     protected $aliases = ['ims:sync-completed-targets'];
 
-    protected $description = 'Sinkronkan target hafalan aktif menjadi selesai jika sudah ada setoran hafalan lulus yang mencakup target tersebut.';
+    protected $description = 'Target hafalan aktif: tandai Selesai bila sudah tercapai, Terlewat bila deadline lewat dan belum tercapai.';
 
     public function handle(HafalanTargetAutoCompletionService $service): int
     {
@@ -22,13 +22,10 @@ class SyncCompletedHafalanTargets extends Command
             : 'Mulai sinkronisasi target hafalan...'
         );
 
-        $matchedTargets = $service->syncExistingTargets($dryRun);
+        $counts = $service->syncExistingTargets($dryRun);
 
-        if ($dryRun) {
-            $this->info("Ditemukan {$matchedTargets} target aktif yang bisa ditandai selesai.");
-        } else {
-            $this->info("Selesai. {$matchedTargets} target hafalan berhasil disinkronkan menjadi completed.");
-        }
+        $this->info(($dryRun ? 'Akan diubah: ' : 'Selesai. ')
+            ."{$counts['completed']} target menjadi Selesai, {$counts['missed']} target menjadi Terlewat.");
 
         return self::SUCCESS;
     }

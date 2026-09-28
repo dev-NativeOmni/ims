@@ -280,6 +280,7 @@ class WaliKelasTest extends TestCase
     #[Test]
     public function nightly_completion_needs_every_ayah_up_to_the_target(): void
     {
+        Carbon::setTestNow('2026-07-25'); // sebelum deadline: belum tercapai tetap Aktif (bukan Terlewat)
         $setoran = function (string $date, int $from, int $to) {
             $record = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => $date]);
             $record->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => $from, 'ayah_end' => $to, 'submission_type' => 'new', 'status' => 'passed']);
@@ -297,5 +298,7 @@ class WaliKelasTest extends TestCase
         $setoran('2026-07-20', 4, 5);
         $this->artisan('tad:sync-completed-targets')->assertSuccessful();
         $this->assertSame('completed', $target->fresh()->status);
+
+        Carbon::setTestNow();
     }
 }
