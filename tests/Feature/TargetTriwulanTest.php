@@ -42,7 +42,7 @@ class TargetTriwulanTest extends TestCase
             }
         }
 
-        $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
         $this->classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'XII F3', 'level' => 'XII', 'tahfizh_days' => [3]]);
         $this->student->update(['class_room_id' => $this->classRoom->id, 'tahfizh_level' => 'reguler']);
     }
@@ -264,6 +264,27 @@ class TargetTriwulanTest extends TestCase
         $big = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-09-09']);
         $big->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 31, 'ayah_end' => 40, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 195]);
         $this->assertTrue(app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'))['reached']);
+    }
+
+    #[Test]
+    public function fixed_term_lines_only_apply_to_tahfizh_program_grade_eleven_and_twelve(): void
+    {
+        $tahfizh = $this->classRoom->program;
+        $reguler = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $at = function (Program $program, string $name, string $level) {
+            $class = ClassRoom::create(['program_id' => $program->id, 'name' => $name, 'level' => $level]);
+            $this->student->update(['class_room_id' => $class->id, 'tahfizh_level' => 'reguler']);
+
+            return TargetRules::termLinesForStudent($this->student->fresh());
+        };
+
+        $this->assertSame(195, $at($tahfizh, 'XII F3', 'XII'));
+        $this->assertSame(195, $at($tahfizh, 'XI F1', 'XI'));
+        $this->assertNull($at($tahfizh, 'X E2', 'X'), 'Kelas 10 (Ummi) tidak memakai target paten.');
+        $this->assertNull($at($reguler, 'XII A', 'XII'), 'Program non-Tahfizh tidak memakai target paten.');
+
+        $this->student->update(['tahfizh_level' => 'akselerasi', 'class_room_id' => $this->classRoom->id]);
+        $this->assertSame(240, TargetRules::termLinesForStudent($this->student->fresh()));
     }
 
     #[Test]

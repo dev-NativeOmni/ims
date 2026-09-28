@@ -186,7 +186,7 @@ class HafalanProgressService
             return 0;
         }
 
-        $termLines = TargetRules::termLinesForLevel($student->tahfizh_level);
+        $termLines = TargetRules::termLinesForStudent($student);
         if ($termLines !== null) {
             return $this->fixedTermTargetLines($classRoom, $termLines, $from->copy()->startOfDay(), $to->copy()->startOfDay());
         }

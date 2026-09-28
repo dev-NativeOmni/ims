@@ -31,7 +31,7 @@ class PeriodicReportTargetTest extends TestCase
             ['name_ar' => 'البقرة', 'name_latin' => 'Al-Baqarah', 'total_ayah' => 286, 'juz_start' => 1, 'juz_end' => 3]
         );
 
-        $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
         // Rabu saja: Juli 5, Agustus 4, September 5 pertemuan (default libur nasional tidak jatuh di Rabu).
         $this->class12 = ClassRoom::create([
             'program_id' => $program->id,

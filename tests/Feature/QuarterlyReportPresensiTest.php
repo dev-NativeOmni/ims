@@ -127,27 +127,27 @@ class QuarterlyReportPresensiTest extends TestCase
                 return false;
             }
 
-            // Target baris = bagian target paten Reguler (195/triwulan) menurut pertemuan terjadwal
-            // (Rabu Juli 5, Agustus 4, September 4 -- 9 September libur) = 15 baris x 4 = 60, walau
-            // hanya 2 pertemuan yang sudah diinput musyrif.
+            // Program non-Tahfizh tidak memakai target paten: target baris = level (reguler=5) x jumlah
+            // pertemuan terjadwal bulan itu (Rabu 2, 16, 23, 30 September; 9 September libur) = 4,
+            // walau hanya 2 pertemuan yang sudah diinput musyrif.
             $regulerRow = collect($september['reguler_records'])
                 ->firstWhere('student_id', $this->student->id);
 
-            if ($regulerRow['target_lines'] !== 60) {
+            if ($regulerRow['target_lines'] !== 20) {
                 return false;
             }
 
             // Juli & Agustus belum ada input sama sekali, tapi tetap punya target dari
-            // kalender: Juli 5 pertemuan = 75, Agustus 4 pertemuan = 60.
-            if ($halaqah['monthly']['07']['reguler_records'][0]['target_lines'] !== 75
-                || $halaqah['monthly']['08']['reguler_records'][0]['target_lines'] !== 60) {
+            // kalender: Rabu Juli = 5, Agustus = 4 (masing-masing x 5 baris).
+            if ($halaqah['monthly']['07']['reguler_records'][0]['target_lines'] !== 25
+                || $halaqah['monthly']['08']['reguler_records'][0]['target_lines'] !== 20) {
                 return false;
             }
 
             // Rekap term menjumlahkan target semua bulan.
             $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
 
-            return $termRow['target_lines'] === 195 && $termRow['total_lines'] > 0;
+            return $termRow['target_lines'] === 65 && $termRow['total_lines'] > 0;
         });
     }
 
@@ -225,7 +225,7 @@ class QuarterlyReportPresensiTest extends TestCase
     #[Test]
     public function term_target_comes_from_the_teachers_target_for_every_grade(): void
     {
-        $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
         $baqarah = Surah::firstOrCreate(
             ['number' => 2],
             ['name_ar' => 'البقرة', 'name_latin' => 'Al-Baqarah', 'total_ayah' => 286, 'juz_start' => 1, 'juz_end' => 3]

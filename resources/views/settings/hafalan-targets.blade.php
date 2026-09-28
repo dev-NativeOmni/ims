@@ -102,8 +102,9 @@
                         @endforeach
                     </div>
                     <p class="text-xs text-gray-500 mt-2">
-                        Level yang diisi memakai target paten ini per triwulan (dibagi ke tiap bulan sesuai pertemuan aktif); baris/pertemuan di atas
-                        tidak dipakai untuk level itu. Kosongkan untuk kembali memakai baris/pertemuan x pertemuan aktif.
+                        Hanya berlaku untuk murid <strong>program Tahfizh kelas 11 &amp; 12</strong>. Level yang diisi memakai target paten ini per triwulan
+                        (dibagi ke tiap bulan sesuai pertemuan aktif); baris/pertemuan di atas tidak dipakai untuk level itu. Kosongkan untuk kembali
+                        memakai baris/pertemuan x pertemuan aktif. Program lain dan kelas 10 (Ummi) tidak terpengaruh.
                     </p>
                 </div>
                 @if ($errors->hasAny(['level_lines.*', 'term_lines.*', 'mandatory_until', 'latest_switch']))

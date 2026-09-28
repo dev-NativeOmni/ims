@@ -445,7 +445,7 @@ class StudentReportController extends Controller
                     ->filter(fn ($t) => $t->surah);
                 $breakdown = app(HafalanProgressService::class)->termBreakdown($student, $termTargets, $termMonths, now()->min($raporTerm['end']));
                 $levelBaris = TargetRules::linesForLevel($student->tahfizh_level);
-                $fixedTermLines = TargetRules::termLinesForLevel($student->tahfizh_level);
+                $fixedTermLines = TargetRules::termLinesForStudent($student);
                 $termMeetings = $levelBaris ? intdiv((int) $breakdown['evaluation']['target_lines'], $levelBaris) : 0;
 
                 $termTargetText = $fixedTermLines !== null

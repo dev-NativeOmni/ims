@@ -74,6 +74,21 @@ class ClassRoom extends Model
         ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $name);
     }
 
+    /** Program Tahfizh (nama program memuat "tahfizh"/"akselerasi") -- sama dengan Laporan Triwulan. */
+    public function isTahfizhProgram(): bool
+    {
+        $programName = strtolower((string) $this->program?->name);
+
+        return str_contains($programName, 'tahfizh') || str_contains($programName, 'akselerasi');
+    }
+
+    /** Kelas 11 atau 12 (dikenali dari nama atau tingkat kelas). */
+    public function isGradeElevenOrTwelve(): bool
+    {
+        return (bool) (preg_match('/\b(XI|XII|11|12)\b/i', (string) $this->name)
+            || preg_match('/\b(XI|XII|11|12)\b/i', (string) $this->level));
+    }
+
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);

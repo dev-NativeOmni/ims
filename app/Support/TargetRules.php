@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use App\Models\Student;
 
 /**
  * Aturan target hafalan otomatis yang bisa diatur di Pengaturan Target Hafalan:
@@ -62,6 +63,20 @@ class TargetRules
      * Target paten per triwulan untuk level murid, atau null bila level ini memakai
      * baris per pertemuan (Tahsin) / target dibuat guru (Ummi).
      */
+    /**
+     * Target paten hanya berlaku untuk murid program Tahfizh kelas 11 & 12; murid lain
+     * (program lain, kelas 10/Ummi, tanpa kelas) memakai baris per pertemuan.
+     */
+    public static function termLinesForStudent(Student $student): ?int
+    {
+        $classRoom = $student->classRoom;
+        if (! $classRoom || ! $classRoom->isTahfizhProgram() || ! $classRoom->isGradeElevenOrTwelve() || $classRoom->isGradeTen()) {
+            return null;
+        }
+
+        return self::termLinesForLevel($student->tahfizh_level);
+    }
+
     public static function termLinesForLevel(?string $level): ?int
     {
         if ($level === null || $level === 'ummi') {
