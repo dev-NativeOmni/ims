@@ -11,7 +11,9 @@ use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\Services\AutoHafalanTargetService;
 use App\Services\HafalanProgressService;
+use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
+use App\Services\UmmiProgressService;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
@@ -373,7 +375,8 @@ class HafalanTargetController extends Controller
         $count = 0;
         foreach ($targets as $target) {
             $this->authorize('update', $target);
-            $target->update(['status' => 'completed']);
+            $target->update(['status' => 'completed', 'completed_at' => $target->completed_at ?? now()]
+                + ($target->ummi_jilid ? $this->ummiPartStatuses('completed', (bool) $target->surah_id) : []));
             $count++;
         }
 
@@ -549,7 +552,16 @@ class HafalanTargetController extends Controller
             $data['completed_at'] = null;
         }
 
+        // Target Ummi: status Buku & Hafalan mengikuti status yang dipilih; Aktif = dinilai ulang.
+        if ($hafalanTarget->ummi_jilid) {
+            $data += $this->ummiPartStatuses($data['status'] ?? $hafalanTarget->status, ! empty($data['surah_id']));
+        }
+
         $hafalanTarget->update($data);
+
+        if ($hafalanTarget->ummi_jilid && $hafalanTarget->status === 'active') {
+            app(HafalanTargetAutoCompletionService::class)->refresh($hafalanTarget->fresh());
+        }
 
         // Kembali ke daftar dengan filter yang sama (hanya URL aplikasi ini).
         $back = (string) $request->input('back');
@@ -576,9 +588,8 @@ class HafalanTargetController extends Controller
         $this->authorizeTargetAccess($request, $hafalanTarget);
         $this->authorize('update', $hafalanTarget);
 
-        $data = [
-            'status' => 'completed',
-        ];
+        $data = ['status' => 'completed']
+            + ($hafalanTarget->ummi_jilid ? $this->ummiPartStatuses('completed', (bool) $hafalanTarget->surah_id) : []);
 
         if (Schema::hasColumn('hafalan_targets', 'completed_at')) {
             $data['completed_at'] = now();
@@ -596,9 +607,8 @@ class HafalanTargetController extends Controller
         $this->authorizeTargetAccess($request, $hafalanTarget);
         $this->authorize('update', $hafalanTarget);
 
-        $hafalanTarget->update([
-            'status' => 'missed',
-        ]);
+        $hafalanTarget->update(['status' => 'missed']
+            + ($hafalanTarget->ummi_jilid ? $this->ummiPartStatuses('missed', (bool) $hafalanTarget->surah_id) : []));
 
         return redirect()
             ->back()
@@ -959,6 +969,198 @@ class HafalanTargetController extends Controller
             'juzRows' => $juzRows,
             'surahNames' => $progress->surahs()->map->name_latin,
         ]);
+    }
+
+    /**
+     * Target Ummi (Kelas 10) per bulan: tabel per murid dengan isi serentak. Satu target per murid
+     * per bulan (Jilid + Halaman Buku, Surah + Ayat opsional), deadline = pertemuan Ummi terakhir
+     * bulan itu. Status Buku & Hafalan dinilai terpisah (HafalanTargetAutoCompletionService).
+     */
+    public function ummi(Request $request, AcademicCalendarService $calendar, UmmiProgressService $ummi): View
+    {
+        [$month, $monthOptions, $teachers, $currentTeacherId, $classRooms, $students] = $this->ummiContext($request);
+        [$monthStart, $monthEnd] = [Carbon::parse($month.'-01')->startOfMonth(), Carbon::parse($month.'-01')->endOfMonth()];
+
+        $targets = HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereNotNull('ummi_jilid')
+            ->whereBetween('target_date', [$monthStart->toDateString(), $monthEnd->toDateString().' 23:59:59'])
+            ->orderBy('target_date')
+            ->orderBy('id')
+            ->get()
+            ->keyBy('student_id');
+
+        $positions = $ummi->positionsFor($students->pluck('id')->all(), now());
+        $deadlines = $classRooms->mapWithKeys(fn (ClassRoom $class) => [
+            $class->id => $calendar->lastMeetingDate($class, $monthStart, $monthEnd, true) ?? $monthEnd->copy()->startOfDay(),
+        ]);
+
+        return view('hafalan-targets.ummi', [
+            'month' => $month,
+            'monthOptions' => $monthOptions,
+            'teachers' => $teachers,
+            'currentTeacherId' => $currentTeacherId,
+            'classRooms' => $classRooms,
+            'students' => $students,
+            'targets' => $targets,
+            'positions' => $positions,
+            'deadlines' => $deadlines,
+            'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
+            'canEdit' => $request->user()->can('create', HafalanTarget::class),
+        ]);
+    }
+
+    public function storeUmmi(Request $request, AcademicCalendarService $calendar, HafalanTargetAutoCompletionService $status): RedirectResponse
+    {
+        $this->authorize('create', HafalanTarget::class);
+
+        [$month, , , , $classRooms, $students] = $this->ummiContext($request);
+        [$monthStart, $monthEnd] = [Carbon::parse($month.'-01')->startOfMonth(), Carbon::parse($month.'-01')->endOfMonth()];
+        $students = $students->keyBy('id');
+        $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
+        $input = (array) $request->input('targets', []);
+
+        // Validasi semua baris dulu; simpan hanya bila semuanya benar.
+        $errors = [];
+        $rows = [];
+        foreach ($input as $studentId => $row) {
+            $student = $students->get((int) $studentId);
+            if (! $student) {
+                continue;
+            }
+            $jilid = trim((string) ($row['jilid'] ?? ''));
+            $page = trim((string) ($row['halaman'] ?? ''));
+            $surah = $surahs->get((int) ($row['surah_id'] ?? 0));
+            $ayah = (int) ($row['ayah'] ?? 0);
+            $field = "targets.{$student->id}";
+
+            if ($jilid === '' && $page === '' && ! $surah) {
+                $rows[] = [$student, null];
+
+                continue;
+            }
+            if (! in_array($jilid, self::UMMI_JILID, true) || ! ctype_digit($page) || (int) $page < 1 || (int) $page > UmmiProgressService::PAGES_PER_JILID) {
+                $errors[$field] = "{$student->name}: isi Jilid dan Halaman Buku (1–".UmmiProgressService::PAGES_PER_JILID.').';
+            } elseif ($surah && $ayah > (int) $surah->total_ayah) {
+                $errors[$field] = "{$student->name}: ayat {$surah->name_latin} maksimal {$surah->total_ayah}.";
+            } else {
+                $rows[] = [$student, ['ummi_jilid' => $jilid, 'halaman_buku' => $page, 'surah_id' => $surah?->id, 'ayah' => $surah && $ayah > 0 ? $ayah : null]];
+            }
+        }
+        if ($errors) {
+            return back()->withInput()->withErrors($errors);
+        }
+
+        $saved = 0;
+        DB::transaction(function () use ($rows, $classRooms, $calendar, $monthStart, $monthEnd, $request, $status, &$saved) {
+            foreach ($rows as [$student, $values]) {
+                $existing = HafalanTarget::query()
+                    ->where('student_id', $student->id)
+                    ->whereNotNull('ummi_jilid')
+                    ->whereBetween('target_date', [$monthStart->toDateString(), $monthEnd->toDateString().' 23:59:59'])
+                    ->orderBy('target_date')
+                    ->orderBy('id')
+                    ->get()
+                    ->last();
+
+                if ($values === null) {
+                    if ($existing) {
+                        $existing->delete();
+                        $saved++;
+                    }
+
+                    continue;
+                }
+
+                $class = $classRooms->firstWhere('id', $student->class_room_id);
+                $deadline = ($class ? $calendar->lastMeetingDate($class, $monthStart, $monthEnd, true) : null) ?? $monthEnd->copy()->startOfDay();
+                $values += ['target_date' => $deadline->toDateString(), 'halaman_peraga' => null, 'auto_month' => null];
+
+                if ($existing && collect($values)->every(fn ($value, $key) => (string) ($key === 'target_date' ? $existing->target_date?->toDateString() : $existing->{$key}) === (string) $value)) {
+                    continue;
+                }
+
+                // Target baru/berubah: status dinilai ulang dari awal.
+                $values += [
+                    'status' => 'active', 'completed_at' => null,
+                    'book_status' => 'active', 'surah_status' => $values['surah_id'] ? 'active' : null,
+                ];
+                $target = $existing
+                    ? tap($existing)->update($values)
+                    : HafalanTarget::create($values + ['student_id' => $student->id, 'teacher_id' => $this->resolveTeacherId($request, $student)]);
+                $status->refresh($target->fresh());
+                $saved++;
+            }
+        });
+
+        return redirect()
+            ->route('hafalan-targets.ummi', $request->only(['month', 'teacher_id', 'class_room_id']))
+            ->with('success', $saved > 0 ? "Target Ummi disimpan ({$saved} perubahan)." : 'Tidak ada perubahan target.');
+    }
+
+    /**
+     * Status bagian Buku & Hafalan target Ummi saat status keseluruhan diubah manual:
+     * Selesai/Terlewat berlaku ke kedua bagian, Aktif mengulang penilaian otomatis.
+     *
+     * @return array{book_status: ?string, surah_status: ?string}
+     */
+    private function ummiPartStatuses(string $status, bool $hasSurah): array
+    {
+        $part = in_array($status, ['completed', 'missed'], true) ? $status : ($status === 'active' ? 'active' : null);
+
+        return ['book_status' => $part, 'surah_status' => $hasSurah ? $part : null];
+    }
+
+    /** Jilid Ummi Dewasa. */
+    private const UMMI_JILID = ['Jilid 1', 'Jilid 2', 'Jilid 3'];
+
+    /**
+     * Konteks halaman Target Ummi: bulan, pilihan bulan, halaqah (guru), kelas 10, dan murid.
+     *
+     * @return array{0: string, 1: array<string, string>, 2: Collection, 3: ?int, 4: Collection, 5: Collection}
+     */
+    private function ummiContext(Request $request): array
+    {
+        $user = $request->user();
+        $visibleStudentIds = $this->visibleStudentIds($user);
+
+        $monthOptions = collect(range(3, -6))
+            ->mapWithKeys(function ($offset) {
+                $date = now()->startOfMonth()->addMonthsNoOverflow($offset);
+
+                return [$date->format('Y-m') => $date->locale('id')->translatedFormat('F Y')];
+            })
+            ->all();
+        $month = array_key_exists((string) $request->input('month'), $monthOptions) ? $request->input('month') : now()->format('Y-m');
+
+        $gradeTenStudents = Student::query()
+            ->with(['classRoom.program', 'teacher.user'])
+            ->whereIn('id', $visibleStudentIds)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (Student $student) => $student->classRoom?->isGradeTen())
+            ->values();
+
+        $isTeacherOnly = $user->hasRole('teacher') && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $teachers = TeacherProfile::query()
+            ->with('user')
+            ->whereIn('id', $gradeTenStudents->pluck('teacher_id')->filter()->unique())
+            ->get()
+            ->sortBy(fn ($teacher) => $teacher->user?->name)
+            ->values();
+        $currentTeacherId = $isTeacherOnly
+            ? $user->teacherProfile?->id
+            : ($teachers->firstWhere('id', (int) $request->input('teacher_id'))?->id ?? $teachers->first()?->id);
+
+        $students = $gradeTenStudents->where('teacher_id', $currentTeacherId)->values();
+        $classRooms = $students->pluck('classRoom')->unique('id')->sortBy('name')->values();
+        if ($request->filled('class_room_id') && $classRooms->contains('id', (int) $request->input('class_room_id'))) {
+            $students = $students->where('class_room_id', (int) $request->input('class_room_id'))->values();
+        }
+
+        return [$month, $monthOptions, $isTeacherOnly ? $teachers->where('id', $currentTeacherId)->values() : $teachers, $currentTeacherId, $classRooms, $students];
     }
 
     private function visibleStudentIds(?User $user): Collection

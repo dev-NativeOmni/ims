@@ -132,6 +132,55 @@ class UmmiProgressService
     }
 
     /**
+     * Posisi terakhir tiap murid sampai $until (catatan Ummi terakhir): buku & hafalan surah.
+     *
+     * @param  array<int, int>  $studentIds
+     * @return array<int, array{book: ?int, hafalan: ?int, book_label: string, hafalan_label: string}>
+     */
+    public function positionsFor(array $studentIds, Carbon $until): array
+    {
+        $records = UmmiRecord::query()
+            ->with('surahs.surah')
+            ->whereIn('student_id', $studentIds)
+            ->where('tanggal', '<=', $until->toDateString())
+            ->get()
+            ->groupBy('student_id');
+
+        $positions = [];
+        foreach ($studentIds as $studentId) {
+            $studentRecords = $records->get($studentId, collect());
+            $book = $this->bestBook($studentRecords, $until);
+            $hafalan = $this->bestHafalan($studentRecords, $until);
+            $positions[$studentId] = [
+                'book' => $book,
+                'hafalan' => $hafalan,
+                'book_label' => self::pageLabel($book),
+                'hafalan_label' => $this->hafalanLabel($hafalan),
+            ];
+        }
+
+        return $positions;
+    }
+
+    /**
+     * Nilai target Ummi: posisi buku (Jilid + Halaman Buku) & posisi hafalan (surah + ayat,
+     * ayat kosong = akhir surah); null bila bagian itu tidak ditargetkan.
+     *
+     * @return array{book: ?int, hafalan: ?int}
+     */
+    public function targetValues(HafalanTarget $target): array
+    {
+        $target->loadMissing('surah');
+
+        return [
+            'book' => self::pageValue($target->ummi_jilid, $target->halaman_buku),
+            'hafalan' => $target->surah
+                ? $this->hafalanValue((int) $target->surah->number, (int) ($target->ayah ?: $target->surah->total_ayah))
+                : null,
+        ];
+    }
+
+    /**
      * Data grafik satu kelas untuk periode (bulanan atau term).
      *
      * @param  array<string, string>  $periodMonths  Y-m => nama bulan

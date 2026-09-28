@@ -13,6 +13,8 @@ use App\Models\ParentProfile;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
+use App\Models\UmmiRecordSurah;
 use App\Models\User;
 use App\Observers\HafalanRecordObserver;
 use App\Observers\HafalanTargetStatusObserver;
@@ -59,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
         // Status target (Selesai/Terlewat) langsung dievaluasi saat setoran disimpan.
         HafalanRecord::observe(HafalanTargetStatusObserver::class);
         HafalanRecordSurah::observe(HafalanTargetStatusObserver::class);
+        UmmiRecord::observe(HafalanTargetStatusObserver::class);
+        UmmiRecordSurah::observe(HafalanTargetStatusObserver::class);
 
         /*
         |--------------------------------------------------------------------------

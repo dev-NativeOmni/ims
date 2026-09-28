@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * Status target otomatis: Selesai langsung saat setoran disimpan (tercapai/terlampaui),
- * Terlewat bila deadline lewat dan belum tercapai. Target Ummi belum diotomasi.
+ * Terlewat bila deadline lewat dan belum tercapai.
  */
 class HafalanTargetAutoStatusTest extends TestCase
 {
@@ -75,7 +75,7 @@ class HafalanTargetAutoStatusTest extends TestCase
 
         $this->assertSame('missed', $past->fresh()->status);
         $this->assertSame('active', $today->fresh()->status, 'Deadline hari ini belum terlewat.');
-        $this->assertSame('active', $ummi->fresh()->status, 'Target Ummi belum diotomasi.');
+        $this->assertSame(['missed', 'missed'], [$ummi->fresh()->status, $ummi->fresh()->book_status], 'Target Ummi ikut diotomasi (dinilai per bagian).');
     }
 
     #[Test]

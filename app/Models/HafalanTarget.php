@@ -21,6 +21,8 @@ class HafalanTarget extends Model
         'ayah',
         'target_date',
         'status',
+        'book_status',
+        'surah_status',
         'completed_at',
         'notes',
         'auto_month',

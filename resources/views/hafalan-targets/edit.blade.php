@@ -45,7 +45,7 @@
                 </script>
 
                 @if ($target->ummi_jilid)
-                    {{-- Target Ummi: Jilid & Halaman (Peraga/Buku) + target hafalan surah/ayat opsional. --}}
+                    {{-- Target Ummi: Jilid & Halaman Buku + target hafalan surah/ayat opsional. --}}
                     <form method="POST" action="{{ route('hafalan-targets.update', $target) }}" class="space-y-6">
                         @csrf
                         @method('PUT')
@@ -56,7 +56,7 @@
                             <p class="text-xs text-teal-700">{{ $target->student?->classRoom?->name }} · Target Ummi</p>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jilid</label>
                                 <select name="ummi_jilid" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
@@ -67,10 +67,6 @@
                                         <option value="{{ old('ummi_jilid', $target->ummi_jilid) }}" selected>{{ old('ummi_jilid', $target->ummi_jilid) }}</option>
                                     @endunless
                                 </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Halaman Peraga</label>
-                                <input type="text" name="halaman_peraga" value="{{ old('halaman_peraga', $target->halaman_peraga) }}" placeholder="Contoh: 10 - 15" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Halaman Buku</label>

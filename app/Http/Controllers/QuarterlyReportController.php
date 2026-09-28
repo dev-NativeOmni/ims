@@ -990,7 +990,7 @@ class QuarterlyReportController extends Controller
             // (ummi_jilid terisi) -- murid Ummi bisa juga punya target Ziyadah Surah/Ayat biasa.
             if ($studentTarget?->ummi_jilid) {
                 $targetSurah = $studentTarget->ummi_jilid;
-                $targetAyat = 'Peraga: '.AyahLabel::end($studentTarget->halaman_peraga).' · Buku: '.AyahLabel::end($studentTarget->halaman_buku);
+                $targetAyat = 'Buku hal. '.AyahLabel::end($studentTarget->halaman_buku);
             } else {
                 $targetSurah = $studentTarget?->surah?->name_latin ?? '-';
                 $targetAyat = $studentTarget ? ($monthTargetAyat ?? $studentTarget->ayah_range) : '-';

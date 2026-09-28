@@ -196,7 +196,7 @@ class QuarterlyReportTeacherExportTest extends TestCase
         $studentRow = collect($termRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($studentRow);
         $this->assertSame('Jilid 3', $studentRow[3]);
-        $this->assertStringContainsString('Peraga: 15', $studentRow[4]);
+        $this->assertSame('Buku hal. 20', $studentRow[4], 'Halaman Peraga tidak dipakai lagi.');
         $this->assertSame('Jilid 3', $studentRow[5]);
         $this->assertStringStartsWith('15', $studentRow[6]);
 

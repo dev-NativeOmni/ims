@@ -125,12 +125,12 @@ class AcademicCalendarService
     /**
      * Tanggal pertemuan aktif terakhir kelas dalam rentang (inklusif), atau null bila tidak ada.
      */
-    public function lastMeetingDate(ClassRoom $classRoom, Carbon $start, Carbon $end): ?Carbon
+    public function lastMeetingDate(ClassRoom $classRoom, Carbon $start, Carbon $end, bool $forUmmi = false): ?Carbon
     {
         $cursor = $end->copy()->startOfDay();
 
         while ($cursor->gte($start->copy()->startOfDay())) {
-            if ($this->isEffectiveDay($classRoom, $cursor)) {
+            if ($this->isEffectiveDay($classRoom, $cursor, $forUmmi)) {
                 return $cursor;
             }
 

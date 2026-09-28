@@ -993,8 +993,8 @@ class StudentProgressService
                     if ($firstTarget = $targetsInTerm->first()) {
                         if ($firstTarget->ummi_jilid || $gNum === 10) {
                             $tStr = '📗 '.($firstTarget->ummi_jilid ?? 'Target Ummi');
-                            if ($firstTarget->halaman_peraga || $firstTarget->halaman_buku) {
-                                $tStr .= ' (Peraga: '.($firstTarget->halaman_peraga ?? '-').', Buku: '.($firstTarget->halaman_buku ?? '-').')';
+                            if ($firstTarget->halaman_buku) {
+                                $tStr .= ' (Buku hal. '.AyahLabel::end($firstTarget->halaman_buku).')';
                             }
                             if ($firstTarget->surah) {
                                 $tStr .= ' · Surah '.$firstTarget->surah->name_latin;

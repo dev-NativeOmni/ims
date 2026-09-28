@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Builder;
  * - Selesai  : semua ayat dari setoran pertama triwulan target sampai ayat target sudah lulus
  *              disetor (aturan yang sama dengan Target Triwulan), termasuk bila capaian melampaui;
  * - Terlewat : deadline sudah lewat (sebelum hari ini) dan target belum tercapai.
+ * Target Ummi dinilai terpisah: status Buku (posisi buku terakhir >= Jilid & Halaman Buku) dan
+ * status Hafalan (posisi hafalan surah >= Surah & Ayat); status keseluruhan = Aktif bila masih ada
+ * bagian aktif, Selesai bila semua bagian selesai, selain itu Terlewat.
  * Dijalankan tiap malam (tad:sync-completed-targets) dan langsung saat setoran disimpan
- * (HafalanTargetStatusObserver). Target Ummi (Jilid/Halaman) belum diotomasi.
+ * (HafalanTargetStatusObserver).
  */
 class HafalanTargetAutoCompletionService
 {
@@ -61,13 +64,94 @@ class HafalanTargetAutoCompletionService
         return $target->target_date->lt(today()) ? 'missed' : null;
     }
 
+    /**
+     * Evaluasi ulang satu target sekarang (mis. setelah disimpan dari halaman Target Ummi).
+     */
+    public function refresh(HafalanTarget $target): void
+    {
+        $target->loadMissing(['student', 'surah']);
+        $updates = $this->updatesFor($target);
+        if ($updates !== null) {
+            $target->update($updates);
+        }
+    }
+
+    /**
+     * Perubahan atribut untuk satu target, atau null bila tidak ada yang berubah.
+     */
+    private function updatesFor(HafalanTarget $target): ?array
+    {
+        if ($target->ummi_jilid) {
+            return $this->ummiUpdates($target);
+        }
+
+        $status = $this->evaluate($target);
+        if ($status === null) {
+            return null;
+        }
+
+        return $status === 'completed'
+            ? ['status' => 'completed', 'completed_at' => $this->matchingPassedRecordForTarget($target)?->hafalanRecord?->submitted_at?->copy()->endOfDay() ?? now()]
+            : ['status' => 'missed'];
+    }
+
+    /**
+     * Target Ummi: bagian yang masih aktif dinilai (Selesai bila tercapai, Terlewat bila deadline
+     * lewat); bagian yang sudah Selesai/Terlewat tidak berubah lagi.
+     */
+    private function ummiUpdates(HafalanTarget $target): ?array
+    {
+        if (! $target->student || ! $target->target_date) {
+            return null;
+        }
+
+        $ummi = app(UmmiProgressService::class);
+        $goal = $ummi->targetValues($target);
+        $position = $ummi->positionsFor([$target->student_id], now())[$target->student_id];
+        $pastDeadline = $target->target_date->lt(today());
+
+        $part = function (?string $current, ?int $goalValue, ?int $positionValue) use ($pastDeadline): ?string {
+            if ($goalValue === null) {
+                return null;
+            }
+            if (in_array($current, ['completed', 'missed'], true)) {
+                return $current;
+            }
+            if ((int) $positionValue >= $goalValue) {
+                return 'completed';
+            }
+
+            return $pastDeadline ? 'missed' : 'active';
+        };
+
+        $book = $part($target->book_status, $goal['book'], $position['book']);
+        $surah = $part($target->surah_status, $goal['hafalan'], $position['hafalan']);
+        $parts = array_values(array_filter([$book, $surah]));
+
+        $status = match (true) {
+            $parts === [] => $target->status,
+            in_array('active', $parts, true) => 'active',
+            ! in_array('missed', $parts, true) => 'completed',
+            default => 'missed',
+        };
+
+        $updates = ['book_status' => $book, 'surah_status' => $surah, 'status' => $status];
+        if ($status === 'completed' && $target->status !== 'completed') {
+            $updates['completed_at'] = now();
+        }
+
+        $changed = array_filter($updates, fn ($value, $key) => $target->{$key} !== $value, ARRAY_FILTER_USE_BOTH);
+
+        return $changed === [] ? null : $changed;
+    }
+
     private function activeTargets(): Builder
     {
+        // Target surah & ayat biasa, atau target Ummi (Jilid & Halaman Buku, surah opsional).
         return HafalanTarget::query()
             ->with(['student', 'surah'])
             ->where('status', 'active')
-            ->whereNotNull('surah_id')
-            ->whereNull('ummi_jilid');
+            ->where(fn ($q) => $q->whereNotNull('ummi_jilid')->orWhereNotNull('surah_id'));
     }
 
     /**
@@ -79,19 +163,17 @@ class HafalanTargetAutoCompletionService
 
         $query->orderBy('id')->chunkById(100, function ($targets) use (&$counts, $dryRun) {
             foreach ($targets as $target) {
-                $status = $this->evaluate($target);
-                if ($status === null) {
+                $updates = $this->updatesFor($target);
+                if ($updates === null) {
                     continue;
                 }
 
-                $counts[$status]++;
-                if ($dryRun) {
-                    continue;
+                if (in_array($updates['status'] ?? null, ['completed', 'missed'], true)) {
+                    $counts[$updates['status']]++;
                 }
-
-                $target->update($status === 'completed'
-                    ? ['status' => 'completed', 'completed_at' => $this->matchingPassedRecordForTarget($target)?->hafalanRecord?->submitted_at?->copy()->endOfDay() ?? now()]
-                    : ['status' => 'missed']);
+                if (! $dryRun) {
+                    $target->update($updates);
+                }
             }
         });
 

@@ -4,10 +4,13 @@ namespace App\Observers;
 
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
+use App\Models\UmmiRecord;
+use App\Models\UmmiRecordSurah;
 use App\Services\HafalanTargetAutoCompletionService;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * Begitu setoran dibuat/diubah/dihapus, status target aktif murid itu langsung dievaluasi
+ * Begitu setoran (hafalan maupun Ummi) dibuat/diubah/dihapus, status target aktif murid itu langsung dievaluasi
  * (Selesai bila tercapai, Terlewat bila deadline lewat) tanpa menunggu tugas malam.
  * Evaluasi ditunda sampai akhir request dan digabung per murid, supaya simpan massal
  * (spreadsheet) tidak mengevaluasi berulang. Di luar request web (console/seeder) tidak berjalan.
@@ -19,30 +22,32 @@ class HafalanTargetStatusObserver
 
     private static ?int $registeredFor = null;
 
-    public function saved(HafalanRecord|HafalanRecordSurah $model): void
+    public function saved(Model $model): void
     {
         $this->mark($model);
     }
 
-    public function deleted(HafalanRecord|HafalanRecordSurah $model): void
+    public function deleted(Model $model): void
     {
         $this->mark($model);
     }
 
-    public function restored(HafalanRecord|HafalanRecordSurah $model): void
+    public function restored(Model $model): void
     {
         $this->mark($model);
     }
 
-    private function mark(HafalanRecord|HafalanRecordSurah $model): void
+    private function mark(Model $model): void
     {
         if (! app()->bound('request') || ! request()->route()) {
             return;
         }
 
-        $studentId = $model instanceof HafalanRecordSurah
-            ? (int) HafalanRecord::withTrashed()->whereKey($model->hafalan_record_id)->value('student_id')
-            : (int) $model->student_id;
+        $studentId = match (true) {
+            $model instanceof HafalanRecordSurah => (int) HafalanRecord::withTrashed()->whereKey($model->hafalan_record_id)->value('student_id'),
+            $model instanceof UmmiRecordSurah => (int) UmmiRecord::query()->whereKey($model->ummi_record_id)->value('student_id'),
+            default => (int) $model->student_id,
+        };
 
         if (! $studentId) {
             return;

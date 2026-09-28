@@ -150,165 +150,19 @@
                 </div>
 
             @else
-                {{-- ═══════════════ PROGRAM UMMI BULK TARGET PER HALAQAH ═══════════════ --}}
-                <div class="rounded-2xl bg-white p-6 shadow-sm border border-gray-200 space-y-5">
-                    <div class="border-b border-gray-100 pb-4">
+                {{-- Target Ummi diisi lewat tabel per murid (isi serentak + penyesuaian per murid). --}}
+                <div class="rounded-2xl bg-white p-6 shadow-sm border border-teal-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
                         <h3 class="text-lg font-extrabold text-teal-900 flex items-center gap-2">
-                            <x-heroicon-o-users class="w-5 h-5 text-teal-600" />
-                            <span>Target Metode Ummi Bulk Per-Halaqah Musyrif (Khusus Kelas 10)</span>
+                            <x-heroicon-o-table-cells class="w-5 h-5 text-teal-600" />
+                            <span>Isi Target Ummi Per Murid</span>
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Tentukan Jilid, Halaman Peraga, Halaman Buku, Surah, dan Deadline secara serentak hanya untuk murid Kelas 10 anggota Halaqah Musyrif.</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Target Jilid &amp; Halaman Buku serta Surah &amp; Ayat per bulan: isi serentak satu halaqah, lalu sesuaikan murid yang capaiannya berbeda.</p>
                     </div>
-
-                    <form method="POST" action="{{ route('hafalan-targets.store-bulk-ummi') }}" class="space-y-6">
-                        @csrf
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <div class="lg:col-span-3 bg-teal-50/60 p-4 rounded-xl border border-teal-100 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @if (! empty($isTeacherOnly) && $isTeacherOnly)
-                                    <div>
-                                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1">
-                                            <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
-                                            <span>Halaqah Musyrif Anda</span>
-                                        </label>
-                                        <p class="text-base font-extrabold text-teal-900">
-                                            Halaqah {{ $teachers->first()?->user?->name ?? 'Musyrif' }} ({{ $students->count() }} Murid Kelas 10)
-                                        </p>
-                                    </div>
-                                    <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
-                                @else
-                                    <div>
-                                        <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">
-                                            <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
-                                            <span>Pilih Halaqah Musyrif / Guru</span>
-                                        </label>
-                                        <select name="teacher_id" required onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id='+this.value+'{{ request('class_room_id') ? '&class_room_id='.request('class_room_id') : '' }}'" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
-                                            @foreach ($teachers as $t)
-                                                <option value="{{ $t->id }}" @selected((string) request('teacher_id', $currentTeacherId) === (string) $t->id)>
-                                                    Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @endif
-
-                                <div>
-                                    <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5">
-                                        <x-heroicon-o-academic-cap class="w-4 h-4 text-teal-700" />
-                                        <span>Filter Kelas 10 (Opsional)</span>
-                                    </label>
-                                    <select name="class_room_id" onchange="window.location.href='{{ route('hafalan-targets.index') }}?program=ummi&teacher_id={{ $currentTeacherId }}&class_room_id='+this.value" class="w-full rounded-xl border-teal-300 text-sm font-bold text-teal-900 focus:ring-teal-500 focus:border-teal-500">
-                                        <option value="">Semua Kelas 10 di Halaqah Ini ({{ $students->count() }} Murid)</option>
-                                        @foreach ($grade10ClassRooms as $gc)
-                                            <option value="{{ $gc->id }}" @selected((string) request('class_room_id') === (string) $gc->id)>
-                                                Kelas {{ $gc->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            @if ($students->isNotEmpty())
-                                <div class="lg:col-span-3 bg-white p-3 rounded-xl border border-teal-200">
-                                    <p class="text-xs font-bold text-teal-800 mb-1.5 flex items-center gap-1.5">
-                                        <x-heroicon-o-user-group class="w-4 h-4 text-teal-700" />
-                                        <span>Daftar Murid Kelas 10 Yang Akan Menerima Target Ini ({{ $students->count() }} Murid):</span>
-                                    </p>
-                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                                        @foreach ($students as $st)
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
-                                                <x-heroicon-o-user class="w-3.5 h-3.5 text-teal-600" />
-                                                <span>{{ $st->name }}</span>
-                                                <span class="text-[10px] text-teal-600">({{ $st->classRoom?->name ?? '-' }})</span>
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @else
-                                <div class="lg:col-span-3 bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs font-semibold text-amber-800 flex items-center gap-2">
-                                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 text-amber-600 shrink-0" />
-                                    <span>Tidak ada murid Kelas 10 pada Halaqah / Kelas yang dipilih. Silakan pilih kelas atau halaqah lain.</span>
-                                </div>
-                            @endif
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-book-open class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Jilid Ummi</span>
-                                </label>
-                                <select name="ummi_jilid" required class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                                    <option value="Jilid 1">Jilid 1 (Dewasa)</option>
-                                    <option value="Jilid 2">Jilid 2 (Dewasa)</option>
-                                    <option value="Jilid 3">Jilid 3 (Dewasa)</option>
-                                    <option value="Gharib">Gharib</option>
-                                    <option value="Tajwid">Tajwid</option>
-                                    <option value="Al-Qur'an">Al-Qur'an</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-photo class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Halaman Peraga</span>
-                                </label>
-                                <input type="text" name="halaman_peraga" placeholder="Contoh: Hal. 10 - 15" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-document-text class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Halaman Buku</span>
-                                </label>
-                                <input type="text" name="halaman_buku" placeholder="Contoh: Hal. 15 - 20" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-flag class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Target Surah Hafalan Ummi</span>
-                                </label>
-                                <div class="flex gap-2">
-                                    <select name="surah_id" class="min-w-0 flex-1 rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                                        <option value="">-- Pilih Surah (Opsional) --</option>
-                                        @foreach ($surahs as $surah)
-                                            <option value="{{ $surah->id }}">
-                                                {{ $surah->number }}. {{ $surah->name_latin }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="number" name="ayah" min="1" placeholder="Ayat" title="Sampai ayat (kosong = sampai akhir surah)" class="w-24 rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                                </div>
-                                <p class="mt-1 text-[11px] text-gray-500">Isi ayat target; kosongkan bila targetnya sampai akhir surah.</p>
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-calendar class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Tanggal Deadline Target</span>
-                                </label>
-                                <input type="date" name="target_date" required value="{{ now()->addMonth()->toDateString() }}" class="w-full rounded-xl border-gray-300 text-sm font-semibold focus:ring-teal-500">
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                                    <x-heroicon-o-pencil-square class="w-3.5 h-3.5 text-teal-600" />
-                                    <span>Catatan Pembimbing</span>
-                                </label>
-                                <input type="text" name="notes" placeholder="Catatan instruksi..." class="w-full rounded-xl border-gray-300 text-sm focus:ring-teal-500">
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <p class="text-xs text-gray-500 flex items-center gap-1.5">
-                                <x-heroicon-o-information-circle class="w-4 h-4 text-teal-600 shrink-0" />
-                                <span>Target Ummi hanya akan diterapkan kepada murid <strong>Kelas 10</strong> di Halaqah yang dipilih (Kelas 11 &amp; 12 tidak terpengaruh).</span>
-                            </p>
-                            <button type="submit" @disabled($students->isEmpty()) class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition disabled:opacity-50 cursor-pointer">
-                                <x-heroicon-o-paper-airplane class="w-4 h-4" />
-                                <span>Terapkan Target Ummi Ke Murid Kelas 10</span>
-                            </button>
-                        </div>
-                    </form>
+                    <a href="{{ route('hafalan-targets.ummi', request()->only(['teacher_id', 'class_room_id'])) }}" class="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-teal-700 transition">
+                        <x-heroicon-o-arrow-right class="w-4 h-4" />
+                        <span>Buka Target Ummi</span>
+                    </a>
                 </div>
             @endif
 
@@ -506,11 +360,21 @@
                                                 <span>{{ $target->ummi_jilid }}</span>
                                             </div>
                                             <div class="text-xs text-gray-600">
-                                                Peraga: {{ $target->halaman_peraga ?? '-' }} · Buku: {{ $target->halaman_buku ?? '-' }}
+                                                Buku hal. {{ \App\Support\AyahLabel::end($target->halaman_buku) }}
                                                 @if($target->surah)
                                                     · Surah {{ $target->surah->name_latin }}{{ $target->ayah ? ' ayat '.$target->ayah : '' }}
                                                 @endif
                                             </div>
+                                            @if ($target->book_status || $target->surah_status)
+                                                <div class="mt-1 flex flex-wrap gap-1 text-[10px] font-bold">
+                                                    @foreach (['Buku' => $target->book_status, 'Hafal' => $target->surah_status] as $partLabel => $partStatus)
+                                                        @continue(! $partStatus)
+                                                        <span class="px-1.5 py-0.5 rounded {{ ['completed' => 'bg-emerald-100 text-emerald-700', 'missed' => 'bg-rose-100 text-rose-700'][$partStatus] ?? 'bg-sky-100 text-sky-700' }}">
+                                                            {{ $partLabel }}: {{ ['completed' => 'Selesai', 'missed' => 'Terlewat'][$partStatus] ?? 'Aktif' }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         @else
                                             <div class="font-bold text-indigo-700 flex items-center gap-1">
                                                 <x-heroicon-o-book-open class="w-3.5 h-3.5 text-indigo-600" />

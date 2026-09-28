@@ -346,6 +346,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('hafalan-targets.juz-order');
         Route::get('/hafalan-targets/urutan/{student}', [HafalanTargetController::class, 'juzOrders'])
             ->name('hafalan-targets.juz-orders');
+        // Target Ummi (Kelas 10): tabel per murid per bulan dengan isi serentak.
+        Route::get('/hafalan-targets/ummi-bulanan', [HafalanTargetController::class, 'ummi'])
+            ->name('hafalan-targets.ummi');
+        Route::post('/hafalan-targets/ummi-bulanan', [HafalanTargetController::class, 'storeUmmi'])
+            ->name('hafalan-targets.ummi.store');
 
         Route::resource('hafalan-targets', HafalanTargetController::class);
 
