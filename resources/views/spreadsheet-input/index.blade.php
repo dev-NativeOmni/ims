@@ -32,6 +32,7 @@
                 hafalanRecordsMap: @json($hafalanRecordsMap),
                 ummiRecordsMap: @json($ummiRecordsMap),
                 lastHafalanMap: @json($lastHafalanMap),
+                savedOk: {{ session('success') ? 'true' : 'false' }},
                 gridData: {},
                 surahDetails: {},
                 lineMap: null,
@@ -114,6 +115,11 @@
                             };
                         });
                     });
+
+                    // Server baru saja mengonfirmasi simpan berhasil -> baru sekarang draf lokal aman dihapus.
+                    if (this.savedOk) {
+                        try { localStorage.removeItem(this.draftKey); } catch (e) {}
+                    }
 
                     this.$nextTick(() => {
                         let isReady = true;
@@ -334,20 +340,76 @@
                         ? 'Sesuai perkiraan'
                         : 'Manual · perkiraan ' + estimate;
                 },
+                /**
+                 * Susun seluruh isian (semua tanggal, semua murid) jadi satu payload ringkas dari
+                 * gridData -- bukan dari field form -- supaya (1) tidak kena batas max_input_vars PHP
+                 * dan (2) tampilan HP, yang cuma merender satu tanggal, tetap ikut menyimpan tanggal
+                 * lain. Aturan field sama dengan yang sebelumnya aktif di form: setoran hanya dikirim
+                 * kalau kehadiran kosong/hadir, tab Ummi hanya untuk murid level Ummi yang hadir.
+                 * Sel tanpa kehadiran & tanpa isian memang tidak diproses server, jadi dilewati.
+                 */
+                buildRecordsPayload() {
+                    const out = {};
+                    this.students.forEach(s => {
+                        const dates = {};
+                        this.dates.forEach(d => {
+                            const c = this.gridData[s.id] && this.gridData[s.id].dates[d];
+                            if (!c) return;
+                            const att = c.attendance || '';
+                            const cell = { attendance: att };
+                            let hasContent = false;
+
+                            if (this.tab === 'hafalan') {
+                                if (!att || att === 'hadir') {
+                                    cell.hafalans = (c.hafalans || []).map(h => ({
+                                        id: h.id, surah_id: h.surah_id, ayah_start: h.ayah_start, ayah_end: h.ayah_end,
+                                        baris: h.baris, score: h.score, status: h.status, submission_type: h.submission_type,
+                                    }));
+                                    hasContent = (c.hafalans || []).some(h => h.surah_id);
+                                }
+                            } else if (this.tab === 'ummi' && s.tahfizh_level === 'ummi' && att === 'hadir') {
+                                cell.ummi_jilid = c.ummi_jilid;
+                                cell.ummi_halaman = c.ummi_halaman;
+                                cell.materi = c.materi;
+                                cell.nilai = c.nilai;
+                                cell.hafalans = (c.ummiHafalans || []).map(h => ({
+                                    id: h.id, surah_id: h.surah_id, ayah: h.ayah, baris: h.baris,
+                                }));
+                            }
+
+                            if (att || hasContent) dates[d] = cell;
+                        });
+                        if (Object.keys(dates).length) out[s.id] = { dates };
+                    });
+                    return out;
+                },
                 submitForm() {
                     if (this.isSaving) return;
                     this.isSaving = true;
                     this.isDirty = false;
                     window._hasUnsavedDraft = false;
-                    localStorage.removeItem(this.draftKey);
+                    // Draf sengaja TIDAK dihapus di sini: kalau kirim gagal (sesi habis, koneksi putus,
+                    // dsb.) isian masih bisa dipulihkan. Draf baru dibersihkan setelah server
+                    // mengonfirmasi berhasil (lihat init(), flag savedOk).
 
                     this.$nextTick(() => {
                         const form = document.getElementById('spreadsheet-form');
-                        if (form) {
-                            form.submit();
-                        } else {
+                        if (!form) {
                             this.isSaving = false;
+                            return;
                         }
+
+                        let json = form.querySelector('input[name="records_json"]');
+                        if (!json) {
+                            json = document.createElement('input');
+                            json.type = 'hidden';
+                            json.name = 'records_json';
+                            form.appendChild(json);
+                        }
+                        json.value = JSON.stringify(this.buildRecordsPayload());
+                        form.querySelectorAll('[name^="records["]').forEach(el => { el.disabled = true; });
+
+                        form.submit();
                     });
                 }
             }));

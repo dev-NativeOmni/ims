@@ -277,6 +277,59 @@ class SpreadsheetInputTest extends TestCase
     }
 
     #[Test]
+    public function july_entries_for_many_dates_are_saved_from_a_single_json_payload(): void
+    {
+        $classRoom = $this->student->classRoom;
+
+        // Kasus HP: isian di beberapa tanggal sekaligus, dikirim sebagai satu records_json
+        // (bukan ribuan field form yang bisa terpotong max_input_vars).
+        $dates = ['2026-07-01', '2026-07-02', '2026-07-03', '2026-07-06', '2026-07-07'];
+        $cells = [];
+        foreach ($dates as $i => $d) {
+            $cells[$d] = [
+                'attendance' => 'hadir',
+                'hafalans' => [[
+                    'id' => null, 'surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 3 + $i,
+                    'score' => '90', 'status' => 'passed', 'submission_type' => 'new',
+                ]],
+            ];
+        }
+
+        $response = $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-07',
+            'type' => 'hafalan',
+            'records_json' => json_encode([$this->student->id => ['dates' => $cells]]),
+        ]);
+
+        $response->assertRedirect(route('spreadsheet-input.index', [
+            'class_room_id' => $classRoom->id, 'month' => '2026-07', 'week' => 'all',
+        ]));
+
+        foreach ($dates as $d) {
+            $this->assertDatabaseHas('attendances', ['student_id' => $this->student->id, 'status' => 'hadir', 'tanggal' => $d.' 00:00:00']);
+            $this->assertDatabaseHas('hafalan_records', ['student_id' => $this->student->id, 'submitted_at' => $d.' 00:00:00']);
+        }
+        $this->assertSame(5, HafalanRecord::where('student_id', $this->student->id)->count());
+    }
+
+    #[Test]
+    public function spreadsheet_page_serializes_all_dates_and_keeps_the_draft_until_save_succeeds(): void
+    {
+        $classRoom = $this->student->classRoom;
+        $html = $this->actingAs($this->teacherUser)
+            ->get(route('spreadsheet-input.index', ['class_room_id' => $classRoom->id, 'month' => '2026-07']))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('buildRecordsPayload()', $html);
+        $this->assertStringContainsString('records_json', $html);
+        // Draf tidak boleh dihapus di submitForm(); hanya setelah flag savedOk (flash sukses dari server).
+        $submit = substr($html, strpos($html, 'submitForm() {'), 1600);
+        $this->assertStringNotContainsString('localStorage.removeItem(this.draftKey)', $submit);
+    }
+
+    #[Test]
     public function teacher_saving_multiple_times_does_not_duplicate_records(): void
     {
         $classRoom = $this->student->classRoom;
