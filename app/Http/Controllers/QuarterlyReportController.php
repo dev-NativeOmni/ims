@@ -742,19 +742,6 @@ class QuarterlyReportController extends Controller
                     $pStart = 1 + ($p - 1) * 7;
                     $pEnd = min($p === 5 ? $daysInMonth : $p * 7, $daysInMonth);
 
-                    $hasEffectiveInWeek = false;
-                    for ($d = $pStart; $d <= $pEnd; $d++) {
-                        if ($effectiveByDay[$d] ?? false) {
-                            $hasEffectiveInWeek = true;
-                            break;
-                        }
-                    }
-
-                    if (! $hasEffectiveInWeek) {
-                        $pekan[$p] = 'Libur';
-                        continue;
-                    }
-
                     $att = $sAtt->first(function ($a) use ($pStart, $pEnd) {
                         $dayNum = (int) date('d', strtotime($a->tanggal));
 
@@ -779,8 +766,11 @@ class QuarterlyReportController extends Controller
 
                             return $dayNum >= $pStart && $dayNum <= $pEnd;
                         });
-
-                        $pekan[$p] = $hasSetoran ? 'Hadir' : 'Belum di input';
+                        // Tidak ada presensi tercatat untuk pekan ini: anggap hadir
+                        // hanya kalau memang ada setoran nyata. Selain itu, pekan tanpa
+                        // hari efektif = "Libur", pekan dengan hari efektif tapi belum
+                        // diisi = "Belum di input" -- bukan otomatis hadir.
+                        $pekan[$p] = $hasSetoran ? 'Hadir' : $emptyPekanState($pStart, $pEnd);
                     }
                 }
 
@@ -813,6 +803,9 @@ class QuarterlyReportController extends Controller
         }
         if ($isWeeklyProgram) {
             foreach ($uniqueDates as $date) {
+                if ($classRoom !== null && ! $calendar->isEffectiveDay($classRoom, Carbon::parse($date))) {
+                    continue;
+                }
                 $key = Carbon::parse($date)->format('o-W');
                 if (isset($meetingDates[$key]) && ! in_array($meetingDates[$key], $uniqueDates, true)) {
                     $meetingDates[$key] = $date;

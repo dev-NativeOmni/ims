@@ -433,6 +433,169 @@ class HafalanRecordController extends Controller
             ->with('success', "Berhasil menghapus {$count} data UMMI.");
     }
 
+    /**
+     * Simpan perubahan massal seluruh riwayat setoran reguler sekaligus.
+     */
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+        $this->authorize('create', HafalanRecord::class);
+
+        $validated = $request->validate([
+            'records' => ['required', 'array'],
+            'records.*.id' => ['required', 'integer', 'exists:hafalan_records,id'],
+            'records.*.submitted_at' => ['required', 'date'],
+            'records.*.surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'records.*.ayah_start' => ['nullable', 'integer', 'min:1'],
+            'records.*.ayah_end' => ['nullable', 'integer', 'min:1'],
+            'records.*.submission_type' => ['nullable', 'string', 'in:new,continuation,revision,repeat'],
+            'records.*.score' => ['nullable'],
+            'records.*.status' => ['nullable', 'string', 'in:passed,repeat,needs_improvement'],
+            'records.*.baris' => ['nullable', 'numeric', 'min:0'],
+            'records.*.notes' => ['nullable', 'string'],
+        ]);
+
+        $user = $request->user();
+        $updatedCount = 0;
+        $studentIds = [];
+
+        DB::transaction(function () use ($validated, $user, &$updatedCount, &$studentIds) {
+            foreach ($validated['records'] as $item) {
+                $record = HafalanRecord::with('surahs')->find($item['id']);
+                if (! $record) {
+                    continue;
+                }
+
+                if ($user->hasRole('teacher') && (int) $record->teacher_id !== (int) $user->teacherProfile?->id) {
+                    continue;
+                }
+
+                $record->update([
+                    'submitted_at' => $item['submitted_at'],
+                    'notes' => $item['notes'] ?? $record->notes,
+                ]);
+
+                if (! empty($item['surah_id'])) {
+                    $firstSurah = $record->surahs->first();
+                    $scoreVal = isset($item['score']) && $item['score'] !== '' ? $item['score'] : null;
+                    if (is_string($scoreVal) && ! is_numeric($scoreVal)) {
+                        $scoreVal = match (strtoupper(trim($scoreVal))) {
+                            'A+', 'A' => 95,
+                            'B+', 'B' => 85,
+                            'B-' => 80,
+                            'C+', 'C' => 75,
+                            'D' => 60,
+                            default => null,
+                        };
+                    }
+
+                    $subType = ($item['submission_type'] ?? 'new') === 'repeat' ? 'new' : ($item['submission_type'] ?? 'new');
+
+                    $payload = [
+                        'surah_id' => (int) $item['surah_id'],
+                        'ayah_start' => (int) ($item['ayah_start'] ?? 1),
+                        'ayah_end' => (int) ($item['ayah_end'] ?? 1),
+                        'submission_type' => $subType,
+                        'score' => $scoreVal,
+                        'status' => $item['status'] ?? 'passed',
+                        'baris' => isset($item['baris']) && $item['baris'] !== '' ? (float) $item['baris'] : null,
+                    ];
+
+                    if ($firstSurah) {
+                        $firstSurah->update($payload);
+                    } else {
+                        $record->surahs()->create(array_merge($payload, ['sort_order' => 0]));
+                    }
+                }
+
+                $studentIds[] = $record->student_id;
+                $updatedCount++;
+            }
+        });
+
+        if (! empty($studentIds)) {
+            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
+            \App\Observers\HafalanTargetStatusObserver::flush();
+        }
+
+        return back()->with('success', "Berhasil menyimpan {$updatedCount} perubahan catatan hafalan reguler.");
+    }
+
+    /**
+     * Simpan perubahan massal seluruh riwayat setoran UMMI sekaligus.
+     */
+    public function bulkUpdateUmmi(Request $request): RedirectResponse
+    {
+        $this->authorize('create', HafalanRecord::class);
+
+        $validated = $request->validate([
+            'records' => ['required', 'array'],
+            'records.*.id' => ['required', 'integer', 'exists:ummi_records,id'],
+            'records.*.tanggal' => ['required', 'date'],
+            'records.*.tatap_muka' => ['nullable', 'integer', 'min:1'],
+            'records.*.ummi_jilid' => ['nullable', 'string', 'max:150'],
+            'records.*.ummi_halaman' => ['nullable', 'string', 'max:100'],
+            'records.*.materi' => ['nullable', 'string', 'max:255'],
+            'records.*.nilai' => ['nullable', 'string', 'max:50'],
+            'records.*.disimak_guru' => ['nullable', 'string', 'in:Ya,Tidak'],
+            'records.*.disimak_ortu' => ['nullable', 'string', 'in:Ya,Tidak'],
+            'records.*.surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
+            'records.*.hafalan_ayah' => ['nullable', 'string', 'max:100'],
+            'records.*.hafalan_baris' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $user = $request->user();
+        $updatedCount = 0;
+        $studentIds = [];
+
+        DB::transaction(function () use ($validated, $user, &$updatedCount, &$studentIds) {
+            foreach ($validated['records'] as $item) {
+                $record = UmmiRecord::with('surahs')->find($item['id']);
+                if (! $record) {
+                    continue;
+                }
+
+                if ($user->hasRole('teacher') && (int) $record->teacher_id !== (int) $user->teacherProfile?->id) {
+                    continue;
+                }
+
+                $record->update([
+                    'tanggal' => $item['tanggal'],
+                    'tatap_muka' => $item['tatap_muka'] ?? $record->tatap_muka,
+                    'ummi_jilid' => $item['ummi_jilid'] ?? null,
+                    'ummi_halaman' => $item['ummi_halaman'] ?? null,
+                    'materi' => $item['materi'] ?? null,
+                    'nilai' => $item['nilai'] ?? null,
+                    'disimak_guru' => $item['disimak_guru'] ?? $record->disimak_guru,
+                    'disimak_ortu' => $item['disimak_ortu'] ?? $record->disimak_ortu,
+                ]);
+
+                if (! empty($item['surah_id'])) {
+                    $firstSurah = $record->surahs->first();
+                    $payload = [
+                        'surah_id' => (int) $item['surah_id'],
+                        'hafalan_ayah' => $item['hafalan_ayah'] ?? null,
+                        'baris' => isset($item['hafalan_baris']) && $item['hafalan_baris'] !== '' ? (float) $item['hafalan_baris'] : null,
+                    ];
+                    if ($firstSurah) {
+                        $firstSurah->update($payload);
+                    } else {
+                        $record->surahs()->create(array_merge($payload, ['sort_order' => 0]));
+                    }
+                }
+
+                $studentIds[] = $record->student_id;
+                $updatedCount++;
+            }
+        });
+
+        if (! empty($studentIds)) {
+            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
+            \App\Observers\HafalanTargetStatusObserver::flush();
+        }
+
+        return back()->with('success', "Berhasil menyimpan {$updatedCount} perubahan catatan UMMI.");
+    }
+
     private function formData(User $user, string $category = 'reguler'): array
     {
         $students = Student::query()

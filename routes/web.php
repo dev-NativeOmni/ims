@@ -365,8 +365,12 @@ Route::middleware(['auth'])->group(function () {
             ->name('ummi-records.update');
         Route::delete('/ummi-records/{ummiRecord}', [HafalanRecordController::class, 'destroyUmmi'])
             ->name('ummi-records.destroy');
+        Route::post('/hafalan-records/bulk-update', [HafalanRecordController::class, 'bulkUpdate'])
+            ->name('hafalan-records.bulk-update');
         Route::post('/hafalan-records/bulk-destroy', [HafalanRecordController::class, 'bulkDestroy'])
             ->name('hafalan-records.bulk-destroy');
+        Route::post('/ummi-records/bulk-update', [HafalanRecordController::class, 'bulkUpdateUmmi'])
+            ->name('ummi-records.bulk-update');
         Route::post('/ummi-records/bulk-destroy', [HafalanRecordController::class, 'bulkDestroyUmmi'])
             ->name('ummi-records.bulk-destroy');
 

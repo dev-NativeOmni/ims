@@ -6,6 +6,17 @@
             </h2>
 
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                @if (!auth()->user()->hasAnyRole(['student', 'parent']) && $hafalanRecords->isNotEmpty())
+                    <button
+                        type="button"
+                        @click="bulkEdit = !bulkEdit"
+                        :class="bulkEdit ? 'bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-400 text-white' : 'bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-100'"
+                        class="inline-flex items-center gap-1.5 justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[36px] cursor-pointer"
+                    >
+                        <x-heroicon-o-pencil-square class="w-4 h-4" />
+                        <span x-text="bulkEdit ? 'Tutup Edit Semua' : 'Edit Semua'">Edit Semua</span>
+                    </button>
+                @endif
                 <a
                     href="{{ route('spreadsheet-input.index') }}"
                     class="inline-flex items-center gap-1.5 justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[36px]"
@@ -26,6 +37,7 @@
     <div class="py-3 sm:py-6" x-data="{
         selectedIds: [],
         selectAll: false,
+        bulkEdit: false,
         category: '{{ request('category', 'reguler') }}',
         toggleSelectAll(recordIds) {
             if (this.selectAll) {
@@ -35,6 +47,11 @@
             }
         }
     }">
+        <!-- Form Tag for Bulk Edit Actions -->
+        <form id="bulkEditForm" method="POST" :action="category === 'ummi' ? '{{ route('ummi-records.bulk-update') }}' : '{{ route('hafalan-records.bulk-update') }}'">
+            @csrf
+        </form>
+
         <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4">
             @include('partials.tahfizh-records-nav-tabs', ['activeTab' => 'hafalan'])
 
@@ -50,8 +67,32 @@
                 </div>
             @endif
 
-            <!-- Bulk Action Bar -->
-            <div x-show="selectedIds.length > 0" x-transition class="flex items-center justify-between bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 rounded-xl shadow-sm">
+            <!-- Sticky Bulk Edit Bar -->
+            <div x-show="bulkEdit" x-cloak x-transition class="sticky top-16 z-30 flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/90 border-2 border-amber-500 text-amber-950 dark:text-amber-100 p-3.5 sm:p-4 rounded-xl shadow-xl backdrop-blur-md">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-amber-500 text-white rounded-lg shadow-sm shrink-0">
+                        <x-heroicon-o-pencil-square class="w-5 h-5" />
+                    </div>
+                    <div>
+                        <p class="text-xs sm:text-sm font-bold">Mode Edit Semua Riwayat Aktif</p>
+                        <p class="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
+                            Anda dapat mengubah seluruh data setoran di bawah ini secara bersamaan, lalu klik <strong>Simpan Semua Perubahan</strong>.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+                    <button type="button" @click="bulkEdit = false" class="px-3.5 py-2 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl font-bold text-xs border border-zinc-300 dark:border-zinc-600 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" form="bulkEditForm" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
+                        <x-heroicon-o-check class="w-4 h-4" />
+                        <span>Simpan Semua Perubahan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Action Bar for Deletion -->
+            <div x-show="selectedIds.length > 0 && !bulkEdit" x-cloak x-transition class="flex items-center justify-between bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 rounded-xl shadow-sm">
                 <span class="text-xs font-bold text-rose-800 dark:text-rose-300">
                     <span x-text="selectedIds.length"></span> data dipilih
                 </span>
@@ -198,79 +239,80 @@
                 @if (request('category') === 'ummi')
                     @forelse ($hafalanRecords as $record)
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3" x-data="{ editing: false }">
-                            <template x-if="!editing">
-                            <div>
-                            <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                            <!-- Standard Single View & Single Inline Edit -->
+                            <template x-if="!bulkEdit && !editing">
                                 <div>
-                                    <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
-                                        {{ $record->student?->name }}
-                                    </h3>
-                                    <div class="flex items-center gap-1.5 flex-wrap text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                        <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
-                                        <span>•</span>
-                                        <span>{{ $record->tanggal?->format('d M Y') }}</span>
-                                        @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                            <span>•</span>
-                                            <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}"
-                                               target="_blank"
-                                               class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold inline-flex items-center gap-1">
-                                                <x-heroicon-o-document-text class="w-3.5 h-3.5" />
-                                                <span>Kartu</span>
-                                            </a>
+                                    <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                                        <div>
+                                            <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                                                {{ $record->student?->name }}
+                                            </h3>
+                                            <div class="flex items-center gap-1.5 flex-wrap text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                                <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                                <span>•</span>
+                                                <span>{{ $record->tanggal?->format('d M Y') }}</span>
+                                                @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                                    <span>•</span>
+                                                    <a href="{{ route('hafalan-records.student.ummi-card', $record->student_id) }}"
+                                                       target="_blank"
+                                                       class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold inline-flex items-center gap-1">
+                                                        <x-heroicon-o-document-text class="w-3.5 h-3.5" />
+                                                        <span>Kartu</span>
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50">
+                                            TM-{{ $record->tatap_muka }}
+                                        </span>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2 text-xs mt-3">
+                                        <div>
+                                            <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jilid / Hal</span>
+                                            <span class="font-bold text-zinc-800 dark:text-zinc-200">
+                                                {{ $record->ummi_jilid ?: '-' }} {{ $record->ummi_halaman ? 'Hal. ' . $record->ummi_halaman : '' }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Materi & Nilai</span>
+                                            <span class="font-semibold text-zinc-700 dark:text-zinc-300">
+                                                {{ $record->materi ?: '-' }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->nilai ?? '-' }}</strong>
+                                            </span>
+                                        </div>
+                                        @if($record->surahs->isNotEmpty())
+                                        <div class="col-span-2 mt-1">
+                                            <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Hafalan UMMI</span>
+                                            <span class="font-medium text-zinc-700 dark:text-zinc-300 space-y-0.5 block">
+                                                @foreach ($record->surahs as $surahEntry)
+                                                    <span class="block">{{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->hafalan_ayah ?: '-' }})</span>
+                                                @endforeach
+                                                <span class="block text-indigo-600 dark:text-indigo-400 font-bold">{{ $record->lines_count }} Baris</span>
+                                            </span>
+                                        </div>
                                         @endif
                                     </div>
+                                    @if (!auth()->user()->hasAnyRole(['student', 'parent']))
+                                        <div class="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                            <button type="button" @click="editing = true" class="btn-action-edit flex-1 text-center inline-flex items-center justify-center gap-1 cursor-pointer">
+                                                <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
+                                                <span>Edit</span>
+                                            </button>
+                                            <form method="POST" action="{{ route('ummi-records.destroy', $record) }}" onsubmit="return confirm('Hapus data progres UMMI ini?')" class="flex-1">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-action-delete w-full inline-flex items-center justify-center gap-1">
+                                                    <x-heroicon-o-trash class="w-3.5 h-3.5" />
+                                                    <span>Hapus</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </div>
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50">
-                                    TM-{{ $record->tatap_muka }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 text-xs mt-3">
-                                <div>
-                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Jilid / Hal</span>
-                                    <span class="font-bold text-zinc-800 dark:text-zinc-200">
-                                        {{ $record->ummi_jilid ?: '-' }} {{ $record->ummi_halaman ? 'Hal. ' . $record->ummi_halaman : '' }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Materi & Nilai</span>
-                                    <span class="font-semibold text-zinc-700 dark:text-zinc-300">
-                                        {{ $record->materi ?: '-' }} | <strong class="text-indigo-600 dark:text-indigo-400">{{ $record->nilai ?? '-' }}</strong>
-                                    </span>
-                                </div>
-                                @if($record->surahs->isNotEmpty())
-                                <div class="col-span-2 mt-1">
-                                    <span class="text-zinc-400 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Hafalan UMMI</span>
-                                    <span class="font-medium text-zinc-700 dark:text-zinc-300 space-y-0.5 block">
-                                        @foreach ($record->surahs as $surahEntry)
-                                            <span class="block">{{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->hafalan_ayah ?: '-' }})</span>
-                                        @endforeach
-                                        <span class="block text-indigo-600 dark:text-indigo-400 font-bold">{{ $record->lines_count }} Baris</span>
-                                    </span>
-                                </div>
-                                @endif
-                            </div>
-                            @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                <div class="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
-                                    <button type="button" @click="editing = true" class="btn-action-edit flex-1 text-center inline-flex items-center justify-center gap-1 cursor-pointer">
-                                        <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
-                                        <span>Edit</span>
-                                    </button>
-                                    <form method="POST" action="{{ route('ummi-records.destroy', $record) }}" onsubmit="return confirm('Hapus data progres UMMI ini?')" class="flex-1">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-action-delete w-full inline-flex items-center justify-center gap-1">
-                                            <x-heroicon-o-trash class="w-3.5 h-3.5" />
-                                            <span>Hapus</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            @endif
-                            </div>
                             </template>
 
                             @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                <template x-if="editing">
+                                <template x-if="!bulkEdit && editing">
                                     <div>
                                         <h4 class="text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
                                             Edit Progres UMMI — {{ $record->student?->name }}
@@ -279,6 +321,93 @@
                                     </div>
                                 </template>
                             @endif
+
+                            <!-- Bulk Edit Mode Interface (Mobile) -->
+                            <div x-show="bulkEdit" x-cloak class="space-y-3 bg-amber-50/50 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-200/60 dark:border-amber-900/60">
+                                <input type="hidden" form="bulkEditForm" name="records[{{ $loop->index }}][id]" value="{{ $record->id }}">
+                                
+                                <div class="flex items-center justify-between border-b border-amber-200/50 dark:border-amber-900/50 pb-2">
+                                    <div class="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                        {{ $record->student?->name }} <span class="text-[11px] text-zinc-500 font-normal">({{ $record->student?->classRoom?->name ?: '-' }})</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200 text-amber-900">#{{ $loop->iteration }}</span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Tanggal</label>
+                                        <input type="date" form="bulkEditForm" name="records[{{ $loop->index }}][tanggal]" value="{{ $record->tanggal?->format('Y-m-d') }}" required
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Tatap Muka</label>
+                                        <input type="number" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}" min="1"
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Jilid</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][ummi_jilid]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                            <option value="">Pilih Jilid</option>
+                                            @foreach(['Jilid 1', 'Jilid 2', 'Jilid 3', 'Al-Qur\'an', 'Ghoroib', 'Tajwid'] as $jilid)
+                                                <option value="{{ $jilid }}" @selected($record->ummi_jilid === $jilid)>{{ $jilid }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Halaman</label>
+                                        <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman]" value="{{ $record->ummi_halaman }}" placeholder="Cth: 1-5"
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Materi</label>
+                                        <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][materi]" value="{{ $record->materi }}" placeholder="Materi yang dipelajari"
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Nilai</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][nilai]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                            <option value="">-</option>
+                                            @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $n)
+                                                <option value="{{ $n }}" @selected($record->nilai === $n)>{{ $n }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Guru / Ortu</label>
+                                        <div class="flex items-center gap-1">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][disimak_guru]" class="w-1/2 rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] py-1 px-1">
+                                                <option value="Ya" @selected($record->disimak_guru === 'Ya')>G: Ya</option>
+                                                <option value="Tidak" @selected($record->disimak_guru === 'Tidak')>G: Tdk</option>
+                                            </select>
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][disimak_ortu]" class="w-1/2 rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] py-1 px-1">
+                                                <option value="Tidak" @selected($record->disimak_ortu === 'Tidak')>O: Tdk</option>
+                                                <option value="Ya" @selected($record->disimak_ortu === 'Ya')>O: Ya</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-span-2 grid grid-cols-12 gap-1.5 pt-1 border-t border-amber-200/40 dark:border-amber-900/40">
+                                        <div class="col-span-6">
+                                            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Surah Hafalan</label>
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][surah_id]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                                <option value="">Pilih Surah</option>
+                                                @foreach ($surahs as $surah)
+                                                    <option value="{{ $surah->id }}" @selected($record->surahs->first()?->surah_id == $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-span-3">
+                                            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Ayat</label>
+                                            <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][hafalan_ayah]" value="{{ $record->surahs->first()?->hafalan_ayah }}" placeholder="1-10"
+                                                   class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                        </div>
+                                        <div class="col-span-3">
+                                            <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Baris</label>
+                                            <input type="number" step="0.1" min="0" form="bulkEditForm" name="records[{{ $loop->index }}][hafalan_baris]" value="{{ $record->surahs->first()?->baris ?? $record->lines_count }}" placeholder="Baris"
+                                                   class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @empty
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
@@ -288,64 +417,134 @@
                 @else
                     @forelse ($hafalanRecords as $record)
                         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-4 space-y-3">
-                            <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
-                                <div>
-                                    <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
-                                        {{ $record->student?->name }}
-                                    </h3>
-                                    <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                        <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
-                                        <span>•</span>
-                                        <span>{{ $record->submitted_at?->format('d M Y') }}</span>
+                            <!-- Standard Single View -->
+                            <div x-show="!bulkEdit" class="space-y-3">
+                                <div class="flex items-start justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
+                                    <div>
+                                        <h3 class="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                                            {{ $record->student?->name }}
+                                        </h3>
+                                        <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                            <span>{{ $record->student?->classRoom?->name ?: '-' }}</span>
+                                            <span>•</span>
+                                            <span>{{ $record->submitted_at?->format('d M Y') }}</span>
+                                        </div>
                                     </div>
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400">
+                                        {{ $record->lines_count }} Baris
+                                    </span>
                                 </div>
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400">
-                                    {{ $record->lines_count }} Baris
-                                </span>
-                            </div>
 
-                            <div class="space-y-2 text-xs">
-                                @forelse ($record->surahs as $surahEntry)
-                                    <div class="flex items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg p-2">
-                                        <div>
-                                            <span class="font-bold text-zinc-800 dark:text-zinc-200 block">
-                                                {{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->ayah_start }}-{{ $surahEntry->ayah_end }})
-                                            </span>
-                                            <span class="text-zinc-500 dark:text-zinc-400">
-                                                {{ $surahEntry->submission_type_label }} · Nilai <strong class="text-indigo-600 dark:text-indigo-400">{{ $surahEntry->score_letter ?? '-' }}</strong>
+                                <div class="space-y-2 text-xs">
+                                    @forelse ($record->surahs as $surahEntry)
+                                        <div class="flex items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg p-2">
+                                            <div>
+                                                <span class="font-bold text-zinc-800 dark:text-zinc-200 block">
+                                                    {{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->ayah_start }}-{{ $surahEntry->ayah_end }})
+                                                </span>
+                                                <span class="text-zinc-500 dark:text-zinc-400">
+                                                    {{ $surahEntry->submission_type_label }} · Nilai <strong class="text-indigo-600 dark:text-indigo-400">{{ $surahEntry->score_letter ?? '-' }}</strong>
+                                                </span>
+                                            </div>
+                                            <span class="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold
+                                                {{ $surahEntry->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
+                                                {{ $surahEntry->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
+                                                {{ $surahEntry->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
+                                            ">
+                                                {{ $surahEntry->status_label }}
                                             </span>
                                         </div>
-                                        <span class="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold
-                                            {{ $surahEntry->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
-                                            {{ $surahEntry->status === 'repeat' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400' : '' }}
-                                            {{ $surahEntry->status === 'needs_improvement' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : '' }}
-                                        ">
-                                            {{ $surahEntry->status_label }}
-                                        </span>
-                                    </div>
-                                @empty
-                                    <span class="text-zinc-400">Belum ada surah tercatat.</span>
-                                @endforelse
+                                    @empty
+                                        <span class="text-zinc-400">Belum ada surah tercatat.</span>
+                                    @endforelse
+                                </div>
+
+                                <!-- Action Bar Mobile -->
+                                <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                    <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1 inline-flex items-center justify-center gap-1">
+                                        <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" />
+                                        <span>Detail</span>
+                                    </a>
+                                    <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1 inline-flex items-center justify-center gap-1">
+                                        <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
+                                        <span>Edit</span>
+                                    </a>
+                                    <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-action-delete w-full inline-flex items-center justify-center gap-1">
+                                            <x-heroicon-o-trash class="w-3.5 h-3.5" />
+                                            <span>Hapus</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
-                            <!-- Action Bar Mobile -->
-                            <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1 inline-flex items-center justify-center gap-1">
-                                    <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" />
-                                    <span>Detail</span>
-                                </a>
-                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1 inline-flex items-center justify-center gap-1">
-                                    <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
-                                    <span>Edit</span>
-                                </a>
-                                <form method="POST" action="{{ route('hafalan-records.destroy', $record) }}" onsubmit="return confirm('Hapus setoran hafalan ini? Data akan soft delete.')" class="flex-1">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-action-delete w-full inline-flex items-center justify-center gap-1">
-                                        <x-heroicon-o-trash class="w-3.5 h-3.5" />
-                                        <span>Hapus</span>
-                                    </button>
-                                </form>
+                            <!-- Bulk Edit Mode Interface (Mobile Reguler) -->
+                            <div x-show="bulkEdit" x-cloak class="space-y-3 bg-amber-50/50 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-200/60 dark:border-amber-900/60">
+                                <input type="hidden" form="bulkEditForm" name="records[{{ $loop->index }}][id]" value="{{ $record->id }}">
+
+                                <div class="flex items-center justify-between border-b border-amber-200/50 dark:border-amber-900/50 pb-2">
+                                    <div class="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                                        {{ $record->student?->name }} <span class="text-[11px] text-zinc-500 font-normal">({{ $record->student?->classRoom?->name ?: '-' }})</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200 text-amber-900">#{{ $loop->iteration }}</span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Tanggal Setor</label>
+                                        <input type="date" form="bulkEditForm" name="records[{{ $loop->index }}][submitted_at]" value="{{ $record->submitted_at?->format('Y-m-d') }}" required
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Surah</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][surah_id]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                            <option value="">Pilih Surah</option>
+                                            @foreach ($surahs as $surah)
+                                                <option value="{{ $surah->id }}" @selected($record->surahs->first()?->surah_id == $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Ayat (Awal - Akhir)</label>
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ayah_start]" value="{{ $record->surahs->first()?->ayah_start ?? 1 }}" class="w-1/2 rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 text-center">
+                                            <span>-</span>
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ayah_end]" value="{{ $record->surahs->first()?->ayah_end ?? 1 }}" class="w-1/2 rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 text-center">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Baris</label>
+                                        <input type="number" step="0.1" min="0" form="bulkEditForm" name="records[{{ $loop->index }}][baris]" value="{{ $record->surahs->first()?->baris ?? $record->lines_count }}"
+                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5 text-center">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Jenis Setoran</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][submission_type]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                            <option value="new" @selected(($record->surahs->first()?->submission_type ?? 'new') === 'new')>Baru</option>
+                                            <option value="continuation" @selected(($record->surahs->first()?->submission_type) === 'continuation')>Lanjutan</option>
+                                            <option value="revision" @selected(($record->surahs->first()?->submission_type) === 'revision')>Perbaikan</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Nilai</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][score]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                            <option value="">-</option>
+                                            @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $grade)
+                                                <option value="{{ $grade }}" @selected(($record->surahs->first()?->score_letter ?? '') === $grade)>{{ $grade }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Status</label>
+                                        <select form="bulkEditForm" name="records[{{ $loop->index }}][status]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5">
+                                            <option value="passed" @selected(($record->surahs->first()?->status ?? 'passed') === 'passed')>Lulus</option>
+                                            <option value="repeat" @selected(($record->surahs->first()?->status) === 'repeat')>Ulang</option>
+                                            <option value="needs_improvement" @selected(($record->surahs->first()?->status) === 'needs_improvement')>Perlu Perbaikan</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @empty
@@ -368,38 +567,39 @@
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                     @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                        <th class="px-3 py-3 text-center">
+                                        <th class="px-3 py-3 text-center w-10">
                                             <input type="checkbox" x-model="selectAll" @change="toggleSelectAll([{{ $hafalanRecords->pluck('id')->implode(',') }}])" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
                                         </th>
                                     @endif
-                                    <th class="px-4 py-3">Tanggal</th>
-                                    <th class="px-4 py-3">Murid</th>
-                                    <th class="px-4 py-3">Tatap Muka</th>
-                                    <th class="px-4 py-3">Jilid / Hal</th>
-                                    <th class="px-4 py-3">Materi</th>
-                                    <th class="px-4 py-3">Hafalan UMMI</th>
-                                    <th class="px-4 py-3 text-center">Baris</th>
-                                    <th class="px-4 py-3">Nilai</th>
-                                    <th class="px-4 py-3">Simak</th>
+                                    <th class="px-3 py-3">Tanggal</th>
+                                    <th class="px-3 py-3">Murid</th>
+                                    <th class="px-3 py-3">Tatap Muka</th>
+                                    <th class="px-3 py-3">Jilid / Hal</th>
+                                    <th class="px-3 py-3">Materi</th>
+                                    <th class="px-3 py-3">Hafalan UMMI</th>
+                                    <th class="px-3 py-3 text-center">Baris</th>
+                                    <th class="px-3 py-3">Nilai</th>
+                                    <th class="px-3 py-3">Simak</th>
                                     @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                        <th class="px-4 py-3 text-right">Aksi</th>
+                                        <th class="px-3 py-3 text-right">Aksi</th>
                                     @endif
                                 </tr>
                             </thead>
 
                             @forelse ($hafalanRecords as $record)
                                 <tbody x-data="{ editing: false }">
-                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150 {{ $loop->first ? '' : 'border-t border-zinc-100 dark:border-zinc-800/60' }}" x-show="!editing">
+                                    <!-- Normal Row (when !bulkEdit) -->
+                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150 {{ $loop->first ? '' : 'border-t border-zinc-100 dark:border-zinc-800/60' }}" x-show="!bulkEdit && !editing">
                                         @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                             <td class="px-3 py-3.5 text-center">
                                                 <input type="checkbox" value="{{ $record->id }}" x-model="selectedIds" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
                                             </td>
                                         @endif
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             {{ $record->tanggal?->format('d M Y') }}
                                         </td>
 
-                                        <td class="px-4 py-3.5">
+                                        <td class="px-3 py-3.5">
                                             <div class="font-bold text-xs text-zinc-900 dark:text-white">
                                                 {{ $record->student?->name }}
                                             </div>
@@ -417,19 +617,19 @@
                                             </div>
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             TM-{{ $record->tatap_muka }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 font-semibold whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 font-semibold whitespace-nowrap">
                                             {{ $record->ummi_jilid ?: '-' }} {{ $record->ummi_halaman ? 'Hal. ' . $record->ummi_halaman : '' }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                             {{ $record->materi ?: '-' }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                             @forelse ($record->surahs as $surahEntry)
                                                 <div class="whitespace-nowrap">
                                                     {{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }} ({{ $surahEntry->hafalan_ayah ?: '-' }})
@@ -439,23 +639,23 @@
                                             @endforelse
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
                                             {{ $record->lines_count }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
+                                        <td class="px-3 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
                                             <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold">
                                                 {{ $record->nilai ?: '-' }}
                                             </span>
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                             Guru: <span class="font-semibold {{ $record->disimak_guru === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_guru }}</span> |
                                             Ortu: <span class="font-semibold {{ $record->disimak_ortu === 'Ya' ? 'text-emerald-600' : 'text-zinc-400' }}">{{ $record->disimak_ortu }}</span>
                                         </td>
 
                                         @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                            <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                                            <td class="px-3 py-3.5 text-right whitespace-nowrap">
                                                 <div class="flex items-center justify-end gap-1.5">
                                                     <button type="button" @click="editing = true" class="btn-action-edit inline-flex items-center gap-1 cursor-pointer">
                                                         <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
@@ -474,8 +674,92 @@
                                         @endif
                                     </tr>
 
+                                    <!-- Bulk Edit Mode Row (when bulkEdit is true) -->
+                                    <tr class="bg-amber-50/40 dark:bg-amber-950/20 border-t border-amber-200/50 dark:border-amber-900/50" x-show="bulkEdit" x-cloak>
+                                        <td class="px-3 py-2 text-center text-xs font-bold text-amber-700 dark:text-amber-400">
+                                            {{ $loop->iteration }}
+                                            <input type="hidden" form="bulkEditForm" name="records[{{ $loop->index }}][id]" value="{{ $record->id }}">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="date" form="bulkEditForm" name="records[{{ $loop->index }}][tanggal]" value="{{ $record->tanggal?->format('Y-m-d') }}" required
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5 w-28">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="font-bold text-xs text-zinc-900 dark:text-white max-w-[120px] truncate" title="{{ $record->student?->name }}">
+                                                {{ $record->student?->name }}
+                                            </div>
+                                            <div class="text-[10px] text-zinc-500">{{ $record->student?->classRoom?->name ?: '-' }}</div>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}"
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-14 text-center">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="flex items-center gap-1">
+                                                <select form="bulkEditForm" name="records[{{ $loop->index }}][ummi_jilid]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 max-w-[90px]">
+                                                    <option value="">Jilid</option>
+                                                    @foreach(['Jilid 1', 'Jilid 2', 'Jilid 3', 'Al-Qur\'an', 'Ghoroib', 'Tajwid'] as $j)
+                                                        <option value="{{ $j }}" @selected($record->ummi_jilid === $j)>{{ $j }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman]" value="{{ $record->ummi_halaman }}" placeholder="Hal"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-12 text-center">
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][materi]" value="{{ $record->materi }}" placeholder="Materi"
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5 w-24">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="flex flex-col gap-1">
+                                                <select form="bulkEditForm" name="records[{{ $loop->index }}][surah_id]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] py-0.5 px-1 max-w-[120px]">
+                                                    <option value="">Surah</option>
+                                                    @foreach($surahs as $s)
+                                                        <option value="{{ $s->id }}" @selected($record->surahs->first()?->surah_id == $s->id)>{{ $s->name_latin }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][hafalan_ayah]" value="{{ $record->surahs->first()?->hafalan_ayah }}" placeholder="Ayat"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] py-0.5 px-1 w-24">
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="number" step="0.1" min="0" form="bulkEditForm" name="records[{{ $loop->index }}][hafalan_baris]" value="{{ $record->surahs->first()?->baris ?? $record->lines_count }}"
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-12 text-center">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][nilai]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                                <option value="">-</option>
+                                                @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $n)
+                                                    <option value="{{ $n }}" @selected($record->nilai === $n)>{{ $n }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="flex flex-col gap-1 text-[10px]">
+                                                <label class="flex items-center gap-1">
+                                                    <span class="w-7 text-zinc-400">Guru:</span>
+                                                    <select form="bulkEditForm" name="records[{{ $loop->index }}][disimak_guru]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[10px] py-0.5 px-1">
+                                                        <option value="Ya" @selected($record->disimak_guru === 'Ya')>Ya</option>
+                                                        <option value="Tidak" @selected($record->disimak_guru === 'Tidak')>Tdk</option>
+                                                    </select>
+                                                </label>
+                                                <label class="flex items-center gap-1">
+                                                    <span class="w-7 text-zinc-400">Ortu:</span>
+                                                    <select form="bulkEditForm" name="records[{{ $loop->index }}][disimak_ortu]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[10px] py-0.5 px-1">
+                                                        <option value="Tidak" @selected($record->disimak_ortu === 'Tidak')>Tdk</option>
+                                                        <option value="Ya" @selected($record->disimak_ortu === 'Ya')>Ya</option>
+                                                    </select>
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-2 text-right">
+                                            <span class="text-[11px] font-semibold text-amber-600 dark:text-amber-400">Siap Simpan</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Single Inline Edit Row (when editing is true) -->
                                     @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                        <tr x-show="editing" x-cloak>
+                                        <tr x-show="!bulkEdit && editing" x-cloak>
                                             <td colspan="11" class="px-4 py-4 bg-zinc-50/70 dark:bg-zinc-900/60 border-t border-zinc-100 dark:border-zinc-800/60">
                                                 @include('hafalan-records.partials.ummi-inline-edit-form', ['record' => $record, 'surahs' => $surahs])
                                             </td>
@@ -485,7 +769,7 @@
                             @empty
                                 <tbody>
                                     <tr>
-                                        <td colspan="10" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                        <td colspan="11" class="px-4 py-6 text-center text-xs text-zinc-500">
                                             Belum ada data catatan Tahsin UMMI.
                                         </td>
                                     </tr>
@@ -495,35 +779,36 @@
                             <thead>
                                 <tr class="text-left text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                     @if (!auth()->user()->hasAnyRole(['student', 'parent']))
-                                        <th class="px-3 py-3 text-center">
+                                        <th class="px-3 py-3 text-center w-10">
                                             <input type="checkbox" x-model="selectAll" @change="toggleSelectAll([{{ $hafalanRecords->pluck('id')->implode(',') }}])" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
                                         </th>
                                     @endif
-                                    <th class="px-4 py-3">Tanggal</th>
-                                    <th class="px-4 py-3">Murid</th>
-                                    <th class="px-4 py-3">Surah</th>
-                                    <th class="px-4 py-3">Ayat</th>
-                                    <th class="px-4 py-3 text-center">Baris</th>
-                                    <th class="px-4 py-3">Jenis</th>
-                                    <th class="px-4 py-3">Nilai</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3 text-right">Aksi</th>
+                                    <th class="px-3 py-3">Tanggal</th>
+                                    <th class="px-3 py-3">Murid</th>
+                                    <th class="px-3 py-3">Surah</th>
+                                    <th class="px-3 py-3">Ayat</th>
+                                    <th class="px-3 py-3 text-center">Baris</th>
+                                    <th class="px-3 py-3">Jenis</th>
+                                    <th class="px-3 py-3">Nilai</th>
+                                    <th class="px-3 py-3">Status</th>
+                                    <th class="px-3 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
 
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                                 @forelse ($hafalanRecords as $record)
-                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150">
+                                    <!-- Normal Row (when !bulkEdit) -->
+                                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition duration-150" x-show="!bulkEdit">
                                         @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                                             <td class="px-3 py-3.5 text-center">
                                                 <input type="checkbox" value="{{ $record->id }}" x-model="selectedIds" class="rounded border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500">
                                             </td>
                                         @endif
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             {{ $record->submitted_at?->format('d M Y') }}
                                         </td>
 
-                                        <td class="px-4 py-3.5">
+                                        <td class="px-3 py-3.5">
                                             <div class="font-bold text-xs text-zinc-900 dark:text-white">
                                                 {{ $record->student?->name }}
                                             </div>
@@ -532,7 +817,7 @@
                                             </div>
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                             @forelse ($record->surahs as $surahEntry)
                                                 <div class="whitespace-nowrap">{{ $surahEntry->surah?->number }}. {{ $surahEntry->surah?->name_latin }}</div>
                                             @empty
@@ -540,29 +825,29 @@
                                             @endforelse
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                                             @foreach ($record->surahs as $surahEntry)
                                                 <div>{{ $surahEntry->ayah_start }} - {{ $surahEntry->ayah_end }}</div>
                                             @endforeach
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
                                             {{ $record->lines_count }}
                                         </td>
 
-                                        <td class="px-4 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
+                                        <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">
                                             @foreach ($record->surahs as $surahEntry)
                                                 <div class="whitespace-nowrap">{{ $surahEntry->submission_type_label }}</div>
                                             @endforeach
                                         </td>
 
-                                        <td class="px-4 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
+                                        <td class="px-3 py-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
                                             @foreach ($record->surahs as $surahEntry)
                                                 <div>{{ $surahEntry->score_letter ?? '-' }}</div>
                                             @endforeach
                                         </td>
 
-                                        <td class="px-4 py-3.5">
+                                        <td class="px-3 py-3.5">
                                             @foreach ($record->surahs as $surahEntry)
                                                 <span class="px-2.5 py-1 mb-1 rounded-lg text-xs font-bold whitespace-nowrap inline-block
                                                     {{ $surahEntry->status === 'passed' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : '' }}
@@ -574,7 +859,7 @@
                                             @endforeach
                                         </td>
 
-                                        <td class="px-4 py-3.5">
+                                        <td class="px-3 py-3.5">
                                             <div class="flex justify-end items-center gap-2">
                                                 <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
                                                     Detail
@@ -595,9 +880,73 @@
                                             </div>
                                         </td>
                                     </tr>
+
+                                    <!-- Bulk Edit Mode Row (when bulkEdit is true) -->
+                                    <tr class="bg-amber-50/40 dark:bg-amber-950/20 border-t border-amber-200/50 dark:border-amber-900/50" x-show="bulkEdit" x-cloak>
+                                        <td class="px-3 py-2 text-center text-xs font-bold text-amber-700 dark:text-amber-400">
+                                            {{ $loop->iteration }}
+                                            <input type="hidden" form="bulkEditForm" name="records[{{ $loop->index }}][id]" value="{{ $record->id }}">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="date" form="bulkEditForm" name="records[{{ $loop->index }}][submitted_at]" value="{{ $record->submitted_at?->format('Y-m-d') }}" required
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1.5 w-28">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="font-bold text-xs text-zinc-900 dark:text-white max-w-[120px] truncate" title="{{ $record->student?->name }}">
+                                                {{ $record->student?->name }}
+                                            </div>
+                                            <div class="text-[10px] text-zinc-500">{{ $record->student?->classRoom?->name ?: '-' }}</div>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][surah_id]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 max-w-[130px]">
+                                                <option value="">Pilih Surah</option>
+                                                @foreach ($surahs as $surah)
+                                                    <option value="{{ $surah->id }}" @selected($record->surahs->first()?->surah_id == $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ayah_start]" value="{{ $record->surahs->first()?->ayah_start ?? 1 }}"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-12 text-center">
+                                                <span>-</span>
+                                                <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ayah_end]" value="{{ $record->surahs->first()?->ayah_end ?? 1 }}"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-12 text-center">
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="number" step="0.1" min="0" form="bulkEditForm" name="records[{{ $loop->index }}][baris]" value="{{ $record->surahs->first()?->baris ?? $record->lines_count }}"
+                                                   class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-14 text-center">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][submission_type]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                                <option value="new" @selected(($record->surahs->first()?->submission_type ?? 'new') === 'new')>Baru</option>
+                                                <option value="continuation" @selected(($record->surahs->first()?->submission_type) === 'continuation')>Lanjutan</option>
+                                                <option value="revision" @selected(($record->surahs->first()?->submission_type) === 'revision')>Perbaikan</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][score]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                                <option value="">-</option>
+                                                @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $grade)
+                                                    <option value="{{ $grade }}" @selected(($record->surahs->first()?->score_letter ?? '') === $grade)>{{ $grade }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <select form="bulkEditForm" name="records[{{ $loop->index }}][status]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
+                                                <option value="passed" @selected(($record->surahs->first()?->status ?? 'passed') === 'passed')>Lulus</option>
+                                                <option value="repeat" @selected(($record->surahs->first()?->status) === 'repeat')>Ulang</option>
+                                                <option value="needs_improvement" @selected(($record->surahs->first()?->status) === 'needs_improvement')>Perlu Perbaikan</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2 text-right">
+                                            <span class="text-[11px] font-semibold text-amber-600 dark:text-amber-400">Siap Simpan</span>
+                                        </td>
+                                    </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-4 py-6 text-center text-xs text-zinc-500">
+                                        <td colspan="10" class="px-4 py-6 text-center text-xs text-zinc-500">
                                             Belum ada data setoran hafalan.
                                         </td>
                                     </tr>
