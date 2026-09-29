@@ -437,7 +437,7 @@
                                                     @foreach ($month['pekan_dates'][$p] as $d)
                                                         @php $dayLog = $wRecord['days'][$d['day']]; @endphp
                                                         @if ($dayLog['surah'] === 'Belum di input')
-                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-yellow-500/5 text-yellow-600 dark:text-yellow-500 font-semibold text-[9px] text-center">Belum di input</td>
+                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-yellow-500/5 text-yellow-600 dark:text-yellow-500 font-semibold text-[9px] text-center">-</td>
                                                         @elseif ($dayLog['surah'] === 'Tidak Masuk')
                                                             <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-amber-500/5 text-amber-500 font-bold uppercase tracking-wider text-[9px] text-center">Sakit</td>
                                                         @else
@@ -513,7 +513,7 @@
                                                             <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
                                                             <span class="block text-[8px] text-gray-400 mt-0.5">{{ $rowIsUmmi ? '' : $pRec['baris'].' Brs · ' }}Nilai: {{ $pRec['nilai'] }}</span>
                                                         @elseif ($pRec['kehadiran'] === 'Belum di input')
-                                                            <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">Belum di input</span>
+                                                            <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">-</span>
                                                         @else
                                                             <span class="text-amber-500 font-extrabold uppercase text-[8px] tracking-wider block text-center py-1 bg-amber-500/5 rounded">{{ $pRec['kehadiran'] }}</span>
                                                         @endif
