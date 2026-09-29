@@ -44,6 +44,9 @@
 
         modal: { isOpen: false, dateStr: '', dayNum: '', isoDay: 1, tahfizh: 'on', adab: 'on', selectedClasses: [] },
 
+        openWeek: null,
+        toggleWeek(key) { this.openWeek = (this.openWeek === key) ? null : key; },
+
         tahfizhOff(d) { return !! (this.days[d] && this.days[d].t); },
         adabOff(d) { return !! (this.days[d] && this.days[d].a); },
         partialCount(d) { return (this.classDays[d] || []).length; },
@@ -172,6 +175,151 @@
                     </div>
                 @endforeach
             </div>
+
+            <!-- Jadwal Kelas Bulan Ini: per pekan, ikut jadwal default kecuali diubah -->
+            @if ($permissions['is_admin'])
+                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 dark:border-zinc-800">
+                        <p class="text-sm font-bold text-gray-900 dark:text-white">Jadwal Kelas Bulan Ini</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400">
+                            Tiap pekan otomatis memakai
+                            <a href="{{ route('class-schedules.index') }}" class="underline font-semibold hover:text-teal-600">jadwal default</a>
+                            kelas, kecuali diubah khusus untuk pekan itu di sini. Klik "Ubah" untuk menyesuaikan satu pekan.
+                        </p>
+                    </div>
+                    <div class="divide-y divide-gray-100 dark:divide-zinc-800">
+                        @forelse ($weeksOfMonth as $wi => $week)
+                            @php
+                                $weekKey = $week['start']->toDateString();
+                                $weekDays = collect(range(0, 6))->map(fn ($i) => $week['start']->copy()->addDays($i));
+                                $dayShort = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 7 => 'Min'];
+                            @endphp
+                            <div>
+                                <!-- Baris ringkasan -->
+                                <button type="button" @click="toggleWeek('{{ $weekKey }}')" class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 text-left hover:bg-gray-50/60 dark:hover:bg-zinc-850/40 transition cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-black {{ $week['custom_count'] > 0 ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300' : 'bg-gray-100 text-gray-500 dark:bg-zinc-800 dark:text-zinc-400' }}">
+                                            {{ $wi + 1 }}
+                                        </span>
+                                        <div>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $week['start']->format('d M') }} &ndash; {{ $week['end']->format('d M Y') }}</span>
+                                            <span class="block text-xs text-gray-500 dark:text-zinc-400">
+                                                @if ($week['custom_count'] > 0)
+                                                    {{ $week['custom_count'] }} dari {{ count($classRooms) }} kelas pakai jadwal khusus
+                                                @else
+                                                    Semua kelas pakai jadwal default
+                                                @endif
+                                                @if ($week['all_locked'])
+                                                    &middot; <span class="text-amber-600 dark:text-amber-400 font-semibold">Terkunci</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold text-teal-700 dark:text-teal-400 inline-flex items-center gap-1 shrink-0">
+                                        <span x-text="openWeek === '{{ $weekKey }}' ? 'Tutup' : 'Ubah'"></span>
+                                        <svg class="w-3.5 h-3.5 transition-transform" :class="openWeek === '{{ $weekKey }}' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                    </span>
+                                </button>
+
+                                <!-- Detail pekan (checkbox per kelas x hari) -->
+                                <div x-show="openWeek === '{{ $weekKey }}'" x-transition style="display: none;" class="px-4 pb-4 space-y-3">
+                                    <form id="week-lock-all-{{ $weekKey }}" method="POST" action="{{ route('class-schedules.week.lock') }}">
+                                        @csrf
+                                        <input type="hidden" name="week" value="{{ $weekKey }}">
+                                        <input type="hidden" name="year" value="{{ $year }}">
+                                        <input type="hidden" name="month" value="{{ $month }}">
+                                    </form>
+                                    @foreach ($classRooms as $class)
+                                        <form id="week-lock-{{ $weekKey }}-{{ $class->id }}" method="POST" action="{{ route('class-schedules.week.lock') }}">
+                                            @csrf
+                                            <input type="hidden" name="week" value="{{ $weekKey }}">
+                                            <input type="hidden" name="class_room_id" value="{{ $class->id }}">
+                                            <input type="hidden" name="year" value="{{ $year }}">
+                                            <input type="hidden" name="month" value="{{ $month }}">
+                                        </form>
+                                    @endforeach
+
+                                    <div class="flex justify-end gap-2">
+                                        @if (! $week['all_locked'])
+                                            <button type="submit" form="week-lock-all-{{ $weekKey }}" name="action" value="lock" onclick="return confirm('Kunci jadwal pekan ini untuk semua kelas?')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
+                                                <x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Kunci Pekan Ini
+                                            </button>
+                                        @endif
+                                        @if ($week['any_locked'])
+                                            <button type="submit" form="week-lock-all-{{ $weekKey }}" name="action" value="unlock" onclick="return confirm('Buka kunci jadwal pekan ini untuk semua kelas?')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+                                                <x-heroicon-o-lock-open class="w-3.5 h-3.5" /> Buka Kunci Semua
+                                            </button>
+                                        @endif
+                                        @unless ($week['all_locked'])
+                                            <button type="submit" form="week-form-{{ $weekKey }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition cursor-pointer">
+                                                <x-heroicon-o-arrow-down-on-square class="w-3.5 h-3.5" /> Simpan Pekan Ini
+                                            </button>
+                                        @endunless
+                                    </div>
+
+                                    <form id="week-form-{{ $weekKey }}" method="POST" action="{{ route('class-schedules.week.update') }}" class="overflow-x-auto">
+                                        @csrf
+                                        <input type="hidden" name="week" value="{{ $weekKey }}">
+                                        <input type="hidden" name="year" value="{{ $year }}">
+                                        <input type="hidden" name="month" value="{{ $month }}">
+                                        <table class="min-w-full text-xs border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden">
+                                            <thead class="bg-gray-50 dark:bg-zinc-850/60 text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-zinc-400">
+                                                <tr>
+                                                    <th class="px-3 py-2 text-left">Kelas</th>
+                                                    @foreach ($weekDays as $date)
+                                                        <th class="px-1.5 py-2 text-center {{ $date->dayOfWeekIso >= 6 ? 'text-rose-500' : '' }}">
+                                                            {{ $dayShort[$date->dayOfWeekIso] }}<span class="block font-semibold normal-case">{{ $date->format('d/m') }}</span>
+                                                        </th>
+                                                    @endforeach
+                                                    <th class="px-3 py-2 text-left">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
+                                                @foreach ($classRooms as $class)
+                                                    @php $st = $week['states'][$class->id]; @endphp
+                                                    <tr class="{{ $st['is_custom'] ? 'bg-sky-50/60 dark:bg-sky-950/20' : '' }}">
+                                                        <td class="px-3 py-2 font-bold text-gray-900 dark:text-white whitespace-nowrap">{{ $class->name }}</td>
+                                                        @foreach ($weekDays as $date)
+                                                            <td class="px-1.5 py-2 text-center">
+                                                                <input type="checkbox" form="week-form-{{ $weekKey }}" name="schedules[{{ $class->id }}][]" value="{{ $date->dayOfWeekIso }}"
+                                                                       @checked(in_array($date->dayOfWeekIso, $st['days'], true))
+                                                                       @disabled($st['locked'])
+                                                                       class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
+                                                            </td>
+                                                        @endforeach
+                                                        <td class="px-3 py-2 whitespace-nowrap">
+                                                            <span class="inline-flex items-center gap-1 font-bold">
+                                                                @if ($st['is_custom'])
+                                                                    <span class="px-1.5 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">Khusus</span>
+                                                                @else
+                                                                    <span class="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300">Default</span>
+                                                                @endif
+                                                                @if ($st['locked'])
+                                                                    <span class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 inline-flex items-center gap-1">
+                                                                        <x-heroicon-o-lock-closed class="w-3 h-3" /> {{ $st['auto_locked'] ? 'Terkunci (lewat)' : 'Terkunci' }}
+                                                                    </span>
+                                                                @elseif ($st['unlocked'])
+                                                                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">Dibuka</span>
+                                                                @endif
+                                                                <button type="submit" form="week-lock-{{ $weekKey }}-{{ $class->id }}" name="action" value="{{ $st['locked'] ? 'unlock' : 'lock' }}"
+                                                                        class="font-bold {{ $st['locked'] ? 'text-gray-500 hover:text-gray-800 dark:text-zinc-400' : 'text-amber-700 hover:text-amber-900 dark:text-amber-400' }} cursor-pointer">
+                                                                    {{ $st['locked'] ? 'Buka' : 'Kunci' }}
+                                                                </button>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </form>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="p-4 text-xs text-gray-500 dark:text-zinc-400">Belum ada kelas.</p>
+                        @endforelse
+                    </div>
+                </div>
+            @endif
 
             <!-- Hari pengisian Adab -->
             <form method="POST" action="{{ route('academic-calendar.adab-days') }}" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center gap-3">
@@ -303,6 +451,9 @@
                                             <span x-show="! tahfizhOff('{{ $dateStr }}')" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">Tahfizh</span>
                                             @if ($isAdabWeekday)
                                                 <span x-show="! adabOff('{{ $dateStr }}')" class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-400">Adab</span>
+                                            @endif
+                                            @if ($day['hasCustomSchedule'])
+                                                <span title="Ada kelas dengan jadwal khusus pekan ini" class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400">Jadwal Khusus</span>
                                             @endif
                                         </div>
                                     @endunless

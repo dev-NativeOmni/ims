@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ClassRoom;
 use App\Models\Program;
+use App\Models\Role;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\User;
@@ -110,5 +111,53 @@ class AcademicCalendarTest extends TestCase
         $dates = $responseSpreadsheet->viewData('dates');
         $this->assertNotContains("{$year}-08-17", $dates);
         $this->assertNotContains("{$year}-08-20", $dates);
+    }
+
+    /**
+     * "Jadwal Kelas Bulan Ini" (bagian dari Kalender Akademik): jadwal per-pekan diedit dari sini,
+     * pekan yang belum diubah tetap pakai jadwal default, dan ada penanda "Jadwal Khusus" di
+     * tanggal-tanggal pekan yang sudah disesuaikan.
+     */
+    public function test_admin_can_see_and_edit_the_weekly_class_schedule_from_the_calendar_page(): void
+    {
+        // Oktober 2026 (bulan depan, belum ada pekan yang otomatis terkunci): pekan 5-11 diubah
+        // jadi Senin & Rabu saja (khusus); pekan lain tetap default.
+        $this->actingAs($this->adminUser)->post(route('class-schedules.week.update'), [
+            'week' => '2026-10-05',
+            'schedules' => [$this->classRoom->id => [1, 3]],
+            'year' => 2026,
+            'month' => 10,
+        ])->assertRedirect(route('academic-calendar.index', ['year' => 2026, 'month' => 10]));
+
+        $response = $this->actingAs($this->adminUser)->get(route('academic-calendar.index', ['year' => 2026, 'month' => 10]));
+        $response->assertStatus(200);
+        $response->assertViewHas('weeksOfMonth', function ($weeks) {
+            $customWeek = collect($weeks)->first(fn ($w) => $w['start']->toDateString() === '2026-10-05');
+
+            return $customWeek !== null && $customWeek['custom_count'] === 1;
+        });
+
+        // Tanggal di pekan yang diubah (5 Oktober) dapat penanda; tanggal di pekan lain (1
+        // Oktober, pekan default) tidak.
+        $response->assertViewHas('gridDates', function ($gridDates) {
+            $byDate = collect($gridDates)->keyBy(fn ($d) => $d['date']->toDateString());
+
+            return $byDate['2026-10-05']['hasCustomSchedule'] === true
+                && $byDate['2026-10-01']['hasCustomSchedule'] === false;
+        });
+        $response->assertSee('Jadwal Khusus');
+    }
+
+    public function test_supervisor_does_not_see_the_weekly_class_schedule_section(): void
+    {
+        $roleSupervisor = Role::firstOrCreate(['name' => 'supervisor'], ['display_name' => 'Koordinator Adab']);
+        $supervisor = User::factory()->create(['role_id' => $roleSupervisor->id, 'status' => 'active']);
+
+        $response = $this->actingAs($supervisor)->get(route('academic-calendar.index'));
+        $response->assertStatus(200);
+        $response->assertViewHas('weeksOfMonth', fn ($weeks) => $weeks === []);
+        // "Jadwal Kelas Bulan Ini" juga muncul sebagai komentar HTML statis; cek teks isinya
+        // yang cuma dirender kalau bagiannya benar-benar tampil.
+        $response->assertDontSee('menyesuaikan satu pekan');
     }
 }

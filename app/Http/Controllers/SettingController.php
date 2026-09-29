@@ -180,6 +180,17 @@ class SettingController extends Controller
         $classRooms = ClassRoom::query()->with('program')->orderBy('name')->get();
         $locks = $calendar->monthLocks($year, $month);
         $permissions = $this->calendarPermissions($request, $year, $month);
+        $weeksOfMonth = $permissions['is_admin'] ? $this->weeksOfMonth($startDate, $endDate, $classRooms, $calendar) : [];
+
+        // Tanggal yang masuk pekan dengan jadwal khusus (beda dari default) -- penanda kecil di grid.
+        $customScheduleDates = [];
+        foreach ($weeksOfMonth as $week) {
+            if ($week['custom_count'] > 0) {
+                for ($d = $week['start']->copy(); $d->lte($week['end']); $d->addDay()) {
+                    $customScheduleDates[$d->toDateString()] = true;
+                }
+            }
+        }
 
         foreach ($gridDates as &$gridItem) {
             if ($gridItem['isCurrentMonth']) {
@@ -196,8 +207,10 @@ class SettingController extends Controller
                     }
                 }
                 $gridItem['scheduledClasses'] = $activeClasses;
+                $gridItem['hasCustomSchedule'] = isset($customScheduleDates[$d->toDateString()]);
             } else {
                 $gridItem['scheduledClasses'] = [];
+                $gridItem['hasCustomSchedule'] = false;
             }
         }
         unset($gridItem);
@@ -212,11 +225,42 @@ class SettingController extends Controller
             'locks' => $locks,
             'permissions' => $permissions,
             'adabDays' => $calendar->adabDays(),
+            'weeksOfMonth' => $weeksOfMonth,
             'prevMonth' => $prevMonth,
             'prevYear' => $prevYear,
             'nextMonth' => $nextMonth,
             'nextYear' => $nextYear,
         ]);
+    }
+
+    /**
+     * Pekan-pekan (Senin-Minggu) yang menyentuh bulan ini, beserta jadwal Tahfizh tiap kelas di
+     * pekan itu -- dipakai bagian "Jadwal Kelas Bulan Ini" di Kalender Akademik. Pekan pertama/
+     * terakhir bisa menjorok ke bulan sebelah kalau tanggal 1 atau akhir bulan bukan Senin/Minggu.
+     *
+     * @return array<int, array{start: Carbon, end: Carbon, states: array, custom_count: int, any_locked: bool}>
+     */
+    private function weeksOfMonth(Carbon $startDate, Carbon $endDate, $classRooms, SchoolCalendar $calendar): array
+    {
+        $weeks = [];
+        $weekStart = $calendar->weekStart($startDate);
+
+        while ($weekStart->lte($endDate)) {
+            $states = $classRooms->mapWithKeys(fn (ClassRoom $class) => [$class->id => $calendar->weekState($class, $weekStart)]);
+
+            $weeks[] = [
+                'start' => $weekStart->copy(),
+                'end' => $weekStart->copy()->addDays(6),
+                'states' => $states,
+                'custom_count' => $states->where('is_custom', true)->count(),
+                'any_locked' => $states->contains(fn ($s) => $s['locked']),
+                'all_locked' => $states->isNotEmpty() && $states->every(fn ($s) => $s['locked']),
+            ];
+
+            $weekStart = $weekStart->copy()->addWeek();
+        }
+
+        return $weeks;
     }
 
     public function calendarUpdate(Request $request)

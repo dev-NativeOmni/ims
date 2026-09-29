@@ -139,8 +139,28 @@ class ClassWeekScheduleTest extends TestCase
     {
         $this->actingAs($this->teacherUser)->post(route('class-schedules.week.update'), ['week' => '2026-10-26'])->assertForbidden();
         $this->actingAs($this->teacherUser)->post(route('class-schedules.week.lock'), ['week' => '2026-10-26', 'action' => 'lock'])->assertForbidden();
-        $this->actingAs($this->admin)->get(route('class-schedules.index', ['tab' => 'weekly', 'week' => '2026-10-26']))
+    }
+
+    #[Test]
+    public function weekly_schedule_is_edited_from_the_academic_calendar_page(): void
+    {
+        // Jadwal Per Pekan kini bagian dari Kalender Akademik (bukan lagi halaman Jadwal Kelas
+        // terpisah), dan hanya admin/super_admin yang melihat bagiannya.
+        $this->actingAs($this->admin)->get(route('academic-calendar.index', ['year' => 2026, 'month' => 10]))
             ->assertOk()
-            ->assertViewHas('weekStates');
+            ->assertViewHas('weeksOfMonth', fn ($weeks) => count($weeks) > 0 && isset($weeks[0]['states'][$this->classRoom->id]));
+
+        $this->actingAs($this->admin)->post(route('class-schedules.week.update'), [
+            'week' => '2026-10-26', 'schedules' => [$this->classRoom->id => [1, 3]], 'year' => 2026, 'month' => 10,
+        ])->assertRedirect(route('academic-calendar.index', ['year' => 2026, 'month' => 10]));
+
+        $this->assertTrue($this->effective('2026-10-26'));
+        $this->assertFalse($this->effective('2026-10-27'));
+
+        // Halaman Jadwal Kelas (Data Master) hanya menyisakan jadwal default, tidak ada lagi
+        // tab/tabel per pekan.
+        $this->actingAs($this->admin)->get(route('class-schedules.index'))
+            ->assertOk()
+            ->assertDontSee('Jadwal Per Pekan');
     }
 }

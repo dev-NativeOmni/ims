@@ -8,12 +8,13 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\ClassWeekSchedule;
 use App\Models\HafalanRecord;
-use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Program;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Observers\HafalanTargetStatusObserver;
 use App\Services\AcademicCalendarService;
+use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\SchoolCalendar;
 use App\Services\SimpleXlsxReader;
 use App\Services\SimpleXlsxWriter;
@@ -594,27 +595,7 @@ class ClassRoomController extends Controller
             ];
         }
 
-        // Jadwal per pekan (tab "Jadwal Per Pekan"): jadwal khusus & kunci pekan.
-        $calendar = app(SchoolCalendar::class);
-        $weekStart = $calendar->weekStart(Carbon::parse($request->input('week', today()->toDateString())));
-        $weekStates = $classRooms->mapWithKeys(fn (ClassRoom $class) => [$class->id => $calendar->weekState($class, $weekStart)]);
-        $activeTab = $request->input('tab') === 'weekly' ? 'weekly' : 'default';
-
-        $currentYear = (int) $request->input('year', $weekStart->year);
-        $currentMonth = (int) $request->input('month', $weekStart->month);
-        $isMonthLocked = $calendar->isMonthLocked($currentYear, $currentMonth, SchoolCalendar::SCOPE_TAHFIZH);
-
-        return view('class-rooms.schedules', compact(
-            'scheduleBoard',
-            'classRooms',
-            'daysOfWeek',
-            'weekStart',
-            'weekStates',
-            'activeTab',
-            'currentYear',
-            'currentMonth',
-            'isMonthLocked'
-        ));
+        return view('class-rooms.schedules', compact('scheduleBoard', 'classRooms', 'daysOfWeek'));
     }
 
     /**
@@ -661,14 +642,19 @@ class ClassRoomController extends Controller
             'schedules' => ['array'],
             'schedules.*' => ['array'],
             'schedules.*.*' => ['integer', 'between:1,7'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+            'month' => ['nullable', 'integer', 'between:1,12'],
         ]);
         $calendar = app(SchoolCalendar::class);
         $weekStart = $calendar->weekStart(Carbon::parse($validated['week']));
+        // Diedit dari Kalender Akademik bulan tertentu -- kembali ke bulan yang sedang dilihat,
+        // bukan bulan pekannya sendiri (pekan pertama/terakhir bisa menjorok ke bulan sebelah).
+        $redirectParams = ['year' => $validated['year'] ?? $weekStart->year, 'month' => $validated['month'] ?? $weekStart->month];
 
         if ($calendar->isMonthLocked($weekStart->year, $weekStart->month, SchoolCalendar::SCOPE_TAHFIZH)) {
             return redirect()
-                ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
-                ->with('error', "Jadwal bulan {$weekStart->translatedFormat('F Y')} sedang terkunci. Buka kunci bulan terlebih dahulu untuk mengubah jadwal.");
+                ->route('academic-calendar.index', $redirectParams)
+                ->with('error', "Jadwal bulan {$weekStart->translatedFormat('F Y')} sedang terkunci. Buka kunci Kalender Tahfizh bulan itu terlebih dahulu untuk mengubah jadwal.");
         }
 
         $lockedCount = 0;
@@ -686,7 +672,7 @@ class ClassRoomController extends Controller
         }
 
         return redirect()
-            ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
+            ->route('academic-calendar.index', $redirectParams)
             ->with('success', $message);
     }
 
@@ -699,6 +685,8 @@ class ClassRoomController extends Controller
             'week' => ['required', 'date'],
             'action' => ['required', 'in:lock,unlock'],
             'class_room_id' => ['nullable', 'integer', 'exists:class_rooms,id'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+            'month' => ['nullable', 'integer', 'between:1,12'],
         ]);
         $calendar = app(SchoolCalendar::class);
         $weekStart = $calendar->weekStart(Carbon::parse($validated['week']));
@@ -713,7 +701,7 @@ class ClassRoomController extends Controller
         }
 
         return redirect()
-            ->route('class-schedules.index', ['tab' => 'weekly', 'week' => $weekStart->toDateString()])
+            ->route('academic-calendar.index', ['year' => $validated['year'] ?? $weekStart->year, 'month' => $validated['month'] ?? $weekStart->month])
             ->with('success', $validated['action'] === 'lock' ? 'Jadwal pekan ini dikunci.' : 'Kunci jadwal pekan ini dibuka.');
     }
 
@@ -1019,8 +1007,8 @@ class ClassRoomController extends Controller
             // Flush caches & sync deadline targets
             app(SchoolCalendar::class)->flush();
             app(TargetDeadlineService::class)->syncMonth($year, $month);
-            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents($studentIds);
-            \App\Observers\HafalanTargetStatusObserver::flush();
+            app(HafalanTargetAutoCompletionService::class)->syncStudents($studentIds);
+            HafalanTargetStatusObserver::flush();
 
             DB::commit();
         } catch (\Throwable $e) {
