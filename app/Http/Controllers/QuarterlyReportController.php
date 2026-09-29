@@ -1050,6 +1050,17 @@ class QuarterlyReportController extends Controller
                 $capaianAyat = $studentHafalan ? (string) $studentHafalan->ayah_end : '-';
             }
 
+            // Kelas 10/Ummi tab "Grafik Akhir Bulan": Jilid|Halaman & Surah|Ayat, target dibatasi
+            // ke target guru BULAN INI saja -- beda dari Term/Indeks yang memakai target terakhir
+            // se-triwulan (buildUmmiTermPosition dipakai ulang, tinggal beda cakupan target-nya).
+            $ummiPosition = null;
+            if ($isUmmiStudent) {
+                $monthKey = Carbon::parse($range['start'])->format('Y-m');
+                $monthTargets = $latestTargets->get($student->id, collect())
+                    ->filter(fn ($t) => Carbon::parse($t->target_date)->format('Y-m') === $monthKey);
+                $ummiPosition = $this->buildUmmiTermPosition($monthTargets, $latestUmmiRecords->get($student->id, collect()), $latestHafalans->get($student->id, collect()));
+            }
+
             $record = [
                 'student_id' => $student->id,
                 'name' => $student->name,
@@ -1064,6 +1075,7 @@ class QuarterlyReportController extends Controller
                 'target_ayat' => $targetAyat,
                 'capaian_surah' => $capaianSurah,
                 'capaian_ayat' => $capaianAyat,
+                'ummi' => $ummiPosition,
             ];
 
             if ($isTahfizhProgram) {

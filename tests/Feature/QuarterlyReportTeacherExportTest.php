@@ -264,6 +264,57 @@ class QuarterlyReportTeacherExportTest extends TestCase
     }
 
     #[Test]
+    public function monthly_tab_shows_ummi_jilid_halaman_columns_scoped_to_that_months_own_target(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classX = ClassRoom::create(['program_id' => $program->id, 'name' => 'X E3', 'level' => 'X', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classX->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'ummi']);
+
+        // Target Juli beda dari target September -- tab bulanan (Grafik Akhir Bulan) harus
+        // menampilkan target BULAN ITU sendiri, bukan target terakhir se-triwulan.
+        HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'ummi_jilid' => 'Jilid 1',
+            'halaman_buku' => '10',
+            'target_date' => '2026-07-05',
+            'status' => 'active',
+        ]);
+        HafalanTarget::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'ummi_jilid' => 'Jilid 5',
+            'halaman_buku' => '50',
+            'target_date' => '2026-09-05',
+            'status' => 'active',
+        ]);
+
+        $query = ['academic_year' => '2026/2027', 'term' => '1', 'class_room_id' => $classX->id];
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', $query));
+        $response->assertOk();
+        $response->assertSee('Target Jilid');
+        $response->assertSee('Capaian Jilid');
+
+        $halaqah = collect($response->viewData('halaqahData'))->first();
+
+        $julyRow = collect($halaqah['monthly']['07']['reguler_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 1', $julyRow['ummi']['target_jilid'], 'Juli harus pakai target Juli sendiri.');
+        $this->assertSame('10', $julyRow['ummi']['target_halaman']);
+
+        $septRow = collect($halaqah['monthly']['09']['reguler_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 5', $septRow['ummi']['target_jilid'], 'September harus pakai target September sendiri.');
+        $this->assertSame('50', $septRow['ummi']['target_halaman']);
+
+        // Agustus tidak punya target sendiri -> tidak ikut menampilkan target Juli/September.
+        $augRow = collect($halaqah['monthly']['08']['reguler_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('-', $augRow['ummi']['target_jilid']);
+
+        // Term/Indeks (triwulan) tetap tidak berubah: target terakhir se-triwulan (September).
+        $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 5', $termRow['ummi']['target_jilid']);
+    }
+
+    #[Test]
     public function returns_a_friendly_404_when_the_teacher_has_no_classes_in_that_program(): void
     {
         $roleTeacher = Role::where('name', 'teacher')->firstOrFail();

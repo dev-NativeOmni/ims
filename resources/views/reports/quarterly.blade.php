@@ -586,6 +586,7 @@
                         </div>
 
                         <!-- Completion Details Table -->
+                        @php $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false); @endphp
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -593,6 +594,16 @@
                                         <th class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
                                         <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700 min-w-[120px] sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Halaqoh Group</th>
+                                        @if ($hasUmmi)
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Target Jilid</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Target Halaman</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Target Surah</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Target Ayat</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Jilid</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Halaman</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Surah</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Ayat</th>
+                                        @endif
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Capaian Baris</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Target Baris</th>
                                         <th class="px-4 py-3 border-b dark:border-zinc-700 w-44">Ketuntasan</th>
@@ -601,10 +612,21 @@
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                     @php $records = $isTahfizhProgram ? $month['tahfizh_records'] : $month['reguler_records']; @endphp
                                     @foreach ($records as $idx => $row)
+                                        @php $ummi = $row['ummi'] ?? null; @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-gray-500 dark:text-zinc-400">{{ $row['level'] }}</td>
+                                            @if ($hasUmmi)
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">{{ $ummi['target_jilid'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">{{ $ummi['target_halaman'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">{{ $ummi['target_surah'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">{{ $ummi['target_ayat'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_jilid'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_halaman'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_surah'] ?? '-' }}</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_ayat'] ?? '-' }}</td>
+                                            @endif
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $row['total_lines'] }} Baris</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $row['target_lines'] }} Baris</td>
                                             <td class="px-4 py-3 font-bold">
