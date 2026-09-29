@@ -93,7 +93,7 @@
                             class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
                         <option value="">Pilih Surah</option>
                         @foreach ($surahs as $surah)
-                            <option value="{{ $surah->id }}">{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                            <option value="{{ $surah->id }}">{{ $surah->number }}. {{ $surah->name_latin }} — {{ $surah->total_ayah }} ayat</option>
                         @endforeach
                     </select>
                 </div>
