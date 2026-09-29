@@ -70,6 +70,7 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
 
                     $month = $halaqah['monthly'][$mCode];
                     $records = $month['tahfizh_records'] ?: $month['reguler_records'];
+                    $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false);
                     $tuntasCount = collect($records)->where('is_tuntas', true)->count();
                     $total = count($records);
                     $tidakCount = $total - $tuntasCount;
@@ -77,8 +78,12 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                     $tidakPercent = $total > 0 ? 100 - $tuntasPercent : 0;
 
                     // Kolom G/H (di luar kolom data utama A-E) menampung data mentah donat
-                    // ketuntasan, dibaca langsung oleh chart di charts() di bawah.
-                    $headerRow = ['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
+                    // ketuntasan, dibaca langsung oleh chart di charts() di bawah. Kolom C/D tetap
+                    // ada (posisinya dipakai referensi chart) walau isinya '-' untuk halaqoh Ummi --
+                    // labelnya diganti supaya tidak menyebut "Baris".
+                    $headerRow = $hasUmmi
+                        ? ['No', 'Nama Murid', 'Capaian', 'Target', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount]
+                        : ['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
                     $this->headerRows[] = ++$row;
                     $dataTopRow = $row + 1;
                     $rows[] = $headerRow;
@@ -114,6 +119,9 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                             'studentCatRange' => "B{$dataTopRow}:B{$dataBottomRow}",
                             'capaianRange' => "C{$dataTopRow}:C{$dataBottomRow}",
                             'targetRange' => "D{$dataTopRow}:D{$dataBottomRow}",
+                            // Ummi tidak punya Capaian/Target Baris -- kolomnya cuma berisi '-',
+                            // jadi grafik batang+garis Capaian tidak dibuat untuk halaqoh ini.
+                            'has_baris_chart' => ! $hasUmmi,
                         ];
                     }
 
@@ -175,7 +183,9 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
         foreach ($this->chartRanges as $i => $range) {
             $topRow = 2 + ($offset * 16);
 
-            $charts[] = $this->buildCapaianChart($sheetTitle, $range, $topRow);
+            if ($range['has_baris_chart'] ?? true) {
+                $charts[] = $this->buildCapaianChart($sheetTitle, $range, $topRow);
+            }
             $charts[] = $this->buildDonutChart($sheetTitle, $range, $topRow);
 
             $offset++;

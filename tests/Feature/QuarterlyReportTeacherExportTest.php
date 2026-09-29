@@ -410,6 +410,12 @@ class QuarterlyReportTeacherExportTest extends TestCase
         // Tidak ada lagi angka "Baris" untuk murid Ummi di manapun.
         $response->assertDontSee('0 Baris');
         $response->assertSee('tidak punya Capaian/Target Baris');
+
+        // Kolom "Capaian Baris"/"Target Baris" dihilangkan total (bukan cuma diisi '-') untuk
+        // halaqoh yang seluruhnya Ummi, di tab Grafik Akhir Bulan maupun Term/Indeks.
+        $response->assertDontSee('>Capaian Baris<', false);
+        $response->assertDontSee('>Target Baris<', false);
+        $response->assertDontSee('Capaian / Target Baris');
     }
 
     #[Test]

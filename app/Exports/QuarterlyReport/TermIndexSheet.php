@@ -52,6 +52,8 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                 $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
                 $this->classRows[] = ++$row;
 
+                // Ummi tidak punya Capaian/Target Baris (ketuntasannya dinilai dari Jilid|Halaman) --
+                // kolomnya dihilangkan total, bukan cuma diisi '-'.
                 $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false);
 
                 $rows[] = array_merge(
@@ -59,7 +61,8 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                     $hasUmmi
                         ? ['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat']
                         : ['Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat'],
-                    ['Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran']
+                    $hasUmmi ? [] : ['Capaian Baris', 'Target Baris'],
+                    ['Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran']
                 );
                 $this->headerRows[] = ++$row;
 
@@ -83,9 +86,8 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                     $rows[] = array_merge(
                         [$idx + 1, $termRow['name'], $termRow['level'], $startAwal],
                         $position,
+                        $hasUmmi ? [] : [$termRow['total_lines'], $termRow['target_lines']],
                         [
-                            $ummi ? '-' : $termRow['total_lines'],
-                            $ummi ? '-' : $termRow['target_lines'],
                             $termRow['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
                             $termRow['alpa'],
                             $termRow['izin'],
@@ -99,7 +101,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                 $total = count($halaqah['term_records']);
                 $tuntas = collect($halaqah['term_records'])->where('is_tuntas', true)->count();
                 $tuntasPct = $total > 0 ? round(($tuntas / $total) * 100) : 0;
-                $tuntasColumn = 10 + ($hasUmmi ? 4 : 0);
+                $tuntasColumn = 4 + ($hasUmmi ? 8 : 4) + ($hasUmmi ? 0 : 2);
                 $summaryRow = array_fill(0, $tuntasColumn + 1, '');
                 $summaryRow[0] = "Tuntas: {$tuntas} ({$tuntasPct}%)";
                 $summaryRow[$tuntasColumn] = 'Tidak Tuntas: '.($total - $tuntas).' ('.(100 - $tuntasPct).'%)';

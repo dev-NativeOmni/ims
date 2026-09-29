@@ -611,8 +611,10 @@
                                             <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Surah</th>
                                             <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian Ayat</th>
                                         @endif
-                                        <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Capaian Baris</th>
-                                        <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Target Baris</th>
+                                        @unless ($hasUmmi)
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Capaian Baris</th>
+                                            <th class="px-4 py-3 border-b border-r dark:border-zinc-700 w-36">Target Baris</th>
+                                        @endunless
                                         <th class="px-4 py-3 border-b dark:border-zinc-700 w-44">Ketuntasan</th>
                                     </tr>
                                 </thead>
@@ -634,8 +636,10 @@
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_surah'] ?? '-' }}</td>
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_ayat'] ?? '-' }}</td>
                                             @endif
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $ummi ? '-' : $row['total_lines'].' Baris' }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $ummi ? '-' : $row['target_lines'].' Baris' }}</td>
+                                            @unless ($hasUmmi)
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $row['total_lines'] }} Baris</td>
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $row['target_lines'] }} Baris</td>
+                                            @endunless
                                             <td class="px-4 py-3 font-bold">
                                                 @if ($row['is_tuntas'])
                                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30">
@@ -680,7 +684,9 @@
                                         <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[180px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th colspan="{{ $hasUmmi ? 4 : 2 }}" class="px-3 py-2 border-b border-r dark:border-zinc-700">Target Triwulan</th>
                                         <th colspan="{{ $hasUmmi ? 4 : 2 }}" class="px-3 py-2 border-b border-r dark:border-zinc-700">Capaian Akhir</th>
-                                        <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian / Target Baris</th>
+                                        @unless ($hasUmmi)
+                                            <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian / Target Baris</th>
+                                        @endunless
                                         <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Ketercapaian</th>
                                         <th colspan="3" class="px-3 py-2 border-b border-r dark:border-zinc-700">Absensi</th>
                                         <th rowspan="2" class="px-4 py-3 border-b dark:border-zinc-700">Pelanggaran</th>
@@ -728,13 +734,11 @@
                                             @endif
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_surah'] ?? $row['capaian_surah'] }}</td>
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_ayat'] ?? $row['capaian_ayat'] }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650 whitespace-nowrap">
-                                                @if ($ummi)
-                                                    -
-                                                @else
+                                            @unless ($hasUmmi)
+                                                <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650 whitespace-nowrap">
                                                     {{ $row['total_lines'] + 0 }} <span class="font-semibold text-gray-400">/ {{ $row['target_lines'] + 0 }}</span> Baris
-                                                @endif
-                                            </td>
+                                                </td>
+                                            @endunless
                                             <td class="px-4 py-3 border-r dark:border-zinc-700">
                                                 @if ($row['is_tuntas'])
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30 uppercase">Tuntas</span>
