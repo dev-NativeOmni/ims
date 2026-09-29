@@ -16,6 +16,6 @@ trait PekanLabeling
             return "PEKAN {$p} (Libur)";
         }
 
-        return "PEKAN {$p} (".implode(' & ', $dates).')';
+        return "PEKAN {$p} (".implode(' & ', array_column($dates, 'label')).')';
     }
 }

@@ -285,25 +285,24 @@
                                 </table>
                             </div>
                         @else
-                            <!-- PRESENSI FORMAT REGULER (Pekan 1-5 grid) -->
+                            <!-- PRESENSI FORMAT REGULER (kolom = tanggal pertemuan aktif, pekan libur disembunyikan) -->
 @foreach ($halaqah['monthly'] as $mCode => $month)
 <div class="space-y-2">
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
+                            @php $activePekans = collect($month['pekan_dates'])->filter(fn ($d) => ! empty($d))->keys(); @endphp
                             <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr>
                                             <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
                                             <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[200px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
-                                            <th colspan="5" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">Kehadiran Pekanan</th>
+                                            <th colspan="{{ count($activePekans) }}" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">Kehadiran Pertemuan</th>
                                             <th colspan="4" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Kehadiran</th>
                                         </tr>
                                         <tr class="bg-gray-100 dark:bg-zinc-850 border-b dark:border-zinc-750">
-                                            <th class="px-2 py-1.5 border-r dark:border-zinc-700">Pekan 1</th>
-                                            <th class="px-2 py-1.5 border-r dark:border-zinc-700">Pekan 2</th>
-                                            <th class="px-2 py-1.5 border-r dark:border-zinc-700">Pekan 3</th>
-                                            <th class="px-2 py-1.5 border-r dark:border-zinc-700">Pekan 4</th>
-                                            <th class="px-2 py-1.5 border-r dark:border-zinc-700">Pekan 5</th>
+                                            @foreach ($activePekans as $p)
+                                                <th class="px-2 py-1.5 border-r dark:border-zinc-700 whitespace-nowrap">{{ $month['pekan_dates'][$p][0]['label'] }}</th>
+                                            @endforeach
                                             <th class="px-2 py-1.5 border-r dark:border-zinc-700 text-emerald-600 font-bold">Hadir</th>
                                             <th class="px-2 py-1.5 border-r dark:border-zinc-700 text-amber-500 font-bold">Izin</th>
                                             <th class="px-2 py-1.5 border-r dark:border-zinc-700 text-blue-500 font-bold">Sakit</th>
@@ -316,7 +315,7 @@
                                             <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $student->name }}</td>
-                                                @for ($p = 1; $p <= 5; $p++)
+                                                @foreach ($activePekans as $p)
                                                     <td class="px-2 py-3 border-r dark:border-zinc-700">
                                                         @if ($sPres['pekan'][$p] === 'Hadir')
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-200/50 dark:border-emerald-900/30">Hadir</span>
@@ -326,13 +325,11 @@
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 font-semibold border border-blue-200/50 dark:border-blue-900/30">Sakit</span>
                                                         @elseif ($sPres['pekan'][$p] === 'Alpa')
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 font-semibold border border-rose-250/50 dark:border-rose-900/30">Alpa</span>
-                                                        @elseif ($sPres['pekan'][$p] === 'Libur')
-                                                            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-semibold border border-slate-200 dark:border-zinc-700">Libur</span>
                                                         @else
                                                             <span class="px-2 py-0.5 rounded text-[10px] bg-yellow-50 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-500 font-semibold border border-yellow-200/60 dark:border-yellow-900/30">Belum di input</span>
                                                         @endif
                                                     </td>
-                                                @endfor
+                                                @endforeach
                                                 <td class="px-2 py-3 border-r dark:border-zinc-700 font-bold text-emerald-600">{{ $sPres['hadir'] }}</td>
                                                 <td class="px-2 py-3 border-r dark:border-zinc-700 font-bold {{ $sPres['izin'] > 0 ? 'text-amber-500' : 'text-gray-300' }}">{{ $sPres['izin'] ?: '-' }}</td>
                                                 <td class="px-2 py-3 border-r dark:border-zinc-700 font-bold {{ $sPres['sakit'] > 0 ? 'text-blue-500' : 'text-gray-300' }}">{{ $sPres['sakit'] ?: '-' }}</td>
@@ -383,23 +380,24 @@
                     <!-- 3. CAPAIAN HAFALAN (SETORAN) -->
                     <div x-show="activeTab === 'setoran'" class="space-y-4" style="display: none;">
 @foreach ($halaqah['monthly'] as $mCode => $month)
-<div class="space-y-3 pb-4" x-data="{ pekanTab: 1 }">
+@php $activePekans = collect($month['pekan_dates'])->filter(fn ($d) => ! empty($d))->keys(); @endphp
+<div class="space-y-3 pb-4" x-data="{ pekanTab: {{ $activePekans->first() ?? 1 }} }">
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         @if ($isTahfizhProgram)
-                            <!-- TAHFIZH SETORAN: DAILY TABS (Senin - Jumat) -->
+                            <!-- TAHFIZH SETORAN: DAILY TABS (hari & tanggal pertemuan aktif; pekan/hari libur tidak ditampilkan) -->
                             <div class="flex items-center justify-between gap-3 bg-gray-50 dark:bg-zinc-950 p-2 sm:p-2.5 rounded-xl border dark:border-zinc-800">
-                                <div class="flex flex-1 sm:flex-none items-center gap-1 sm:gap-1.5">
-                                    @for ($p = 1; $p <= 5; $p++)
+                                <div class="flex flex-1 sm:flex-none items-center gap-1 sm:gap-1.5 flex-wrap">
+                                    @foreach ($activePekans as $p)
                                         <button type="button" @click="pekanTab = {{ $p }}" :class="pekanTab === {{ $p }} ? 'bg-indigo-600 text-white shadow' : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 hover:bg-gray-150'" class="flex-1 sm:flex-none px-2 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition duration-150 cursor-pointer whitespace-nowrap">
-                                            <span class="hidden sm:inline">Pekan </span><span class="sm:hidden">P</span>{{ $p }}
+                                            {{ $month['pekan_dates'][$p][0]['label'] }}
                                         </button>
-                                    @endfor
+                                    @endforeach
                                 </div>
                                 <span class="hidden sm:inline text-[10px] font-bold text-gray-400 uppercase tracking-wider pr-2">Jurnal Setoran Harian</span>
                             </div>
 
                             <!-- Render Pekan Tables -->
-                            @for ($p = 1; $p <= 5; $p++)
+                            @foreach ($activePekans as $p)
                                 <div x-show="pekanTab === {{ $p }}" class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-[10px] text-center">
                                         <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -407,29 +405,16 @@
                                                 <th rowspan="2" class="px-3 py-3 text-left w-10 border-b border-r dark:border-zinc-700">No</th>
                                                 <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                                 <th rowspan="2" class="px-2 py-3 border-b border-r dark:border-zinc-700">Halaqoh</th>
-                                                <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">SENIN</th>
-                                                <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">SELASA</th>
-                                                <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">RABU</th>
-                                                <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">KAMIS</th>
-                                                <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700">JUM'AT</th>
+                                                @foreach ($month['pekan_dates'][$p] as $d)
+                                                    <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700 whitespace-nowrap">{{ strtoupper($d['label']) }}</th>
+                                                @endforeach
                                                 <th colspan="2" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Pekan</th>
                                             </tr>
                                             <tr class="bg-gray-100 dark:bg-zinc-850 border-b dark:border-zinc-750">
-                                                <!-- Senin -->
-                                                <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
-                                                <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
-                                                <!-- Selasa -->
-                                                <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
-                                                <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
-                                                <!-- Rabu -->
-                                                <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
-                                                <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
-                                                <!-- Kamis -->
-                                                <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
-                                                <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
-                                                <!-- Jumat -->
-                                                <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
-                                                <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
+                                                @foreach ($month['pekan_dates'][$p] as $d)
+                                                    <th class="px-2 py-1 border-r dark:border-zinc-700 font-normal">Setoran</th>
+                                                    <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
+                                                @endforeach
                                                 <!-- Rekap -->
                                                 <th class="px-2.5 py-1 border-r dark:border-zinc-700 w-16">Baris</th>
                                                 <th class="px-2 py-1">Nilai</th>
@@ -442,13 +427,11 @@
                                                     <td class="px-3 py-2.5 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                     <td class="px-4 py-2.5 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-700 font-medium text-gray-600 dark:text-zinc-400">{{ $row['level'] }}</td>
-                                                    
-                                                    <!-- Days -->
-                                                    @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'] as $dayName)
-                                                        @php $dayLog = $wRecord['days'][$dayName]; @endphp
-                                                        @if ($dayLog['surah'] === 'Libur')
-                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 text-slate-400 dark:text-zinc-500 font-semibold text-[9px] text-center">Libur</td>
-                                                        @elseif ($dayLog['surah'] === 'Belum di input')
+
+                                                    <!-- Hanya hari pertemuan aktif -->
+                                                    @foreach ($month['pekan_dates'][$p] as $d)
+                                                        @php $dayLog = $wRecord['days'][$d['day']]; @endphp
+                                                        @if ($dayLog['surah'] === 'Belum di input')
                                                             <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-yellow-500/5 text-yellow-600 dark:text-yellow-500 font-semibold text-[9px] text-center">Belum di input</td>
                                                         @elseif ($dayLog['surah'] === 'Tidak Masuk')
                                                             <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-amber-500/5 text-amber-500 font-bold uppercase tracking-wider text-[9px] text-center">Sakit</td>
@@ -473,9 +456,9 @@
                                         </tbody>
                                     </table>
                                 </div>
-                            @endfor
+                            @endforeach
                         @else
-                            <!-- REGULER SETORAN: SINGLE TABLE (Pekan 1-5 side by side) -->
+                            <!-- REGULER SETORAN: SINGLE TABLE (kolom = tanggal pertemuan aktif) -->
                             <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-[10px] text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -483,24 +466,20 @@
                                             <th rowspan="3" class="px-2 py-3 text-left border-b border-r dark:border-zinc-750">No</th>
                                             <th rowspan="3" class="px-3 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-750 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th rowspan="3" class="px-2 py-3 border-b border-r dark:border-zinc-750">Halaqah</th>
-                                            <th colspan="5" class="px-2 py-2 border-b border-r dark:border-zinc-750">Jurnal & Setoran Pekanan</th>
+                                            <th colspan="{{ count($activePekans) }}" class="px-2 py-2 border-b border-r dark:border-zinc-750">Jurnal & Setoran Pertemuan</th>
                                             <th colspan="5" class="px-2 py-2 border-b dark:border-zinc-750">Rekap Bulanan</th>
                                         </tr>
                                         <tr class="border-b dark:border-zinc-700 bg-gray-100 dark:bg-zinc-850">
-                                            <th class="px-3 py-1.5 border-r dark:border-zinc-750">Pekan 1</th>
-                                            <th class="px-3 py-1.5 border-r dark:border-zinc-750">Pekan 2</th>
-                                            <th class="px-3 py-1.5 border-r dark:border-zinc-750">Pekan 3</th>
-                                            <th class="px-3 py-1.5 border-r dark:border-zinc-750">Pekan 4</th>
-                                            <th class="px-3 py-1.5 border-r dark:border-zinc-750">Pekan 5</th>
+                                            @foreach ($activePekans as $p)
+                                                <th class="px-3 py-1.5 border-r dark:border-zinc-750 whitespace-nowrap">{{ $month['pekan_dates'][$p][0]['label'] }}</th>
+                                            @endforeach
                                             <th rowspan="2" class="px-2.5 py-2 border-r dark:border-zinc-750 font-bold">Total Baris</th>
                                             <th colspan="4" class="px-2 py-1.5 border-b dark:border-zinc-750">Kehadiran</th>
                                         </tr>
                                         <tr class="bg-gray-50 dark:bg-zinc-850 text-gray-500 dark:text-zinc-450 border-b dark:border-zinc-700">
-                                            <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
-                                            <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
-                                            <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
-                                            <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
-                                            <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
+                                            @foreach ($activePekans as $p)
+                                                <th class="px-2 py-1 border-r dark:border-zinc-750 font-normal">Setoran & Nilai</th>
+                                            @endforeach
                                             <th class="px-1.5 py-1 border-r dark:border-zinc-750 text-teal-600 font-bold">H</th>
                                             <th class="px-1.5 py-1 border-r dark:border-zinc-750 text-amber-500 font-bold">I</th>
                                             <th class="px-1.5 py-1 border-r dark:border-zinc-750 text-blue-500 font-bold">S</th>
@@ -514,23 +493,21 @@
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 font-semibold text-gray-700 dark:text-zinc-300">{{ $row['level'] }}</td>
-                                                
-                                                <!-- Pekan 1 - 5 -->
-                                                @for ($p = 1; $p <= 5; $p++)
+
+                                                <!-- Hanya pertemuan aktif -->
+                                                @foreach ($activePekans as $p)
                                                     @php $pRec = $row['pekan'][$p]; @endphp
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left">
                                                         @if ($pRec['kehadiran'] === 'Hadir')
                                                             <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
                                                             <span class="block text-[8px] text-gray-400 mt-0.5">{{ $pRec['baris'] }} Brs · Nilai: {{ $pRec['nilai'] }}</span>
-                                                        @elseif ($pRec['kehadiran'] === 'Libur')
-                                                            <span class="text-slate-400 dark:text-zinc-500 text-[8px] font-semibold tracking-wider block text-center py-1">Libur</span>
                                                         @elseif ($pRec['kehadiran'] === 'Belum di input')
                                                             <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">Belum di input</span>
                                                         @else
                                                             <span class="text-amber-500 font-extrabold uppercase text-[8px] tracking-wider block text-center py-1 bg-amber-500/5 rounded">{{ $pRec['kehadiran'] }}</span>
                                                         @endif
                                                     </td>
-                                                @endfor
+                                                @endforeach
 
                                                 <!-- Rekap -->
                                                 <td class="px-2.5 py-2.5 border-r dark:border-zinc-750 font-extrabold text-teal-650 text-xs">{{ $row['total_lines'] }} Baris</td>

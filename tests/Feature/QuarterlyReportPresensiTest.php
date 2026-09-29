@@ -95,8 +95,12 @@ class QuarterlyReportPresensiTest extends TestCase
         $response->assertStatus(200);
         $response->assertDontSee('Pilih Bulan Laporan');
         $response->assertSee('Belum di input');
-        $response->assertSee('Libur');
+        // Pekan 2 (9 September) tidak punya hari efektif sama sekali -> kolomnya
+        // disembunyikan total, bukan ditampilkan sebagai "Libur".
+        $response->assertDontSee('Libur');
         $response->assertDontSee('Belum Ada');
+        // Label kolom pertemuan sekarang hari & tanggal sungguhan, bukan "Pekan N".
+        $response->assertSee('Rabu, 2 Sep');
 
         $response->assertViewHas('halaqahData', function ($halaqahData) {
             $halaqah = collect($halaqahData)->first();
@@ -219,6 +223,49 @@ class QuarterlyReportPresensiTest extends TestCase
                 && $monthLines('09') > 0
                 && collect($halaqah['term_records'])->firstWhere('student_id', $studentId)['total_lines']
                     == $monthLines('07') + $monthLines('09');
+        });
+    }
+
+    #[Test]
+    public function tahfizh_daily_grid_hides_the_holiday_column_and_labels_pekan_tabs_with_the_real_date(): void
+    {
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E2',
+            'level' => 'X',
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        // 1 Juli 2026 = Rabu -> pekan 1 (tgl 1-7) berisi Rabu(1), Kamis(2), Jumat(3), Senin(6);
+        // Selasa (7 Juli) ditandai libur nasional dan harus hilang dari pekan 1.
+        $this->markHoliday('2026-07-07');
+
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', [
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        // Tidak ada lagi kolom/tab berlabel "Libur" -- hari libur disembunyikan total.
+        $response->assertDontSee('Libur');
+        // Tab pekan berlabel hari & tanggal pertemuan pertama, bukan "Pekan 1".
+        $response->assertSee('Rabu, 1 Jul');
+        $response->assertDontSee('Pekan 1');
+
+        $response->assertViewHas('halaqahData', function ($halaqahData) {
+            $pekan1Dates = collect($halaqahData)->first()['monthly']['07']['pekan_dates'][1];
+            $days = array_column($pekan1Dates, 'day');
+
+            // Selasa (7 Juli, libur) tidak boleh ada di daftar hari aktif pekan 1;
+            // Senin, Rabu, Kamis, Jumat tetap ada.
+            return ! in_array('Selasa', $days, true)
+                && in_array('Senin', $days, true)
+                && in_array('Rabu', $days, true)
+                && in_array('Kamis', $days, true)
+                && in_array('Jumat', $days, true);
         });
     }
 

@@ -710,7 +710,8 @@ class QuarterlyReportController extends Controller
             for ($d = $pStart; $d <= $pEnd; $d++) {
                 if ($effectiveByDay[$d] ?? false) {
                     $date = $monthStart->copy()->day($d);
-                    $dates[] = $dayNames[$date->dayOfWeekIso - 1].', '.$date->format('j M');
+                    $dayName = $dayNames[$date->dayOfWeekIso - 1];
+                    $dates[] = ['day' => $dayName, 'label' => $dayName.', '.$date->format('j M')];
                 }
             }
             $pekanDates[$p] = $dates;
