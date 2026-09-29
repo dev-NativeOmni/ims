@@ -98,6 +98,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                     $month = $halaqah['monthly'][$mCode];
                     foreach ($month['reguler_records'] as $idx => $record) {
                         $sPres = $month['presensi'][$record['student_id']] ?? ['hadir' => 0];
+                        $isUmmi = ($record['ummi'] ?? null) !== null;
 
                         $line = [$idx + 1, $record['name'], $record['level']];
                         for ($p = 1; $p <= 5; $p++) {
@@ -105,10 +106,11 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                             if ($pekan['kehadiran'] !== 'Hadir') {
                                 $line = array_merge($line, [$pekan['kehadiran'], '', '', '', $pekan['kehadiran']]);
                             } else {
-                                $line = array_merge($line, [$pekan['surah'], $pekan['ayat'], $pekan['baris'], $pekan['nilai'], 'Hadir']);
+                                $line = array_merge($line, [$pekan['surah'], $pekan['ayat'], $isUmmi ? '-' : $pekan['baris'], $pekan['nilai'], 'Hadir']);
                             }
                         }
-                        $line[] = "{$record['total_lines']} Baris";
+                        // Ummi tidak punya Capaian Baris -- ketuntasannya dinilai dari Jilid|Halaman.
+                        $line[] = $isUmmi ? '-' : "{$record['total_lines']} Baris";
                         $line[] = "{$sPres['hadir']}x Hadir";
 
                         $rows[] = $line;
@@ -181,13 +183,15 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                         $month = $halaqah['monthly'][$mCode];
                         foreach ($month['tahfizh_records'] as $idx => $record) {
                             $wRecord = $record['pekan'][$p];
+                            $isUmmi = ($record['ummi'] ?? null) !== null;
                             $line = [$idx + 1, $record['name'], $record['level']];
 
                             foreach (self::DAYS as $dayName) {
-                                $line[] = $this->tahfizhCell($wRecord['days'][$dayName]);
+                                $line[] = $this->tahfizhCell($wRecord['days'][$dayName], $isUmmi);
                             }
 
-                            $line[] = "{$wRecord['week_lines']} Baris";
+                            // Ummi tidak punya Capaian Baris -- ketuntasannya dinilai dari Jilid|Halaman.
+                            $line[] = $isUmmi ? '-' : "{$wRecord['week_lines']} Baris";
                             $line[] = 'A';
                             $rows[] = $line;
                             $row++;
@@ -205,15 +209,16 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
         return $rows;
     }
 
-    private function tahfizhCell(array $day): string
+    private function tahfizhCell(array $day, bool $isUmmi = false): string
     {
         if (in_array($day['surah'], ['Libur', 'Belum di input'], true) || $day['baris'] == 0) {
             return $day['surah'];
         }
 
         $ayat = $day['ayat_start'] !== '' ? "{$day['ayat_start']}-{$day['ayat_end']} " : '';
+        $lines = $isUmmi ? '' : "{$day['baris']} Brs, ";
 
-        return trim("{$day['surah']} {$ayat}({$day['baris']} Brs, Nilai {$day['nilai']})");
+        return trim("{$day['surah']} {$ayat}({$lines}Nilai {$day['nilai']})");
     }
 
     public function styles(Worksheet $sheet): array

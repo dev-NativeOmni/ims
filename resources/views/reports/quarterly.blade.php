@@ -422,7 +422,7 @@
                                         </thead>
                                         <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                             @foreach ($month['tahfizh_records'] as $idx => $row)
-                                                @php $wRecord = $row['pekan'][$p]; @endphp
+                                                @php $wRecord = $row['pekan'][$p]; $rowIsUmmi = ($row['ummi'] ?? null) !== null; @endphp
                                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                     <td class="px-3 py-2.5 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                     <td class="px-4 py-2.5 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
@@ -442,14 +442,16 @@
                                                                     @if ($dayLog['ayat_start'] !== '')
                                                                         {{ $dayLog['ayat_start'] }}-{{ $dayLog['ayat_end'] }}
                                                                     @endif
-                                                                    ({{ $dayLog['baris'] }} Brs)
+                                                                    @unless ($rowIsUmmi)
+                                                                        ({{ $dayLog['baris'] }} Brs)
+                                                                    @endunless
                                                                 </span>
                                                             </td>
                                                             <td class="px-1.5 py-2.5 border-r dark:border-zinc-700 font-bold text-gray-700 dark:text-zinc-300 text-center">{{ $dayLog['nilai'] }}</td>
                                                         @endif
                                                     @endforeach
 
-                                                    <td class="px-2.5 py-2.5 border-r dark:border-zinc-700 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $wRecord['week_lines'] }} Brs</td>
+                                                    <td class="px-2.5 py-2.5 border-r dark:border-zinc-700 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $rowIsUmmi ? '-' : $wRecord['week_lines'].' Brs' }}</td>
                                                     <td class="px-2 py-2.5 font-bold text-center text-teal-650">A</td>
                                                 </tr>
                                             @endforeach
@@ -488,7 +490,7 @@
                                     </thead>
                                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                         @foreach ($month['reguler_records'] as $idx => $row)
-                                            @php $sPres = $month['presensi'][$row['student_id']]; @endphp
+                                            @php $sPres = $month['presensi'][$row['student_id']]; $rowIsUmmi = ($row['ummi'] ?? null) !== null; @endphp
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
@@ -500,7 +502,7 @@
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left">
                                                         @if ($pRec['kehadiran'] === 'Hadir')
                                                             <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
-                                                            <span class="block text-[8px] text-gray-400 mt-0.5">{{ $pRec['baris'] }} Brs · Nilai: {{ $pRec['nilai'] }}</span>
+                                                            <span class="block text-[8px] text-gray-400 mt-0.5">{{ $rowIsUmmi ? '' : $pRec['baris'].' Brs · ' }}Nilai: {{ $pRec['nilai'] }}</span>
                                                         @elseif ($pRec['kehadiran'] === 'Belum di input')
                                                             <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">Belum di input</span>
                                                         @else
@@ -510,7 +512,7 @@
                                                 @endforeach
 
                                                 <!-- Rekap -->
-                                                <td class="px-2.5 py-2.5 border-r dark:border-zinc-750 font-extrabold text-teal-650 text-xs">{{ $row['total_lines'] }} Baris</td>
+                                                <td class="px-2.5 py-2.5 border-r dark:border-zinc-750 font-extrabold text-teal-650 text-xs">{{ $rowIsUmmi ? '-' : $row['total_lines'].' Baris' }}</td>
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold text-teal-650 text-center">{{ $sPres['hadir'] }}</td>
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold {{ $sPres['izin'] > 0 ? 'text-amber-500' : 'text-gray-300' }} text-center">{{ $sPres['izin'] ?: '-' }}</td>
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold {{ $sPres['sakit'] > 0 ? 'text-blue-500' : 'text-gray-300' }} text-center">{{ $sPres['sakit'] ?: '-' }}</td>
@@ -587,6 +589,11 @@
 
                         <!-- Completion Details Table -->
                         @php $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false); @endphp
+                        @if ($hasUmmi)
+                            <p class="text-xs text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/30 rounded-lg px-3 py-2">
+                                Murid Ummi (Kelas 10) tidak punya Capaian/Target Baris -- ketuntasannya dinilai dari posisi Jilid | Halaman capaian dibanding target.
+                            </p>
+                        @endif
                         <div class="overflow-x-auto border dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
@@ -627,8 +634,8 @@
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_surah'] ?? '-' }}</td>
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_ayat'] ?? '-' }}</td>
                                             @endif
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $row['total_lines'] }} Baris</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $row['target_lines'] }} Baris</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650">{{ $ummi ? '-' : $row['total_lines'].' Baris' }}</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-semibold text-gray-600 dark:text-zinc-300">{{ $ummi ? '-' : $row['target_lines'].' Baris' }}</td>
                                             <td class="px-4 py-3 font-bold">
                                                 @if ($row['is_tuntas'])
                                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30">
@@ -661,7 +668,7 @@
                             <span>
                                 <strong class="font-semibold">Informasi:</strong> Target surah &amp; ayat Kelas 11 &amp; 12 = target guru bulan terakhir di menu Target Triwulan. Target baris = pertemuan aktif triwulan × baris per level; capaian baris = jumlah baris setoran lulus sepanjang triwulan sampai hari ini (sama dengan Target Triwulan). TUNTAS bila capaian baris ≥ target baris. "Awal triwulan" di bawah nama murid = posisi surah &amp; ayat setoran pertama triwulan ini -- mulai hitung ulang baris dari sana bila perlu dicek manual.
                                 @if ($hasUmmi)
-                                    <br>Murid Ummi (Kelas 10): capaian Jilid | Halaman diambil dari setoran Ummi terakhir, Surah | Ayat dari hafalan terakhir yang tercatat.
+                                    <br>Murid Ummi (Kelas 10): tidak punya Capaian/Target Baris. Capaian Jilid | Halaman diambil dari setoran Ummi terakhir, Surah | Ayat dari hafalan terakhir yang tercatat; TUNTAS dinilai dari posisi Jilid | Halaman capaian dibanding target, bukan baris.
                                 @endif
                             </span>
                         </div>
@@ -721,7 +728,13 @@
                                             @endif
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 text-teal-650 font-semibold">{{ $ummi['capaian_surah'] ?? $row['capaian_surah'] }}</td>
                                             <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-teal-650">{{ $ummi['capaian_ayat'] ?? $row['capaian_ayat'] }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650 whitespace-nowrap">{{ $row['total_lines'] + 0 }} <span class="font-semibold text-gray-400">/ {{ $row['target_lines'] + 0 }}</span> Baris</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650 whitespace-nowrap">
+                                                @if ($ummi)
+                                                    -
+                                                @else
+                                                    {{ $row['total_lines'] + 0 }} <span class="font-semibold text-gray-400">/ {{ $row['target_lines'] + 0 }}</span> Baris
+                                                @endif
+                                            </td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700">
                                                 @if ($row['is_tuntas'])
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30 uppercase">Tuntas</span>

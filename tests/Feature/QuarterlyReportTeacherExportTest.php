@@ -356,6 +356,63 @@ class QuarterlyReportTeacherExportTest extends TestCase
     }
 
     #[Test]
+    public function ummi_rows_have_no_baris_columns_and_ketuntasan_is_based_on_jilid_halaman_position(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classX = ClassRoom::create(['program_id' => $program->id, 'name' => 'X E5', 'level' => 'X', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classX->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'ummi', 'name' => 'Murid Maju']);
+
+        // Murid kedua: posisi capaian di jilid LEBIH RENDAH tapi halaman lebih besar -- harus tetap
+        // Tidak Tuntas, membuktikan jilid yang menentukan urutan, bukan sekadar angka halaman.
+        $laggingStudent = Student::create([
+            'class_room_id' => $classX->id, 'teacher_id' => $this->teacherProfile->id,
+            'name' => 'Murid Tertinggal', 'student_number' => 'TEST-SNT-905', 'gender' => 'male',
+            'birth_date' => '2010-01-01', 'status' => 'active', 'tahfizh_level' => 'ummi',
+        ]);
+
+        // Target sama untuk keduanya: Jilid 2, Halaman 20.
+        foreach ([$this->student, $laggingStudent] as $s) {
+            HafalanTarget::create([
+                'student_id' => $s->id, 'teacher_id' => $this->teacherProfile->id,
+                'ummi_jilid' => 'Jilid 2', 'halaman_buku' => '20', 'target_date' => '2026-07-05', 'status' => 'active',
+            ]);
+        }
+
+        // Murid Maju: Jilid 2 hal 25 -- sudah lewat target (60 -> 65).
+        UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1, 'tanggal' => '2026-07-10', 'ummi_jilid' => 'Jilid 2', 'ummi_halaman' => '25', 'nilai' => 'A',
+        ]);
+        // Murid Tertinggal: Jilid 1 hal 35 -- halamannya besar tapi jilidnya di bawah target (35 < 60).
+        UmmiRecord::create([
+            'student_id' => $laggingStudent->id, 'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1, 'tanggal' => '2026-07-10', 'ummi_jilid' => 'Jilid 1', 'ummi_halaman' => '35', 'nilai' => 'A',
+        ]);
+
+        $query = ['academic_year' => '2026/2027', 'term' => '1', 'class_room_id' => $classX->id];
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', $query));
+        $response->assertOk();
+
+        $halaqah = collect($response->viewData('halaqahData'))->first();
+        $julyRecords = collect($halaqah['monthly']['07']['reguler_records']);
+        $termRecords = collect($halaqah['term_records']);
+
+        $maju = $julyRecords->firstWhere('student_id', $this->student->id);
+        $tertinggal = $julyRecords->firstWhere('student_id', $laggingStudent->id);
+        $this->assertTrue($maju['is_tuntas'], 'Jilid 2 hal 25 sudah lewat target Jilid 2 hal 20.');
+        $this->assertFalse($tertinggal['is_tuntas'], 'Jilid 1 hal 35 masih di bawah target Jilid 2 hal 20 walau halamannya besar.');
+
+        $majuTerm = $termRecords->firstWhere('student_id', $this->student->id);
+        $tertinggalTerm = $termRecords->firstWhere('student_id', $laggingStudent->id);
+        $this->assertTrue($majuTerm['is_tuntas']);
+        $this->assertFalse($tertinggalTerm['is_tuntas']);
+
+        // Tidak ada lagi angka "Baris" untuk murid Ummi di manapun.
+        $response->assertDontSee('0 Baris');
+        $response->assertSee('tidak punya Capaian/Target Baris');
+    }
+
+    #[Test]
     public function returns_a_friendly_404_when_the_teacher_has_no_classes_in_that_program(): void
     {
         $roleTeacher = Role::where('name', 'teacher')->firstOrFail();

@@ -84,8 +84,8 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                         [$idx + 1, $termRow['name'], $termRow['level'], $startAwal],
                         $position,
                         [
-                            $termRow['total_lines'],
-                            $termRow['target_lines'],
+                            $ummi ? '-' : $termRow['total_lines'],
+                            $ummi ? '-' : $termRow['target_lines'],
                             $termRow['is_tuntas'] ? 'Tuntas' : 'Tidak Tuntas',
                             $termRow['alpa'],
                             $termRow['izin'],

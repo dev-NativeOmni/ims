@@ -86,11 +86,13 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                     $donutTopRow = $row;
 
                     foreach ($records as $idx => $record) {
+                        // Ummi tidak punya Capaian/Target Baris -- ketuntasannya dinilai dari Jilid|Halaman.
+                        $isUmmi = ($record['ummi'] ?? null) !== null;
                         $line = [
                             $idx + 1,
                             $record['name'],
-                            $record['total_lines'],
-                            $record['target_lines'],
+                            $isUmmi ? '-' : $record['total_lines'],
+                            $isUmmi ? '-' : $record['target_lines'],
                             $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
                         ];
                         if ($idx === 0) {
