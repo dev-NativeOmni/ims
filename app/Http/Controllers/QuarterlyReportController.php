@@ -986,9 +986,14 @@ class QuarterlyReportController extends Controller
                         // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
                         $lines = $weekRecords->where('status', 'passed')->sum('lines_count');
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
+                        // Rentang ayat lengkap sesuai input guru: "Al-Insan 1-31, Al-Mursalat 1-13".
+                        $ayahRange = fn ($h) => (int) $h->ayah_start === (int) $h->ayah_end
+                            ? (string) $h->ayah_end
+                            : "{$h->ayah_start}-{$h->ayah_end}";
                         $pekanRecords[$p] = [
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
-                            'ayat' => $weekRecords->map(fn ($h) => (string) $h->ayah_end)->implode(', '),
+                            'ayat' => $weekRecords->map($ayahRange)->implode(', '),
+                            'setoran' => $weekRecords->map(fn ($h) => $h->surah->name_latin.' '.$ayahRange($h))->implode(', '),
                             'baris' => $lines,
                             'nilai' => self::mapScoreToGrade($avgScore),
                             'kehadiran' => 'Hadir',

@@ -510,7 +510,7 @@
                                                     @php $pRec = $row['pekan'][$p]; @endphp
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left">
                                                         @if ($pRec['kehadiran'] === 'Hadir')
-                                                            <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['surah'] }} {{ $pRec['ayat'] }}</span>
+                                                            <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $pRec['setoran'] ?? $pRec['surah'].' '.$pRec['ayat'] }}</span>
                                                             <span class="block text-[8px] text-gray-400 mt-0.5">{{ $rowIsUmmi ? '' : $pRec['baris'].' Brs · ' }}Nilai: {{ $pRec['nilai'] }}</span>
                                                         @elseif ($pRec['kehadiran'] === 'Belum di input')
                                                             <span class="text-yellow-600 dark:text-yellow-500 text-[8px] font-semibold tracking-wider block text-center py-1">-</span>

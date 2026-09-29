@@ -424,6 +424,8 @@ class QuarterlyReportPresensiTest extends TestCase
         ]));
 
         $response->assertStatus(200);
+        // Kolom Jurnal & Setoran Pertemuan menampilkan rentang ayat lengkap sesuai input guru.
+        $response->assertSee('Al-Qamar 50-55, Ar-Rahman 1-4');
         $response->assertViewHas('halaqahData', function ($halaqahData) {
             $halaqah = collect($halaqahData)->first();
             $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
