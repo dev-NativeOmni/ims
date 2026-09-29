@@ -62,7 +62,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                         ? ['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat']
                         : ['Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat'],
                     $hasUmmi ? [] : ['Capaian Baris', 'Target Baris'],
-                    ['Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran']
+                    ['Ketercapaian', 'Alpa', 'Izin', 'Sakit']
                 );
                 $this->headerRows[] = ++$row;
 
@@ -92,7 +92,6 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                             $termRow['alpa'],
                             $termRow['izin'],
                             $termRow['sakit'],
-                            $termRow['pelanggaran'],
                         ]
                     );
                     $row++;

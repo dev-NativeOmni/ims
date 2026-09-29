@@ -106,7 +106,10 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                             if ($pekan['kehadiran'] !== 'Hadir') {
                                 $line = array_merge($line, [$pekan['kehadiran'], '', '', '', $pekan['kehadiran']]);
                             } else {
-                                $line = array_merge($line, [$pekan['surah'], $pekan['ayat'], $isUmmi ? '-' : $pekan['baris'], $pekan['nilai'], 'Hadir']);
+                                // Ummi: Jilid, Halaman, Surah & Ayat sudah digabung di label setoran.
+                                $line = $isUmmi && isset($pekan['setoran'])
+                                    ? array_merge($line, [$pekan['setoran'], '-', '-', $pekan['nilai'], 'Hadir'])
+                                    : array_merge($line, [$pekan['surah'], $pekan['ayat'], $isUmmi ? '-' : $pekan['baris'], $pekan['nilai'], 'Hadir']);
                             }
                         }
                         // Ummi tidak punya Capaian Baris -- ketuntasannya dinilai dari Jilid|Halaman.
@@ -172,15 +175,14 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                     for ($p = 1; $p <= 5; $p++) {
                         $headerTopRow = ++$row;
                         $this->headerTopRows[] = $headerTopRow;
-                        $rows[] = array_merge(['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDatesForClass), '', '', '', '', 'Rekap'], ['']);
-                        $rows[] = array_merge(['', '', ''], self::DAYS, ['Baris', 'Nilai']);
+                        $rows[] = ['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDatesForClass), '', '', '', '', 'Rekap'];
+                        $rows[] = array_merge(['', '', ''], self::DAYS, ['Baris']);
                         $row++;
 
                         $this->mergeRanges[] = 'A'.$headerTopRow.':A'.($headerTopRow + 1);
                         $this->mergeRanges[] = 'B'.$headerTopRow.':B'.($headerTopRow + 1);
                         $this->mergeRanges[] = 'C'.$headerTopRow.':C'.($headerTopRow + 1);
                         $this->mergeRanges[] = 'D'.$headerTopRow.':H'.$headerTopRow;
-                        $this->mergeRanges[] = 'I'.$headerTopRow.':J'.$headerTopRow;
 
                         $month = $halaqah['monthly'][$mCode];
                         foreach ($month['tahfizh_records'] as $idx => $record) {
@@ -194,7 +196,6 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                             // Ummi tidak punya Capaian Baris -- ketuntasannya dinilai dari Jilid|Halaman.
                             $line[] = $isUmmi ? '-' : "{$wRecord['week_lines']} Baris";
-                            $line[] = 'A';
                             $rows[] = $line;
                             $row++;
                         }
@@ -215,14 +216,14 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
     private function tahfizhCell(array $day, bool $isUmmi = false): string
     {
-        if (in_array($day['surah'], ['Libur', 'Belum di input'], true) || $day['baris'] == 0) {
+        // Libur / Belum di input / Izin / Sakit / Alpa: cukup statusnya.
+        if (($day['status'] ?? 'setoran') !== 'setoran') {
             return $day['surah'];
         }
 
-        $ayat = $day['ayat_start'] !== '' ? "{$day['ayat_start']}-{$day['ayat_end']} " : '';
         $lines = $isUmmi ? '' : "{$day['baris']} Brs, ";
 
-        return trim("{$day['surah']} {$ayat}({$lines}Nilai {$day['nilai']})");
+        return "{$day['surah']} ({$lines}Nilai {$day['nilai']})";
     }
 
     public function styles(Worksheet $sheet): array

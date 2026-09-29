@@ -139,13 +139,13 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertSame('KELAS XII', $rows[0][0]);
         $this->assertSame('Kelas: Kelas XII F4 Export  |  Musyrif: Guru Test', $rows[1][0]);
         $this->assertSame(
-            ['No', 'Nama Murid', 'Level', 'Awal Triwulan', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit', 'Pelanggaran'],
+            ['No', 'Nama Murid', 'Level', 'Awal Triwulan', 'Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat', 'Capaian Baris', 'Target Baris', 'Ketercapaian', 'Alpa', 'Izin', 'Sakit'],
             $rows[2]
         );
         $studentRow = collect($rows)->firstWhere(1, $this->student->name);
         $this->assertNotNull($studentRow);
-        // Pelanggaran murid muncul di kolom terakhir (Term-Indeks).
-        $this->assertSame('1', (string) $studentRow[14]);
+        // Kolom Pelanggaran sudah dihapus: walau murid punya pelanggaran, kolom setelah Sakit kosong.
+        $this->assertEmpty($studentRow[14] ?? null);
 
         $allTermCells = $this->flatten($rows);
         $this->assertNotContains($otherStudent->name, $allTermCells);

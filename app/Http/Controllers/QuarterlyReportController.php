@@ -8,7 +8,6 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Student;
-use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
@@ -26,6 +25,26 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class QuarterlyReportController extends Controller
 {
+    /** "1-31", atau cukup "11" kalau ayat awal = ayat akhir. */
+    private static function ayahRangeLabel($start, $end): string
+    {
+        return (int) $start === (int) $end || $start === null ? (string) $end : "{$start}-{$end}";
+    }
+
+    /** Satu sesi Ummi sesuai input guru: "Jilid 2 Hal. 12-14 · An-Naba 1-10". */
+    private static function ummiSessionLabel(UmmiRecord $ummi): string
+    {
+        // Halaman bisa diinput "12", "12-14", atau "Halaman 12" -- samakan jadi "Hal. 12".
+        $halaman = trim(preg_replace('/^\s*(halaman|hal\.?)\s*/i', '', (string) $ummi->ummi_halaman));
+        $book = trim(($ummi->ummi_jilid ?: '').($halaman !== '' ? ' Hal. '.$halaman : ''));
+        $surahs = $ummi->surahs
+            ->filter(fn ($s) => $s->surah !== null)
+            ->map(fn ($s) => trim($s->surah->name_latin.' '.str_replace(' ', '', (string) $s->hafalan_ayah)))
+            ->implode(', ');
+
+        return collect([$book, $surahs])->filter()->implode(' · ');
+    }
+
     public static function mapScoreToGrade($score): string
     {
         if (empty($score)) {
@@ -215,7 +234,7 @@ class QuarterlyReportController extends Controller
 
     /**
      * Ambil seluruh data mentah satu triwulan sekali jalan (presensi, setoran, Ummi,
-     * pelanggaran, target & capaian terakhir) untuk sekelompok murid tertentu.
+     * target & capaian terakhir) untuk sekelompok murid tertentu.
      */
     private function fetchTermData(array $studentIds, string $termStartDate, string $termEndDate): array
     {
@@ -240,12 +259,6 @@ class QuarterlyReportController extends Controller
             ->whereBetween('tanggal', [$termStartDate, $termEndDate])
             ->orderBy('tanggal')
             ->orderBy('id')
-            ->get();
-
-        $termViolations = StudentPoint::query()
-            ->whereIn('student_id', $studentIds)
-            ->where('type', 'violation')
-            ->whereBetween('date', [$termStartDate, $termEndDate])
             ->get();
 
         // Target triwulan = target tersimpan terakhir DI DALAM triwulan ini (sama dengan Target Triwulan).
@@ -280,7 +293,6 @@ class QuarterlyReportController extends Controller
             'termAttendances' => $termAttendances,
             'termHafalanRecords' => $termHafalanRecords,
             'termUmmiRecords' => $termUmmiRecords,
-            'termViolations' => $termViolations,
             'latestTargets' => $latestTargets,
             'latestHafalans' => $latestHafalans,
             'latestUmmiRecords' => $latestUmmiRecords,
@@ -308,7 +320,6 @@ class QuarterlyReportController extends Controller
         $gAttendances = $term['termAttendances']->whereIn('student_id', $gStudentIds);
         $gHafalanRecords = $term['termHafalanRecords']->whereIn('student_id', $gStudentIds);
         $gUmmiRecords = $term['termUmmiRecords']->whereIn('student_id', $gStudentIds);
-        $gViolations = $term['termViolations']->whereIn('student_id', $gStudentIds);
 
         $context = [
             'classRoom' => $classRoom,
@@ -318,7 +329,6 @@ class QuarterlyReportController extends Controller
             'gAttendances' => $gAttendances,
             'gHafalanRecords' => $gHafalanRecords,
             'gUmmiRecords' => $gUmmiRecords,
-            'gViolations' => $gViolations,
             'classAttendances' => $term['termAttendances'],
             'classHafalanRecords' => $term['termHafalanRecords'],
             'latestTargets' => $term['latestTargets'],
@@ -353,7 +363,6 @@ class QuarterlyReportController extends Controller
             $monthly,
             $groupStudents,
             $gAttendances,
-            $gViolations,
             $term['latestTargets'],
             $term['latestHafalans'],
             $context['breakdowns'],
@@ -650,7 +659,6 @@ class QuarterlyReportController extends Controller
         $gAttendances = $context['gAttendances']->filter(fn ($a) => $this->inRange($a->tanggal, $range));
         $gHafalanRecords = $context['gHafalanRecords']->filter(fn ($h) => $this->inRange($h->submitted_at, $range));
         $gUmmiRecords = ($context['gUmmiRecords'] ?? collect())->filter(fn ($u) => $this->inRange($u->tanggal, $range));
-        $violations = $context['gViolations']->filter(fn ($v) => $this->inRange($v->date, $range));
 
         // Tanggal unik (presensi atau setoran) sekelas pada bulan ini.
         $uniqueDates = $context['classAttendances']->filter(fn ($a) => $this->inRange($a->tanggal, $range))
@@ -826,15 +834,19 @@ class QuarterlyReportController extends Controller
         if ($isTahfizhProgram) {
             foreach ($meetingDates as $date) {
                 $dayAttendances = $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date);
-                $daySetorans = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date);
-                $held = $dayAttendances->isNotEmpty() || $daySetorans->isNotEmpty();
+                // Setoran Ummi (Kelas 10) juga menandai pertemuan terlaksana.
+                $daySetoranStudents = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date)
+                    ->pluck('student_id')
+                    ->merge($gUmmiRecords->filter(fn ($u) => $this->dateString($u->tanggal) === $date)->pluck('student_id'))
+                    ->unique();
+                $held = $dayAttendances->isNotEmpty() || $daySetoranStudents->isNotEmpty();
                 $carbonDate = Carbon::parse($date);
 
                 $jurnalData[] = [
                     'tanggal' => $dayNames[$carbonDate->dayOfWeekIso - 1].', '.$carbonDate->format('d-m-Y'),
                     'materi' => "Muroja'ah & Ziyadah Hafalan",
                     'jumlah_murid' => $held
-                        ? ($dayAttendances->isNotEmpty() ? $dayAttendances->where('status', 'hadir')->count() : $daySetorans->pluck('student_id')->unique()->count())
+                        ? ($dayAttendances->isNotEmpty() ? $dayAttendances->where('status', 'hadir')->count() : $daySetoranStudents->count())
                         : null,
                     'paraf' => $held ? '✓' : '-',
                 ];
@@ -850,8 +862,10 @@ class QuarterlyReportController extends Controller
         } else {
             foreach ($meetingDates as $date) {
                 $dayAttendances = $gAttendances->filter(fn ($a) => $this->dateString($a->tanggal) === $date);
+                // Setoran Ummi (Kelas 10) juga menandai pertemuan terlaksana, sama seperti tab Presensi.
                 $daySetoranStudents = $gHafalanRecords->filter(fn ($h) => $this->dateString($h->submitted_at) === $date)
                     ->pluck('student_id')
+                    ->merge($gUmmiRecords->filter(fn ($u) => $this->dateString($u->tanggal) === $date)->pluck('student_id'))
                     ->unique();
                 $held = $dayAttendances->isNotEmpty() || $daySetoranStudents->isNotEmpty();
                 $carbonDate = Carbon::parse($date);
@@ -913,20 +927,28 @@ class QuarterlyReportController extends Controller
 
                             return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
                         })->filter(fn ($r) => $r->surah);
+                        $dayUmmi = $isUmmiStudent ? $sUmmi->filter(function ($u) use ($isoDay, $pStart, $pEnd) {
+                            $date = Carbon::parse($u->tanggal);
 
-                        if ($dayRecords->isNotEmpty()) {
-                            // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
-                            $lines = $dayRecords->where('status', 'passed')->sum('lines_count');
-                            $surahLabel = $dayRecords
-                                ->map(fn ($r) => "{$r->surah->name_latin} ({$r->ayah_end})")
-                                ->implode(', ');
-                            $avgScore = $dayRecords->whereNotNull('score')->avg('score');
+                            return $date->day >= $pStart && $date->day <= $pEnd && $date->dayOfWeekIso === $isoDay;
+                        })->sortBy(fn ($u) => [Carbon::parse($u->tanggal)->timestamp, $u->id]) : collect();
+
+                        if ($dayRecords->isNotEmpty() || $dayUmmi->isNotEmpty()) {
+                            // Label lengkap sesuai input guru: sesi Ummi "Jilid 2 Hal. 12-14 · An-Naba 1-5",
+                            // lalu setoran hafalan "Al-Mulk 1-10". Baris hafalan hanya dari setoran lulus.
+                            $lines = $dayRecords->where('status', 'passed')->sum('lines_count')
+                                + (float) $dayUmmi->sum(fn ($u) => $u->lines_count);
+                            $label = $dayUmmi->toBase()->map(fn ($u) => self::ummiSessionLabel($u))
+                                ->merge($dayRecords->map(fn ($r) => $r->surah->name_latin.' '.self::ayahRangeLabel($r->ayah_start, $r->ayah_end)))
+                                ->filter()
+                                ->implode('; ');
                             $dailyLogs[$dayName] = [
-                                'surah' => $surahLabel,
-                                'ayat_start' => '',
-                                'ayat_end' => '',
+                                'status' => 'setoran',
+                                'surah' => $label ?: '-',
                                 'baris' => $lines,
-                                'nilai' => self::mapScoreToGrade($avgScore),
+                                'nilai' => $dayUmmi->isNotEmpty()
+                                    ? ($dayUmmi->last()->nilai ?: '-')
+                                    : self::mapScoreToGrade($dayRecords->whereNotNull('score')->avg('score')),
                             ];
                             $weekLines += $lines;
                         } else {
@@ -940,12 +962,11 @@ class QuarterlyReportController extends Controller
                                 return isset($dayMap[$wDay]) && $dayMap[$wDay] === $dayName;
                             });
 
+                            $isAbsent = $attRecord && $attRecord->status !== 'hadir';
                             $dailyLogs[$dayName] = [
-                                'surah' => ($attRecord && $attRecord->status !== 'hadir')
-                                    ? ucfirst($attRecord->status)
-                                    : $emptyDayState($isoDay, $pStart, $pEnd),
-                                'ayat_start' => '',
-                                'ayat_end' => '',
+                                // 'absen' = Izin/Sakit/Alpa, 'kosong' = Libur / Belum di input.
+                                'status' => $isAbsent ? 'absen' : 'kosong',
+                                'surah' => $isAbsent ? ucfirst($attRecord->status) : $emptyDayState($isoDay, $pStart, $pEnd),
                                 'baris' => 0,
                                 'nilai' => '-',
                             ];
@@ -971,12 +992,17 @@ class QuarterlyReportController extends Controller
                     })->filter(fn ($h) => $h->surah);
 
                     if ($isUmmiStudent && $weekUmmi->isNotEmpty()) {
-                        // Kelas 10 / Metode Ummi: setoran dicatat sebagai Jilid & Halaman, bukan Surah & Ayat.
-                        $lastUmmi = $weekUmmi->sortByDesc('tanggal')->first();
+                        // Kelas 10 / Metode Ummi: tampilkan lengkap sesuai input guru tiap sesi pekan ini,
+                        // "Jilid 2 Hal. 12-14 · An-Naba 1-10", plus setoran Ziyadah biasa kalau ada.
+                        $sortedUmmi = $weekUmmi->sortBy(fn ($u) => [Carbon::parse($u->tanggal)->timestamp, $u->id]);
+                        $lastUmmi = $sortedUmmi->last();
                         $lines = (float) $weekUmmi->sum(fn ($u) => $u->lines_count);
+                        $sessions = $sortedUmmi->toBase()->map(fn ($u) => self::ummiSessionLabel($u))->filter();
+                        $ziyadah = $weekRecords->map(fn ($h) => $h->surah->name_latin.' '.self::ayahRangeLabel($h->ayah_start, $h->ayah_end))->implode(', ');
                         $pekanRecords[$p] = [
                             'surah' => $lastUmmi->ummi_jilid ?: '-',
                             'ayat' => AyahLabel::end($lastUmmi->ummi_halaman),
+                            'setoran' => $sessions->push($ziyadah)->filter()->implode('; ') ?: '-',
                             'baris' => $lines,
                             'nilai' => $lastUmmi->nilai ?: '-',
                             'kehadiran' => 'Hadir',
@@ -987,9 +1013,7 @@ class QuarterlyReportController extends Controller
                         $lines = $weekRecords->where('status', 'passed')->sum('lines_count');
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                         // Rentang ayat lengkap sesuai input guru: "Al-Insan 1-31, Al-Mursalat 1-13".
-                        $ayahRange = fn ($h) => (int) $h->ayah_start === (int) $h->ayah_end
-                            ? (string) $h->ayah_end
-                            : "{$h->ayah_start}-{$h->ayah_end}";
+                        $ayahRange = fn ($h) => self::ayahRangeLabel($h->ayah_start, $h->ayah_end);
                         $pekanRecords[$p] = [
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
                             'ayat' => $weekRecords->map($ayahRange)->implode(', '),
@@ -1084,7 +1108,6 @@ class QuarterlyReportController extends Controller
                 'target_lines' => $targetLines,
                 'total_lines' => $totalCapaianLines,
                 'is_tuntas' => $isTuntas,
-                'pelanggaran' => $violations->where('student_id', $student->id)->count(),
                 'target_surah' => $targetSurah,
                 'target_ayat' => $targetAyat,
                 'capaian_surah' => $capaianSurah,
@@ -1113,9 +1136,9 @@ class QuarterlyReportController extends Controller
     }
 
     /**
-     * Rekap satu term per murid: baris & target dijumlahkan dari semua bulan, absensi dan pelanggaran dihitung sepanjang term.
+     * Rekap satu term per murid: baris & target dijumlahkan dari semua bulan, absensi dihitung sepanjang term.
      */
-    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $gViolations, $latestTargets, $latestHafalans, array $breakdowns, $latestUmmiRecords = null): array
+    private function buildTermRecords(array $monthly, $groupStudents, $gAttendances, $latestTargets, $latestHafalans, array $breakdowns, $latestUmmiRecords = null): array
     {
         $termRecords = [];
         $latestUmmiRecords ??= collect();
@@ -1186,7 +1209,6 @@ class QuarterlyReportController extends Controller
                 'alpa' => $studentAtt->where('status', 'alpa')->count(),
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),
-                'pelanggaran' => $gViolations->where('student_id', $student->id)->count(),
                 'ummi' => $ummiPosition,
             ];
         }

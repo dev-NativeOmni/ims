@@ -9,6 +9,7 @@ use App\Models\HafalanTarget;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\Surah;
+use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -435,6 +436,117 @@ class QuarterlyReportPresensiTest extends TestCase
                 && $termRow['capaian_ayat'] === '4'
                 && $septRow['capaian_surah'] === 'Ar-Rahman'
                 && $septRow['capaian_ayat'] === '4';
+        });
+    }
+
+    #[Test]
+    public function ummi_meeting_cell_shows_jilid_halaman_surah_and_ayat_as_input_by_the_teacher(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E1',
+            'level' => 'X',
+            'tahfizh_days' => [1, 2], // Senin 13 & Selasa 14 Juli 2026 = pekan 2
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
+
+        // Dua sesi Ummi dalam satu pekan, tanpa presensi: keduanya harus tampil lengkap.
+        foreach ([[1, '2026-07-13', 'Halaman 12-14', '1-5'], [2, '2026-07-14', '15', '6-7']] as [$tatapMuka, $date, $halaman, $ayat]) {
+            $ummi = UmmiRecord::create([
+                'student_id' => $this->student->id,
+                'teacher_id' => $this->teacherProfile->id,
+                'tatap_muka' => $tatapMuka,
+                'tanggal' => $date,
+                'ummi_jilid' => 'Jilid 2',
+                'ummi_halaman' => $halaman,
+                'nilai' => 'A',
+            ]);
+            $ummi->surahs()->create(['surah_id' => $this->surah->id, 'hafalan_ayah' => $ayat, 'sort_order' => 1]);
+        }
+
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', [
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Jilid 2 Hal. 12-14 · Al-Fatihah 1-5; Jilid 2 Hal. 15 · Al-Fatihah 6-7');
+        $response->assertViewHas('halaqahData', function ($halaqahData) {
+            $july = collect($halaqahData)->first()['monthly']['07'];
+            $jurnal = collect($july['jurnal'])->keyBy('tanggal');
+
+            // Jurnal ikut menghitung setoran Ummi sebagai pertemuan terlaksana.
+            return $jurnal['Senin, 13-07-2026']['jumlah_murid'] === 1
+                && $jurnal['Selasa, 14-07-2026']['jumlah_murid'] === 1;
+        });
+    }
+
+    #[Test]
+    public function tahfizh_daily_grid_shows_ummi_sessions_hafalan_ranges_and_absence_status(): void
+    {
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E2',
+            'level' => 'X',
+            'tahfizh_days' => [1, 2, 3], // Senin 13, Selasa 14, Rabu 15 Juli 2026 = pekan 2
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
+
+        // Senin: sesi Ummi (Jilid + hafalan) dan setoran hafalan biasa di hari yang sama.
+        $ummi = UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-07-13',
+            'ummi_jilid' => 'Jilid 3',
+            'ummi_halaman' => '20-22',
+            'nilai' => 'B',
+        ]);
+        $ummi->surahs()->create(['surah_id' => $this->surah->id, 'hafalan_ayah' => '1-4', 'sort_order' => 1]);
+        $record = HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-13',
+        ]);
+        $record->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 5,
+            'ayah_end' => 7,
+            'submission_type' => 'new',
+            'status' => 'passed',
+            'score' => 90,
+        ]);
+        // Selasa: izin.
+        Attendance::create([
+            'student_id' => $this->student->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tanggal' => '2026-07-14',
+            'status' => 'izin',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', [
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Jilid 3 Hal. 20-22 · Al-Fatihah 1-4; Al-Fatihah 5-7');
+        $response->assertViewHas('halaqahData', function ($halaqahData) {
+            $july = collect($halaqahData)->first()['monthly']['07'];
+            $days = collect($july['tahfizh_records'])->firstWhere('student_id', $this->student->id)['pekan'][2]['days'];
+            $jurnal = collect($july['jurnal'])->keyBy('tanggal');
+
+            return $days['Senin']['status'] === 'setoran'
+                && $days['Senin']['nilai'] === 'B'
+                && $days['Selasa']['status'] === 'absen'
+                && $days['Selasa']['surah'] === 'Izin'
+                && $days['Rabu']['status'] === 'kosong'
+                && $jurnal['Senin, 13-07-2026']['jumlah_murid'] === 1;
         });
     }
 }

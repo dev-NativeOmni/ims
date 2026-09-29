@@ -143,9 +143,9 @@
                 <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 inline-flex items-start sm:items-center gap-1.5">
                     <x-heroicon-o-information-circle class="w-4 h-4 text-emerald-600 shrink-0" />
                     @if ($isTeacherView)
-                        <span><strong>Informasi:</strong> Hanya murid yang Anda ampu yang ditampilkan. Data disinkronkan langsung dari presensi, setoran hafalan, dan pelanggaran selama term terpilih.</span>
+                        <span><strong>Informasi:</strong> Hanya murid yang Anda ampu yang ditampilkan. Data disinkronkan langsung dari presensi dan setoran hafalan selama term terpilih.</span>
                     @else
-                        <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi, setoran hafalan, dan pelanggaran asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
+                        <span><strong>Informasi:</strong> Data di bawah disinkronkan langsung dari data absensi dan setoran hafalan asli yang di-input oleh guru-guru di sistem selama term terpilih (seluruh bulan dalam term ditampilkan).</span>
                     @endif
                 </span>
                 <div class="shrink-0 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -411,7 +411,9 @@
                                                 @foreach ($month['pekan_dates'][$p] as $d)
                                                     <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700 whitespace-nowrap">{{ strtoupper($d['label']) }}</th>
                                                 @endforeach
-                                                <th colspan="{{ $hasUmmi ? 1 : 2 }}" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Pekan</th>
+                                                @unless ($hasUmmi)
+                                                    <th class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Pekan</th>
+                                                @endunless
                                             </tr>
                                             <tr class="bg-gray-100 dark:bg-zinc-850 border-b dark:border-zinc-750">
                                                 @foreach ($month['pekan_dates'][$p] as $d)
@@ -420,9 +422,8 @@
                                                 @endforeach
                                                 <!-- Rekap -->
                                                 @unless ($hasUmmi)
-                                                    <th class="px-2.5 py-1 border-r dark:border-zinc-700 w-16">Baris</th>
+                                                    <th class="px-2.5 py-1 w-16">Baris</th>
                                                 @endunless
-                                                <th class="px-2 py-1">Nilai</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
@@ -436,30 +437,24 @@
                                                     <!-- Hanya hari pertemuan aktif -->
                                                     @foreach ($month['pekan_dates'][$p] as $d)
                                                         @php $dayLog = $wRecord['days'][$d['day']]; @endphp
-                                                        @if ($dayLog['surah'] === 'Belum di input')
+                                                        @if ($dayLog['status'] === 'kosong')
                                                             <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-yellow-500/5 text-yellow-600 dark:text-yellow-500 font-semibold text-[9px] text-center">-</td>
-                                                        @elseif ($dayLog['surah'] === 'Tidak Masuk')
-                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-amber-500/5 text-amber-500 font-bold uppercase tracking-wider text-[9px] text-center">Sakit</td>
+                                                        @elseif ($dayLog['status'] === 'absen')
+                                                            <td colspan="2" class="px-2 py-2.5 border-r dark:border-zinc-700 bg-amber-500/5 text-amber-500 font-bold uppercase tracking-wider text-[9px] text-center">{{ $dayLog['surah'] }}</td>
                                                         @else
                                                             <td class="px-2 py-2.5 border-r dark:border-zinc-700 text-left">
                                                                 <span class="block font-medium text-gray-800 dark:text-zinc-350">{{ $dayLog['surah'] }}</span>
-                                                                <span class="block text-[8px] text-gray-400 mt-0.5">
-                                                                    @if ($dayLog['ayat_start'] !== '')
-                                                                        {{ $dayLog['ayat_start'] }}-{{ $dayLog['ayat_end'] }}
-                                                                    @endif
-                                                                    @unless ($rowIsUmmi)
-                                                                        ({{ $dayLog['baris'] }} Brs)
-                                                                    @endunless
-                                                                </span>
+                                                                @unless ($rowIsUmmi)
+                                                                    <span class="block text-[8px] text-gray-400 mt-0.5">({{ $dayLog['baris'] }} Brs)</span>
+                                                                @endunless
                                                             </td>
                                                             <td class="px-1.5 py-2.5 border-r dark:border-zinc-700 font-bold text-gray-700 dark:text-zinc-300 text-center">{{ $dayLog['nilai'] }}</td>
                                                         @endif
                                                     @endforeach
 
                                                     @unless ($hasUmmi)
-                                                        <td class="px-2.5 py-2.5 border-r dark:border-zinc-700 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $wRecord['week_lines'] }} Brs</td>
+                                                        <td class="px-2.5 py-2.5 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $wRecord['week_lines'] }} Brs</td>
                                                     @endunless
-                                                    <td class="px-2 py-2.5 font-bold text-center text-teal-650">A</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -699,8 +694,7 @@
                                             <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Capaian / Target Baris</th>
                                         @endunless
                                         <th rowspan="2" class="px-4 py-3 border-b border-r dark:border-zinc-700">Ketercapaian</th>
-                                        <th colspan="3" class="px-3 py-2 border-b border-r dark:border-zinc-700">Absensi</th>
-                                        <th rowspan="2" class="px-4 py-3 border-b dark:border-zinc-700">Pelanggaran</th>
+                                        <th colspan="3" class="px-3 py-2 border-b dark:border-zinc-700">Absensi</th>
                                     </tr>
                                     <tr class="bg-gray-100 dark:bg-zinc-850 border-b dark:border-zinc-750">
                                         @foreach ([1, 2] as $unused)
@@ -713,7 +707,7 @@
                                         @endforeach
                                         <th class="px-1.5 py-1.5 border-r dark:border-zinc-700 text-rose-500 font-bold">A</th>
                                         <th class="px-1.5 py-1.5 border-r dark:border-zinc-700 text-amber-500 font-bold">I</th>
-                                        <th class="px-1.5 py-1.5 border-r dark:border-zinc-700 text-blue-500 font-bold">S</th>
+                                        <th class="px-1.5 py-1.5 text-blue-500 font-bold">S</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
@@ -759,8 +753,7 @@
                                             </td>
                                             <td class="px-1.5 py-3 border-r dark:border-zinc-700 font-bold {{ $aSum > 0 ? 'text-rose-500' : 'text-gray-300' }}">{{ $aSum ?: '-' }}</td>
                                             <td class="px-1.5 py-3 border-r dark:border-zinc-700 font-bold {{ $iSum > 0 ? 'text-amber-500' : 'text-gray-300' }}">{{ $iSum ?: '-' }}</td>
-                                            <td class="px-1.5 py-3 border-r dark:border-zinc-700 font-bold {{ $sSum > 0 ? 'text-blue-500' : 'text-gray-300' }}">{{ $sSum ?: '-' }}</td>
-                                            <td class="px-4 py-3 font-bold {{ $row['pelanggaran'] > 0 ? 'text-rose-500' : 'text-gray-300' }}">{{ $row['pelanggaran'] ?: '0' }}</td>
+                                            <td class="px-1.5 py-3 font-bold {{ $sSum > 0 ? 'text-blue-500' : 'text-gray-300' }}">{{ $sSum ?: '-' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
