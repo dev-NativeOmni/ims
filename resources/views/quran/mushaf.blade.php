@@ -736,7 +736,7 @@
                     { id: 105, name: "Al-Fil", ar: "الفيل", page: 601 },
                     { id: 106, name: "Quraish", ar: "Quraish", page: 602 },
                     { id: 107, name: "Al-Ma'un", ar: "الماعون", page: 602 },
-                    { id: 108, name: "Al-Kawthar", ar: "الكوثر", page: 602 },
+                    { id: 108, name: "Al-Kautsar", ar: "الكوثر", page: 602 },
                     { id: 109, name: "Al-Kafirun", ar: "Al-Kafirun", page: 603 },
                     { id: 110, name: "An-Nasr", ar: "النصر", page: 603 },
                     { id: 111, name: "Al-Lahab", ar: "اللهب", page: 603 },
