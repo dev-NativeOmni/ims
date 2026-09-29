@@ -400,4 +400,25 @@ class SpreadsheetInputTest extends TestCase
         // Assert record count is still 1 (no duplicates!)
         $this->assertEquals(1, HafalanRecord::where('student_id', $this->student->id)->where('submitted_at', $date.' 00:00:00')->count());
     }
+
+    #[Test]
+    public function spreadsheet_ummi_saves_halaman_range_and_rejects_invalid_jilid(): void
+    {
+        $classRoom = $this->student->classRoom;
+        $date = '2026-08-04';
+        $save = fn (array $cell) => $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-08',
+            'type' => 'ummi',
+            'records' => [$this->student->id => ['dates' => [$date => ['attendance' => 'hadir', 'tatap_muka' => 1] + $cell]]],
+        ]);
+
+        $save(['ummi_jilid' => 'Tajwid', 'ummi_halaman_awal' => '5', 'ummi_halaman_akhir' => '8']);
+        $this->assertDatabaseHas('ummi_records', ['student_id' => $this->student->id, 'ummi_jilid' => 'Tajwid', 'ummi_halaman' => '5-8']);
+
+        // Jilid di luar daftar ditolak; data sebelumnya tetap utuh.
+        $save(['ummi_jilid' => 'Jilid 4', 'ummi_halaman_awal' => '1', 'ummi_halaman_akhir' => '2'])
+            ->assertSessionHas('error');
+        $this->assertDatabaseHas('ummi_records', ['student_id' => $this->student->id, 'ummi_jilid' => 'Tajwid', 'ummi_halaman' => '5-8']);
+    }
 }

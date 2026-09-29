@@ -11,13 +11,17 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
+use App\Observers\HafalanTargetStatusObserver;
 use App\Services\AcademicCalendarService;
+use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
+use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -319,12 +323,12 @@ class HafalanRecordController extends Controller
     {
         $this->authorize('create', HafalanRecord::class);
 
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'student_id' => ['required', 'integer', 'exists:students,id'],
             'tanggal' => ['required', 'date'],
             'tatap_muka' => ['nullable', 'integer', 'min:1'],
-            'ummi_jilid' => ['nullable', 'string', 'max:150'],
-            'ummi_halaman' => ['nullable', 'string', 'max:100'],
+            // Jilid lama di luar daftar (mis. "Jilid 4") boleh dipertahankan, tapi tidak bisa dipilih baru.
+            ...UmmiBook::rules('', $ummiRecord->ummi_jilid),
             'materi' => ['nullable', 'string', 'max:255'],
             'nilai' => ['nullable', 'string', 'max:50'],
             'hafalan_surah_ids' => ['nullable', 'array'],
@@ -337,6 +341,8 @@ class HafalanRecordController extends Controller
             'disimak_ortu' => ['required', Rule::in(['Ya', 'Tidak'])],
             'catatan' => ['nullable', 'string'],
         ]);
+        $validator->after(fn ($v) => UmmiBook::checkPages($v, $request->all()));
+        $validated = $validator->validate();
 
         DB::transaction(function () use ($ummiRecord, $validated) {
             $ummiRecord->update([
@@ -344,7 +350,7 @@ class HafalanRecordController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'tatap_muka' => $validated['tatap_muka'] ?? $ummiRecord->tatap_muka,
                 'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                'ummi_halaman' => UmmiBook::halamanFromInput($validated),
                 'materi' => $validated['materi'] ?? null,
                 'nilai' => $validated['nilai'] ?? null,
                 'disimak_guru' => $validated['disimak_guru'],
@@ -513,8 +519,8 @@ class HafalanRecordController extends Controller
         });
 
         if (! empty($studentIds)) {
-            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
-            \App\Observers\HafalanTargetStatusObserver::flush();
+            app(HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
+            HafalanTargetStatusObserver::flush();
         }
 
         return back()->with('success', "Berhasil menyimpan {$updatedCount} perubahan catatan hafalan reguler.");
@@ -527,13 +533,21 @@ class HafalanRecordController extends Controller
     {
         $this->authorize('create', HafalanRecord::class);
 
-        $validated = $request->validate([
+        // Jilid lama di luar daftar (mis. "Jilid 4") boleh dipertahankan per baris, tapi tidak bisa dipilih baru.
+        $currentJilids = UmmiRecord::query()
+            ->whereIn('id', collect($request->input('records', []))->pluck('id')->filter()->all())
+            ->pluck('ummi_jilid', 'id');
+        $jilidRules = [];
+        foreach ((array) $request->input('records', []) as $index => $item) {
+            $jilidRules += UmmiBook::rules("records.{$index}.", $currentJilids[$item['id'] ?? 0] ?? null);
+        }
+
+        $validator = Validator::make($request->all(), [
             'records' => ['required', 'array'],
             'records.*.id' => ['required', 'integer', 'exists:ummi_records,id'],
             'records.*.tanggal' => ['required', 'date'],
             'records.*.tatap_muka' => ['nullable', 'integer', 'min:1'],
-            'records.*.ummi_jilid' => ['nullable', 'string', 'max:150'],
-            'records.*.ummi_halaman' => ['nullable', 'string', 'max:100'],
+            ...$jilidRules,
             'records.*.materi' => ['nullable', 'string', 'max:255'],
             'records.*.nilai' => ['nullable', 'string', 'max:50'],
             'records.*.disimak_guru' => ['nullable', 'string', 'in:Ya,Tidak'],
@@ -542,6 +556,12 @@ class HafalanRecordController extends Controller
             'records.*.hafalan_ayah' => ['nullable', 'string', 'max:100'],
             'records.*.hafalan_baris' => ['nullable', 'numeric', 'min:0'],
         ]);
+        $validator->after(function ($v) use ($request) {
+            foreach ((array) $request->input('records', []) as $index => $item) {
+                UmmiBook::checkPages($v, (array) $item, "records.{$index}.");
+            }
+        });
+        $validated = $validator->validate();
 
         $user = $request->user();
         $updatedCount = 0;
@@ -562,7 +582,7 @@ class HafalanRecordController extends Controller
                     'tanggal' => $item['tanggal'],
                     'tatap_muka' => $item['tatap_muka'] ?? $record->tatap_muka,
                     'ummi_jilid' => $item['ummi_jilid'] ?? null,
-                    'ummi_halaman' => $item['ummi_halaman'] ?? null,
+                    'ummi_halaman' => UmmiBook::halamanFromInput($item),
                     'materi' => $item['materi'] ?? null,
                     'nilai' => $item['nilai'] ?? null,
                     'disimak_guru' => $item['disimak_guru'] ?? $record->disimak_guru,
@@ -589,8 +609,8 @@ class HafalanRecordController extends Controller
         });
 
         if (! empty($studentIds)) {
-            app(\App\Services\HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
-            \App\Observers\HafalanTargetStatusObserver::flush();
+            app(HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
+            HafalanTargetStatusObserver::flush();
         }
 
         return back()->with('success', "Berhasil menyimpan {$updatedCount} perubahan catatan UMMI.");

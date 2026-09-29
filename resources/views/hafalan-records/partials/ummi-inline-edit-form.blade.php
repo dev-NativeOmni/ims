@@ -36,15 +36,21 @@
             <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Jilid</label>
             <select name="ummi_jilid" class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
                 <option value="">Pilih Jilid</option>
-                @foreach(['Jilid 1', 'Jilid 2', 'Jilid 3', 'Al-Qur\'an', 'Ghoroib', 'Tajwid'] as $jilid)
-                    <option value="{{ $jilid }}" @selected($record->ummi_jilid === $jilid)>{{ $jilid }}</option>
+                @foreach(\App\Support\UmmiBook::options($record->ummi_jilid) as $value => $label)
+                    <option value="{{ $value }}" @selected($record->ummi_jilid === $value)>{{ $label }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Halaman</label>
-            <input type="text" name="ummi_halaman" value="{{ $record->ummi_halaman }}" placeholder="Contoh: 15-18"
-                   class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
+            @php [$halamanAwal, $halamanAkhir] = \App\Support\UmmiBook::splitHalaman($record->ummi_halaman); @endphp
+            <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Halaman (awal - akhir)</label>
+            <div class="flex items-center gap-1">
+                <input type="number" min="1" name="ummi_halaman_awal" value="{{ $halamanAwal }}" placeholder="Awal"
+                       class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
+                <span class="text-zinc-400">-</span>
+                <input type="number" min="1" name="ummi_halaman_akhir" value="{{ $halamanAkhir }}" placeholder="Akhir"
+                       class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
+            </div>
         </div>
         <div class="col-span-2">
             <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Materi</label>

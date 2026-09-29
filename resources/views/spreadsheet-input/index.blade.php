@@ -107,7 +107,8 @@
                                 attendance: att,
                                 hafalans: hList,
                                 ummi_jilid: uData ? uData.ummi_jilid || '' : '',
-                                ummi_halaman: uData ? uData.ummi_halaman || '' : '',
+                                ummi_halaman_awal: uData ? uData.ummi_halaman_awal || '' : '',
+                                ummi_halaman_akhir: uData ? uData.ummi_halaman_akhir || '' : '',
                                 materi: uData ? uData.materi || '' : '',
                                 nilai: uData ? uData.nilai || '' : '',
                                 tatap_muka: uData ? uData.tatap_muka || 1 : 1,
@@ -143,6 +144,7 @@
                         }
                     });
                 },
+                ummiBooks: @js(\App\Support\UmmiBook::BOOKS),
                 draftKey: 'tad_draft_spreadsheet_{{ $selectedClassId }}_{{ $selectedMonth }}',
                 hasDraftAvailable: false,
                 draftTimestamp: '',
@@ -272,7 +274,8 @@
                             h.score = '';
                         });
                         cell.ummi_jilid = '';
-                        cell.ummi_halaman = '';
+                        cell.ummi_halaman_awal = '';
+                        cell.ummi_halaman_akhir = '';
                         cell.materi = '';
                         cell.nilai = '';
                         cell.ummiHafalans.forEach(uh => {
@@ -369,6 +372,9 @@
                                 }
                             } else if (this.tab === 'ummi' && s.tahfizh_level === 'ummi' && att === 'hadir') {
                                 cell.ummi_jilid = c.ummi_jilid;
+                                cell.ummi_halaman_awal = c.ummi_halaman_awal;
+                                cell.ummi_halaman_akhir = c.ummi_halaman_akhir;
+                                // Draf lama (sebelum ada halaman awal/akhir) masih menyimpan teks halaman.
                                 cell.ummi_halaman = c.ummi_halaman;
                                 cell.materi = c.materi;
                                 cell.nilai = c.nilai;
@@ -747,14 +753,17 @@
                                                                     <div class="grid grid-cols-2 gap-1">
                                                                         <select :name="'records[' + student.id + '][dates][' + date + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
                                                                             <option value="" class="dark:bg-zinc-900">Buku/Jilid</option>
-                                                                            <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
-                                                                            <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
-                                                                            <option value="Jilid 3" class="dark:bg-zinc-900">Jilid 3</option>
-                                                                            <option value="Al-Qur'an" class="dark:bg-zinc-900">Al-Qur'an</option>
-                                                                            <option value="Ghoroib" class="dark:bg-zinc-900">Ghoroib</option>
-                                                                            <option value="Tajwid" class="dark:bg-zinc-900">Tajwid</option>
+                                                                            @foreach (\App\Support\UmmiBook::BOOKS as $book)
+                                                                                <option value="{{ $book }}" class="dark:bg-zinc-900">{{ $book }}</option>
+                                                                            @endforeach
+                                                                            <template x-if="cell.ummi_jilid && !ummiBooks.includes(cell.ummi_jilid)">
+                                                                                <option :value="cell.ummi_jilid" class="dark:bg-zinc-900" x-text="cell.ummi_jilid + ' (tidak valid)'"></option>
+                                                                            </template>
                                                                         </select>
-                                                                        <input type="text" :name="'records[' + student.id + '][dates][' + date + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Halaman" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
+                                                                        <div class="flex items-center gap-1">
+                                                                            <input type="number" min="1" :name="'records[' + student.id + '][dates][' + date + '][ummi_halaman_awal]'" x-model="cell.ummi_halaman_awal" placeholder="Hal awal" title="Halaman awal" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
+                                                                            <input type="number" min="1" :name="'records[' + student.id + '][dates][' + date + '][ummi_halaman_akhir]'" x-model="cell.ummi_halaman_akhir" placeholder="Hal akhir" title="Halaman akhir" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
+                                                                        </div>
                                                                     </div>
                                                                     <!-- Materi & Nilai -->
                                                                     <div class="grid grid-cols-2 gap-1">
@@ -965,17 +974,21 @@
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Buku/Jilid</label>
                                                             <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_jilid]'" x-model="cell.ummi_jilid" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                 <option value="" class="dark:bg-zinc-900">Buku/Jilid</option>
-                                                                <option value="Jilid 1" class="dark:bg-zinc-900">Jilid 1</option>
-                                                                <option value="Jilid 2" class="dark:bg-zinc-900">Jilid 2</option>
-                                                                <option value="Jilid 3" class="dark:bg-zinc-900">Jilid 3</option>
-                                                                <option value="Al-Qur'an" class="dark:bg-zinc-900">Al-Qur'an</option>
-                                                                <option value="Ghoroib" class="dark:bg-zinc-900">Ghoroib</option>
-                                                                <option value="Tajwid" class="dark:bg-zinc-900">Tajwid</option>
+                                                                @foreach (\App\Support\UmmiBook::BOOKS as $book)
+                                                                    <option value="{{ $book }}" class="dark:bg-zinc-900">{{ $book }}</option>
+                                                                @endforeach
+                                                                <template x-if="cell.ummi_jilid && !ummiBooks.includes(cell.ummi_jilid)">
+                                                                    <option :value="cell.ummi_jilid" class="dark:bg-zinc-900" x-text="cell.ummi_jilid + ' (tidak valid)'"></option>
+                                                                </template>
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Halaman</label>
-                                                            <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_halaman]'" x-model="cell.ummi_halaman" placeholder="Hal" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Halaman (awal - akhir)</label>
+                                                            <div class="flex items-center gap-1">
+                                                                <input type="number" min="1" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_halaman_awal]'" x-model="cell.ummi_halaman_awal" placeholder="Awal" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                                <span class="text-gray-400">-</span>
+                                                                <input type="number" min="1" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][ummi_halaman_akhir]'" x-model="cell.ummi_halaman_akhir" placeholder="Akhir" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="grid grid-cols-2 gap-2">

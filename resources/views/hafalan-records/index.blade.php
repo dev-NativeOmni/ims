@@ -351,15 +351,21 @@
                                         <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Jilid</label>
                                         <select form="bulkEditForm" name="records[{{ $loop->index }}][ummi_jilid]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-2">
                                             <option value="">Pilih Jilid</option>
-                                            @foreach(['Jilid 1', 'Jilid 2', 'Jilid 3', 'Al-Qur\'an', 'Ghoroib', 'Tajwid'] as $jilid)
-                                                <option value="{{ $jilid }}" @selected($record->ummi_jilid === $jilid)>{{ $jilid }}</option>
+                                            @foreach(\App\Support\UmmiBook::options($record->ummi_jilid) as $value => $label)
+                                                <option value="{{ $value }}" @selected($record->ummi_jilid === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Halaman</label>
-                                        <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman]" value="{{ $record->ummi_halaman }}" placeholder="Cth: 1-5"
-                                               class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-2">
+                                        @php [$halamanAwal, $halamanAkhir] = \App\Support\UmmiBook::splitHalaman($record->ummi_halaman); @endphp
+                                        <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Halaman (awal - akhir)</label>
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman_awal]" value="{{ $halamanAwal }}" placeholder="Awal"
+                                                   class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-2">
+                                            <span class="text-zinc-400">-</span>
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman_akhir]" value="{{ $halamanAkhir }}" placeholder="Akhir"
+                                                   class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-2">
+                                        </div>
                                     </div>
                                     <div class="col-span-2">
                                         <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Materi</label>
@@ -737,12 +743,16 @@
                                             <div class="flex items-center gap-1">
                                                 <select form="bulkEditForm" name="records[{{ $loop->index }}][ummi_jilid]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 max-w-[90px]">
                                                     <option value="">Jilid</option>
-                                                    @foreach(['Jilid 1', 'Jilid 2', 'Jilid 3', 'Al-Qur\'an', 'Ghoroib', 'Tajwid'] as $j)
-                                                        <option value="{{ $j }}" @selected($record->ummi_jilid === $j)>{{ $j }}</option>
+                                                    @foreach(\App\Support\UmmiBook::options($record->ummi_jilid) as $value => $label)
+                                                        <option value="{{ $value }}" @selected($record->ummi_jilid === $value)>{{ $label }}</option>
                                                     @endforeach
                                                 </select>
-                                                <input type="text" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman]" value="{{ $record->ummi_halaman }}" placeholder="Hal"
-                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-12 text-center">
+                                                @php [$halamanAwal, $halamanAkhir] = \App\Support\UmmiBook::splitHalaman($record->ummi_halaman); @endphp
+                                                <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman_awal]" value="{{ $halamanAwal }}" placeholder="Awal" title="Halaman awal"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-14 text-center">
+                                                <span class="text-zinc-400">-</span>
+                                                <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][ummi_halaman_akhir]" value="{{ $halamanAkhir }}" placeholder="Akhir" title="Halaman akhir"
+                                                       class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-14 text-center">
                                             </div>
                                         </td>
                                         <td class="px-3 py-2">

@@ -12,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\SchoolCalendar;
 use App\Services\UserAccessService;
+use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class SpreadsheetInputController extends Controller
@@ -243,7 +245,9 @@ class SpreadsheetInputController extends Controller
                 }
                 $ummiRecordsMap[$record->student_id][$dateStr]['tatap_muka'] = $record->tatap_muka;
                 $ummiRecordsMap[$record->student_id][$dateStr]['ummi_jilid'] = $record->ummi_jilid;
-                $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman'] = $record->ummi_halaman;
+                [$halamanAwal, $halamanAkhir] = UmmiBook::splitHalaman($record->ummi_halaman);
+                $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman_awal'] = $halamanAwal;
+                $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman_akhir'] = $halamanAkhir;
                 $ummiRecordsMap[$record->student_id][$dateStr]['materi'] = $record->materi;
                 $ummiRecordsMap[$record->student_id][$dateStr]['nilai'] = $record->nilai;
 
@@ -419,7 +423,7 @@ class SpreadsheetInputController extends Controller
                         }
 
                         $hasUmmiInput = filled($cellData['ummi_jilid'] ?? null)
-                            || filled($cellData['ummi_halaman'] ?? null)
+                            || filled(UmmiBook::halamanFromInput($cellData))
                             || filled($cellData['materi'] ?? null)
                             || filled($cellData['nilai'] ?? null);
 
@@ -587,6 +591,24 @@ class SpreadsheetInputController extends Controller
         }
     }
 
+    /**
+     * Buku Ummi hanya Jilid 1-3, Gharib, Tajwid (jilid lama yang sudah tersimpan boleh dipertahankan),
+     * halaman akhir >= awal, dan Jilid 1-3 maksimal 40 halaman.
+     */
+    private function assertValidUmmiBook(?string $jilid, array $cellData, ?string $currentJilid, string $date): void
+    {
+        $tanggal = Carbon::parse($date)->translatedFormat('j M Y');
+        if ($jilid !== null && ! in_array($jilid, UmmiBook::BOOKS, true) && $jilid !== $currentJilid) {
+            throw new \InvalidArgumentException("Jilid \"{$jilid}\" ({$tanggal}) tidak valid. Pilih Jilid 1, Jilid 2, Jilid 3, Gharib, atau Tajwid.");
+        }
+
+        $validator = Validator::make([], []);
+        UmmiBook::checkPages($validator, ['ummi_jilid' => $jilid] + $cellData);
+        if ($validator->errors()->isNotEmpty()) {
+            throw new \InvalidArgumentException($validator->errors()->first()." ({$tanggal})");
+        }
+    }
+
     private function saveUmmiRecords(int $studentId, int $teacherId, string $date, array $cellData, array $targetDates): void
     {
         $existingRecords = UmmiRecord::where('student_id', $studentId)
@@ -595,7 +617,8 @@ class SpreadsheetInputController extends Controller
             ->get();
 
         $ummiJilid = filled($cellData['ummi_jilid'] ?? null) ? $cellData['ummi_jilid'] : null;
-        $ummiHalaman = filled($cellData['ummi_halaman'] ?? null) ? $cellData['ummi_halaman'] : null;
+        $ummiHalaman = UmmiBook::halamanFromInput($cellData);
+        $this->assertValidUmmiBook($ummiJilid, $cellData, $existingRecords->first()?->ummi_jilid, $date);
         $materi = filled($cellData['materi'] ?? null) ? $cellData['materi'] : null;
         $nilai = filled($cellData['nilai'] ?? null) ? $cellData['nilai'] : null;
         $tatapMuka = filled($cellData['tatap_muka'] ?? null) ? (int) $cellData['tatap_muka'] : 1;

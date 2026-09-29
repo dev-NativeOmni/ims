@@ -872,23 +872,45 @@
                                     <label for="ummi_jilid" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
                                         UMMI (Jilid)
                                     </label>
-                                    <input id="ummi_jilid"
-                                           type="text"
-                                           name="ummi_jilid"
-                                           value="{{ old('ummi_jilid') }}"
-                                           placeholder="e.g. Jilid 4"
-                                           class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                    <select id="ummi_jilid"
+                                            name="ummi_jilid"
+                                            class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                        <option value="" class="dark:bg-zinc-900">Pilih Jilid</option>
+                                        @foreach (\App\Support\UmmiBook::options() as $value => $label)
+                                            <option value="{{ $value }}" class="dark:bg-zinc-900" @selected(old('ummi_jilid') === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('ummi_jilid')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
-                                    <label for="ummi_halaman" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
-                                        Halaman
+                                    <label for="ummi_halaman_awal" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                                        Halaman (awal - akhir)
                                     </label>
-                                    <input id="ummi_halaman"
-                                           type="text"
-                                           name="ummi_halaman"
-                                           value="{{ old('ummi_halaman') }}"
-                                           placeholder="e.g. Hal 12"
-                                           class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                    <div class="flex items-center gap-2">
+                                        <input id="ummi_halaman_awal"
+                                               type="number"
+                                               min="1"
+                                               name="ummi_halaman_awal"
+                                               value="{{ old('ummi_halaman_awal') }}"
+                                               placeholder="Awal"
+                                               class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                        <span class="text-gray-400">-</span>
+                                        <input id="ummi_halaman_akhir"
+                                               type="number"
+                                               min="1"
+                                               name="ummi_halaman_akhir"
+                                               value="{{ old('ummi_halaman_akhir') }}"
+                                               placeholder="Akhir"
+                                               class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
+                                    </div>
+                                    @error('ummi_halaman_awal')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    @error('ummi_halaman_akhir')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

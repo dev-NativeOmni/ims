@@ -10,6 +10,7 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\UserAccessService;
+use App\Support\UmmiBook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -389,8 +390,7 @@ class QuickInputController extends Controller
             'hafalan_ayahs.*' => ['nullable', 'string', 'max:100'],
             'hafalan_baris' => ['nullable', 'array'],
             'hafalan_baris.*' => ['nullable', 'numeric', 'min:0'],
-            'ummi_jilid' => ['nullable', 'string', 'max:150'],
-            'ummi_halaman' => ['nullable', 'string', 'max:100'],
+            ...UmmiBook::rules(),
             'materi' => ['nullable', 'string', 'max:255'],
             'nilai' => ['nullable', 'string', 'max:50'],
             'disimak_guru' => ['required', Rule::in(['Ya', 'Tidak'])],
@@ -403,6 +403,8 @@ class QuickInputController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request, $visibleStudentIds) {
+            UmmiBook::checkPages($validator, $request->all());
+
             $classRoomId = (int) $request->input('class_room_id');
             $hasAccess = Student::query()
                 ->where('class_room_id', $classRoomId)
@@ -497,7 +499,7 @@ class QuickInputController extends Controller
                     'tatap_muka' => $validated['tatap_muka'],
                     'tanggal' => $validated['tanggal'],
                     'ummi_jilid' => $validated['ummi_jilid'] ?? null,
-                    'ummi_halaman' => $validated['ummi_halaman'] ?? null,
+                    'ummi_halaman' => UmmiBook::halamanFromInput($validated),
                     'materi' => $validated['materi'] ?? null,
                     'nilai' => $individualScore,
                     'disimak_guru' => $validated['disimak_guru'],

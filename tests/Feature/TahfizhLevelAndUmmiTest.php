@@ -193,7 +193,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'tanggal' => now()->toDateString(),
             'hafalan_surah_ids' => [$this->surah->id, $surah2->id],
             'hafalan_ayahs' => ['1-7', '1-5'],
-            'ummi_jilid' => 'Jilid 5',
+            'ummi_jilid' => 'Jilid 3',
             'ummi_halaman' => 'Halaman 1',
             'materi' => 'Materi Baru',
             'nilai' => 'A',
@@ -543,5 +543,50 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $classesUmmi = $responseUmmi->viewData('classRooms');
         $this->assertTrue($classesUmmi->contains('name', 'Kelas X-A'));
         $this->assertFalse($classesUmmi->contains('name', 'Kelas XI-A'));
+    }
+
+    public function test_ummi_jilid_must_come_from_the_book_list_and_halaman_is_saved_as_a_range()
+    {
+        $payload = [
+            'student_id' => $this->studentUmmi->id,
+            'tatap_muka' => 8,
+            'tanggal' => now()->toDateString(),
+            'disimak_guru' => 'Ya',
+            'disimak_ortu' => 'Ya',
+            'redirect_to' => 'hafalan',
+        ];
+
+        // Ummi Dewasa hanya Jilid 1-3, Gharib, Tajwid: "Jilid 4" ditolak.
+        $this->actingAs($this->teacherUser)
+            ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Jilid 4', 'ummi_halaman_awal' => 1, 'ummi_halaman_akhir' => 2])
+            ->assertSessionHasErrors('ummi_jilid');
+
+        // Halaman akhir < awal, dan Jilid 1-3 maksimal 40 halaman.
+        $this->actingAs($this->teacherUser)
+            ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Jilid 2', 'ummi_halaman_awal' => 15, 'ummi_halaman_akhir' => 12])
+            ->assertSessionHasErrors('ummi_halaman_akhir');
+        $this->actingAs($this->teacherUser)
+            ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Jilid 2', 'ummi_halaman_awal' => 39, 'ummi_halaman_akhir' => 41])
+            ->assertSessionHasErrors('ummi_halaman_akhir');
+        $this->assertSame(0, UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 8)->count());
+
+        $this->actingAs($this->teacherUser)
+            ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Gharib', 'ummi_halaman_awal' => 12, 'ummi_halaman_akhir' => 15])
+            ->assertSessionHasNoErrors();
+        $record = UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 8)->firstOrFail();
+        $this->assertSame('Gharib', $record->ummi_jilid);
+        $this->assertSame('12-15', $record->ummi_halaman);
+
+        // Data lama "Jilid 4" tetap bisa disimpan ulang apa adanya (tidak hilang saat mengedit field lain),
+        // tapi tidak bisa diganti ke jilid lain yang tidak valid.
+        $record->update(['ummi_jilid' => 'Jilid 4']);
+        $update = $payload + ['ummi_halaman_awal' => 20, 'ummi_halaman_akhir' => 20];
+        $this->actingAs($this->teacherUser)
+            ->put(route('ummi-records.update', $record), $update + ['ummi_jilid' => 'Jilid 4'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('20', $record->fresh()->ummi_halaman);
+        $this->actingAs($this->teacherUser)
+            ->put(route('ummi-records.update', $record), $update + ['ummi_jilid' => 'Jilid 5'])
+            ->assertSessionHasErrors('ummi_jilid');
     }
 }
