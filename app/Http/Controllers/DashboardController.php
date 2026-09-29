@@ -216,12 +216,19 @@ class DashboardController extends Controller
         $totalStudents = (clone $studentQuery)->count();
         $assignedStudentIds = (clone $studentQuery)->pluck('id');
 
-        $filledToday = AdabRecord::where('assessment_date', $today)
+        // whereDate() (bukan where() biasa) supaya perbandingan tanggal benar walau kolom
+        // assessment_date tersimpan dengan komponen jam di beberapa driver DB.
+        $submittedTodayIds = AdabRecord::whereDate('assessment_date', $today)
             ->whereIn('student_id', $assignedStudentIds)
-            ->count();
+            ->pluck('student_id')
+            ->all();
+        $filledToday = count($submittedTodayIds);
         $fillPercentage = $totalStudents > 0 ? round(($filledToday / $totalStudents) * 100, 1) : 0;
 
         $students = $studentQuery->get();
+        // Murid yang belum mengisi kuisioner hari ini -- sama seperti dashboard Wali Kelas.
+        $missingToday = $students->reject(fn (Student $s) => in_array($s->id, $submittedTodayIds, true))->values();
+        $isEffectiveAdabDay = Setting::isEffectiveAdabDay(now());
         $monthlyScores = $students->map(fn ($s) => Setting::calculateAdabScore($s->id, $year, $month)['final_score']);
         $avgScoreMonth = $monthlyScores->isNotEmpty() ? round($monthlyScores->avg(), 1) : 0;
         $adabGradeMonth = Setting::getAdabGrade($avgScoreMonth);
@@ -259,7 +266,12 @@ class DashboardController extends Controller
             'effective_days' => Setting::getEffectiveDaysCount($year, $month),
         ];
 
-        return view('dashboards.pendamping-adab', compact('stats', 'classRankings'));
+        $adabToday = [
+            'is_effective_day' => $isEffectiveAdabDay,
+            'missing' => $missingToday,
+        ];
+
+        return view('dashboards.pendamping-adab', compact('stats', 'classRankings', 'adabToday'));
     }
 
     public function tanse(Request $request): View

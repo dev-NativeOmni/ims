@@ -107,7 +107,32 @@
                 </div>
             </div>
 
-            {{-- 3. Class Ranking Table --}}
+            {{-- 3. Kuisioner Adab Hari Ini: murid yang belum mengisi --}}
+            <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3.5 pb-2 border-b border-zinc-200/70 dark:border-white/10">
+                    <h3 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <x-heroicon-o-check-circle class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" /> Kuisioner Adab Hari Ini
+                    </h3>
+                    <span class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">{{ now()->translatedFormat('l, d F Y') }}</span>
+                </div>
+
+                @if (! $adabToday['is_effective_day'])
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 italic">Hari ini bukan hari efektif pengisian kuisioner adab.</p>
+                @elseif ($adabToday['missing']->isEmpty())
+                    <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Semua murid sudah mengisi kuisioner adab hari ini. 🎉</p>
+                @else
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-2">{{ $adabToday['missing']->count() }} murid belum mengisi:</p>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($adabToday['missing'] as $student)
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30">
+                                {{ $student->name }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            {{-- 4. Class Ranking Table --}}
             <div class="glass-liquid-card rounded-2xl p-4 sm:p-5 shadow-sm">
                 <h3 class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-3.5 pb-2 border-b border-zinc-200/70 dark:border-white/10 flex items-center gap-1.5">
                     <x-heroicon-o-trophy class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" /> Peringkat Adab Per Kelas (Bulan Ini)
