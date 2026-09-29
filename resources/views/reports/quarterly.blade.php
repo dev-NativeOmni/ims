@@ -380,7 +380,10 @@
                     <!-- 3. CAPAIAN HAFALAN (SETORAN) -->
                     <div x-show="activeTab === 'setoran'" class="space-y-4" style="display: none;">
 @foreach ($halaqah['monthly'] as $mCode => $month)
-@php $activePekans = collect($month['pekan_dates'])->filter(fn ($d) => ! empty($d))->keys(); @endphp
+@php
+    $activePekans = collect($month['pekan_dates'])->filter(fn ($d) => ! empty($d))->keys();
+    $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false);
+@endphp
 <div class="space-y-3 pb-4" x-data="{ pekanTab: {{ $activePekans->first() ?? 1 }} }">
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
                         @if ($isTahfizhProgram)
@@ -408,7 +411,7 @@
                                                 @foreach ($month['pekan_dates'][$p] as $d)
                                                     <th colspan="2" class="px-2 py-1.5 border-b border-r dark:border-zinc-700 whitespace-nowrap">{{ strtoupper($d['label']) }}</th>
                                                 @endforeach
-                                                <th colspan="2" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Pekan</th>
+                                                <th colspan="{{ $hasUmmi ? 1 : 2 }}" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Pekan</th>
                                             </tr>
                                             <tr class="bg-gray-100 dark:bg-zinc-850 border-b dark:border-zinc-750">
                                                 @foreach ($month['pekan_dates'][$p] as $d)
@@ -416,7 +419,9 @@
                                                     <th class="px-1.5 py-1 border-r dark:border-zinc-700 w-8 font-normal">Nilai</th>
                                                 @endforeach
                                                 <!-- Rekap -->
-                                                <th class="px-2.5 py-1 border-r dark:border-zinc-700 w-16">Baris</th>
+                                                @unless ($hasUmmi)
+                                                    <th class="px-2.5 py-1 border-r dark:border-zinc-700 w-16">Baris</th>
+                                                @endunless
                                                 <th class="px-2 py-1">Nilai</th>
                                             </tr>
                                         </thead>
@@ -451,7 +456,9 @@
                                                         @endif
                                                     @endforeach
 
-                                                    <td class="px-2.5 py-2.5 border-r dark:border-zinc-700 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $rowIsUmmi ? '-' : $wRecord['week_lines'].' Brs' }}</td>
+                                                    @unless ($hasUmmi)
+                                                        <td class="px-2.5 py-2.5 border-r dark:border-zinc-700 font-extrabold text-teal-600 dark:text-teal-400 text-center">{{ $wRecord['week_lines'] }} Brs</td>
+                                                    @endunless
                                                     <td class="px-2 py-2.5 font-bold text-center text-teal-650">A</td>
                                                 </tr>
                                             @endforeach
@@ -469,13 +476,15 @@
                                             <th rowspan="3" class="px-3 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-750 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th rowspan="3" class="px-2 py-3 border-b border-r dark:border-zinc-750">Halaqah</th>
                                             <th colspan="{{ count($activePekans) }}" class="px-2 py-2 border-b border-r dark:border-zinc-750">Jurnal & Setoran Pertemuan</th>
-                                            <th colspan="5" class="px-2 py-2 border-b dark:border-zinc-750">Rekap Bulanan</th>
+                                            <th colspan="{{ $hasUmmi ? 4 : 5 }}" class="px-2 py-2 border-b dark:border-zinc-750">Rekap Bulanan</th>
                                         </tr>
                                         <tr class="border-b dark:border-zinc-700 bg-gray-100 dark:bg-zinc-850">
                                             @foreach ($activePekans as $p)
                                                 <th class="px-3 py-1.5 border-r dark:border-zinc-750 whitespace-nowrap">{{ $month['pekan_dates'][$p][0]['label'] }}</th>
                                             @endforeach
-                                            <th rowspan="2" class="px-2.5 py-2 border-r dark:border-zinc-750 font-bold">Total Baris</th>
+                                            @unless ($hasUmmi)
+                                                <th rowspan="2" class="px-2.5 py-2 border-r dark:border-zinc-750 font-bold">Total Baris</th>
+                                            @endunless
                                             <th colspan="4" class="px-2 py-1.5 border-b dark:border-zinc-750">Kehadiran</th>
                                         </tr>
                                         <tr class="bg-gray-50 dark:bg-zinc-850 text-gray-500 dark:text-zinc-450 border-b dark:border-zinc-700">
@@ -512,7 +521,9 @@
                                                 @endforeach
 
                                                 <!-- Rekap -->
-                                                <td class="px-2.5 py-2.5 border-r dark:border-zinc-750 font-extrabold text-teal-650 text-xs">{{ $rowIsUmmi ? '-' : $row['total_lines'].' Baris' }}</td>
+                                                @unless ($hasUmmi)
+                                                    <td class="px-2.5 py-2.5 border-r dark:border-zinc-750 font-extrabold text-teal-650 text-xs">{{ $row['total_lines'] }} Baris</td>
+                                                @endunless
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold text-teal-650 text-center">{{ $sPres['hadir'] }}</td>
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold {{ $sPres['izin'] > 0 ? 'text-amber-500' : 'text-gray-300' }} text-center">{{ $sPres['izin'] ?: '-' }}</td>
                                                 <td class="px-1.5 py-2.5 border-r dark:border-zinc-750 font-bold {{ $sPres['sakit'] > 0 ? 'text-blue-500' : 'text-gray-300' }} text-center">{{ $sPres['sakit'] ?: '-' }}</td>

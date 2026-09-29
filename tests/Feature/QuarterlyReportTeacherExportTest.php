@@ -416,6 +416,11 @@ class QuarterlyReportTeacherExportTest extends TestCase
         $response->assertDontSee('>Capaian Baris<', false);
         $response->assertDontSee('>Target Baris<', false);
         $response->assertDontSee('Capaian / Target Baris');
+
+        // Tab Capaian Hafalan (Setoran): kolom "Total Baris" (grid Reguler) & "Baris" (grid
+        // harian Tahfizh) juga dihilangkan total untuk halaqoh yang seluruhnya Ummi.
+        $response->assertDontSee('>Total Baris<', false);
+        $response->assertDontSee('>Baris<', false);
     }
 
     #[Test]
