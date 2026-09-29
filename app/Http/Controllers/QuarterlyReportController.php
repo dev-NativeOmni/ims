@@ -1058,7 +1058,12 @@ class QuarterlyReportController extends Controller
                 $monthKey = Carbon::parse($range['start'])->format('Y-m');
                 $monthTargets = $latestTargets->get($student->id, collect())
                     ->filter(fn ($t) => Carbon::parse($t->target_date)->format('Y-m') === $monthKey);
-                $ummiPosition = $this->buildUmmiTermPosition($monthTargets, $latestUmmiRecords->get($student->id, collect()), $latestHafalans->get($student->id, collect()));
+                // Capaian bulan ini = pertemuan Ummi & setoran lulus terakhir BULAN ITU sendiri
+                // (bukan ikut menampilkan pertemuan terakhir se-triwulan). $sUmmi/$sHaf sudah
+                // dibatasi ke bulan ini, tapi urut tanggal naik -- balik ke terbaru dulu.
+                $monthUmmiRecords = $sUmmi->sortByDesc('tanggal')->values();
+                $monthPassedHafalan = $sHaf->where('status', 'passed')->values();
+                $ummiPosition = $this->buildUmmiTermPosition($monthTargets, $monthUmmiRecords, $monthPassedHafalan);
             }
 
             $record = [

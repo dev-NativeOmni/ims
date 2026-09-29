@@ -315,6 +315,47 @@ class QuarterlyReportTeacherExportTest extends TestCase
     }
 
     #[Test]
+    public function monthly_tab_shows_ummi_capaian_from_that_months_own_last_session_not_the_terms_latest(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classX = ClassRoom::create(['program_id' => $program->id, 'name' => 'X E4', 'level' => 'X', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classX->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'ummi']);
+
+        // Juli: dua pertemuan -- 5 Juli (Jilid 2) lalu 20 Juli (Jilid 3, pertemuan TERAKHIR Juli).
+        UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1, 'tanggal' => '2026-07-05', 'ummi_jilid' => 'Jilid 2', 'ummi_halaman' => '5', 'nilai' => 'A',
+        ]);
+        UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 2, 'tanggal' => '2026-07-20', 'ummi_jilid' => 'Jilid 3', 'ummi_halaman' => '8', 'nilai' => 'A',
+        ]);
+
+        // September: satu pertemuan (Jilid 5) -- ini terakhir se-triwulan, tapi BUKAN milik Juli.
+        UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1, 'tanggal' => '2026-09-10', 'ummi_jilid' => 'Jilid 5', 'ummi_halaman' => '2', 'nilai' => 'B',
+        ]);
+
+        $query = ['academic_year' => '2026/2027', 'term' => '1', 'class_room_id' => $classX->id];
+        $response = $this->actingAs($this->admin)->get(route('reports.quarterly', $query));
+        $response->assertOk();
+
+        $halaqah = collect($response->viewData('halaqahData'))->first();
+
+        $julyRow = collect($halaqah['monthly']['07']['reguler_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 3', $julyRow['ummi']['capaian_jilid'], 'Capaian Juli harus dari pertemuan terakhir Juli (20 Juli), bukan Jilid 2 (5 Juli) atau Jilid 5 (September).');
+        $this->assertSame('8', $julyRow['ummi']['capaian_halaman']);
+
+        $septRow = collect($halaqah['monthly']['09']['reguler_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 5', $septRow['ummi']['capaian_jilid']);
+
+        // Term/Indeks (triwulan) tetap tidak berubah: capaian terakhir se-triwulan (September).
+        $termRow = collect($halaqah['term_records'])->firstWhere('student_id', $this->student->id);
+        $this->assertSame('Jilid 5', $termRow['ummi']['capaian_jilid']);
+    }
+
+    #[Test]
     public function returns_a_friendly_404_when_the_teacher_has_no_classes_in_that_program(): void
     {
         $roleTeacher = Role::where('name', 'teacher')->firstOrFail();
