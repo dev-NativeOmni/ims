@@ -12,11 +12,13 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  * Sheet "Jurnal": jurnal tatap muka per bulan > tingkat kelas > kelas/halaqoh,
- * sama seperti sheet "JURNAL" di template sekolah.
+ * sama seperti sheet "JURNAL" di template sekolah. Kolom "Paraf" per pertemuan berisi
+ * gambar tanda tangan guru pengampu halaqoh itu (bila sudah diunggah), bukan sekadar centang.
  */
 class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
@@ -36,6 +38,9 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNu
 
     /** @var string[] */
     private array $mergeRanges = [];
+
+    /** @var array<int, array{cell: string, path: string}> */
+    private array $parafDrawings = [];
 
     public function __construct(
         private readonly array $halaqahData,
@@ -68,15 +73,23 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNu
                     $rows[] = ['No', 'Hari / Tanggal', 'Materi', 'Jumlah Murid Hadir', 'Paraf'];
                     $this->headerRows[] = ++$row;
 
+                    // Paraf pertemuan yang terlaksana diganti gambar ttd guru pengampu
+                    // (bila sudah diunggah); kalau belum ada, tetap tampilkan '✓'/'-'.
+                    $teacherSignature = $this->signatureContext['teacher_signatures'][$halaqah['musyrif_signature'] ?? ''] ?? null;
+
                     foreach ($halaqah['monthly'][$mCode]['jurnal'] as $jIdx => $entry) {
+                        $showParafSignature = $entry['paraf'] === '✓' && $teacherSignature;
                         $rows[] = [
                             $jIdx + 1,
                             $entry['tanggal'],
                             $entry['materi'],
                             $entry['jumlah_murid'] ?? '-',
-                            $entry['paraf'],
+                            $showParafSignature ? '' : $entry['paraf'],
                         ];
                         $row++;
+                        if ($showParafSignature) {
+                            $this->parafDrawings[] = ['cell' => "E{$row}", 'path' => $teacherSignature];
+                        }
                     }
 
                     $rows[] = [''];
@@ -98,8 +111,23 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNu
                     $sheet->mergeCells($range);
                 }
                 $this->applySignatureBlocks($sheet);
+                $this->applyParafDrawings($sheet);
             },
         ];
+    }
+
+    private function applyParafDrawings(Worksheet $sheet): void
+    {
+        foreach ($this->parafDrawings as $index => $drawing) {
+            $image = new Drawing;
+            $image->setName('Paraf '.($index + 1));
+            $image->setPath($drawing['path']);
+            $image->setHeight(18);
+            $image->setCoordinates($drawing['cell']);
+            $image->setOffsetX(4);
+            $image->setOffsetY(2);
+            $image->setWorksheet($sheet);
+        }
     }
 
     public function styles(Worksheet $sheet): array

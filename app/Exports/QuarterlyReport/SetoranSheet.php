@@ -119,7 +119,9 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                     $rows[] = [''];
                     $row++;
-                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['U', 'AD']);
+                    // Kolom kanan sengaja dekat dengan kolom kiri (bukan di ujung tabel pekan
+                    // yang lebar) supaya tanda tangan Kepala Sekolah & Guru Pengampu berdampingan.
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
                 }
             }
         }
@@ -201,7 +203,9 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                         $row++;
                     }
 
-                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['G', 'J']);
+                    // Kolom kanan didekatkan ke kolom kiri (bukan di kolom Kamis/Jumat/Rekap)
+                    // supaya tanda tangan Kepala Sekolah & Guru Pengampu berdampingan.
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
                 }
             }
         }

@@ -7,11 +7,13 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Program;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -164,6 +166,86 @@ class QuarterlyReportExportTest extends TestCase
     private function flatten(array $rows): array
     {
         return collect($rows)->flatten()->all();
+    }
+
+    #[Test]
+    public function headmaster_and_teacher_signatures_are_placed_side_by_side_and_jurnal_paraf_shows_the_teacher_signature(): void
+    {
+        Storage::fake('local');
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        Storage::disk('local')->put('signatures/officials/headmaster-test.png', $png);
+        Storage::disk('local')->put('signatures/teachers/musyrif-test.png', $png);
+        Setting::set('signature_headmaster', 'signatures/officials/headmaster-test.png');
+        $this->teacherUser->update(['signature_path' => 'signatures/teachers/musyrif-test.png']);
+
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas TTD Export',
+            'level' => 'XII',
+            'tahfizh_days' => [1, 2, 3, 4, 5],
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+
+        Attendance::create([
+            'student_id' => $this->student->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tanggal' => '2026-07-06',
+            'status' => 'hadir',
+        ]);
+        HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-06',
+        ])->surahs()->create([
+            'surah_id' => $this->surah->id,
+            'ayah_start' => 1,
+            'ayah_end' => 5,
+            'submission_type' => 'new',
+            'status' => 'passed',
+            'score' => 90,
+        ]);
+
+        $spreadsheet = $this->downloadAndLoad([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]);
+
+        foreach (['Jurnal', 'Setoran'] as $title) {
+            $sheet = $spreadsheet->getSheetByName($title);
+            $leftRows = [];
+            $rightRows = [];
+            foreach (array_keys($sheet->getMergeCells()) as $range) {
+                if (preg_match('/^B(\d+):C\d+$/', $range, $m)) {
+                    $leftRows[] = (int) $m[1];
+                }
+                if (preg_match('/^D(\d+):E\d+$/', $range, $m)) {
+                    $rightRows[] = (int) $m[1];
+                }
+            }
+            $this->assertNotEmpty($leftRows, "{$title}: blok tanda tangan kiri (Kepala Sekolah) tidak ditemukan");
+            sort($leftRows);
+            sort($rightRows);
+            $this->assertSame($leftRows, $rightRows, "{$title}: tanda tangan Kepala Sekolah & Guru Pengampu harus berdampingan (B:C dan D:E di baris yang sama)");
+
+            // Baris merge B:C dicatat untuk tiap baris blok ttd (7 baris), tapi gambarnya
+            // sendiri cuma ditaruh di satu baris ("ruang gambar") -- cek gambar kiri & kanan
+            // ada di baris yang SAMA (berdampingan), bukan di baris merge mana pun.
+            $drawingCells = collect($sheet->getDrawingCollection())->map(fn ($d) => $d->getCoordinates())->all();
+            $sameRowPair = collect($leftRows)->first(fn ($r) => in_array("B{$r}", $drawingCells, true) && in_array("D{$r}", $drawingCells, true));
+            $this->assertNotNull($sameRowPair, "{$title}: gambar ttd Kepala Sekolah & Guru Pengampu tidak ditemukan berdampingan di baris yang sama");
+        }
+
+        // Jurnal: pertemuan yang terlaksana ('✓') diganti gambar ttd guru, bukan teks centang.
+        $jurnalSheet = $spreadsheet->getSheetByName('Jurnal');
+        $this->assertNotContains('✓', $this->flatten($jurnalSheet->toArray()));
+        $jurnalDrawingCells = collect($jurnalSheet->getDrawingCollection())->map(fn ($d) => $d->getCoordinates())->all();
+        $this->assertTrue(
+            collect($jurnalDrawingCells)->contains(fn ($c) => preg_match('/^E\d+$/', $c) === 1),
+            'Kolom Paraf harus berisi gambar ttd guru di kolom E'
+        );
     }
 
     #[Test]
