@@ -55,7 +55,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                 $hasUmmi = (bool) ($halaqah['has_ummi'] ?? false);
 
                 $rows[] = array_merge(
-                    ['No', 'Nama Murid', 'Level'],
+                    ['No', 'Nama Murid', 'Level', 'Awal Triwulan'],
                     $hasUmmi
                         ? ['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat']
                         : ['Target Surah', 'Target Ayat', 'Capaian Surah', 'Capaian Ayat'],
@@ -78,8 +78,10 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                         ]
                         : [$termRow['target_surah'], $termRow['target_ayat'], $termRow['capaian_surah'], $termRow['capaian_ayat']];
 
+                    $startAwal = empty($termRow['start_surah']) ? '-' : "{$termRow['start_surah']} : {$termRow['start_ayat']}";
+
                     $rows[] = array_merge(
-                        [$idx + 1, $termRow['name'], $termRow['level']],
+                        [$idx + 1, $termRow['name'], $termRow['level'], $startAwal],
                         $position,
                         [
                             $termRow['total_lines'],
@@ -97,7 +99,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
                 $total = count($halaqah['term_records']);
                 $tuntas = collect($halaqah['term_records'])->where('is_tuntas', true)->count();
                 $tuntasPct = $total > 0 ? round(($tuntas / $total) * 100) : 0;
-                $tuntasColumn = 9 + ($hasUmmi ? 4 : 0);
+                $tuntasColumn = 10 + ($hasUmmi ? 4 : 0);
                 $summaryRow = array_fill(0, $tuntasColumn + 1, '');
                 $summaryRow[0] = "Tuntas: {$tuntas} ({$tuntasPct}%)";
                 $summaryRow[$tuntasColumn] = 'Tidak Tuntas: '.($total - $tuntas).' ('.(100 - $tuntasPct).'%)';

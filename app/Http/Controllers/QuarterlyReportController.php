@@ -332,10 +332,14 @@ class QuarterlyReportController extends Controller
         $breakdownMonths = collect($monthRanges)->mapWithKeys(fn ($r) => [
             Carbon::parse($r['start'])->format('Y-m') => ['start' => Carbon::parse($r['start'])->startOfDay(), 'end' => Carbon::parse($r['end'])->startOfDay()],
         ])->all();
+        // Cutoff = sekarang (dibatasi akhir triwulan) -- sama dengan Target Triwulan, Wali Kelas &
+        // rapor, supaya baris capaian TIDAK ikut menghitung setoran bertanggal di sisa triwulan yang
+        // belum berjalan (triwulan yang sudah lewat: now() > akhir triwulan, jadi otomatis penuh).
+        $breakdownCutoff = now()->min($termEndDay);
         $context['breakdowns'] = $positionCheck === null ? [] : $groupStudents
             ->filter(fn ($student) => TargetRules::linesForLevel($student->tahfizh_level) !== null)
             ->mapWithKeys(fn ($student) => [$student->id => app(HafalanProgressService::class)->termBreakdown(
-                $student, $term['latestTargets']->get($student->id, collect()), $breakdownMonths, $termEndDay
+                $student, $term['latestTargets']->get($student->id, collect()), $breakdownMonths, $breakdownCutoff
             )])
             ->all();
 
@@ -1107,6 +1111,8 @@ class QuarterlyReportController extends Controller
             // Kelas 11 & 12: target triwulan = target guru bulan terakhir yang terisi; target baris =
             // pertemuan aktif triwulan x level; capaian = baris setoran lulus di triwulan.
             $breakdown = $breakdowns[$student->id] ?? null;
+            $startSurah = null;
+            $startAyat = null;
             if ($breakdown !== null) {
                 $termTarget = $breakdown['target'];
                 $evaluation = $breakdown['evaluation'];
@@ -1115,6 +1121,13 @@ class QuarterlyReportController extends Controller
                 $targetLines = $evaluation['target_lines'];
                 $totalLines = $evaluation['achieved_lines'];
                 $isTuntas = $evaluation['reached'];
+
+                // Titik awal triwulan (setoran pertama, atau lanjutan riwayat bila belum ada setoran
+                // di triwulan ini) -- supaya guru/admin bisa mulai menghitung baris dari sana, sama
+                // dengan "Awal: ..." di Target Triwulan.
+                $start = $breakdown['start'];
+                $startSurah = app(HafalanProgressService::class)->surahs()->get($start['surah'])?->name_latin ?? '-';
+                $startAyat = (string) $start['ayah'];
             }
 
             $termRecords[] = [
@@ -1123,6 +1136,8 @@ class QuarterlyReportController extends Controller
                 'level' => $first['level'] ?? ucfirst($student->tahfizh_level ?? 'reguler'),
                 'target_surah' => $targetSurah,
                 'target_ayat' => $targetAyat,
+                'start_surah' => $startSurah,
+                'start_ayat' => $startAyat,
                 'capaian_surah' => $first['capaian_surah'] ?? '-',
                 'capaian_ayat' => $first['capaian_ayat'] ?? '-',
                 'total_lines' => $totalLines,

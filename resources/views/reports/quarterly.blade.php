@@ -660,7 +660,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>
-                                <strong class="font-semibold">Informasi:</strong> Target surah &amp; ayat Kelas 11 &amp; 12 = target guru bulan terakhir di menu Target Triwulan. Target baris = pertemuan aktif triwulan × baris per level; capaian baris = jumlah baris setoran lulus di triwulan. TUNTAS bila capaian baris ≥ target baris.
+                                <strong class="font-semibold">Informasi:</strong> Target surah &amp; ayat Kelas 11 &amp; 12 = target guru bulan terakhir di menu Target Triwulan. Target baris = pertemuan aktif triwulan × baris per level; capaian baris = jumlah baris setoran lulus sepanjang triwulan sampai hari ini (sama dengan Target Triwulan). TUNTAS bila capaian baris ≥ target baris. "Awal triwulan" di bawah nama murid = posisi surah &amp; ayat setoran pertama triwulan ini -- mulai hitung ulang baris dari sana bila perlu dicek manual.
                                 @if ($hasUmmi)
                                     <br>Murid Ummi (Kelas 10): capaian Jilid | Halaman diambil dari setoran Ummi terakhir, Surah | Ayat dari hafalan terakhir yang tercatat.
                                 @endif
@@ -704,7 +704,12 @@
                                         @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
+                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">
+                                                {{ $row['name'] }}
+                                                @if (! empty($row['start_surah']))
+                                                    <span class="block text-[10px] font-normal text-gray-400 dark:text-zinc-500 normal-case">Awal triwulan: {{ $row['start_surah'] }} : {{ $row['start_ayat'] }}</span>
+                                                @endif
+                                            </td>
                                             @if ($hasUmmi)
                                                 <td class="px-3 py-3 border-r dark:border-zinc-700 font-semibold text-gray-700 dark:text-zinc-300">{{ $ummi['target_jilid'] ?? '-' }}</td>
                                                 <td class="px-3 py-3 border-r dark:border-zinc-700 font-bold text-gray-900 dark:text-white">{{ $ummi['target_halaman'] ?? '-' }}</td>

@@ -208,22 +208,23 @@ class QuarterlyReportTeacherExportTest extends TestCase
 
         $spreadsheet = $this->downloadMine($this->teacherUser, 'reguler');
 
-        // Kelas ber-murid Ummi: [No, Nama, Level, T.Jilid, T.Halaman, T.Surah, T.Ayat, C.Jilid, C.Halaman, C.Surah, C.Ayat, ...]
+        // Kelas ber-murid Ummi: [No, Nama, Level, Awal Triwulan, T.Jilid, T.Halaman, T.Surah, T.Ayat, C.Jilid, C.Halaman, C.Surah, C.Ayat, ...]
         $termRows = $spreadsheet->getSheetByName('Term-Indeks')->toArray();
-        $header = collect($termRows)->first(fn ($r) => ($r[3] ?? null) === 'Target Jilid');
+        $header = collect($termRows)->first(fn ($r) => ($r[4] ?? null) === 'Target Jilid');
         $this->assertNotNull($header);
-        $this->assertSame(['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat'], array_slice($header, 3, 8));
+        $this->assertSame(['Target Jilid', 'Target Halaman', 'Target Surah', 'Target Ayat', 'Capaian Jilid', 'Capaian Halaman', 'Capaian Surah', 'Capaian Ayat'], array_slice($header, 4, 8));
 
         $studentRow = collect($termRows)->firstWhere(1, 'Murid Ummi Kelas X');
         $this->assertNotNull($studentRow);
-        $this->assertSame('Jilid 3', $studentRow[3]);
-        $this->assertSame('20', $studentRow[4], 'Halaman Peraga tidak dipakai; cukup halaman akhir buku.');
-        $this->assertSame('-', $studentRow[5]);
+        $this->assertSame('-', $studentRow[3], 'Murid Ummi tidak punya titik awal triwulan (baris dipatok lewat jilid/halaman).');
+        $this->assertSame('Jilid 3', $studentRow[4]);
+        $this->assertSame('20', $studentRow[5], 'Halaman Peraga tidak dipakai; cukup halaman akhir buku.');
         $this->assertSame('-', $studentRow[6]);
-        $this->assertSame('Jilid 4', $studentRow[7], 'Capaian = Jilid setoran Ummi terakhir.');
-        $this->assertSame('6', $studentRow[8], 'Capaian = halaman akhir setoran Ummi terakhir.');
-        $this->assertSame('An-Naba', $studentRow[9]);
-        $this->assertSame('12', $studentRow[10], 'Capaian = ayat akhir hafalan terakhir.');
+        $this->assertSame('-', $studentRow[7]);
+        $this->assertSame('Jilid 4', $studentRow[8], 'Capaian = Jilid setoran Ummi terakhir.');
+        $this->assertSame('6', $studentRow[9], 'Capaian = halaman akhir setoran Ummi terakhir.');
+        $this->assertSame('An-Naba', $studentRow[10]);
+        $this->assertSame('12', $studentRow[11], 'Capaian = ayat akhir hafalan terakhir.');
 
         // Setoran: Pekan 1 (1-7 Juli) memuat setoran Ummi 6 Juli -> selnya berisi "Jilid 3".
         $setoranRows = $spreadsheet->getSheetByName('Setoran')->toArray();
