@@ -216,6 +216,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('class-schedules/update', [ClassRoomController::class, 'scheduleUpdate'])->name('class-schedules.update');
         Route::post('class-schedules/week', [ClassRoomController::class, 'scheduleWeekUpdate'])->name('class-schedules.week.update');
         Route::post('class-schedules/week/lock', [ClassRoomController::class, 'scheduleWeekLock'])->name('class-schedules.week.lock');
+        Route::get('class-schedules/shift', [ClassRoomController::class, 'scheduleShiftIndex'])->name('class-schedules.shift');
+        Route::post('class-schedules/shift', [ClassRoomController::class, 'scheduleShiftExecute'])->name('class-schedules.shift.execute');
+        Route::post('class-schedules/month/lock', [ClassRoomController::class, 'scheduleMonthLock'])->name('class-schedules.month.lock');
 
         // Teachers
         Route::get('teachers/export', [TeacherController::class, 'export'])->name('teachers.export');
