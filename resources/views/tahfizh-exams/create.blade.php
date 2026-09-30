@@ -31,7 +31,7 @@
                             <label class="block text-[10px] font-bold uppercase tracking-wider opacity-70 mb-1">Pilih Surah</label>
                             <select x-model="surah" @change="surahChanged()" class="block w-full text-xs rounded-lg py-1.5 px-2 bg-white border border-[#d6caa2] focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold text-[#4a3c31]">
                                 <template x-for="s in surahList" :key="s.id">
-                                    <option :value="s.id" x-text="`${s.id}. ${s.name} (${s.ar})`"></option>
+                                    <option :value="s.id" x-text="`${s.id}. ${s.name} — ${s.ayat} ayat (${s.ar})`"></option>
                                 </template>
                             </select>
                         </div>
@@ -194,7 +194,7 @@
                                     <option value="">-- Pilih Surah --</option>
                                     @foreach ($surahs as $s)
                                         <option value="{{ $s->id }}" @selected(old('surah_id') == $s->id)>
-                                            {{ $s->number }}. {{ $s->name_latin }}
+                                            {{ $s->option_label }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -315,6 +315,7 @@
                                 id: c.id,
                                 name: c.name_simple,
                                 ar: c.name_arabic,
+                                ayat: c.verses_count,
                                 page: c.pages[0]
                             }));
                         })

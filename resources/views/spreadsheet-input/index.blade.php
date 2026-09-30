@@ -710,7 +710,7 @@
                                                                     <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, date)" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                         <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                         @foreach ($surahs as $s)
-                                                                            <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                            <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                     <!-- Ayat range -->
@@ -796,7 +796,7 @@
                                                                                 <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-1 py-0.5 dark:text-white">
                                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                                     @foreach ($surahs as $s)
-                                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                                                     @endforeach
                                                                                 </select>
                                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Cth: 1-5" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[10px] px-2 py-0.5 dark:text-white">
@@ -827,7 +827,7 @@
                                                                             <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                                 <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                                 @foreach ($surahs as $s)
-                                                                                    <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                                    <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                                                 @endforeach
                                                                             </select>
                                                                             <!-- Ayat range -->
@@ -921,7 +921,7 @@
                                                         <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h, student.id, selectedMobileDate)" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                             <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                             @foreach ($surahs as $s)
-                                                                <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
@@ -1028,7 +1028,7 @@
                                                                 <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncUmmiAyahLimits(h)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                     @foreach ($surahs as $s)
-                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                                     @endforeach
                                                                 </select>
                                                                 <input type="text" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][ayah]'" x-model="h.ayah" placeholder="Ayat (cth: 1-5)" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
@@ -1060,7 +1060,7 @@
                                                                 <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][surah_id]'" x-model="h.surah_id" @change="syncAyahLimits(h)" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
                                                                     <option value="" class="dark:bg-zinc-900">Pilih Surah</option>
                                                                     @foreach ($surahs as $s)
-                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->number }}. {{ $s->name_latin }}</option>
+                                                                        <option value="{{ $s->id }}" class="dark:bg-zinc-900">{{ $s->option_label }}</option>
                                                                     @endforeach
                                                                 </select>
                                                             </div>

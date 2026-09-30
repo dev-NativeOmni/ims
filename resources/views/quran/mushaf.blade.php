@@ -76,7 +76,7 @@
                                         }"
                                         class="block w-full text-xs rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-semibold">
                                     <template x-for="s in surahList" :key="s.id">
-                                        <option :value="s.id" x-text="`${s.id}. ${s.name} (${s.ar})`"></option>
+                                        <option :value="s.id" x-text="`${s.id}. ${s.name}${surahAyat[s.id] ? ' — ' + surahAyat[s.id] + ' ayat' : ''} (${s.ar})`"></option>
                                     </template>
                                 </select>
                             </div>
@@ -628,6 +628,8 @@
                 arabicFontClass: 'font-scheherazade',
 
                 // Surah listing with standard Medina Mushaf starting page
+                // Jumlah ayat per nomor surah (dari tabel surahs) untuk label pilihan surah.
+                surahAyat: @js(\App\Models\Surah::getAllCached()->pluck('total_ayah', 'number')),
                 surahList: [
                     { id: 1, name: "Al-Fatihah", ar: "الفاتحة", page: 1 },
                     { id: 2, name: "Al-Baqarah", ar: "البقرة", page: 2 },

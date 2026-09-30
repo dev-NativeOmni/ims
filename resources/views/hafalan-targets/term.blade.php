@@ -137,7 +137,7 @@
                                                         class="min-w-0 flex-1 rounded-lg text-xs py-1.5 pl-2 pr-7 dark:bg-zinc-800 dark:text-zinc-200 {{ $hasError ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700' }}">
                                                     <option value="">– Surah –</option>
                                                     @foreach ($surahs as $surah)
-                                                        <option value="{{ $surah->id }}" @selected($surahValue === (string) $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                                        <option value="{{ $surah->id }}" @selected($surahValue === (string) $surah->id)>{{ $surah->option_label }}</option>
                                                     @endforeach
                                                 </select>
                                                 <input type="number" min="1" name="targets[{{ $student->id }}][{{ $monthKey }}][ayah]" value="{{ $ayahValue }}" placeholder="Ayat" @disabled(! $canEdit)

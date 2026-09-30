@@ -117,7 +117,7 @@
                                         >
                                             <option value="">-- Surah Awal --</option>
                                             <template x-for="surah in surahs" :key="surah.id">
-                                                <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' (' + surah.total_ayah + ')'"></option>
+                                                <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' — ' + surah.total_ayah + ' ayat'"></option>
                                             </template>
                                         </select>
                                     </td>
@@ -131,7 +131,7 @@
                                         >
                                             <option value="">-- Surah Akhir --</option>
                                             <template x-for="surah in surahs" :key="surah.id">
-                                                <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' (' + surah.total_ayah + ')'"></option>
+                                                <option :value="surah.id" x-text="surah.number + '. ' + surah.name_latin + ' — ' + surah.total_ayah + ' ayat'"></option>
                                             </template>
                                         </select>
                                     </td>

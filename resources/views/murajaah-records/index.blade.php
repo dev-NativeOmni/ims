@@ -59,7 +59,7 @@
                                 <option value="">Semua Surah</option>
                                 @foreach ($surahs as $surah)
                                     <option value="{{ $surah->id }}" @selected(request('surah_id') == $surah->id)>
-                                        {{ $surah->number }}. {{ $surah->name_latin }}
+                                        {{ $surah->option_label }}
                                     </option>
                                 @endforeach
                             </select>

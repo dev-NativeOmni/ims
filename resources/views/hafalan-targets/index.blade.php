@@ -127,7 +127,7 @@
                                                         <option value="">-- Pilih Surah --</option>
                                                         @foreach ($surahs as $surah)
                                                             <option value="{{ $surah->id }}">
-                                                                {{ $surah->number }}. {{ $surah->name_latin }}
+                                                                {{ $surah->option_label }}
                                                             </option>
                                                         @endforeach
                                                     </select>

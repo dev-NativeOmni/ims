@@ -43,6 +43,12 @@ class Surah extends Model
         static::deleted(fn () => Cache::forget('all_surahs_cached'));
     }
 
+    /** Label pilihan surah di semua form: "78. An-Naba — 40 ayat". */
+    public function getOptionLabelAttribute(): string
+    {
+        return "{$this->number}. {$this->name_latin} — {$this->total_ayah} ayat";
+    }
+
     public function ayahs(): HasMany
     {
         return $this->hasMany(Ayah::class);

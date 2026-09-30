@@ -122,7 +122,7 @@
                             <select data-bulk-field="surah_id" class="rounded-lg border-teal-200 text-xs py-1.5 max-w-[200px]">
                                 <option value="">– Surah (opsional) –</option>
                                 @foreach ($surahs as $surah)
-                                    <option value="{{ $surah->id }}">{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                    <option value="{{ $surah->id }}">{{ $surah->option_label }}</option>
                                 @endforeach
                             </select>
                             <input data-bulk-field="ayah" type="number" min="1" placeholder="Ayat" class="w-20 rounded-lg border-teal-200 text-xs py-1.5">
@@ -182,7 +182,7 @@
                                             <select name="targets[{{ $student->id }}][surah_id]" data-field="surah_id" @disabled(! $canEdit) class="max-w-[190px] rounded-lg border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 text-xs py-1.5">
                                                 <option value="">– Tanpa surah –</option>
                                                 @foreach ($surahs as $surah)
-                                                    <option value="{{ $surah->id }}" @selected($surahValue === (string) $surah->id)>{{ $surah->number }}. {{ $surah->name_latin }}</option>
+                                                    <option value="{{ $surah->id }}" @selected($surahValue === (string) $surah->id)>{{ $surah->option_label }}</option>
                                                 @endforeach
                                             </select>
                                             <input type="number" name="targets[{{ $student->id }}][ayah]" data-field="ayah" value="{{ $ayahValue }}" min="1" placeholder="Ayat" @disabled(! $canEdit) class="w-16 rounded-lg border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 text-xs py-1.5">
