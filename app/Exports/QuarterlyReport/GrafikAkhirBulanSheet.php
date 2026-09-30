@@ -2,14 +2,17 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\CompactTableLayout;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCharts;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Chart\Chart;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
@@ -25,9 +28,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * batang+garis (Capaian vs Target per murid) dan donat Ketuntasan -- sama
  * seperti "GRAFIK CAPAIAN BULAN" & "KETUNTASAN BULAN" di template sekolah.
  */
-class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithColumnWidths, WithStrictNullComparison, WithStyles, WithTitle
+class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding;
+    use CompactTableLayout, GradeBanding;
 
     /** @var int[] */
     private array $monthRows = [];
@@ -46,10 +49,17 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
 
     public function __construct(private readonly array $halaqahData) {}
 
-    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) di-merge selebar sheet. */
     public function columnWidths(): array
     {
         return ['A' => 5];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => fn (AfterSheet $event) => $this->mergeTitleRows($event->sheet->getDelegate()),
+        ];
     }
 
     public function title(): string

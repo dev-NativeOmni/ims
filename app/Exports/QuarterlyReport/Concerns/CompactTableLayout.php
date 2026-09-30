@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Exports\QuarterlyReport\Concerns;
+
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+
+/**
+ * Tata letak ringkas sheet Laporan Triwulan:
+ * - Baris judul (BULAN / KELAS / Kelas: ...) di-merge selebar sheet supaya teks & warnanya tidak
+ *   terpotong di kolom No yang sempit (sel merge juga tidak ikut dihitung auto-size).
+ * - Isi tabel rata tengah, kecuali kolom teks tertentu (mis. Nama Murid) yang tetap rata kiri.
+ *
+ * Sheet pemakai mengisi $monthRows, $gradeRows (baris => warna), $classRows, dan mencatat tiap
+ * tabel lewat addTable().
+ */
+trait CompactTableLayout
+{
+    /** @var array<int, array{start: int, end: int, header: int}> */
+    private array $tables = [];
+
+    /** Catat satu tabel: baris header pertama, baris terakhir, dan jumlah baris header. */
+    private function addTable(int $start, int $end, int $headerRows): void
+    {
+        if ($end >= $start) {
+            $this->tables[] = ['start' => $start, 'end' => $end, 'header' => $headerRows];
+        }
+    }
+
+    private function mergeTitleRows(Worksheet $sheet): void
+    {
+        $lastColumn = $sheet->getHighestDataColumn();
+        $titleRows = array_merge($this->monthRows ?? [], array_keys($this->gradeRows ?? []), $this->classRows ?? []);
+
+        foreach ($titleRows as $r) {
+            $sheet->mergeCells("A{$r}:{$lastColumn}{$r}");
+            $sheet->getStyle("A{$r}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        }
+    }
+
+    /** @param  string[]  $leftColumns  kolom isi yang tetap rata kiri, mis. ['B'] untuk Nama Murid */
+    private function centerTables(Worksheet $sheet, array $leftColumns): void
+    {
+        foreach ($this->tables as $table) {
+            $lastColumn = Coordinate::stringFromColumnIndex(max(1, ...array_map(
+                fn (int $r) => Coordinate::columnIndexFromString($sheet->getHighestDataColumn($r)),
+                range($table['start'], $table['end'])
+            )));
+
+            $sheet->getStyle("A{$table['start']}:{$lastColumn}{$table['end']}")->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                ->setVertical(Alignment::VERTICAL_CENTER);
+
+            $firstBody = $table['start'] + $table['header'];
+            foreach ($leftColumns as $column) {
+                if ($firstBody <= $table['end']) {
+                    $sheet->getStyle("{$column}{$firstBody}:{$column}{$table['end']}")->getAlignment()
+                        ->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                }
+            }
+        }
+    }
+}

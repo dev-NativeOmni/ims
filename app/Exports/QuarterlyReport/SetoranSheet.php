@@ -2,6 +2,7 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\CompactTableLayout;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
@@ -25,7 +26,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding, PekanLabeling, SignatureBlock;
+    use CompactTableLayout, GradeBanding, PekanLabeling, SignatureBlock;
 
     private const REGULER_SUBCOLS = ['Surah', 'Ayat', 'Jumlah Baris', 'Nilai', 'Kehadiran'];
 
@@ -50,7 +51,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         private readonly array $signatureContext = [],
     ) {}
 
-    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) di-merge selebar sheet. */
     public function columnWidths(): array
     {
         return ['A' => 5];
@@ -129,6 +130,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                         $rows[] = $line;
                         $row++;
                     }
+                    $this->addTable($headerTopRow, $row, 2);
 
                     $rows[] = [''];
                     $row++;
@@ -216,6 +218,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                             $rows[] = $line;
                             $row++;
                         }
+                        $this->addTable($headerTopRow, $row, 2);
 
                         $rows[] = [''];
                         $row++;
@@ -289,6 +292,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                 foreach ($this->mergeRanges as $range) {
                     $sheet->mergeCells($range);
                 }
+                $this->mergeTitleRows($sheet);
+                $this->centerTables($sheet, ['B']);
                 $this->applySignatureBlocks($sheet);
             },
         ];

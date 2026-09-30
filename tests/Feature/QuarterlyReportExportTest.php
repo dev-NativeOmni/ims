@@ -272,7 +272,8 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertMatchesRegularExpression('/Kamis, \d{1,2} Jul/', $pekanCell);
 
         $presensiHeader = $this->flatten($spreadsheet->getSheetByName('Presensi')->toArray());
-        $presensiPekanCell = collect($presensiHeader)->first(fn ($v) => is_string($v) && str_starts_with($v, 'PEKAN 1 ('));
+        // Presensi: label dua baris supaya kolom sempit ("PEKAN 1\n(Kamis, 2 Jul)").
+        $presensiPekanCell = collect($presensiHeader)->first(fn ($v) => is_string($v) && str_starts_with($v, "PEKAN 1\n("));
         $this->assertNotNull($presensiPekanCell, 'Header PEKAN 1 tidak ditemukan di sheet Presensi.');
         $this->assertMatchesRegularExpression('/Kamis, \d{1,2} Jul/', $presensiPekanCell);
     }
@@ -400,19 +401,31 @@ class QuarterlyReportExportTest extends TestCase
             'term' => '1',
         ]);
 
-        foreach (['Presensi', 'Setoran'] as $name) {
+        foreach (['Presensi' => "\n", 'Setoran' => ' '] as $name => $sep) {
             $sheet = $spreadsheet->getSheetByName($name);
             $cells = $this->flatten($sheet->toArray());
             $this->assertEmpty(array_filter($cells, fn ($c) => str_contains((string) $c, '(Libur)')), "{$name}: pekan libur tidak dijadikan kolom");
-            $this->assertContains('PEKAN 1 (Selasa, 7 Jul)', $cells);
-            $this->assertContains('PEKAN 3 (Selasa, 21 Jul)', $cells);
-            $this->assertContains('PEKAN 4 (Selasa, 28 Jul)', $cells);
+            $this->assertContains("PEKAN 1{$sep}(Selasa, 7 Jul)", $cells);
+            $this->assertContains("PEKAN 3{$sep}(Selasa, 21 Jul)", $cells);
+            $this->assertContains("PEKAN 4{$sep}(Selasa, 28 Jul)", $cells);
             $this->assertEquals(5, $sheet->getColumnDimension('A')->getWidth(), "{$name}: kolom No ringkas");
+            // Judul "BULAN ..." di-merge selebar sheet supaya tidak terpotong di kolom No yang sempit.
+            $this->assertStringStartsWith('A1:', (string) $sheet->getCell('A1')->getMergeRange());
         }
 
         // Presensi Juli: No, Nama, 3 pekan aktif, lalu Rekap Hadir/Izin/Sakit/Alpa.
-        $presensi = $spreadsheet->getSheetByName('Presensi')->toArray();
-        $subHeader = collect($presensi)->first(fn ($r) => ($r[2] ?? null) === 'PEKAN 1 (Selasa, 7 Jul)');
-        $this->assertSame(['Hadir', 'Izin', 'Sakit', 'Alpa'], array_slice($subHeader, 5, 4));
+        $presensiSheet = $spreadsheet->getSheetByName('Presensi');
+        $presensi = $presensiSheet->toArray();
+        $subIdx = collect($presensi)->search(fn ($r) => ($r[2] ?? null) === "PEKAN 1\n(Selasa, 7 Jul)");
+        $this->assertSame(['Hadir', 'Izin', 'Sakit', 'Alpa'], array_slice($presensi[$subIdx], 5, 4));
+
+        // Isi tabel rata tengah kecuali Nama Murid.
+        $studentRow = $subIdx + 2; // baris Excel (1-indexed) murid pertama
+        $this->assertSame('center', $presensiSheet->getStyle("C{$studentRow}")->getAlignment()->getHorizontal());
+        $this->assertSame('left', $presensiSheet->getStyle("B{$studentRow}")->getAlignment()->getHorizontal());
+
+        // Jurnal: kolom Paraf lebar & baris isi tinggi supaya gambar paraf jelas.
+        $jurnal = $spreadsheet->getSheetByName('Jurnal');
+        $this->assertEquals(18, $jurnal->getColumnDimension('E')->getWidth());
     }
 }

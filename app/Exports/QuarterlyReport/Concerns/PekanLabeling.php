@@ -19,14 +19,16 @@ trait PekanLabeling
         return array_values(array_filter(range(1, 5), fn (int $p) => ! empty($pekanDates[$p] ?? [])));
     }
 
-    private function pekanLabel(int $p, array $pekanDates): string
+    /** $twoLines: "PEKAN 3\n(Selasa, 21 Jul)" untuk header kolom sempit (sel perlu wrap text). */
+    private function pekanLabel(int $p, array $pekanDates, bool $twoLines = false): string
     {
         $dates = $pekanDates[$p] ?? [];
+        $separator = $twoLines ? "\n" : ' ';
 
         if (empty($dates)) {
-            return "PEKAN {$p} (Libur)";
+            return "PEKAN {$p}{$separator}(Libur)";
         }
 
-        return "PEKAN {$p} (".implode(' & ', array_column($dates, 'label')).')';
+        return "PEKAN {$p}{$separator}(".implode(' & ', array_column($dates, 'label')).')';
     }
 }

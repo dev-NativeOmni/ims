@@ -2,13 +2,16 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\CompactTableLayout;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -17,9 +20,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * kelas (pita hijau/kuning/oranye) lalu per kelas/halaqoh -- sama seperti tab
  * "Term / Indeks (DNS)" di layar dan template Excel sekolah.
  */
-class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithStrictNullComparison, WithStyles, WithTitle
+class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding;
+    use CompactTableLayout, GradeBanding;
 
     /** @var array<int, string> nomor baris pita tingkat => warna hex */
     private array $gradeRows = [];
@@ -35,10 +38,17 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, Wit
 
     public function __construct(private readonly array $halaqahData) {}
 
-    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) di-merge selebar sheet. */
     public function columnWidths(): array
     {
         return ['A' => 5];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => fn (AfterSheet $event) => $this->mergeTitleRows($event->sheet->getDelegate()),
+        ];
     }
 
     public function title(): string

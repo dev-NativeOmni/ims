@@ -2,6 +2,7 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\CompactTableLayout;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -24,7 +25,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding, PekanLabeling;
+    use CompactTableLayout, GradeBanding, PekanLabeling;
 
     private const STATUS_MAP = ['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alpa', '-' => '-'];
 
@@ -51,7 +52,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
         private readonly bool $isTahfizhProgram,
     ) {}
 
-    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) di-merge selebar sheet. */
     public function columnWidths(): array
     {
         return ['A' => 5];
@@ -99,7 +100,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
                     );
                     $rows[] = array_merge(
                         ['', ''],
-                        array_map(fn (int $p) => $this->pekanLabel($p, $pekanDates), $pekans),
+                        array_map(fn (int $p) => $this->pekanLabel($p, $pekanDates, twoLines: true), $pekans),
                         ['Hadir', 'Izin', 'Sakit', 'Alpa']
                     );
                     $row++;
@@ -135,6 +136,8 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
 
                     $rows[] = array_merge(['JUMLAH', ''], array_fill(0, $pekanCount, ''), array_values($totals));
                     $this->totalRows[] = ++$row;
+                    $this->mergeRanges[] = "A{$row}:B{$row}";
+                    $this->addTable($headerTopRow, $row, 2);
 
                     $rows[] = [''];
                     $row++;
@@ -198,6 +201,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
                     $rows[] = $line;
                     $row++;
                 }
+                $this->addTable($headerTopRow, $row, 2);
 
                 $rows[] = [''];
                 $row++;
@@ -259,6 +263,17 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
                 $sheet = $event->sheet->getDelegate();
                 foreach ($this->mergeRanges as $range) {
                     $sheet->mergeCells($range);
+                }
+                $this->mergeTitleRows($sheet);
+                $this->centerTables($sheet, ['B']);
+
+                foreach ($this->totalRows as $r) {
+                    $sheet->getStyle("A{$r}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                }
+                // Sub-header "PEKAN N" dua baris.
+                foreach ($this->headerTopRows as $r) {
+                    $sheet->getStyle('A'.($r + 1).':'.$sheet->getHighestDataColumn($r + 1).($r + 1))->getAlignment()->setWrapText(true);
+                    $sheet->getRowDimension($r + 1)->setRowHeight(30);
                 }
             },
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Exports\QuarterlyReport;
 
+use App\Exports\QuarterlyReport\Concerns\CompactTableLayout;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -23,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
-    use GradeBanding, SignatureBlock;
+    use CompactTableLayout, GradeBanding, SignatureBlock;
 
     /** @var int[] */
     private array $monthRows = [];
@@ -48,10 +49,18 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
         private readonly array $signatureContext = [],
     ) {}
 
-    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    /** Lebar kolom Paraf (karakter) & tinggi baris isi (poin) supaya gambar paraf terlihat jelas. */
+    private const PARAF_WIDTH = 18;
+
+    private const BODY_ROW_HEIGHT = 34;
+
+    /** @var int[] */
+    private array $bodyRows = [];
+
+    /** Kolom A (No) ringkas; Paraf lebar supaya gambar paraf jelas. Kolom lain auto-size. */
     public function columnWidths(): array
     {
-        return ['A' => 5];
+        return ['A' => 5, 'E' => self::PARAF_WIDTH];
     }
 
     public function title(): string
@@ -79,6 +88,7 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
 
                     $rows[] = ['No', 'Hari / Tanggal', 'Materi', 'Jumlah Murid Hadir', 'Paraf'];
                     $this->headerRows[] = ++$row;
+                    $headerRow = $row;
 
                     // Paraf pertemuan yang terlaksana diganti gambar ttd guru pengampu
                     // (bila sudah diunggah); kalau belum ada, tetap tampilkan '✓'/'-'.
@@ -94,10 +104,12 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
                             $showParafSignature ? '' : $entry['paraf'],
                         ];
                         $row++;
+                        $this->bodyRows[] = $row;
                         if ($showParafSignature) {
                             $this->parafDrawings[] = ['cell' => "E{$row}", 'path' => $teacherSignature];
                         }
                     }
+                    $this->addTable($headerRow, $row, 1);
 
                     $rows[] = [''];
                     $row++;
@@ -117,6 +129,11 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
                 foreach ($this->mergeRanges as $range) {
                     $sheet->mergeCells($range);
                 }
+                $this->mergeTitleRows($sheet);
+                $this->centerTables($sheet, ['B']);
+                foreach ($this->bodyRows as $r) {
+                    $sheet->getRowDimension($r)->setRowHeight(self::BODY_ROW_HEIGHT);
+                }
                 $this->applySignatureBlocks($sheet);
                 $this->applyParafDrawings($sheet);
             },
@@ -129,10 +146,12 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
             $image = new Drawing;
             $image->setName('Paraf '.($index + 1));
             $image->setPath($drawing['path']);
-            $image->setHeight(18);
+            // Setinggi baris isi (34pt ~ 45px) dikurangi sedikit ruang, ditaruh di tengah sel Paraf.
+            $image->setHeight(38);
             $image->setCoordinates($drawing['cell']);
-            $image->setOffsetX(4);
-            $image->setOffsetY(2);
+            $columnPx = self::PARAF_WIDTH * 7 + 5;
+            $image->setOffsetX((int) max(2, ($columnPx - $image->getWidth()) / 2));
+            $image->setOffsetY(4);
             $image->setWorksheet($sheet);
         }
     }
