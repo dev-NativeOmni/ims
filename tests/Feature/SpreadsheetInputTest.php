@@ -147,9 +147,10 @@ class SpreadsheetInputTest extends TestCase
         ]);
 
         // Assert UmmiRecord header was saved
+        // TM otomatis: satu-satunya pertemuan Ummi di triwulan ini = TM 1.
         $this->assertDatabaseHas('ummi_records', [
             'student_id' => $this->student->id,
-            'tatap_muka' => 3,
+            'tatap_muka' => 1,
             'tanggal' => $date.' 00:00:00',
             'ummi_jilid' => 'Jilid 2',
             'ummi_halaman' => '25',

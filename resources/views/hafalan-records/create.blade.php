@@ -760,10 +760,11 @@
                                            type="number"
                                            name="tatap_muka"
                                            min="1"
-                                           required
+                                           readonly
+                                           tabindex="-1"
                                            x-model.number="tatapMuka"
-                                           class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                    <p class="mt-1 text-[11px] text-gray-400 dark:text-zinc-500">Otomatis dihitung dari hari efektif kelas, bisa diubah manual bila perlu.</p>
+                                           class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 text-sm text-gray-600 dark:text-zinc-300 cursor-not-allowed">
+                                    <p class="mt-1 text-[11px] text-gray-400 dark:text-zinc-500">Otomatis: urutan pertemuan Ummi halaqoh ini di triwulan berjalan (pertemuan pertama = TM 1).</p>
                                 </div>
                                 <div>
                                     <label for="ummi_tanggal" class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">

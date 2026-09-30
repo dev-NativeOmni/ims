@@ -180,7 +180,8 @@ class HafalanRecordBulkEditTest extends TestCase
 
         $ummi1->refresh();
         $this->assertEquals('2026-09-03', $ummi1->tanggal->format('Y-m-d'));
-        $this->assertEquals(3, $ummi1->tatap_muka);
+        // TM otomatis = urutan pertemuan Ummi di triwulan: 3 Sep pertemuan ke-1, 4 Sep ke-2.
+        $this->assertEquals(1, $ummi1->tatap_muka);
         $this->assertEquals('Jilid 2', $ummi1->ummi_jilid);
         $this->assertEquals('A', $ummi1->nilai);
         $this->assertEquals('Ya', $ummi1->disimak_ortu);
@@ -190,7 +191,7 @@ class HafalanRecordBulkEditTest extends TestCase
 
         $ummi2->refresh();
         $this->assertEquals('2026-09-04', $ummi2->tanggal->format('Y-m-d'));
-        $this->assertEquals(4, $ummi2->tatap_muka);
+        $this->assertEquals(2, $ummi2->tatap_muka);
         $this->assertEquals('A+', $ummi2->nilai);
         $firstSurah2 = $ummi2->surahs->first();
         $this->assertNotNull($firstSurah2);

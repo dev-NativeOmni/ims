@@ -11,6 +11,7 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\SchoolCalendar;
+use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
 use App\Support\UmmiBook;
 use Carbon\Carbon;
@@ -467,6 +468,17 @@ class SpreadsheetInputController extends Controller
                     }
                 }
             });
+
+            // TM Ummi = urutan pertemuan Ummi di triwulan per halaqoh; nomori ulang yang tersentuh.
+            if ($type === 'ummi') {
+                $touched = [];
+                foreach ($records as $studentId => $studentData) {
+                    foreach (array_keys($studentData['dates'] ?? []) as $date) {
+                        $touched[] = [(int) $studentId, $date];
+                    }
+                }
+                app(UmmiTatapMukaService::class)->renumber($touched);
+            }
         } catch (\Throwable $e) {
             Log::error('Spreadsheet save error: '.$e->getMessage(), [
                 'user_id' => $request->user()?->id,

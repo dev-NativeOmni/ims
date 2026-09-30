@@ -169,9 +169,10 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
         $response->assertSessionHas('success');
 
+        // TM otomatis: pertemuan Ummi pertama halaqoh ini di triwulan = TM 1 (bukan angka yang diposting).
         $this->assertDatabaseHas('ummi_records', [
             'student_id' => $this->studentUmmi->id,
-            'tatap_muka' => 5,
+            'tatap_muka' => 1,
             'ummi_jilid' => 'Jilid 2',
             'nilai' => 'B+',
         ]);
@@ -207,9 +208,9 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $response->assertSessionHas('success');
 
         // Both surahs must be attached to a single UmmiRecord "header" row for this session.
-        $this->assertEquals(1, UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 6)->count());
+        $this->assertEquals(1, UmmiRecord::where('student_id', $this->studentUmmi->id)->whereDate('tanggal', now()->toDateString())->count());
 
-        $ummiRecord = UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 6)->firstOrFail();
+        $ummiRecord = UmmiRecord::where('student_id', $this->studentUmmi->id)->whereDate('tanggal', now()->toDateString())->firstOrFail();
 
         $this->assertDatabaseHas('ummi_record_surahs', [
             'ummi_record_id' => $ummiRecord->id,
@@ -311,7 +312,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
         // The page renders both a desktop table row and a mobile card for this record (2 markers
         // total). Before the fix, saving 2 surahs in one session produced 2 separate DB rows, which
         // would have doubled this to 4 (2 desktop + 2 mobile) instead of 2.
-        $this->assertEquals(2, substr_count($response->getContent(), 'TM-9'));
+        $this->assertEquals(2, substr_count($response->getContent(), 'TM-1'));
     }
 
     public function test_can_update_tahfizh_target_term_in_student_report()
@@ -568,12 +569,12 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $this->actingAs($this->teacherUser)
             ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Jilid 2', 'ummi_halaman_awal' => 39, 'ummi_halaman_akhir' => 41])
             ->assertSessionHasErrors('ummi_halaman_akhir');
-        $this->assertSame(0, UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 8)->count());
+        $this->assertSame(0, UmmiRecord::where('student_id', $this->studentUmmi->id)->count());
 
         $this->actingAs($this->teacherUser)
             ->post(route('ummi-records.store'), $payload + ['ummi_jilid' => 'Gharib', 'ummi_halaman_awal' => 12, 'ummi_halaman_akhir' => 15])
             ->assertSessionHasNoErrors();
-        $record = UmmiRecord::where('student_id', $this->studentUmmi->id)->where('tatap_muka', 8)->firstOrFail();
+        $record = UmmiRecord::where('student_id', $this->studentUmmi->id)->firstOrFail();
         $this->assertSame('Gharib', $record->ummi_jilid);
         $this->assertSame('12-15', $record->ummi_halaman);
 

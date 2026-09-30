@@ -12,9 +12,9 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
 use App\Observers\HafalanTargetStatusObserver;
-use App\Services\AcademicCalendarService;
 use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
+use App\Services\UmmiTatapMukaService;
 use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -344,6 +344,9 @@ class HafalanRecordController extends Controller
         $validator->after(fn ($v) => UmmiBook::checkPages($v, $request->all()));
         $validated = $validator->validate();
 
+        // Posisi lama ikut dinomori ulang (tanggal/murid bisa pindah halaqoh atau triwulan).
+        $touched = [[$ummiRecord->student_id, $ummiRecord->tanggal], [(int) $validated['student_id'], $validated['tanggal']]];
+
         DB::transaction(function () use ($ummiRecord, $validated) {
             $ummiRecord->update([
                 'student_id' => $validated['student_id'],
@@ -378,6 +381,8 @@ class HafalanRecordController extends Controller
             }
         });
 
+        app(UmmiTatapMukaService::class)->renumber($touched);
+
         return back()
             ->with('success', 'Data progres UMMI berhasil diperbarui.');
     }
@@ -387,6 +392,7 @@ class HafalanRecordController extends Controller
         $this->authorize('create', HafalanRecord::class);
 
         $ummiRecord->delete();
+        app(UmmiTatapMukaService::class)->renumber([[$ummiRecord->student_id, $ummiRecord->tanggal]]);
 
         return redirect()
             ->route('hafalan-records.index', ['category' => 'ummi'])
@@ -427,12 +433,15 @@ class HafalanRecordController extends Controller
         $records = UmmiRecord::whereIn('id', $validated['ids'])->get();
 
         $count = 0;
+        $touched = [];
         foreach ($records as $record) {
             if ($user->hasAnyRole(['super_admin', 'admin']) || ($user->hasRole('teacher') && (int) $record->teacher_id === (int) $user->teacherProfile?->id)) {
                 $record->delete();
+                $touched[] = [$record->student_id, $record->tanggal];
                 $count++;
             }
         }
+        app(UmmiTatapMukaService::class)->renumber($touched);
 
         return redirect()
             ->route('hafalan-records.index', ['category' => 'ummi'])
@@ -569,7 +578,9 @@ class HafalanRecordController extends Controller
         $updatedCount = 0;
         $studentIds = [];
 
-        DB::transaction(function () use ($validated, $user, &$updatedCount, &$studentIds) {
+        $touched = [];
+
+        DB::transaction(function () use ($validated, $user, &$updatedCount, &$studentIds, &$touched) {
             foreach ($validated['records'] as $item) {
                 $record = UmmiRecord::with('surahs')->find($item['id']);
                 if (! $record) {
@@ -580,6 +591,8 @@ class HafalanRecordController extends Controller
                     continue;
                 }
 
+                $touched[] = [$record->student_id, $record->tanggal];
+                $touched[] = [$record->student_id, $item['tanggal']];
                 $record->update([
                     'tanggal' => $item['tanggal'],
                     'tatap_muka' => $item['tatap_muka'] ?? $record->tatap_muka,
@@ -609,6 +622,8 @@ class HafalanRecordController extends Controller
                 $updatedCount++;
             }
         });
+
+        app(UmmiTatapMukaService::class)->renumber($touched);
 
         if (! empty($studentIds)) {
             app(HafalanTargetAutoCompletionService::class)->syncStudents(array_unique($studentIds));
@@ -677,21 +692,25 @@ class HafalanRecordController extends Controller
     }
 
     /**
-     * Saran nomor Tatap Muka (TM) untuk kelas & tanggal tertentu, dihitung
-     * dari kalender hari efektif kelas (bukan riwayat TM murid) -- lihat
-     * AcademicCalendarService::tatapMukaNumber().
+     * Saran nomor Tatap Muka (TM) untuk kelas & tanggal tertentu: urutan pertemuan Ummi yang sudah
+     * terjadi di triwulan itu + 1 -- lihat UmmiTatapMukaService.
      */
-    public function suggestTatapMuka(Request $request, AcademicCalendarService $calendar): JsonResponse
+    public function suggestTatapMuka(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
             'date' => ['required', 'date'],
         ]);
 
-        $classRoom = ClassRoom::query()->with('program')->findOrFail($validated['class_room_id']);
+        // TM = urutan pertemuan Ummi di triwulan untuk halaqoh murid kelas ini yang terlihat user
+        // (guru: halaqohnya sendiri). Nilai final dinomori ulang setelah simpan.
+        $studentIds = app(StudentProgressService::class)->visibleStudentQuery($request->user())
+            ->where('class_room_id', $validated['class_room_id'])
+            ->pluck('id')
+            ->all();
 
         return response()->json([
-            'tatap_muka' => $calendar->tatapMukaNumber($classRoom, Carbon::parse($validated['date']), forUmmi: true),
+            'tatap_muka' => app(UmmiTatapMukaService::class)->numberFor($studentIds, Carbon::parse($validated['date'])),
         ]);
     }
 

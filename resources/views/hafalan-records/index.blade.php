@@ -344,7 +344,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Tatap Muka</label>
-                                        <input type="number" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}" min="1"
+                                        <input type="number" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}" min="1" readonly tabindex="-1" title="Otomatis: urutan pertemuan Ummi di triwulan"
                                                class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-2">
                                     </div>
                                     <div>
@@ -735,7 +735,7 @@
                                             <div class="text-[10px] text-zinc-500">{{ $record->student?->classRoom?->name ?: '-' }}</div>
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}"
+                                            <input type="number" min="1" form="bulkEditForm" name="records[{{ $loop->index }}][tatap_muka]" value="{{ $record->tatap_muka }}" readonly tabindex="-1" title="Otomatis: urutan pertemuan Ummi di triwulan"
                                                    class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1 w-14 text-center">
                                         </td>
                                         <td class="px-3 py-2">

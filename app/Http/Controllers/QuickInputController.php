@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
+use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
 use App\Support\UmmiBook;
 use Illuminate\Contracts\View\View;
@@ -380,7 +381,8 @@ class QuickInputController extends Controller
 
         $validator = Validator::make($request->all(), [
             'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
-            'tatap_muka' => ['required', 'integer', 'min:1'],
+            // TM dihitung otomatis dari urutan pertemuan Ummi di triwulan (UmmiTatapMukaService).
+            'tatap_muka' => ['nullable', 'integer', 'min:1'],
             'tanggal' => ['required', 'date'],
             'hafalan_surah_id' => ['nullable', 'integer', 'exists:surahs,id'],
             'hafalan_ayah' => ['nullable', 'string', 'max:100'],
@@ -496,7 +498,7 @@ class QuickInputController extends Controller
                 $ummiRecord = UmmiRecord::query()->create([
                     'student_id' => $student->id,
                     'teacher_id' => $teacherId,
-                    'tatap_muka' => $validated['tatap_muka'],
+                    'tatap_muka' => $validated['tatap_muka'] ?? 1, // dinomori ulang setelah simpan
                     'tanggal' => $validated['tanggal'],
                     'ummi_jilid' => $validated['ummi_jilid'] ?? null,
                     'ummi_halaman' => UmmiBook::halamanFromInput($validated),
@@ -517,6 +519,8 @@ class QuickInputController extends Controller
                 }
             }
         });
+
+        app(UmmiTatapMukaService::class)->renumber($students->map(fn ($s) => [$s->id, $validated['tanggal']])->all());
 
         if ($request->input('redirect_to') === 'hafalan') {
             return redirect()

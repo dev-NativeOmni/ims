@@ -28,9 +28,10 @@
                    class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
         </div>
         <div>
-            <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Tatap Muka</label>
-            <input type="number" name="tatap_muka" min="1" value="{{ $record->tatap_muka }}"
-                   class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
+            <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Tatap Muka (otomatis)</label>
+            <input type="number" name="tatap_muka" min="1" value="{{ $record->tatap_muka }}" readonly tabindex="-1"
+                   title="Otomatis: urutan pertemuan Ummi di triwulan"
+                   class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 text-xs cursor-not-allowed">
         </div>
         <div>
             <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Jilid</label>
