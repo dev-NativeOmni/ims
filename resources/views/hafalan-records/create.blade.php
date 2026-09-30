@@ -638,7 +638,7 @@
                                             <select :name="'scores['+index+']'"
                                                     x-model="item.score"
                                                     class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-xs focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
+                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai (kosong = B)</option>
                                                 <option value="95" class="dark:bg-zinc-900">A (Sangat Baik)</option>
                                                 <option value="85" class="dark:bg-zinc-900">B (Baik)</option>
                                                 <option value="75" class="dark:bg-zinc-900">C (Cukup)</option>
@@ -937,7 +937,7 @@
                                     <select id="ummi_nilai"
                                             name="nilai"
                                             class="block w-full rounded-md border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white">
-                                        <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
+                                        <option value="" class="dark:bg-zinc-900">Pilih Nilai (kosong = B)</option>
                                         <option value="A+" @selected(old('nilai') === 'A+') class="dark:bg-zinc-900">A+ (Kesalahan 0)</option>
                                         <option value="A" @selected(old('nilai') === 'A') class="dark:bg-zinc-900">A (Kesalahan 0)</option>
                                         <option value="B+" @selected(old('nilai') === 'B+') class="dark:bg-zinc-900">B+ (Kesalahan -1)</option>

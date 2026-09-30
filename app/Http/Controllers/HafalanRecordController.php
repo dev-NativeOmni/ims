@@ -484,12 +484,14 @@ class HafalanRecordController extends Controller
                     $firstSurah = $record->surahs->first();
                     $scoreVal = isset($item['score']) && $item['score'] !== '' ? $item['score'] : null;
                     if (is_string($scoreVal) && ! is_numeric($scoreVal)) {
+                        // Skala input guru: A=95, B=85, C=75, D=65, E=55 (huruf lama A+/B+/B-/C+ tetap diterima).
                         $scoreVal = match (strtoupper(trim($scoreVal))) {
                             'A+', 'A' => 95,
                             'B+', 'B' => 85,
                             'B-' => 80,
                             'C+', 'C' => 75,
-                            'D' => 60,
+                            'D' => 65,
+                            'E' => 55,
                             default => null,
                         };
                     }

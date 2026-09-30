@@ -60,7 +60,7 @@
         <div>
             <label class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1">Nilai</label>
             <select name="nilai" class="w-full rounded-md border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white text-xs">
-                <option value="">Pilih Nilai</option>
+                <option value="">Pilih Nilai (kosong = B)</option>
                 @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $n)
                     <option value="{{ $n }}" @selected($record->nilai === $n)>{{ $n }}</option>
                 @endforeach

@@ -12,6 +12,18 @@ class UmmiRecord extends Model
 {
     use HasFactory;
 
+    /** Nilai sesi Ummi bila guru tidak mengisi nilai. */
+    public const DEFAULT_NILAI = 'B';
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $ummi) {
+            if (blank($ummi->nilai)) {
+                $ummi->nilai = self::DEFAULT_NILAI;
+            }
+        });
+    }
+
     protected $fillable = [
         'student_id',
         'teacher_id',

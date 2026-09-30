@@ -717,7 +717,7 @@
                                                                     <!-- Score & Status -->
                                                                     <div class="grid grid-cols-2 gap-1">
                                                                         <select :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
-                                                                            <option value="" class="dark:bg-zinc-900">Nilai</option>
+                                                                            <option value="" class="dark:bg-zinc-900">Nilai (B)</option>
                                                                             <option value="95" class="dark:bg-zinc-900">A</option>
                                                                             <option value="85" class="dark:bg-zinc-900">B</option>
                                                                             <option value="75" class="dark:bg-zinc-900">C</option>
@@ -769,7 +769,7 @@
                                                                     <div class="grid grid-cols-2 gap-1">
                                                                         <input type="text" :name="'records[' + student.id + '][dates][' + date + '][materi]'" x-model="cell.materi" placeholder="Materi" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-2 py-1 dark:text-white">
                                                                         <select :name="'records[' + student.id + '][dates][' + date + '][nilai]'" x-model="cell.nilai" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-1 dark:text-white">
-                                                                            <option value="" class="dark:bg-zinc-900">Nilai</option>
+                                                                            <option value="" class="dark:bg-zinc-900">Nilai (B)</option>
                                                                             <option value="A+" class="dark:bg-zinc-900">A+</option>
                                                                             <option value="A" class="dark:bg-zinc-900">A</option>
                                                                             <option value="B+" class="dark:bg-zinc-900">B+</option>
@@ -834,7 +834,7 @@
                                                                             <!-- Score & Status -->
                                                                             <div class="grid grid-cols-2 gap-1">
                                                                                 <select :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-[11px] px-1 py-0.5 dark:text-white">
-                                                                                    <option value="" class="dark:bg-zinc-900">Nilai</option>
+                                                                                    <option value="" class="dark:bg-zinc-900">Nilai (B)</option>
                                                                                     <option value="95" class="dark:bg-zinc-900">A</option>
                                                                                     <option value="85" class="dark:bg-zinc-900">B</option>
                                                                                     <option value="75" class="dark:bg-zinc-900">C</option>
@@ -935,7 +935,7 @@
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
                                                             <select :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="!isMobileView || tab !== 'hafalan' || (cell.attendance && cell.attendance !== 'hadir')" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
-                                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
+                                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai (kosong = B)</option>
                                                                 <option value="95" class="dark:bg-zinc-900">A</option>
                                                                 <option value="85" class="dark:bg-zinc-900">B</option>
                                                                 <option value="75" class="dark:bg-zinc-900">C</option>
@@ -999,7 +999,7 @@
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
                                                             <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][nilai]'" x-model="cell.nilai" :disabled="tab !== 'ummi' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1.5 dark:text-white">
-                                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
+                                                                <option value="" class="dark:bg-zinc-900">Pilih Nilai (kosong = B)</option>
                                                                 <option value="A+" class="dark:bg-zinc-900">A+</option>
                                                                 <option value="A" class="dark:bg-zinc-900">A</option>
                                                                 <option value="B+" class="dark:bg-zinc-900">B+</option>
@@ -1074,7 +1074,7 @@
                                                                 <div>
                                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</label>
                                                                     <select :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][score]'" x-model="h.score" :disabled="tab !== 'hafalan' || cell.attendance !== 'hadir'" class="block w-full rounded border-gray-300 dark:border-zinc-700 bg-transparent text-xs py-1 dark:text-white">
-                                                                        <option value="" class="dark:bg-zinc-900">Pilih Nilai</option>
+                                                                        <option value="" class="dark:bg-zinc-900">Pilih Nilai (kosong = B)</option>
                                                                         <option value="95" class="dark:bg-zinc-900">A</option>
                                                                         <option value="85" class="dark:bg-zinc-900">B</option>
                                                                         <option value="75" class="dark:bg-zinc-900">C</option>

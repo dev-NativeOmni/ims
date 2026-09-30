@@ -45,32 +45,27 @@ class QuarterlyReportController extends Controller
         return collect([$book, $surahs])->filter()->implode(' · ');
     }
 
+    /**
+     * Skala sama dengan input guru & riwayat hafalan (HafalanRecordSurah::score_letter):
+     * A=95, B=85, C=75, D=65, E=55. Nilai kosong = B (nilai default).
+     */
     public static function mapScoreToGrade($score): string
     {
-        if (empty($score)) {
-            return 'A';
+        if ($score === null || $score === '') {
+            return 'B';
         }
         if (is_string($score) && ! is_numeric($score)) {
             return $score;
         }
         $scoreVal = (float) $score;
-        if ($scoreVal >= 90) {
-            return 'A+';
-        }
-        if ($scoreVal >= 80) {
-            return 'A';
-        }
-        if ($scoreVal >= 70) {
-            return 'B+';
-        }
-        if ($scoreVal >= 60) {
-            return 'B';
-        }
-        if ($scoreVal >= 50) {
-            return 'B-';
-        }
 
-        return 'C';
+        return match (true) {
+            $scoreVal >= 90 => 'A',
+            $scoreVal >= 80 => 'B',
+            $scoreVal >= 70 => 'C',
+            $scoreVal >= 60 => 'D',
+            default => 'E',
+        };
     }
 
     public function index(Request $request)

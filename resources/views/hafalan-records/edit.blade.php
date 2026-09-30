@@ -163,7 +163,7 @@
                                             <label class="block text-xs font-medium text-gray-700 mb-1">Nilai (Skala A - E)</label>
                                             <select :name="'scores['+index+']'" x-model="item.score"
                                                     class="block w-full rounded-md border-gray-300 text-xs">
-                                                <option value="">Pilih Nilai</option>
+                                                <option value="">Pilih Nilai (kosong = B)</option>
                                                 <option value="95">A (Sangat Baik)</option>
                                                 <option value="85">B (Baik)</option>
                                                 <option value="75">C (Cukup)</option>

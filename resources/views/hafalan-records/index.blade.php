@@ -539,8 +539,7 @@
                                     <div>
                                         <label class="block text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">Nilai</label>
                                         <select form="bulkEditForm" name="records[{{ $loop->index }}][score]" class="w-full rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1.5 px-1">
-                                            <option value="">-</option>
-                                            @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $grade)
+                                            @foreach(['A', 'B', 'C', 'D', 'E'] as $grade)
                                                 <option value="{{ $grade }}" @selected(($record->surahs->first()?->score_letter ?? '') === $grade)>{{ $grade }}</option>
                                             @endforeach
                                         </select>
@@ -987,8 +986,7 @@
                                         </td>
                                         <td class="px-3 py-2">
                                             <select form="bulkEditForm" name="records[{{ $loop->index }}][score]" class="rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs py-1 px-1">
-                                                <option value="">-</option>
-                                                @foreach(['A+', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'D'] as $grade)
+                                                @foreach(['A', 'B', 'C', 'D', 'E'] as $grade)
                                                     <option value="{{ $grade }}" @selected(($record->surahs->first()?->score_letter ?? '') === $grade)>{{ $grade }}</option>
                                                 @endforeach
                                             </select>

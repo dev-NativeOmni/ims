@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HafalanRecordSurah extends Model
 {
+    /** Nilai B (skala input: A=95, B=85, C=75, D=65, E=55) -- dipakai bila guru tidak mengisi nilai. */
+    public const DEFAULT_SCORE = 85;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $surah) {
+            if ($surah->score === null || $surah->score === '') {
+                $surah->score = self::DEFAULT_SCORE;
+            }
+        });
+    }
+
     protected $fillable = [
         'hafalan_record_id',
         'surah_id',
