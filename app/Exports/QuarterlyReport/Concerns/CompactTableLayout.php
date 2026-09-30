@@ -4,6 +4,7 @@ namespace App\Exports\QuarterlyReport\Concerns;
 
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
@@ -11,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * - Baris judul (BULAN / KELAS / Kelas: ...) di-merge selebar sheet supaya teks & warnanya tidak
  *   terpotong di kolom No yang sempit (sel merge juga tidak ikut dihitung auto-size).
  * - Isi tabel rata tengah, kecuali kolom teks tertentu (mis. Nama Murid) yang tetap rata kiri.
+ * - Garis tabel (borderTables) di semua sel tiap tabel.
  *
  * Sheet pemakai mengisi $monthRows, $gradeRows (baris => warna), $classRows, dan mencatat tiap
  * tabel lewat addTable().
@@ -42,14 +44,30 @@ trait CompactTableLayout
         }
     }
 
+    /** Garis tipis di semua sel setiap tabel (header sampai baris terakhir). */
+    private function borderTables(Worksheet $sheet): void
+    {
+        foreach ($this->tables as $table) {
+            $sheet->getStyle("A{$table['start']}:{$this->tableLastColumn($sheet, $table)}{$table['end']}")
+                ->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN)
+                ->getColor()->setRGB('9CA3AF');
+        }
+    }
+
+    private function tableLastColumn(Worksheet $sheet, array $table): string
+    {
+        return $table['last'] ?? Coordinate::stringFromColumnIndex(max(1, ...array_map(
+            fn (int $r) => Coordinate::columnIndexFromString($sheet->getHighestDataColumn($r)),
+            range($table['start'], $table['end'])
+        )));
+    }
+
     /** @param  string[]  $leftColumns  kolom isi yang tetap rata kiri, mis. ['B'] untuk Nama Murid */
     private function centerTables(Worksheet $sheet, array $leftColumns): void
     {
         foreach ($this->tables as $table) {
-            $lastColumn = $table['last'] ?? Coordinate::stringFromColumnIndex(max(1, ...array_map(
-                fn (int $r) => Coordinate::columnIndexFromString($sheet->getHighestDataColumn($r)),
-                range($table['start'], $table['end'])
-            )));
+            $lastColumn = $this->tableLastColumn($sheet, $table);
 
             $sheet->getStyle("A{$table['start']}:{$lastColumn}{$table['end']}")->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_CENTER)

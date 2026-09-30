@@ -113,7 +113,7 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
 
                     $rows[] = [''];
                     $row++;
-                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E'], $mCode);
                 }
             }
         }
@@ -130,6 +130,7 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEv
                     $sheet->mergeCells($range);
                 }
                 $this->mergeTitleRows($sheet);
+                $this->borderTables($sheet);
                 $this->centerTables($sheet, ['B']);
                 foreach ($this->bodyRows as $r) {
                     $sheet->getRowDimension($r)->setRowHeight(self::BODY_ROW_HEIGHT);

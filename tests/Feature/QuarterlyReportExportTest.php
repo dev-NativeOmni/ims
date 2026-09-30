@@ -425,6 +425,13 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertSame('center', $presensiSheet->getStyle("C{$studentRow}")->getAlignment()->getHorizontal());
         $this->assertSame('left', $presensiSheet->getStyle("B{$studentRow}")->getAlignment()->getHorizontal());
 
+        // Garis tabel di setiap sheet: header & isi tabel bergaris.
+        foreach (['Term-Indeks', 'Presensi', 'Jurnal', 'Setoran', 'Grafik Akhir Bulan'] as $name) {
+            $sheet = $spreadsheet->getSheetByName($name);
+            $headerRow = collect($sheet->toArray())->search(fn ($r) => ($r[0] ?? null) === 'No') + 1;
+            $this->assertSame('thin', $sheet->getStyle("B{$headerRow}")->getBorders()->getBottom()->getBorderStyle(), "{$name}: tabel bergaris.");
+        }
+
         // Jurnal: kolom Paraf lebar & baris isi tinggi supaya gambar paraf jelas.
         $jurnal = $spreadsheet->getSheetByName('Jurnal');
         $this->assertEquals(18, $jurnal->getColumnDimension('E')->getWidth());

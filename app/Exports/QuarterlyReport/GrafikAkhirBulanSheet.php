@@ -71,6 +71,7 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                     $sheet->mergeCells($range);
                 }
                 $this->mergeTitleRows($sheet);
+                $this->borderTables($sheet);
                 $this->centerTables($sheet, ['B']);
             },
         ];

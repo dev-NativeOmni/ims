@@ -110,7 +110,10 @@ class SignatureTest extends TestCase
             $this->assertTrue($cells->contains('Guru Pengampu'), "{$title}: ada 'Guru Pengampu'.");
             $this->assertTrue($cells->contains('Moh. Pandoyo, S.Si., M.Pd., Gr.'), "{$title}: nama kepala sekolah.");
             $this->assertTrue($cells->contains($this->teacherUser->name), "{$title}: nama guru pengampu.");
-            $this->assertTrue($cells->contains('Sukoharjo, 30 September 2026'), "{$title}: kota & tanggal akhir triwulan.");
+            // Titimangsa mengikuti bulan tabelnya: tanggal terakhir Juli, Agustus, September.
+            foreach (['31 Juli 2026', '31 Agustus 2026', '30 September 2026'] as $tanggal) {
+                $this->assertTrue($cells->contains("Sukoharjo, {$tanggal}"), "{$title}: titimangsa {$tanggal}.");
+            }
             // 3 bulan x (kepala sekolah + guru)
             $this->assertCount(6, $sheet->getDrawingCollection(), "{$title}: gambar tanda tangan ditanam.");
         }

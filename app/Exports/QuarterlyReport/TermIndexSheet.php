@@ -47,7 +47,11 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, Wit
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => fn (AfterSheet $event) => $this->mergeTitleRows($event->sheet->getDelegate()),
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $this->mergeTitleRows($sheet);
+                $this->borderTables($sheet);
+            },
         ];
     }
 
@@ -82,6 +86,7 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, Wit
                     ['Ketercapaian', 'Alpa', 'Izin', 'Sakit']
                 );
                 $this->headerRows[] = ++$row;
+                $headerRow = $row;
 
                 foreach ($halaqah['term_records'] as $idx => $termRow) {
                     $ummi = $termRow['ummi'] ?? null;
@@ -113,6 +118,8 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, Wit
                     );
                     $row++;
                 }
+
+                $this->addTable($headerRow, $row, 1);
 
                 $total = count($halaqah['term_records']);
                 $tuntas = collect($halaqah['term_records'])->where('is_tuntas', true)->count();

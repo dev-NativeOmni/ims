@@ -2,6 +2,7 @@
 
 namespace App\Exports\QuarterlyReport\Concerns;
 
+use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -31,14 +32,17 @@ trait SignatureBlock
      * @param  array{0: string, 1: string}  $left  kolom awal & akhir blok kiri, mis. ['B', 'C']
      * @param  array{0: string, 1: string}  $right  kolom awal & akhir blok kanan
      */
-    private function appendSignatureBlock(array &$rows, int &$row, array $halaqah, array $left, array $right): void
+    private function appendSignatureBlock(array &$rows, int &$row, array $halaqah, array $left, array $right, ?string $monthCode = null): void
     {
         $ctx = $this->signatureContext;
         if ($ctx === []) {
             return;
         }
 
-        $date = $ctx['date'] ?? '';
+        // Titimangsa mengikuti bulan tabelnya (tanggal terakhir bulan itu); tanpa bulan: akhir triwulan.
+        $date = $monthCode !== null && ! empty($ctx['term_end'])
+            ? Carbon::parse($ctx['term_end'])->startOfMonth()->month((int) $monthCode)->endOfMonth()->locale('id')->translatedFormat('j F Y')
+            : ($ctx['date'] ?? '');
         $teacherSignature = $ctx['teacher_signatures'][$halaqah['musyrif_signature'] ?? ''] ?? null;
 
         $lines = [

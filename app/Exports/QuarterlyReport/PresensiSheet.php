@@ -265,6 +265,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, With
                     $sheet->mergeCells($range);
                 }
                 $this->mergeTitleRows($sheet);
+                $this->borderTables($sheet);
                 $this->centerTables($sheet, ['B']);
 
                 foreach ($this->totalRows as $r) {

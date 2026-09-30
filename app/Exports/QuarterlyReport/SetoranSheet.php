@@ -95,7 +95,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                     // Halaqoh Ummi (Kelas 10): tiap pekan dipecah Ummi & Mandiri, sama dengan Program Tahfizh.
                     if ($halaqah['has_ummi'] ?? false) {
                         $this->appendUmmiRegulerTable($rows, $row, $halaqah['monthly'][$mCode], $pekans, $pekanDates);
-                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E'], $mCode);
 
                         continue;
                     }
@@ -147,7 +147,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                     $row++;
                     // Kolom kanan sengaja dekat dengan kolom kiri (bukan di ujung tabel pekan
                     // yang lebar) supaya tanda tangan Kepala Sekolah & Guru Pengampu berdampingan.
-                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E'], $mCode);
                 }
             }
         }
@@ -271,7 +271,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                         foreach ($this->activePekans($pekanDatesForClass) as $p) {
                             $this->appendUmmiPekanTable($rows, $row, $halaqah['monthly'][$mCode], $p, $pekanDatesForClass);
                         }
-                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E'], $mCode);
 
                         continue;
                     }
@@ -317,7 +317,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
 
                     // Kolom kanan didekatkan ke kolom kiri (bukan di kolom Kamis/Jumat/Rekap)
                     // supaya tanda tangan Kepala Sekolah & Guru Pengampu berdampingan.
-                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+                    $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E'], $mCode);
                 }
             }
         }
@@ -458,6 +458,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                     $sheet->mergeCells($range);
                 }
                 $this->mergeTitleRows($sheet);
+                $this->borderTables($sheet);
                 $this->centerTables($sheet, ['B']);
                 $this->applySignatureBlocks($sheet);
             },
