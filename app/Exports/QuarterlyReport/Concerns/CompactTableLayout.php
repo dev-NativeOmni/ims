@@ -17,14 +17,17 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 trait CompactTableLayout
 {
-    /** @var array<int, array{start: int, end: int, header: int}> */
+    /** @var array<int, array{start: int, end: int, header: int, last: ?string}> */
     private array $tables = [];
 
-    /** Catat satu tabel: baris header pertama, baris terakhir, dan jumlah baris header. */
-    private function addTable(int $start, int $end, int $headerRows): void
+    /**
+     * Catat satu tabel: baris header pertama, baris terakhir, jumlah baris header, dan (opsional)
+     * kolom terakhir tabel -- default kolom terisi terjauh di baris-baris tabel.
+     */
+    private function addTable(int $start, int $end, int $headerRows, ?string $lastColumn = null): void
     {
         if ($end >= $start) {
-            $this->tables[] = ['start' => $start, 'end' => $end, 'header' => $headerRows];
+            $this->tables[] = ['start' => $start, 'end' => $end, 'header' => $headerRows, 'last' => $lastColumn];
         }
     }
 
@@ -43,7 +46,7 @@ trait CompactTableLayout
     private function centerTables(Worksheet $sheet, array $leftColumns): void
     {
         foreach ($this->tables as $table) {
-            $lastColumn = Coordinate::stringFromColumnIndex(max(1, ...array_map(
+            $lastColumn = $table['last'] ?? Coordinate::stringFromColumnIndex(max(1, ...array_map(
                 fn (int $r) => Coordinate::columnIndexFromString($sheet->getHighestDataColumn($r)),
                 range($table['start'], $table['end'])
             )));

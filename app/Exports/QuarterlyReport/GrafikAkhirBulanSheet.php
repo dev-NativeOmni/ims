@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Chart\Chart;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
@@ -47,6 +48,12 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     /** @var array<int, array{title: string, catRange: string, valRange: string, studentCatRange: string, capaianRange: string, targetRange: string}> */
     private array $chartRanges = [];
 
+    /** @var string[] */
+    private array $mergeRanges = [];
+
+    /** Kolom (1-indexed) terakhir yang dipakai tabel/data donat -- chart diletakkan di kanannya. */
+    private int $lastDataColumn = 8;
+
     public function __construct(private readonly array $halaqahData) {}
 
     /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) di-merge selebar sheet. */
@@ -58,7 +65,14 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => fn (AfterSheet $event) => $this->mergeTitleRows($event->sheet->getDelegate()),
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                foreach ($this->mergeRanges as $range) {
+                    $sheet->mergeCells($range);
+                }
+                $this->mergeTitleRows($sheet);
+                $this->centerTables($sheet, ['B']);
+            },
         ];
     }
 
@@ -94,13 +108,15 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                     $tuntasPercent = $total > 0 ? round(($tuntasCount / $total) * 100) : 0;
                     $tidakPercent = $total > 0 ? 100 - $tuntasPercent : 0;
 
+                    if ($hasUmmi) {
+                        $this->appendUmmiTable($rows, $row, $halaqah, $month, $records, [$tuntasCount, $tidakCount, $tuntasPercent, $tidakPercent]);
+
+                        continue;
+                    }
+
                     // Kolom G/H (di luar kolom data utama A-E) menampung data mentah donat
-                    // ketuntasan, dibaca langsung oleh chart di charts() di bawah. Kolom C/D tetap
-                    // ada (posisinya dipakai referensi chart) walau isinya '-' untuk halaqoh Ummi --
-                    // labelnya diganti supaya tidak menyebut "Baris".
-                    $headerRow = $hasUmmi
-                        ? ['No', 'Nama Murid', 'Capaian', 'Target', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount]
-                        : ['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
+                    // ketuntasan, dibaca langsung oleh chart di charts() di bawah.
+                    $headerRow = ['No', 'Nama Murid', 'Capaian Baris', 'Target Baris', 'Keterangan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
                     $this->headerRows[] = ++$row;
                     $dataTopRow = $row + 1;
                     $rows[] = $headerRow;
@@ -108,13 +124,11 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                     $donutTopRow = $row;
 
                     foreach ($records as $idx => $record) {
-                        // Ummi tidak punya Capaian/Target Baris -- ketuntasannya dinilai dari Jilid|Halaman.
-                        $isUmmi = ($record['ummi'] ?? null) !== null;
                         $line = [
                             $idx + 1,
                             $record['name'],
-                            $isUmmi ? '-' : $record['total_lines'],
-                            $isUmmi ? '-' : $record['target_lines'],
+                            $record['total_lines'],
+                            $record['target_lines'],
                             $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
                         ];
                         if ($idx === 0) {
@@ -126,6 +140,7 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                         $row++;
                     }
                     $dataBottomRow = $row;
+                    $this->addTable($dataTopRow - 1, $dataBottomRow, 1, lastColumn: 'E');
 
                     if ($total > 0) {
                         $this->chartRanges[] = [
@@ -136,9 +151,7 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
                             'studentCatRange' => "B{$dataTopRow}:B{$dataBottomRow}",
                             'capaianRange' => "C{$dataTopRow}:C{$dataBottomRow}",
                             'targetRange' => "D{$dataTopRow}:D{$dataBottomRow}",
-                            // Ummi tidak punya Capaian/Target Baris -- kolomnya cuma berisi '-',
-                            // jadi grafik batang+garis Capaian tidak dibuat untuk halaqoh ini.
-                            'has_baris_chart' => ! $hasUmmi,
+                            'has_baris_chart' => true,
                         ];
                     }
 
@@ -149,6 +162,66 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
         }
 
         return $rows;
+    }
+
+    /**
+     * Tabel halaqoh Ummi (Kelas 10), sama dengan web: Target & Capaian masing-masing
+     * Jilid | Halaman | Surah | Ayat. Ummi tidak punya Capaian/Target Baris, jadi hanya diagram
+     * donat ketuntasan yang dibuat; datanya di kolom N/O (kanan tabel).
+     *
+     * @param  array{0: int, 1: int, 2: int|float, 3: int|float}  $tuntas  jumlah & persen tuntas/belum
+     */
+    private function appendUmmiTable(array &$rows, int &$row, array $halaqah, array $month, array $records, array $tuntas): void
+    {
+        [$tuntasCount, $tidakCount, $tuntasPercent, $tidakPercent] = $tuntas;
+
+        $top = ++$row;
+        $this->headerRows[] = $top;
+        $this->headerRows[] = $top + 1;
+        $rows[] = ['No', 'Nama Murid', 'Level', 'Target', '', '', '', 'Capaian', '', '', '', 'Ketuntasan', '', "TUNTAS ({$tuntasPercent}%)", $tuntasCount];
+        $rows[] = ['', '', '', 'Jilid', 'Halaman', 'Surah', 'Ayat', 'Jilid', 'Halaman', 'Surah', 'Ayat', '', '', "BELUM TUNTAS ({$tidakPercent}%)", $tidakCount];
+        $row++;
+
+        foreach (['A', 'B', 'C', 'L'] as $c) {
+            $this->mergeRanges[] = "{$c}{$top}:{$c}".($top + 1);
+        }
+        $this->mergeRanges[] = "D{$top}:G{$top}";
+        $this->mergeRanges[] = "H{$top}:K{$top}";
+
+        foreach ($records as $idx => $record) {
+            $u = $record['ummi'] ?? [];
+            $rows[] = [
+                $idx + 1,
+                $record['name'],
+                $record['level'] ?? '-',
+                $u['target_jilid'] ?? '-',
+                $u['target_halaman'] ?? '-',
+                $u['target_surah'] ?? '-',
+                $u['target_ayat'] ?? '-',
+                $u['capaian_jilid'] ?? '-',
+                $u['capaian_halaman'] ?? '-',
+                $u['capaian_surah'] ?? '-',
+                $u['capaian_ayat'] ?? '-',
+                $record['is_tuntas'] ? '✅ Tuntas' : '❌ Tidak Tuntas',
+            ];
+            $row++;
+        }
+        // Tabel A-L saja; data donat (N/O) tidak ikut dirata-tengah sebagai tabel.
+        $this->addTable($top, $row, 2, lastColumn: 'L');
+        $this->lastDataColumn = max($this->lastDataColumn, 15);
+
+        if ($records !== []) {
+            $this->chartRanges[] = [
+                'title' => "{$halaqah['class_room_name']} — {$month['label']}",
+                'catRange' => "N{$top}:N".($top + 1),
+                'valRange' => "O{$top}:O".($top + 1),
+                'donutValues' => [$tuntasCount, $tidakCount],
+                'has_baris_chart' => false,
+            ];
+        }
+
+        $rows[] = [''];
+        $row++;
     }
 
     public function styles(Worksheet $sheet): array
@@ -254,8 +327,9 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
         $title = new Title("Grafik Capaian — {$range['title']}");
 
         $chart = new Chart('capaian_'.md5($range['title']), $title, $legend, $plotArea);
-        $chart->setTopLeftPosition('J'.$topRow);
-        $chart->setBottomRightPosition('Q'.($topRow + 14));
+        $start = $this->lastDataColumn + 2; // default J (kolom data sampai H)
+        $chart->setTopLeftPosition(Coordinate::stringFromColumnIndex($start).$topRow);
+        $chart->setBottomRightPosition(Coordinate::stringFromColumnIndex($start + 7).($topRow + 14));
 
         return $chart;
     }
@@ -281,8 +355,11 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
         $title = new Title("Ketuntasan — {$range['title']}");
 
         $chart = new Chart('ketuntasan_'.md5($range['title']), $title, $legend, $plotArea);
-        $chart->setTopLeftPosition('R'.$topRow);
-        $chart->setBottomRightPosition('W'.($topRow + 14));
+        // Di kanan grafik batang (default R); tanpa grafik batang (semua halaqoh Ummi) langsung di kanan tabel.
+        $hasBarChart = collect($this->chartRanges)->contains(fn ($r) => $r['has_baris_chart'] ?? true);
+        $start = $this->lastDataColumn + ($hasBarChart ? 10 : 2);
+        $chart->setTopLeftPosition(Coordinate::stringFromColumnIndex($start).$topRow);
+        $chart->setBottomRightPosition(Coordinate::stringFromColumnIndex($start + 5).($topRow + 14));
 
         return $chart;
     }

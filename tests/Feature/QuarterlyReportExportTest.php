@@ -489,4 +489,51 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertSame('Izin', $studentRow[10]);
         $this->assertSame('K'.($groupIdx + 3).':Q'.($groupIdx + 3), $sheet->getCell('K'.($groupIdx + 3))->getMergeRange());
     }
+
+    #[Test]
+    public function grafik_sheet_for_ummi_shows_target_and_capaian_jilid_halaman_surah_ayat_like_the_web(): void
+    {
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E1 Grafik',
+            'level' => 'X',
+            'tahfizh_days' => [1, 2],
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
+        UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-07-13',
+            'ummi_jilid' => 'Jilid 3',
+            'ummi_halaman' => '20-22',
+        ])->surahs()->create(['surah_id' => $this->surah->id, 'hafalan_ayah' => '1-4', 'sort_order' => 1]);
+
+        $sheet = $this->downloadAndLoadWithCharts([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ])->getSheetByName('Grafik Akhir Bulan');
+        $rows = $sheet->toArray();
+
+        // Juli: header dua baris (grup Target/Capaian, lalu Jilid|Halaman|Surah|Ayat), lalu murid.
+        $top = collect($rows)->search(fn ($r) => ($r[3] ?? null) === 'Target');
+        $this->assertNotFalse($top);
+        $this->assertSame(['No', 'Nama Murid', 'Level', 'Target'], array_slice($rows[$top], 0, 4));
+        $this->assertSame('Capaian', $rows[$top][7]);
+        $this->assertSame('Ketuntasan', $rows[$top][11]);
+        $this->assertSame(['Jilid', 'Halaman', 'Surah', 'Ayat', 'Jilid', 'Halaman', 'Surah', 'Ayat'], array_slice($rows[$top + 1], 3, 8));
+
+        $student = $rows[$top + 2];
+        $this->assertSame($this->student->name, $student[1]);
+        // Capaian = setoran Ummi terakhir: Jilid 3 hal. 22, Al-Fatihah ayat 4 (sama dengan web).
+        $this->assertSame(['Jilid 3', '22', 'Al-Fatihah', '4'], array_map(fn ($v) => (string) $v, array_slice($student, 7, 4)));
+
+        // Hanya donat ketuntasan (Ummi tidak punya grafik baris), langsung di kanan tabel & data donat (N/O).
+        $charts = collect($sheet->getChartCollection());
+        $this->assertCount(3, $charts);
+        $this->assertTrue($charts->every(fn ($c) => str_starts_with($c->getTitle()->getCaptionText(), 'Ketuntasan')));
+        $this->assertSame('Q', preg_replace('/\d+/', '', $charts->first()->getTopLeftPosition()['cell']));
+    }
 }
