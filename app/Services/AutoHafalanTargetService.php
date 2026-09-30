@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Student;
+use App\Models\Surah;
 use App\Support\HafalanOrder;
 use App\Support\TargetRules;
 use Carbon\Carbon;
@@ -124,6 +125,46 @@ class AutoHafalanTargetService
         $plan['achieved_lines'] = $breakdown['evaluation']['achieved_lines'];
 
         return $plan;
+    }
+
+    /**
+     * Saran target per bulan dari rumus aplikasi: dari titik awal triwulan (setoran pertama),
+     * maju sejauh target baris kumulatif sampai akhir bulan itu (pertemuan aktif x baris per level,
+     * sama dengan Laporan Triwulan) memakai kalkulator baris -- ayat yang sudah dihafal sebelum
+     * triwulan dilewati, sama dengan penilaian ketuntasan. Bulan tanpa pertemuan = null.
+     *
+     * @param  array<string, array{start: Carbon, end: Carbon, meetings: int}>  $months
+     * @return array{start: array, months: array<string, array{lines: int, surah: ?Surah, ayah: ?int}|null>}
+     */
+    public function suggestedTermTargets(Student $student, array $months): array
+    {
+        $records = $this->progress->records($student);
+        $termStart = reset($months)['start']->copy()->startOfDay();
+        $termEnd = end($months)['end']->copy()->endOfDay();
+        $start = $this->progress->startPoint($student, $records, $termStart, $termEnd);
+        $covered = $this->progress->coverage($records, $termStart);
+        $juzOrders = $this->progress->juzOrders($student, $records);
+        $quran = app(QuranLineTargetService::class);
+
+        $result = [];
+        foreach ($months as $monthKey => $month) {
+            if (($month['meetings'] ?? 0) < 1) {
+                $result[$monthKey] = null;
+
+                continue;
+            }
+            $lines = $this->progress->targetLines($student, $termStart, $month['end']);
+            $position = $lines > 0
+                ? $quran->targetPosition($start['surah'], $start['ayah'], $lines, $this->progress->surahs(), $covered, $student->hafalan_direction, $juzOrders)
+                : null;
+            $result[$monthKey] = [
+                'lines' => $lines,
+                'surah' => $position['surah'] ?? null,
+                'ayah' => isset($position['ayah_end']) ? (int) $position['ayah_end'] : null,
+            ];
+        }
+
+        return ['start' => $start, 'months' => $result];
     }
 
     /**
