@@ -538,7 +538,7 @@ class QuarterlyReportExportTest extends TestCase
     }
 
     #[Test]
-    public function reguler_ummi_setoran_is_split_into_ummi_and_mandiri_columns_like_tahfizh(): void
+    public function reguler_ummi_setoran_is_split_into_ummi_columns_without_mandiri(): void
     {
         $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
         $classRoom = ClassRoom::create([
@@ -581,22 +581,23 @@ class QuarterlyReportExportTest extends TestCase
         ])->getSheetByName('Setoran');
         $rows = $sheet->toArray();
 
-        // Juli: PEKAN 1 (Rabu, 1 Jul) di kolom D-K, PEKAN 2 (Rabu, 8 Jul) di L-S, PEKAN 3 di T-AA.
+        // Juli: PEKAN 1 (Rabu, 1 Jul) di kolom D-I, PEKAN 2 (Rabu, 8 Jul) di J-O, PEKAN 3 di P-U.
         $top = collect($rows)->search(fn ($r) => ($r[3] ?? null) === 'PEKAN 1 (Rabu, 1 Jul)');
         $this->assertNotFalse($top);
-        $this->assertSame('PEKAN 2 (Rabu, 8 Jul)', $rows[$top][11]);
-        $this->assertSame(['Ummi', null, null, null, 'Mandiri', null, 'Nilai', 'Kehadiran'], array_slice($rows[$top + 1], 11, 8));
-        $this->assertSame(['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat'], array_slice($rows[$top + 2], 11, 6));
-        // 5 Rabu di Juli = 5 pekan x 8 kolom; Rekap Kehadiran sesudahnya (tanpa Capaian Baris).
-        $this->assertSame('Rekap Kehadiran', $rows[$top][3 + 5 * 8]);
+        $this->assertSame('PEKAN 2 (Rabu, 8 Jul)', $rows[$top][9]);
+        $this->assertSame(['Ummi', null, null, null, 'Nilai', 'Kehadiran'], array_slice($rows[$top + 1], 9, 6));
+        $this->assertSame(['Jilid', 'Halaman', 'Surah', 'Ayat'], array_slice($rows[$top + 2], 9, 4));
+        $this->assertNotContains('Mandiri', $this->flatten($rows), 'Program Reguler tidak punya kolom Mandiri.');
+        // 5 Rabu di Juli = 5 pekan x 6 kolom; Rekap Kehadiran sesudahnya (tanpa Capaian Baris).
+        $this->assertSame('Rekap Kehadiran', $rows[$top][3 + 5 * 6]);
 
         $student = $rows[$top + 3];
         $this->assertSame($this->student->name, $student[1]);
-        // Pekan 2: Ummi (Jilid 1, hal. 1-5, Al-Fatihah 1-7), Mandiri (Al-Fatihah 1-3), Nilai A, Hadir.
-        $this->assertSame(['Jilid 1', '1-5', 'Al-Fatihah', '1-7', 'Al-Fatihah', '1-3', 'A', 'Hadir'], array_map(fn ($v) => (string) $v, array_slice($student, 11, 8)));
-        // Pekan 3: izin, digabung selebar kolom setoran & tertulis di Kehadiran.
-        $this->assertSame('Izin', $student[19]);
-        $this->assertSame('Izin', $student[26]);
-        $this->assertSame('T'.($top + 4).':Z'.($top + 4), $sheet->getCell('T'.($top + 4))->getMergeRange());
+        // Pekan 2: Ummi (Jilid 1, hal. 1-5, Al-Fatihah 1-7), Nilai A, Hadir.
+        $this->assertSame(['Jilid 1', '1-5', 'Al-Fatihah', '1-7', 'A', 'Hadir'], array_map(fn ($v) => (string) $v, array_slice($student, 9, 6)));
+        // Pekan 3: izin, digabung selebar kolom setoran (P-T) & tertulis di Kehadiran (U).
+        $this->assertSame('Izin', $student[15]);
+        $this->assertSame('Izin', $student[20]);
+        $this->assertSame('P'.($top + 4).':T'.($top + 4), $sheet->getCell('P'.($top + 4))->getMergeRange());
     }
 }

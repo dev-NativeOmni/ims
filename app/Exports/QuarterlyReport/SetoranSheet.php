@@ -155,13 +155,13 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         return $rows;
     }
 
-    /** Kolom per pekan untuk halaqoh Ummi Program Reguler: 4 Ummi, 2 Mandiri, Nilai, Kehadiran. */
-    private const UMMI_PEKAN_COLS = 8;
+    /** Kolom per pekan untuk halaqoh Ummi Program Reguler: 4 Ummi, Nilai, Kehadiran (tanpa Mandiri). */
+    private const UMMI_PEKAN_COLS = 6;
 
     /**
      * Tabel satu bulan halaqoh Ummi Program Reguler, 3 baris header:
-     * PEKAN N (hari, tanggal) | Ummi / Mandiri / Nilai / Kehadiran | Jilid, Halaman, Surah, Ayat, Surah, Ayat,
-     * lalu Rekap Kehadiran. Pekan tanpa setoran (Izin/Sakit/Belum di input) ditulis sekali di
+     * PEKAN N (hari, tanggal) | Ummi / Nilai / Kehadiran | Jilid, Halaman, Surah, Ayat, lalu Rekap
+     * Kehadiran. Beda dengan Program Tahfizh, tidak ada kolom Mandiri. Pekan tanpa setoran (Izin/Sakit/Belum di input) ditulis sekali di
      * kolom setoran (digabung) dan di kolom Kehadiran.
      *
      * @param  int[]  $pekans
@@ -181,8 +181,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         $subRow = ['', '', ''];
         foreach ($pekans as $p) {
             $pekanRow = array_merge($pekanRow, [$this->pekanLabel($p, $pekanDates)], array_fill(0, $width - 1, ''));
-            $groupRow = array_merge($groupRow, ['Ummi', '', '', '', 'Mandiri', '', 'Nilai', 'Kehadiran']);
-            $subRow = array_merge($subRow, ['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat', '', '']);
+            $groupRow = array_merge($groupRow, ['Ummi', '', '', '', 'Nilai', 'Kehadiran']);
+            $subRow = array_merge($subRow, ['Jilid', 'Halaman', 'Surah', 'Ayat', '', '']);
         }
         $rows[] = array_merge($pekanRow, ['Rekap Kehadiran']);
         $rows[] = array_merge($groupRow, ['']);
@@ -195,9 +195,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         foreach (array_keys($pekans) as $i) {
             $this->mergeRanges[] = $col($i, 0).$top.':'.$col($i, $width - 1).$top;
             $this->mergeRanges[] = $col($i, 0).($top + 1).':'.$col($i, 3).($top + 1);
-            $this->mergeRanges[] = $col($i, 4).($top + 1).':'.$col($i, 5).($top + 1);
-            $this->mergeRanges[] = $col($i, 6).($top + 1).':'.$col($i, 6).($top + 2);
-            $this->mergeRanges[] = $col($i, 7).($top + 1).':'.$col($i, 7).($top + 2);
+            $this->mergeRanges[] = $col($i, 4).($top + 1).':'.$col($i, 4).($top + 2);
+            $this->mergeRanges[] = $col($i, 5).($top + 1).':'.$col($i, 5).($top + 2);
         }
 
         foreach ($month['reguler_records'] as $idx => $record) {
@@ -211,11 +210,11 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                     // Tidak ada setoran pekan ini: statusnya ditulis sekali, digabung selebar kolom setoran.
                     $status = $pekan['kehadiran'] === 'Hadir' ? '-' : $pekan['kehadiran'];
                     $line = array_merge($line, [$status], array_fill(0, $width - 2, ''), [$pekan['kehadiran']]);
-                    $this->mergeRanges[] = $col($i, 0).$row.':'.$col($i, 6).$row;
+                    $this->mergeRanges[] = $col($i, 0).$row.':'.$col($i, 4).$row;
 
                     continue;
                 }
-                $line = array_merge($line, array_values($parts['ummi']), array_values($parts['mandiri']), [$pekan['nilai'], 'Hadir']);
+                $line = array_merge($line, array_values($parts['ummi']), [$pekan['nilai'], 'Hadir']);
             }
             $line[] = "{$sPres['hadir']}x Hadir";
             $rows[] = $line;
