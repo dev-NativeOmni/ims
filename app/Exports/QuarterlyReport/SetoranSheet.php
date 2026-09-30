@@ -42,6 +42,9 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
     /** @var int[] */
     private array $headerTopRows = [];
 
+    /** @var int[] baris header ke-3 & ke-4 tabel Ummi (gaya sama dengan sub-header) */
+    private array $headerExtraRows = [];
+
     /** @var string[] daftar range merge cell, mis. "D5:H5" */
     private array $mergeRanges = [];
 
@@ -185,6 +188,16 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
 
                     $pekanDatesForClass = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
 
+                    // Halaqoh Ummi (Kelas 10): tiap hari dipecah Ummi (Jilid|Halaman|Surah|Ayat) & Mandiri (Surah|Ayat).
+                    if ($halaqah['has_ummi'] ?? false) {
+                        foreach ($this->activePekans($pekanDatesForClass) as $p) {
+                            $this->appendUmmiPekanTable($rows, $row, $halaqah['monthly'][$mCode], $p, $pekanDatesForClass);
+                        }
+                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+
+                        continue;
+                    }
+
                     // Hanya pekan & hari pertemuan aktif (pekan/hari libur tidak dijadikan kolom), sama dengan web.
                     foreach ($this->activePekans($pekanDatesForClass) as $p) {
                         $days = $pekanDatesForClass[$p];
@@ -234,6 +247,72 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         return $rows;
     }
 
+    /** Kolom per hari untuk halaqoh Ummi: 4 kolom Ummi, 2 kolom Mandiri, 1 kolom Nilai. */
+    private const UMMI_DAY_COLS = 7;
+
+    /**
+     * Satu tabel pekan halaqoh Ummi dengan 4 baris header:
+     * PEKAN N | hari & tanggal | Ummi / Mandiri / Nilai | Jilid, Halaman, Surah, Ayat, Surah, Ayat.
+     * Hari tanpa setoran (Izin/Sakit/Alpa/Belum di input) ditulis sekali, digabung selebar hari itu.
+     */
+    private function appendUmmiPekanTable(array &$rows, int &$row, array $month, int $p, array $pekanDates): void
+    {
+        $days = $pekanDates[$p];
+        $width = count($days) * self::UMMI_DAY_COLS;
+        $col = fn (int $dayIdx, int $offset) => Coordinate::stringFromColumnIndex(4 + $dayIdx * self::UMMI_DAY_COLS + $offset);
+
+        $top = ++$row;
+        $this->headerTopRows[] = $top;
+        $this->headerExtraRows[] = $top + 2;
+        $this->headerExtraRows[] = $top + 3;
+
+        $rows[] = array_merge(['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDates)], array_fill(0, $width - 1, ''));
+        $dayRow = ['', '', ''];
+        $groupRow = ['', '', ''];
+        $subRow = ['', '', ''];
+        foreach ($days as $day) {
+            $dayRow = array_merge($dayRow, [$day['label']], array_fill(0, self::UMMI_DAY_COLS - 1, ''));
+            $groupRow = array_merge($groupRow, ['Ummi', '', '', '', 'Mandiri', '', 'Nilai']);
+            $subRow = array_merge($subRow, ['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat', '']);
+        }
+        $rows[] = $dayRow;
+        $rows[] = $groupRow;
+        $rows[] = $subRow;
+        $row += 3;
+
+        foreach (['A', 'B', 'C'] as $c) {
+            $this->mergeRanges[] = "{$c}{$top}:{$c}".($top + 3);
+        }
+        $this->mergeRanges[] = "D{$top}:".$col(count($days) - 1, self::UMMI_DAY_COLS - 1).$top;
+        foreach (array_keys($days) as $i) {
+            $this->mergeRanges[] = $col($i, 0).($top + 1).':'.$col($i, 6).($top + 1);
+            $this->mergeRanges[] = $col($i, 0).($top + 2).':'.$col($i, 3).($top + 2);
+            $this->mergeRanges[] = $col($i, 4).($top + 2).':'.$col($i, 5).($top + 2);
+            $this->mergeRanges[] = $col($i, 6).($top + 2).':'.$col($i, 6).($top + 3);
+        }
+
+        foreach ($month['tahfizh_records'] as $idx => $record) {
+            $line = [$idx + 1, $record['name'], $record['level']];
+            $row++;
+            foreach ($days as $i => $day) {
+                $log = $record['pekan'][$p]['days'][$day['day']] ?? ['status' => 'kosong', 'surah' => '-'];
+                $parts = $log['parts'] ?? null;
+                if (($log['status'] ?? 'setoran') !== 'setoran' || $parts === null) {
+                    $line = array_merge($line, [$log['surah'] ?? '-'], array_fill(0, self::UMMI_DAY_COLS - 1, ''));
+                    $this->mergeRanges[] = $col($i, 0).$row.':'.$col($i, 6).$row;
+
+                    continue;
+                }
+                $line = array_merge($line, array_values($parts['ummi']), array_values($parts['mandiri']), [$log['nilai']]);
+            }
+            $rows[] = $line;
+        }
+        $this->addTable($top, $row, 4);
+
+        $rows[] = [''];
+        $row++;
+    }
+
     private function tahfizhCell(array $day, bool $isUmmi = false): string
     {
         // Libur / Belum di input / Izin / Sakit / Alpa: cukup statusnya.
@@ -275,6 +354,14 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ];
             $styles[$r + 1] = [
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F3F4F6']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ];
+        }
+
+        foreach ($this->headerExtraRows as $r) {
+            $styles[$r] = [
                 'font' => ['bold' => true],
                 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F3F4F6']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],

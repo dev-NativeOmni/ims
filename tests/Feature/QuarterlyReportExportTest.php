@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\Student;
 use App\Models\StudentPoint;
 use App\Models\TeacherProfile;
+use App\Models\UmmiRecord;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -427,5 +428,65 @@ class QuarterlyReportExportTest extends TestCase
         // Jurnal: kolom Paraf lebar & baris isi tinggi supaya gambar paraf jelas.
         $jurnal = $spreadsheet->getSheetByName('Jurnal');
         $this->assertEquals(18, $jurnal->getColumnDimension('E')->getWidth());
+    }
+
+    #[Test]
+    public function tahfizh_ummi_setoran_is_split_into_ummi_and_mandiri_columns(): void
+    {
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E1 Export',
+            'level' => 'X',
+            'tahfizh_days' => [1, 2], // Senin 13 & Selasa 14 Juli 2026 = pekan 2
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
+
+        $ummi = UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-07-13',
+            'ummi_jilid' => 'Jilid 3',
+            'ummi_halaman' => '20-22',
+            'nilai' => 'A',
+        ]);
+        $ummi->surahs()->create(['surah_id' => $this->surah->id, 'hafalan_ayah' => '1-4', 'sort_order' => 1]);
+        HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-13',
+        ])->surahs()->create([
+            'surah_id' => $this->surah->id, 'ayah_start' => 5, 'ayah_end' => 7, 'submission_type' => 'new', 'status' => 'passed',
+        ]);
+        Attendance::create([
+            'student_id' => $this->student->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tanggal' => '2026-07-14',
+            'status' => 'izin',
+        ]);
+
+        $sheet = $this->downloadAndLoad([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ])->getSheetByName('Setoran');
+        $rows = $sheet->toArray();
+
+        // Tabel pekan 2: baris hari "Senin, 13 Jul", lalu baris judul Ummi/Mandiri/Nilai.
+        $dayIdx = collect($rows)->search(fn ($r) => ($r[3] ?? null) === 'Senin, 13 Jul');
+        $this->assertNotFalse($dayIdx, 'Tabel pekan 2 ada.');
+        $groupIdx = $dayIdx + 1;
+        $this->assertSame(['Ummi', null, null, null, 'Mandiri', null, 'Nilai'], array_slice($rows[$groupIdx], 3, 7));
+        $this->assertSame(['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat'], array_slice($rows[$groupIdx + 1], 3, 6));
+
+        $studentRow = $rows[$groupIdx + 2];
+        $this->assertSame($this->student->name, $studentRow[1]);
+        // Senin: Ummi (Jilid 3, hal. 20-22, Al-Fatihah 1-4), Mandiri (Al-Fatihah 5-7), Nilai A.
+        $this->assertSame(['Jilid 3', '20-22', 'Al-Fatihah', '1-4', 'Al-Fatihah', '5-7', 'A'], array_map(fn ($v) => (string) $v, array_slice($studentRow, 3, 7)));
+        // Selasa: izin, ditulis sekali & digabung selebar hari itu.
+        $this->assertSame('Izin', $studentRow[10]);
+        $this->assertSame('K'.($groupIdx + 3).':Q'.($groupIdx + 3), $sheet->getCell('K'.($groupIdx + 3))->getMergeRange());
     }
 }

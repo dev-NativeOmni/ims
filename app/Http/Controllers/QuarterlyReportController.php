@@ -19,6 +19,7 @@ use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -43,6 +44,32 @@ class QuarterlyReportController extends Controller
             ->implode(', ');
 
         return collect([$book, $surahs])->filter()->implode(' · ');
+    }
+
+    /**
+     * Setoran satu sel (hari/pekan) dipecah per kolom untuk export: bagian Ummi (sesi Ummi: Jilid,
+     * Halaman, Surah & Ayat hafalannya) dan Mandiri (setoran hafalan biasa: Surah & Ayat). Beberapa
+     * sesi dipisah "; ", beberapa surah dalam satu sesi dipisah ", ". Kosong = "-".
+     *
+     * @return array{ummi: array{jilid: string, halaman: string, surah: string, ayat: string}, mandiri: array{surah: string, ayat: string}}
+     */
+    private static function setoranParts(Collection $ummiSessions, Collection $hafalanRecords): array
+    {
+        $join = fn (Collection $values, string $separator) => $values->map(fn ($v) => trim((string) $v))->filter(fn ($v) => $v !== '')->implode($separator) ?: '-';
+        $sessionSurahs = fn (UmmiRecord $u) => $u->surahs->filter(fn ($s) => $s->surah !== null);
+
+        return [
+            'ummi' => [
+                'jilid' => $join($ummiSessions->map(fn ($u) => $u->ummi_jilid), '; '),
+                'halaman' => $join($ummiSessions->map(fn ($u) => preg_replace('/^\s*(halaman|hal\.?)\s*/i', '', (string) $u->ummi_halaman)), '; '),
+                'surah' => $join($ummiSessions->map(fn ($u) => $sessionSurahs($u)->map(fn ($s) => $s->surah->name_latin)->implode(', ')), '; '),
+                'ayat' => $join($ummiSessions->map(fn ($u) => $sessionSurahs($u)->map(fn ($s) => str_replace(' ', '', (string) $s->hafalan_ayah))->implode(', ')), '; '),
+            ],
+            'mandiri' => [
+                'surah' => $join($hafalanRecords->map(fn ($h) => $h->surah?->name_latin), ', '),
+                'ayat' => $join($hafalanRecords->map(fn ($h) => self::ayahRangeLabel($h->ayah_start, $h->ayah_end)), ', '),
+            ],
+        ];
     }
 
     /**
@@ -940,6 +967,7 @@ class QuarterlyReportController extends Controller
                             $dailyLogs[$dayName] = [
                                 'status' => 'setoran',
                                 'surah' => $label ?: '-',
+                                'parts' => self::setoranParts($dayUmmi->values(), $dayRecords->values()),
                                 'baris' => $lines,
                                 'nilai' => $dayUmmi->isNotEmpty()
                                     ? ($dayUmmi->last()->nilai ?: '-')
@@ -998,6 +1026,7 @@ class QuarterlyReportController extends Controller
                             'surah' => $lastUmmi->ummi_jilid ?: '-',
                             'ayat' => AyahLabel::end($lastUmmi->ummi_halaman),
                             'setoran' => $sessions->push($ziyadah)->filter()->implode('; ') ?: '-',
+                            'parts' => self::setoranParts($sortedUmmi->values(), $weekRecords->values()),
                             'baris' => $lines,
                             'nilai' => $lastUmmi->nilai ?: '-',
                             'kehadiran' => 'Hadir',
@@ -1013,6 +1042,7 @@ class QuarterlyReportController extends Controller
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
                             'ayat' => $weekRecords->map($ayahRange)->implode(', '),
                             'setoran' => $weekRecords->map(fn ($h) => $h->surah->name_latin.' '.$ayahRange($h))->implode(', '),
+                            'parts' => self::setoranParts(collect(), $weekRecords->values()),
                             'baris' => $lines,
                             'nilai' => self::mapScoreToGrade($avgScore),
                             'kehadiran' => 'Hadir',
