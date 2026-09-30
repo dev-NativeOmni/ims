@@ -19,12 +19,15 @@ use Illuminate\Support\Facades\DB;
  * - Ummi: sesi murid di tanggal yang sama dengan Jilid, Halaman, Materi, Nilai & surah-ayat sama
  *   persis; juga baris surah identik di dalam satu sesi. Sesi ganda yang isinya BERBEDA tidak
  *   dihapus -- hanya ditampilkan untuk dicek manual.
+ * - --gabung-sesi: sesi tanggal sama yang TANPA Jilid & Halaman digabung ke satu-satunya sesi
+ *   tanggal itu yang berisi Jilid/Halaman (surahnya dipindah, yang identik dilewati).
  */
 class RemoveDuplicateSetoran extends Command
 {
     protected $signature = 'tad:hapus-setoran-ganda
         {--dry-run : Tampilkan setoran ganda tanpa menghapus}
-        {--force : Jalankan tanpa pertanyaan konfirmasi}';
+        {--force : Jalankan tanpa pertanyaan konfirmasi}
+        {--gabung-sesi : Gabungkan sesi Ummi tanpa Jilid/Halaman ke sesi tanggal sama yang berisi Jilid/Halaman}';
 
     protected $description = 'Hapus setoran hafalan & Ummi yang ganda identik (sisakan yang paling awal).';
 
@@ -32,6 +35,9 @@ class RemoveDuplicateSetoran extends Command
     {
         $hafalanDupes = $this->hafalanDuplicates();
         [$ummiDupes, $ummiLineDupes, $ummiConflicts] = $this->ummiDuplicates();
+        $merges = $this->option('gabung-sesi') ? $this->mergeableSessions($ummiConflicts) : collect();
+        $mergedIds = $merges->flatMap(fn ($m) => [$m['from']->id, $m['into']->id])->all();
+        $ummiConflicts = $ummiConflicts->reject(fn ($r) => in_array($r->id, $mergedIds, true))->values();
 
         $this->info("Setoran hafalan ganda identik: {$hafalanDupes->count()} baris");
         if ($hafalanDupes->isNotEmpty()) {
@@ -58,6 +64,19 @@ class RemoveDuplicateSetoran extends Command
             ])->all());
         }
 
+        if ($merges->isNotEmpty()) {
+            $this->info("Sesi Ummi tanpa Jilid/Halaman yang digabung ke sesi tanggal sama: {$merges->count()}");
+            $this->table(['Murid', 'Tanggal', 'Sesi dihapus (ID)', 'Digabung ke (ID)', 'Jilid', 'Halaman', 'Surah dipindah'], $merges->map(fn ($m) => [
+                $m['into']->student?->name ?? '-',
+                $m['into']->tanggal?->toDateString(),
+                $m['from']->id,
+                $m['into']->id,
+                $m['into']->ummi_jilid ?? '-',
+                $m['into']->ummi_halaman ?? '-',
+                $m['moved']->count(),
+            ])->all());
+        }
+
         if ($ummiConflicts->isNotEmpty()) {
             $this->warn("Sesi Ummi di tanggal yang sama tapi isinya BERBEDA (tidak dihapus, cek manual): {$ummiConflicts->count()}");
             $this->table(['ID sesi', 'Murid', 'Tanggal', 'Jilid', 'Halaman', 'Nilai'], $ummiConflicts->map(fn ($r) => [
@@ -65,7 +84,7 @@ class RemoveDuplicateSetoran extends Command
             ])->all());
         }
 
-        $total = $hafalanDupes->count() + $ummiDupes->count() + $ummiLineDupes->count();
+        $total = $hafalanDupes->count() + $ummiDupes->count() + $ummiLineDupes->count() + $merges->count();
         if ($total === 0) {
             $this->info('Tidak ada setoran ganda identik.');
 
@@ -84,7 +103,17 @@ class RemoveDuplicateSetoran extends Command
             return self::SUCCESS;
         }
 
-        DB::transaction(function () use ($hafalanDupes, $ummiDupes, $ummiLineDupes) {
+        DB::transaction(function () use ($hafalanDupes, $ummiDupes, $ummiLineDupes, $merges) {
+            foreach ($merges as $m) {
+                $this->log(UmmiRecord::class, $m['from']->id, $m['from']->student?->name, 'Sesi Ummi digabung', $m['from']->toArray() + ['surahs' => $m['from']->surahs->toArray()], $m['into']->id);
+                $order = (int) $m['into']->surahs()->max('sort_order');
+                foreach ($m['moved'] as $line) {
+                    $line->update(['ummi_record_id' => $m['into']->id, 'sort_order' => ++$order]);
+                }
+                $m['from']->surahs()->delete(); // sisa: baris yang identik dengan sesi tujuan
+                $m['from']->delete();
+            }
+
             foreach ($hafalanDupes as $d) {
                 $line = $d['line'];
                 $this->log(HafalanRecordSurah::class, $line->id, $line->hafalanRecord?->student?->name, 'Setoran hafalan', $line->toArray(), $d['keep']->id);
@@ -109,7 +138,9 @@ class RemoveDuplicateSetoran extends Command
         });
 
         // Sesi Ummi terhapus -> urutan TM halaqohnya dirapikan lagi.
-        $tatapMuka->renumber($ummiDupes->map(fn ($d) => [$d['record']->student_id, $d['record']->tanggal])->all());
+        $tatapMuka->renumber($ummiDupes->map(fn ($d) => [$d['record']->student_id, $d['record']->tanggal])
+            ->merge($merges->map(fn ($m) => [$m['into']->student_id, $m['into']->tanggal]))
+            ->all());
 
         $this->info("{$total} setoran ganda identik dihapus. Isinya tercatat di Audit Log.");
 
@@ -182,6 +213,37 @@ class RemoveDuplicateSetoran extends Command
         }
 
         return [$sessions, $lines, $conflicts->unique('id')->values()];
+    }
+
+    /**
+     * Dari sesi-sesi tanggal sama yang isinya berbeda: yang tanpa Jilid & Halaman digabung ke
+     * satu-satunya sesi tanggal itu yang berisi Jilid/Halaman. Lebih dari satu sesi berisi buku
+     * (mis. halaman 17-19 dan 21-23) tidak digabung -- tetap cek manual.
+     *
+     * @return Collection<int, array{from: UmmiRecord, into: UmmiRecord, moved: Collection}>
+     */
+    private function mergeableSessions(Collection $conflicts): Collection
+    {
+        $hasBook = fn (UmmiRecord $r) => filled($r->ummi_jilid) || filled($r->ummi_halaman);
+        $key = fn ($s) => $s->surah_id.':'.str_replace(' ', '', (string) $s->hafalan_ayah);
+
+        return $conflicts
+            ->groupBy(fn ($r) => $r->student_id.'|'.$r->tanggal?->toDateString())
+            ->flatMap(function ($group) use ($hasBook, $key) {
+                $withBook = $group->filter($hasBook);
+                if ($withBook->count() !== 1) {
+                    return [];
+                }
+                $into = $withBook->first();
+                $existing = $into->surahs->map($key)->all();
+
+                return $group->reject($hasBook)->map(fn ($from) => [
+                    'from' => $from,
+                    'into' => $into,
+                    'moved' => $from->surahs->reject(fn ($s) => in_array($key($s), $existing, true))->unique($key)->values(),
+                ])->values();
+            })
+            ->values();
     }
 
     private function log(string $type, int $id, ?string $name, string $label, array $old, int $keptId): void

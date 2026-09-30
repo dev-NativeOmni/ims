@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
 use App\Models\Program;
+use App\Models\Surah;
 use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -115,5 +116,45 @@ class DuplicateSetoranTest extends TestCase
         $this->assertNotNull($differentUmmi->fresh(), 'Isi berbeda tidak dihapus, hanya dilaporkan.');
 
         $this->assertSame(2, AuditLog::where('user_name', 'Sistem (tad:hapus-setoran-ganda)')->count());
+    }
+
+    #[Test]
+    public function gabung_sesi_merges_a_session_without_book_info_into_the_same_day_session(): void
+    {
+        $surah2 = Surah::firstOrCreate(['number' => 114], ['name_ar' => 'الناس', 'name_latin' => 'An-Nas', 'total_ayah' => 6, 'juz_start' => 30, 'juz_end' => 30]);
+        $session = function (string $date, ?string $jilid, ?string $halaman, array $lines) {
+            $ummi = UmmiRecord::create([
+                'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'tatap_muka' => 1,
+                'tanggal' => $date, 'ummi_jilid' => $jilid, 'ummi_halaman' => $halaman, 'nilai' => 'B',
+            ]);
+            foreach ($lines as $i => [$surahId, $ayah]) {
+                $ummi->surahs()->create(['surah_id' => $surahId, 'hafalan_ayah' => $ayah, 'sort_order' => $i]);
+            }
+
+            return $ummi;
+        };
+
+        // 20 Agustus: satu sesi berisi buku, satu sesi hanya surah (sebagian sama).
+        $into = $session('2026-08-20', 'Jilid 2', '2', [[$this->surah->id, '1-5']]);
+        $from = $session('2026-08-20', null, null, [[$this->surah->id, '1-5'], [$surah2->id, '1-6']]);
+        // 3 Agustus: dua sesi sama-sama berisi buku berbeda -> tidak digabung.
+        $a = $session('2026-08-03', 'Jilid 2', '21-23', []);
+        $b = $session('2026-08-03', 'Jilid 2', '17-19', []);
+
+        $this->artisan('tad:hapus-setoran-ganda', ['--force' => true])->assertSuccessful();
+        $this->assertNotNull($from->fresh(), 'Tanpa --gabung-sesi tidak digabung.');
+
+        $this->artisan('tad:hapus-setoran-ganda', ['--gabung-sesi' => true, '--dry-run' => true])->assertSuccessful();
+        $this->assertNotNull($from->fresh());
+
+        $this->artisan('tad:hapus-setoran-ganda', ['--gabung-sesi' => true, '--force' => true])->assertSuccessful();
+        $this->assertNull($from->fresh());
+        $this->assertSame(
+            [$this->surah->id.':1-5', $surah2->id.':1-6'],
+            $into->fresh()->surahs->map(fn ($s) => $s->surah_id.':'.$s->hafalan_ayah)->all()
+        );
+        $this->assertNotNull($a->fresh());
+        $this->assertNotNull($b->fresh());
+        $this->assertSame(1, AuditLog::where('auditable_label', 'Sesi Ummi digabung')->count());
     }
 }
