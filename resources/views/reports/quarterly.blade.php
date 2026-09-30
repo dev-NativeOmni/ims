@@ -345,7 +345,12 @@
                     </div>
 
                     <!-- 2. JURNAL PEMBELAJARAN -->
-                    <div x-show="activeTab === 'jurnal'" class="space-y-4" style="display: none;">
+                    @php
+                        // Paraf = tanda tangan guru pengampu halaqoh ini (dari Profil). Disematkan sekali
+                        // sebagai CSS variable, bukan <img> per baris, supaya halaman tidak membengkak.
+                        $parafSignature = \App\Support\Signatures::dataUri($halaqah['musyrif_signature'] ?? null);
+                    @endphp
+                    <div x-show="activeTab === 'jurnal'" class="space-y-4" style="display: none;{{ $parafSignature ? ' --paraf-signature: url('.$parafSignature.');' : '' }}">
 @foreach ($halaqah['monthly'] as $mCode => $month)
 <div class="space-y-3">
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
@@ -367,7 +372,14 @@
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-700 dark:text-zinc-300">{{ $jurnal['tanggal'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-900 dark:text-white">{{ $jurnal['materi'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-center font-semibold text-gray-600 dark:text-zinc-300">{{ $jurnal['jumlah_murid'] === null ? '-' : $jurnal['jumlah_murid'].' Murid' }}</td>
-                                            <td class="px-4 py-3 text-center text-teal-650 font-extrabold text-lg">{{ $jurnal['paraf'] }}</td>
+                                            <td class="px-4 py-3 text-center text-teal-650 font-extrabold text-lg">
+                                                @if ($parafSignature && $jurnal['paraf'] === '✓')
+                                                    <span role="img" aria-label="Paraf {{ $halaqah['musyrif'] }}" title="Paraf {{ $halaqah['musyrif'] }}"
+                                                          style="display: inline-block; width: 72px; height: 32px; vertical-align: middle; background: #fff var(--paraf-signature) center / contain no-repeat; border-radius: 4px;"></span>
+                                                @else
+                                                    {{ $jurnal['paraf'] }}
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

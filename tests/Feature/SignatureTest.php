@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\Program;
 use App\Models\Setting;
@@ -197,5 +198,33 @@ class SignatureTest extends TestCase
 
         $this->assertSame($original, Signatures::officialFile('headmaster'), 'Unggahan/hapus dari Admin diabaikan.');
         $this->assertSame('Nama Baru', Setting::get('report_headmaster_name'), 'Nama/NIK tetap tersimpan.');
+    }
+
+    #[Test]
+    public function quarterly_web_jurnal_shows_the_halaqoh_teachers_signature_as_paraf(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Paraf', 'status' => 'active']);
+        $classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'XI Paraf', 'level' => 'XI', 'tahfizh_days' => [1]]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'reguler']);
+        Attendance::create([
+            'student_id' => $this->student->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tanggal' => '2026-07-06',
+            'status' => 'hadir',
+        ]);
+        $query = ['class_room_id' => $classRoom->id, 'academic_year' => '2026/2027', 'term' => '1'];
+
+        // Belum ada tanda tangan: paraf tetap tanda centang.
+        $this->actingAs($this->admin)->get(route('reports.quarterly', $query))
+            ->assertOk()
+            ->assertDontSee('--paraf-signature', false);
+
+        $this->actingAs($this->teacherUser)->post(route('profile.signature.update'), ['signature' => $this->png()]);
+
+        $this->actingAs($this->admin)->get(route('reports.quarterly', $query))
+            ->assertOk()
+            ->assertSee('--paraf-signature: url(data:image/', false)
+            ->assertSee('Paraf '.$this->teacherUser->name, false);
     }
 }
