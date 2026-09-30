@@ -29,6 +29,7 @@
                 columns: @json($columns),
                 isWeekly: {{ json_encode($isWeekly) }},
                 attendancesMap: @json($attendancesMap),
+                isTahfizhProgram: @js($isTahfizhProgram),
                 hafalanRecordsMap: @json($hafalanRecordsMap),
                 ummiRecordsMap: @json($ummiRecordsMap),
                 lastHafalanMap: @json($lastHafalanMap),
@@ -77,6 +78,7 @@
                     this.students.forEach(s => {
                         this.gridData[s.id] = { dates: {} };
                         this.dates.forEach(d => {
+                            // Presensi tersimpan (mis. dari form Input Ummi).
                             let att = (this.attendancesMap[s.id] && this.attendancesMap[s.id][d]) ? this.attendancesMap[s.id][d] : '';
                             
                             // Hafalan tab
@@ -98,13 +100,18 @@
                                 uHafalans.push({ id: null, surah_id: '', ayah: '' });
                             }
 
-                            // Auto-default attendance to 'hadir' if hafalan or UMMI records exist for this cell
-                            if (!att && ((hList.length > 0 && hList[0].surah_id) || uData)) {
+                            // Belum ada presensi tersimpan: anggap hadir bila sel ini sudah ada setorannya. Murid Ummi
+                            // Program Tahfizh (Kelas 10) mengikuti form Input Ummi saja -- setoran mandiri tidak
+                            // membuatnya hadir; belum diisi di form Ummi = kosong.
+                            const followsUmmiForm = this.isTahfizhProgram && s.tahfizh_level === 'ummi';
+                            if (!att && (uData || (!followsUmmiForm && hList.length > 0 && hList[0].surah_id))) {
                                 att = 'hadir';
                             }
 
                             this.gridData[s.id].dates[d] = {
                                 attendance: att,
+                                // Presensi saat halaman dibuka: server hanya menyimpan presensi yang diubah di sini.
+                                attendance_original: att,
                                 hafalans: hList,
                                 ummi_jilid: uData ? uData.ummi_jilid || '' : '',
                                 ummi_halaman_awal: uData ? uData.ummi_halaman_awal || '' : '',
@@ -360,6 +367,7 @@
                             if (!c) return;
                             const att = c.attendance || '';
                             const cell = { attendance: att };
+                            if (c.attendance_original !== undefined) cell.attendance_original = c.attendance_original || '';
                             let hasContent = false;
 
                             if (this.tab === 'hafalan') {

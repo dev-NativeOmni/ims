@@ -422,4 +422,45 @@ class SpreadsheetInputTest extends TestCase
             ->assertSessionHas('error');
         $this->assertDatabaseHas('ummi_records', ['student_id' => $this->student->id, 'ummi_jilid' => 'Tajwid', 'ummi_halaman' => '5-8']);
     }
+
+    #[Test]
+    public function kelas_10_tahfizh_ummi_presensi_follows_the_ummi_form_and_is_not_overwritten(): void
+    {
+        $program = Program::create(['name' => 'Program Tahfizh', 'status' => 'active']);
+        $classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'X E1 Presensi', 'level' => 'X', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi', 'teacher_id' => $this->teacherProfile->id]);
+
+        // Setoran mandiri tanpa presensi di form Ummi: presensi tetap kosong (tidak otomatis hadir).
+        HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-09-14'])
+            ->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 3, 'submission_type' => 'new', 'status' => 'passed']);
+        // Izin diisi di form Input Ummi (Tabel Presensi Kelas).
+        $this->actingAs($this->teacherUser)->postJson('/attendances/save', [
+            'student_id' => $this->student->id, 'class_room_id' => $classRoom->id, 'tanggal' => '2026-09-15', 'status' => 'izin',
+        ])->assertOk();
+
+        $page = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', ['class_room_id' => $classRoom->id, 'month' => '2026-09']));
+        $map = $page->viewData('attendancesMap');
+        $this->assertTrue($page->viewData('isTahfizhProgram'));
+        $this->assertArrayNotHasKey('2026-09-14', $map[$this->student->id] ?? []);
+        $this->assertSame('izin', $map[$this->student->id]['2026-09-15']);
+
+        // Halaman spreadsheet yang dibuka sebelum izin diisi masih menampilkan "hadir" + setoran:
+        // disimpan tanpa diubah guru -> izin dari form Ummi tetap, setoran tidak disimpan.
+        $save = fn (array $cell) => $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $classRoom->id,
+            'month' => '2026-09',
+            'type' => 'hafalan',
+            'records' => [$this->student->id => ['dates' => ['2026-09-15' => $cell]]],
+        ]);
+        $stale = ['attendance' => 'hadir', 'attendance_original' => 'hadir', 'hafalans' => [
+            ['surah_id' => $this->surah->id, 'ayah_start' => 4, 'ayah_end' => 5, 'status' => 'passed', 'submission_type' => 'new'],
+        ]];
+        $save($stale);
+        $this->assertSame('izin', Attendance::where('student_id', $this->student->id)->whereDate('tanggal', '2026-09-15')->value('status'));
+        $this->assertSame(0, HafalanRecord::where('student_id', $this->student->id)->whereDate('submitted_at', '2026-09-15')->count());
+
+        // Guru sendiri mengubah presensi di spreadsheet -> tetap tersimpan.
+        $save(['attendance' => 'hadir', 'attendance_original' => 'izin'] + ['hafalans' => $stale['hafalans']]);
+        $this->assertSame('hadir', Attendance::where('student_id', $this->student->id)->whereDate('tanggal', '2026-09-15')->value('status'));
+    }
 }

@@ -176,7 +176,8 @@ class SpreadsheetInputController extends Controller
             $startDate = $selectedMonth.'-01';
             $endDate = date('Y-m-t', strtotime($startDate));
 
-            // Load Attendances
+            // Load Attendances -- hanya presensi yang benar-benar tersimpan (mis. dari form Input Ummi).
+            // "Hadir otomatis" untuk sel yang sudah ada setorannya ditentukan di tampilan.
             $attendances = Attendance::query()
                 ->whereIn('student_id', $studentIds)
                 ->whereBetween('tanggal', [$startDate, $endDate])
@@ -224,9 +225,6 @@ class SpreadsheetInputController extends Controller
                     ];
                 }
 
-                if (empty($attendancesMap[$record->student_id][$dateStr])) {
-                    $attendancesMap[$record->student_id][$dateStr] = 'hadir';
-                }
             }
 
             // Load UmmiRecords
@@ -251,10 +249,6 @@ class SpreadsheetInputController extends Controller
                 $ummiRecordsMap[$record->student_id][$dateStr]['ummi_halaman_akhir'] = $halamanAkhir;
                 $ummiRecordsMap[$record->student_id][$dateStr]['materi'] = $record->materi;
                 $ummiRecordsMap[$record->student_id][$dateStr]['nilai'] = $record->nilai;
-
-                if (empty($attendancesMap[$record->student_id][$dateStr])) {
-                    $attendancesMap[$record->student_id][$dateStr] = 'hadir';
-                }
 
                 foreach ($record->surahs as $surahEntry) {
                     $ummiRecordsMap[$record->student_id][$dateStr]['hafalans'][] = [
@@ -327,6 +321,8 @@ class SpreadsheetInputController extends Controller
             'students' => $students,
             'surahs' => $surahs,
             'attendancesMap' => $attendancesMap,
+            // Kelas 10 Program Tahfizh: presensi murid Ummi mengikuti form Input Ummi saja.
+            'isTahfizhProgram' => $selectedClass !== null && self::isTahfizhProgram($selectedClass),
             'hafalanRecordsMap' => $hafalanRecordsMap,
             'ummiRecordsMap' => $ummiRecordsMap,
             'lastHafalanMap' => $lastHafalanMap,
@@ -428,26 +424,40 @@ class SpreadsheetInputController extends Controller
                             || filled($cellData['materi'] ?? null)
                             || filled($cellData['nilai'] ?? null);
 
+                        // Presensi hanya ditulis bila guru benar-benar mengubahnya di spreadsheet. Sel yang
+                        // tidak diubah mengikuti presensi tersimpan (mis. Izin dari form Input Ummi yang diisi
+                        // setelah halaman spreadsheet dibuka), jadi tampilan lama tidak menimpanya.
+                        $existingRow = Attendance::query()->where('student_id', $studentId)->whereDate('tanggal', $date)->first();
+                        $existingAttendance = $existingRow?->status;
+                        $attendanceChanged = ! array_key_exists('attendance_original', $cellData)
+                            || (string) $attendance !== (string) $cellData['attendance_original'];
+                        if (! $attendanceChanged && $existingAttendance !== null) {
+                            $attendance = $existingAttendance;
+                        }
+
                         // Auto-mark attendance as 'hadir' if hafalan/UMMI is input but attendance pill was not set
                         if (($hasHafalanInput || $hasUmmiInput) && empty($attendance)) {
                             $attendance = 'hadir';
                         }
 
                         // 1. Save Attendance
-                        if (filled($attendance)) {
-                            Attendance::updateOrCreate(
-                                ['student_id' => $studentId, 'tanggal' => $date, 'class_room_id' => $classRoomId],
-                                ['status' => $attendance]
-                            );
+                        if (filled($attendance) && $attendance !== $existingAttendance) {
+                            $existingRow
+                                ? $existingRow->update(['status' => $attendance, 'class_room_id' => $classRoomId])
+                                : Attendance::create(['student_id' => $studentId, 'tanggal' => $date, 'class_room_id' => $classRoomId, 'status' => $attendance]);
                         }
 
-                        // ONLY clear records if student was explicitly marked absent ('sakit', 'izin', 'alpa')
+                        // Tidak hadir: setoran tidak disimpan; setoran lama hanya dihapus bila guru sendiri
+                        // yang mengubah presensinya jadi tidak hadir di spreadsheet.
                         if (in_array($attendance, ['sakit', 'izin', 'alpa'], true)) {
+                            if (! $attendanceChanged) {
+                                continue;
+                            }
                             HafalanRecord::where('student_id', $studentId)
-                                ->whereIn('submitted_at', $targetDates)
+                                ->where(fn ($q) => self::whereDates($q, 'submitted_at', $targetDates))
                                 ->delete();
                             UmmiRecord::where('student_id', $studentId)
-                                ->whereIn('tanggal', $targetDates)
+                                ->where(fn ($q) => self::whereDates($q, 'tanggal', $targetDates))
                                 ->delete();
 
                             continue;
@@ -519,10 +529,29 @@ class SpreadsheetInputController extends Controller
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
     }
 
+    /**
+     * Cocokkan kolom tanggal dengan daftar tanggal "Y-m-d" apa pun format simpannya (DATE atau
+     * DATETIME "Y-m-d 00:00:00") -- whereIn biasa bisa meleset lalu membuat data ganda.
+     */
+    private static function whereDates($query, string $column, array $dates): void
+    {
+        foreach ($dates as $date) {
+            $query->orWhereDate($column, $date);
+        }
+    }
+
+    /** Program Tahfizh (sama dengan aturan Laporan Triwulan): nama program memuat "tahfizh"/"akselerasi". */
+    private static function isTahfizhProgram(ClassRoom $classRoom): bool
+    {
+        $name = strtolower($classRoom->program?->name ?? '');
+
+        return str_contains($name, 'tahfizh') || str_contains($name, 'akselerasi');
+    }
+
     private function saveHafalanRecords(int $studentId, int $teacherId, string $date, array $cellData, array $targetDates): void
     {
         $existingHeaders = HafalanRecord::where('student_id', $studentId)
-            ->whereIn('submitted_at', $targetDates)
+            ->where(fn ($q) => self::whereDates($q, 'submitted_at', $targetDates))
             ->orderBy('id')
             ->get();
 
@@ -531,7 +560,7 @@ class SpreadsheetInputController extends Controller
 
         if (empty($hafalansList)) {
             HafalanRecord::where('student_id', $studentId)
-                ->whereIn('submitted_at', $targetDates)
+                ->where(fn ($q) => self::whereDates($q, 'submitted_at', $targetDates))
                 ->delete();
 
             return;
@@ -624,7 +653,7 @@ class SpreadsheetInputController extends Controller
     private function saveUmmiRecords(int $studentId, int $teacherId, string $date, array $cellData, array $targetDates): void
     {
         $existingRecords = UmmiRecord::where('student_id', $studentId)
-            ->whereIn('tanggal', $targetDates)
+            ->where(fn ($q) => self::whereDates($q, 'tanggal', $targetDates))
             ->orderBy('id')
             ->get();
 
@@ -643,7 +672,7 @@ class SpreadsheetInputController extends Controller
 
         if (! $hasUmmiFields && empty($hafalansList)) {
             UmmiRecord::where('student_id', $studentId)
-                ->whereIn('tanggal', $targetDates)
+                ->where(fn ($q) => self::whereDates($q, 'tanggal', $targetDates))
                 ->delete();
 
             return;
