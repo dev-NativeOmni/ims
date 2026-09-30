@@ -536,4 +536,67 @@ class QuarterlyReportExportTest extends TestCase
         $this->assertTrue($charts->every(fn ($c) => str_starts_with($c->getTitle()->getCaptionText(), 'Ketuntasan')));
         $this->assertSame('Q', preg_replace('/\d+/', '', $charts->first()->getTopLeftPosition()['cell']));
     }
+
+    #[Test]
+    public function reguler_ummi_setoran_is_split_into_ummi_and_mandiri_columns_like_tahfizh(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas X E2 Export',
+            'level' => 'X',
+            'tahfizh_days' => [3], // Rabu Juli 2026: 1, 8, 15, 22, 29
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
+
+        $ummi = UmmiRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tatap_muka' => 1,
+            'tanggal' => '2026-07-08',
+            'ummi_jilid' => 'Jilid 1',
+            'ummi_halaman' => '1-5',
+            'nilai' => 'A',
+        ]);
+        $ummi->surahs()->create(['surah_id' => $this->surah->id, 'hafalan_ayah' => '1-7', 'sort_order' => 1]);
+        HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => '2026-07-08',
+        ])->surahs()->create([
+            'surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 3, 'submission_type' => 'new', 'status' => 'passed',
+        ]);
+        Attendance::create([
+            'student_id' => $this->student->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'tanggal' => '2026-07-15',
+            'status' => 'izin',
+        ]);
+
+        $sheet = $this->downloadAndLoad([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ])->getSheetByName('Setoran');
+        $rows = $sheet->toArray();
+
+        // Juli: PEKAN 1 (Rabu, 1 Jul) di kolom D-K, PEKAN 2 (Rabu, 8 Jul) di L-S, PEKAN 3 di T-AA.
+        $top = collect($rows)->search(fn ($r) => ($r[3] ?? null) === 'PEKAN 1 (Rabu, 1 Jul)');
+        $this->assertNotFalse($top);
+        $this->assertSame('PEKAN 2 (Rabu, 8 Jul)', $rows[$top][11]);
+        $this->assertSame(['Ummi', null, null, null, 'Mandiri', null, 'Nilai', 'Kehadiran'], array_slice($rows[$top + 1], 11, 8));
+        $this->assertSame(['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat'], array_slice($rows[$top + 2], 11, 6));
+        // 5 Rabu di Juli = 5 pekan x 8 kolom; Rekap Kehadiran sesudahnya (tanpa Capaian Baris).
+        $this->assertSame('Rekap Kehadiran', $rows[$top][3 + 5 * 8]);
+
+        $student = $rows[$top + 3];
+        $this->assertSame($this->student->name, $student[1]);
+        // Pekan 2: Ummi (Jilid 1, hal. 1-5, Al-Fatihah 1-7), Mandiri (Al-Fatihah 1-3), Nilai A, Hadir.
+        $this->assertSame(['Jilid 1', '1-5', 'Al-Fatihah', '1-7', 'Al-Fatihah', '1-3', 'A', 'Hadir'], array_map(fn ($v) => (string) $v, array_slice($student, 11, 8)));
+        // Pekan 3: izin, digabung selebar kolom setoran & tertulis di Kehadiran.
+        $this->assertSame('Izin', $student[19]);
+        $this->assertSame('Izin', $student[26]);
+        $this->assertSame('T'.($top + 4).':Z'.($top + 4), $sheet->getCell('T'.($top + 4))->getMergeRange());
+    }
 }

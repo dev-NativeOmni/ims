@@ -92,6 +92,14 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
                     $pekanDates = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
                     $pekans = $this->activePekans($pekanDates);
 
+                    // Halaqoh Ummi (Kelas 10): tiap pekan dipecah Ummi & Mandiri, sama dengan Program Tahfizh.
+                    if ($halaqah['has_ummi'] ?? false) {
+                        $this->appendUmmiRegulerTable($rows, $row, $halaqah['monthly'][$mCode], $pekans, $pekanDates);
+                        $this->appendSignatureBlock($rows, $row, $halaqah, ['B', 'C'], ['D', 'E']);
+
+                        continue;
+                    }
+
                     $headerTopRow = ++$row;
                     $this->headerTopRows[] = $headerTopRow;
                     $rows[] = $this->regulerHeaderTop($pekans, $pekanDates);
@@ -145,6 +153,77 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithE
         }
 
         return $rows;
+    }
+
+    /** Kolom per pekan untuk halaqoh Ummi Program Reguler: 4 Ummi, 2 Mandiri, Nilai, Kehadiran. */
+    private const UMMI_PEKAN_COLS = 8;
+
+    /**
+     * Tabel satu bulan halaqoh Ummi Program Reguler, 3 baris header:
+     * PEKAN N (hari, tanggal) | Ummi / Mandiri / Nilai / Kehadiran | Jilid, Halaman, Surah, Ayat, Surah, Ayat,
+     * lalu Rekap Kehadiran. Pekan tanpa setoran (Izin/Sakit/Belum di input) ditulis sekali di
+     * kolom setoran (digabung) dan di kolom Kehadiran.
+     *
+     * @param  int[]  $pekans
+     */
+    private function appendUmmiRegulerTable(array &$rows, int &$row, array $month, array $pekans, array $pekanDates): void
+    {
+        $width = self::UMMI_PEKAN_COLS;
+        $col = fn (int $pekanIdx, int $offset) => Coordinate::stringFromColumnIndex(4 + $pekanIdx * $width + $offset);
+        $rekapCol = Coordinate::stringFromColumnIndex(4 + count($pekans) * $width);
+
+        $top = ++$row;
+        $this->headerTopRows[] = $top;
+        $this->headerExtraRows[] = $top + 2;
+
+        $pekanRow = ['No', 'Nama Murid', 'Level'];
+        $groupRow = ['', '', ''];
+        $subRow = ['', '', ''];
+        foreach ($pekans as $p) {
+            $pekanRow = array_merge($pekanRow, [$this->pekanLabel($p, $pekanDates)], array_fill(0, $width - 1, ''));
+            $groupRow = array_merge($groupRow, ['Ummi', '', '', '', 'Mandiri', '', 'Nilai', 'Kehadiran']);
+            $subRow = array_merge($subRow, ['Jilid', 'Halaman', 'Surah', 'Ayat', 'Surah', 'Ayat', '', '']);
+        }
+        $rows[] = array_merge($pekanRow, ['Rekap Kehadiran']);
+        $rows[] = array_merge($groupRow, ['']);
+        $rows[] = array_merge($subRow, ['']);
+        $row += 2;
+
+        foreach (['A', 'B', 'C', $rekapCol] as $c) {
+            $this->mergeRanges[] = "{$c}{$top}:{$c}".($top + 2);
+        }
+        foreach (array_keys($pekans) as $i) {
+            $this->mergeRanges[] = $col($i, 0).$top.':'.$col($i, $width - 1).$top;
+            $this->mergeRanges[] = $col($i, 0).($top + 1).':'.$col($i, 3).($top + 1);
+            $this->mergeRanges[] = $col($i, 4).($top + 1).':'.$col($i, 5).($top + 1);
+            $this->mergeRanges[] = $col($i, 6).($top + 1).':'.$col($i, 6).($top + 2);
+            $this->mergeRanges[] = $col($i, 7).($top + 1).':'.$col($i, 7).($top + 2);
+        }
+
+        foreach ($month['reguler_records'] as $idx => $record) {
+            $sPres = $month['presensi'][$record['student_id']] ?? ['hadir' => 0];
+            $line = [$idx + 1, $record['name'], $record['level']];
+            $row++;
+            foreach ($pekans as $i => $p) {
+                $pekan = $record['pekan'][$p];
+                $parts = $pekan['parts'] ?? null;
+                if ($pekan['kehadiran'] !== 'Hadir' || $parts === null) {
+                    // Tidak ada setoran pekan ini: statusnya ditulis sekali, digabung selebar kolom setoran.
+                    $status = $pekan['kehadiran'] === 'Hadir' ? '-' : $pekan['kehadiran'];
+                    $line = array_merge($line, [$status], array_fill(0, $width - 2, ''), [$pekan['kehadiran']]);
+                    $this->mergeRanges[] = $col($i, 0).$row.':'.$col($i, 6).$row;
+
+                    continue;
+                }
+                $line = array_merge($line, array_values($parts['ummi']), array_values($parts['mandiri']), [$pekan['nilai'], 'Hadir']);
+            }
+            $line[] = "{$sPres['hadir']}x Hadir";
+            $rows[] = $line;
+        }
+        $this->addTable($top, $row, 3);
+
+        $rows[] = [''];
+        $row++;
     }
 
     /** @param  int[]  $pekans */
