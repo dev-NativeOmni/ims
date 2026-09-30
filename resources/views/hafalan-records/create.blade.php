@@ -453,7 +453,7 @@
                     </span>
                 </div>
 
-                <form id="form-reguler" method="POST" action="{{ route('hafalan-records.store') }}" @input="isDirty = true" @change="isDirty = true" class="space-y-6">
+                <form id="form-reguler" method="POST" action="{{ route('hafalan-records.store') }}" @pageshow.window="isSaving = false" @input="isDirty = true" @change="isDirty = true" @submit="if (isSaving) { $event.preventDefault(); return; } isSaving = true; isDirty = false" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="reguler">
 
@@ -686,9 +686,10 @@
                         <a href="{{ route('hafalan-records.index') }}" class="px-4 py-2 text-sm text-gray-600 dark:text-zinc-400 hover:underline">
                             Batal
                         </a>
-                        <button type="submit"
-                                class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                            Simpan Setoran Reguler
+                        {{-- Dikunci setelah diklik supaya tidak terkirim dua kali (setoran ganda). --}}
+                        <button type="submit" :disabled="isSaving"
+                                class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-wait text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                            <span x-text="isSaving ? 'Menyimpan...' : 'Simpan Setoran Reguler'">Simpan Setoran Reguler</span>
                         </button>
                     </div>
                 </form>
@@ -706,7 +707,7 @@
                     </span>
                 </div>
 
-                <form id="form-ummi" method="POST" action="{{ route('ummi-records.store') }}" @input="isDirty = true" @change="isDirty = true" class="space-y-6">
+                <form id="form-ummi" method="POST" action="{{ route('ummi-records.store') }}" @input="isDirty = true" @change="isDirty = true" @submit="if (isSaving) { $event.preventDefault(); return; } isSaving = true; isDirty = false" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="ummi">
                     <input type="hidden" name="redirect_to" value="hafalan">
@@ -1069,9 +1070,10 @@
                         <a href="{{ route('hafalan-records.index', ['category' => 'ummi']) }}" class="px-4 py-2 text-sm text-gray-600 dark:text-zinc-400 hover:underline">
                             Batal
                         </a>
-                        <button type="submit"
-                                class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                            Simpan Catatan UMMI
+                        {{-- Dikunci setelah diklik supaya tidak terkirim dua kali (setoran ganda). --}}
+                        <button type="submit" :disabled="isSaving"
+                                class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-wait text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                            <span x-text="isSaving ? 'Menyimpan...' : 'Simpan Catatan UMMI'">Simpan Catatan UMMI</span>
                         </button>
                     </div>
                 </form>

@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -189,7 +190,9 @@ class HafalanRecordController extends Controller
         $statuses = $validated['statuses'] ?? [];
         $baris = $validated['baris'] ?? [];
 
-        DB::transaction(function () use (
+        // Kiriman ganda (klik dua kali / kirim ulang) untuk murid & tanggal yang sama diproses bergantian;
+        // baris yang identik dengan setoran yang sudah tercatat di tanggal itu tidak disimpan lagi.
+        $saved = Cache::lock("hafalan-store:{$studentId}:".Carbon::parse($submittedAt)->toDateString(), 30)->block(15, fn () => DB::transaction(function () use (
             $studentId,
             $teacherId,
             $notes,
@@ -202,6 +205,18 @@ class HafalanRecordController extends Controller
             $statuses,
             $baris
         ) {
+            $existing = HafalanRecord::flattenSurahs(
+                HafalanRecord::query()->with('surahs')->where('student_id', $studentId)->whereDate('submitted_at', $submittedAt)->get()
+            );
+            $newLines = collect($surahIds)->filter()->keys()->reject(fn ($idx) => $existing->contains(fn ($l) => (int) $l->surah_id === (int) $surahIds[$idx]
+                && (int) $l->ayah_start === (int) ($ayahStarts[$idx] ?? 1)
+                && (int) $l->ayah_end === (int) ($ayahEnds[$idx] ?? 1)
+                && $l->status === ($statuses[$idx] ?? 'passed')));
+
+            if ($newLines->isEmpty()) {
+                return false;
+            }
+
             $hafalanRecord = HafalanRecord::query()->create([
                 'student_id' => $studentId,
                 'teacher_id' => $teacherId,
@@ -209,10 +224,8 @@ class HafalanRecordController extends Controller
                 'submitted_at' => $submittedAt,
             ]);
 
-            foreach ($surahIds as $idx => $surahId) {
-                if (empty($surahId)) {
-                    continue;
-                }
+            foreach ($newLines as $idx) {
+                $surahId = $surahIds[$idx];
 
                 $hafalanRecord->surahs()->create([
                     'surah_id' => (int) $surahId,
@@ -225,11 +238,13 @@ class HafalanRecordController extends Controller
                     'sort_order' => $idx,
                 ]);
             }
-        });
+
+            return true;
+        }));
 
         return redirect()
             ->route('hafalan-records.index')
-            ->with('success', 'Data hafalan berhasil ditambahkan.');
+            ->with('success', $saved ? 'Data hafalan berhasil ditambahkan.' : 'Setoran ini sudah tercatat sebelumnya, tidak disimpan ganda.');
     }
 
     public function show(HafalanRecord $hafalanRecord): View

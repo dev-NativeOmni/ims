@@ -15,6 +15,7 @@ use App\Support\UmmiBook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -485,7 +486,10 @@ class QuickInputController extends Controller
         $studentScores = $request->input('student_scores', []);
         $studentNotes = $request->input('student_notes', []);
 
-        DB::transaction(function () use ($students, $hafalans, $validated, $request, $studentScores, $studentNotes) {
+        // Kiriman ganda (klik dua kali / kirim ulang) untuk kelas & tanggal yang sama diproses bergantian,
+        // dan satu murid hanya punya satu sesi Ummi per tanggal (sama dengan Spreadsheet Input):
+        // sesi yang sudah ada diperbarui, surah yang identik tidak ditambahkan lagi.
+        Cache::lock("ummi-store:{$classRoomId}:{$validated['tanggal']}", 30)->block(15, fn () => DB::transaction(function () use ($students, $hafalans, $validated, $request, $studentScores, $studentNotes) {
             foreach ($students as $student) {
                 $teacherId = $this->resolveTeacherId($request, $student);
                 if (! $teacherId) {
@@ -495,11 +499,8 @@ class QuickInputController extends Controller
                 $individualScore = ! empty($studentScores[$student->id]) ? $studentScores[$student->id] : ($validated['nilai'] ?? null);
                 $individualNote = ! empty($studentNotes[$student->id]) ? $studentNotes[$student->id] : ($validated['keterangan'] ?? null);
 
-                $ummiRecord = UmmiRecord::query()->create([
-                    'student_id' => $student->id,
+                $header = [
                     'teacher_id' => $teacherId,
-                    'tatap_muka' => $validated['tatap_muka'] ?? 1, // dinomori ulang setelah simpan
-                    'tanggal' => $validated['tanggal'],
                     'ummi_jilid' => $validated['ummi_jilid'] ?? null,
                     'ummi_halaman' => UmmiBook::halamanFromInput($validated),
                     'materi' => $validated['materi'] ?? null,
@@ -507,18 +508,41 @@ class QuickInputController extends Controller
                     'disimak_guru' => $validated['disimak_guru'],
                     'disimak_ortu' => $validated['disimak_ortu'],
                     'keterangan' => $individualNote,
-                ]);
+                ];
 
-                foreach ($hafalans as $sortOrder => $hafalan) {
+                $ummiRecord = UmmiRecord::query()
+                    ->where('student_id', $student->id)
+                    ->whereDate('tanggal', $validated['tanggal'])
+                    ->orderBy('id')
+                    ->first();
+
+                if ($ummiRecord) {
+                    $ummiRecord->update($header);
+                } else {
+                    $ummiRecord = UmmiRecord::query()->create($header + [
+                        'student_id' => $student->id,
+                        'tatap_muka' => $validated['tatap_muka'] ?? 1, // dinomori ulang setelah simpan
+                        'tanggal' => $validated['tanggal'],
+                    ]);
+                }
+
+                $existingLines = $ummiRecord->surahs()->get(['surah_id', 'hafalan_ayah', 'sort_order']);
+                $nextOrder = (int) $existingLines->max('sort_order') + ($existingLines->isEmpty() ? 0 : 1);
+                foreach ($hafalans as $hafalan) {
+                    $identical = $existingLines->contains(fn ($l) => (int) $l->surah_id === (int) $hafalan['surah_id']
+                        && str_replace(' ', '', (string) $l->hafalan_ayah) === str_replace(' ', '', (string) $hafalan['ayah']));
+                    if ($identical) {
+                        continue;
+                    }
                     $ummiRecord->surahs()->create([
                         'surah_id' => $hafalan['surah_id'],
                         'hafalan_ayah' => $hafalan['ayah'],
                         'baris' => $hafalan['baris'],
-                        'sort_order' => $sortOrder,
+                        'sort_order' => $nextOrder++,
                     ]);
                 }
             }
-        });
+        }));
 
         app(UmmiTatapMukaService::class)->renumber($students->map(fn ($s) => [$s->id, $validated['tanggal']])->all());
 
