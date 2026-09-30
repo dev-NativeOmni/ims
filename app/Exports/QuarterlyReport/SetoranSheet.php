@@ -7,6 +7,7 @@ use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -20,15 +21,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * Sheet "Setoran" (Capaian Hafalan): grid per bulan > tingkat kelas > kelas/halaqoh,
  * dengan header gabungan "PEKAN N" (Surah, Ayat, Jumlah Baris, Nilai, Kehadiran) dan
  * "REKAPAN AKHIR BULAN" -- sama seperti sheet "CAPAIAN HAFALAN" di template sekolah.
- * Tahfizh memakai grid per hari (Senin-Jumat) per pekan.
+ * Tahfizh memakai grid per hari pertemuan aktif per pekan. Pekan/hari libur tidak dijadikan kolom.
  */
-class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
+class SetoranSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
     use GradeBanding, PekanLabeling, SignatureBlock;
 
     private const REGULER_SUBCOLS = ['Surah', 'Ayat', 'Jumlah Baris', 'Nilai', 'Kehadiran'];
-
-    private const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
     /** @var int[] */
     private array $monthRows = [];
@@ -50,6 +49,12 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
         private readonly bool $isTahfizhProgram,
         private readonly array $signatureContext = [],
     ) {}
+
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    public function columnWidths(): array
+    {
+        return ['A' => 5];
+    }
 
     public function title(): string
     {
@@ -79,21 +84,26 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                     $rows[] = ["Kelas: {$halaqah['class_room_name']}  |  Musyrif: {$halaqah['musyrif']}"];
                     $this->classRows[] = ++$row;
 
+                    // Hanya pekan yang punya pertemuan aktif (pekan libur tidak dijadikan kolom).
+                    $pekanDates = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
+                    $pekans = $this->activePekans($pekanDates);
+
                     $headerTopRow = ++$row;
                     $this->headerTopRows[] = $headerTopRow;
-                    $rows[] = $this->regulerHeaderTop($halaqah['monthly'][$mCode]['pekan_dates'] ?? []);
-                    $rows[] = $this->regulerHeaderSub();
+                    $rows[] = $this->regulerHeaderTop($pekans, $pekanDates);
+                    $rows[] = $this->regulerHeaderSub(count($pekans));
                     $row++; // baris sub-header kedua
 
                     $this->mergeRanges[] = 'A'.$headerTopRow.':A'.($headerTopRow + 1);
                     $this->mergeRanges[] = 'B'.$headerTopRow.':B'.($headerTopRow + 1);
                     $this->mergeRanges[] = 'C'.$headerTopRow.':C'.($headerTopRow + 1);
-                    for ($p = 0; $p < 5; $p++) {
-                        $start = Coordinate::stringFromColumnIndex(4 + $p * 5);
-                        $end = Coordinate::stringFromColumnIndex(8 + $p * 5);
+                    foreach (array_keys($pekans) as $i) {
+                        $start = Coordinate::stringFromColumnIndex(4 + $i * 5);
+                        $end = Coordinate::stringFromColumnIndex(8 + $i * 5);
                         $this->mergeRanges[] = "{$start}{$headerTopRow}:{$end}{$headerTopRow}";
                     }
-                    $this->mergeRanges[] = 'AC'.$headerTopRow.':AD'.$headerTopRow;
+                    $rekapStart = 4 + count($pekans) * 5;
+                    $this->mergeRanges[] = Coordinate::stringFromColumnIndex($rekapStart).$headerTopRow.':'.Coordinate::stringFromColumnIndex($rekapStart + 1).$headerTopRow;
 
                     $month = $halaqah['monthly'][$mCode];
                     foreach ($month['reguler_records'] as $idx => $record) {
@@ -101,7 +111,7 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                         $isUmmi = ($record['ummi'] ?? null) !== null;
 
                         $line = [$idx + 1, $record['name'], $record['level']];
-                        for ($p = 1; $p <= 5; $p++) {
+                        foreach ($pekans as $p) {
                             $pekan = $record['pekan'][$p];
                             if ($pekan['kehadiran'] !== 'Hadir') {
                                 $line = array_merge($line, [$pekan['kehadiran'], '', '', '', $pekan['kehadiran']]);
@@ -132,20 +142,21 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
         return $rows;
     }
 
-    private function regulerHeaderTop(array $pekanDates): array
+    /** @param  int[]  $pekans */
+    private function regulerHeaderTop(array $pekans, array $pekanDates): array
     {
         $row = ['No', 'Nama Murid', 'Level'];
-        for ($p = 1; $p <= 5; $p++) {
+        foreach ($pekans as $p) {
             $row = array_merge($row, [$this->pekanLabel($p, $pekanDates), '', '', '', '']);
         }
 
         return array_merge($row, ['REKAPAN AKHIR BULAN', '']);
     }
 
-    private function regulerHeaderSub(): array
+    private function regulerHeaderSub(int $pekanCount): array
     {
         $row = ['', '', ''];
-        for ($p = 1; $p <= 5; $p++) {
+        for ($i = 0; $i < $pekanCount; $i++) {
             $row = array_merge($row, self::REGULER_SUBCOLS);
         }
 
@@ -172,17 +183,23 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
 
                     $pekanDatesForClass = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
 
-                    for ($p = 1; $p <= 5; $p++) {
+                    // Hanya pekan & hari pertemuan aktif (pekan/hari libur tidak dijadikan kolom), sama dengan web.
+                    foreach ($this->activePekans($pekanDatesForClass) as $p) {
+                        $days = $pekanDatesForClass[$p];
+                        $dayCount = count($days);
+
                         $headerTopRow = ++$row;
                         $this->headerTopRows[] = $headerTopRow;
-                        $rows[] = ['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDatesForClass), '', '', '', '', 'Rekap'];
-                        $rows[] = array_merge(['', '', ''], self::DAYS, ['Baris']);
+                        $rows[] = array_merge(['No', 'Nama Murid', 'Level', $this->pekanLabel($p, $pekanDatesForClass)], array_fill(0, $dayCount - 1, ''), ['Rekap']);
+                        $rows[] = array_merge(['', '', ''], array_column($days, 'label'), ['Baris']);
                         $row++;
 
                         $this->mergeRanges[] = 'A'.$headerTopRow.':A'.($headerTopRow + 1);
                         $this->mergeRanges[] = 'B'.$headerTopRow.':B'.($headerTopRow + 1);
                         $this->mergeRanges[] = 'C'.$headerTopRow.':C'.($headerTopRow + 1);
-                        $this->mergeRanges[] = 'D'.$headerTopRow.':H'.$headerTopRow;
+                        if ($dayCount > 1) {
+                            $this->mergeRanges[] = 'D'.$headerTopRow.':'.Coordinate::stringFromColumnIndex(3 + $dayCount).$headerTopRow;
+                        }
 
                         $month = $halaqah['monthly'][$mCode];
                         foreach ($month['tahfizh_records'] as $idx => $record) {
@@ -190,8 +207,8 @@ class SetoranSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictN
                             $isUmmi = ($record['ummi'] ?? null) !== null;
                             $line = [$idx + 1, $record['name'], $record['level']];
 
-                            foreach (self::DAYS as $dayName) {
-                                $line[] = $this->tahfizhCell($wRecord['days'][$dayName], $isUmmi);
+                            foreach ($days as $day) {
+                                $line[] = $this->tahfizhCell($wRecord['days'][$day['day']] ?? ['status' => 'kosong', 'surah' => '-'], $isUmmi);
                             }
 
                             // Ummi tidak punya Capaian Baris -- ketuntasannya dinilai dari Jilid|Halaman.

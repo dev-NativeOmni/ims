@@ -5,6 +5,7 @@ namespace App\Exports\QuarterlyReport;
 use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -16,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * kelas (pita hijau/kuning/oranye) lalu per kelas/halaqoh -- sama seperti tab
  * "Term / Indeks (DNS)" di layar dan template Excel sekolah.
  */
-class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullComparison, WithStyles, WithTitle
+class TermIndexSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithStrictNullComparison, WithStyles, WithTitle
 {
     use GradeBanding;
 
@@ -33,6 +34,12 @@ class TermIndexSheet implements FromArray, ShouldAutoSize, WithStrictNullCompari
     private array $summaryRows = [];
 
     public function __construct(private readonly array $halaqahData) {}
+
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    public function columnWidths(): array
+    {
+        return ['A' => 5];
+    }
 
     public function title(): string
     {

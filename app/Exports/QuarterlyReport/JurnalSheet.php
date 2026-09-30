@@ -6,6 +6,7 @@ use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\SignatureBlock;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -20,7 +21,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * sama seperti sheet "JURNAL" di template sekolah. Kolom "Paraf" per pertemuan berisi
  * gambar tanda tangan guru pengampu halaqoh itu (bila sudah diunggah), bukan sekadar centang.
  */
-class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
+class JurnalSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
     use GradeBanding, SignatureBlock;
 
@@ -46,6 +47,12 @@ class JurnalSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNu
         private readonly array $halaqahData,
         private readonly array $signatureContext = [],
     ) {}
+
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    public function columnWidths(): array
+    {
+        return ['A' => 5];
+    }
 
     public function title(): string
     {

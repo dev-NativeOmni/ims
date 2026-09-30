@@ -380,4 +380,39 @@ class QuarterlyReportExportTest extends TestCase
         $cells = $this->flatten($sheet->toArray());
         $this->assertTrue(collect($cells)->contains(fn ($v) => is_string($v) && str_contains($v, 'TUNTAS (') && str_contains($v, '%)')));
     }
+
+    #[Test]
+    public function export_skips_holiday_pekan_columns_and_keeps_the_no_column_compact(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Test', 'status' => 'active']);
+        $classRoom = ClassRoom::create([
+            'program_id' => $program->id,
+            'name' => 'Kelas XI F3 Export',
+            'level' => 'XI',
+            'tahfizh_days' => [2], // Selasa Juli 2026: 7 (pekan 1), 14 (pekan 2), 21, 28; pekan 5 tanpa Selasa
+        ]);
+        $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'reguler']);
+        $this->markHoliday('2026-07-14'); // pekan 2 libur
+
+        $spreadsheet = $this->downloadAndLoad([
+            'class_room_id' => $classRoom->id,
+            'academic_year' => '2026/2027',
+            'term' => '1',
+        ]);
+
+        foreach (['Presensi', 'Setoran'] as $name) {
+            $sheet = $spreadsheet->getSheetByName($name);
+            $cells = $this->flatten($sheet->toArray());
+            $this->assertEmpty(array_filter($cells, fn ($c) => str_contains((string) $c, '(Libur)')), "{$name}: pekan libur tidak dijadikan kolom");
+            $this->assertContains('PEKAN 1 (Selasa, 7 Jul)', $cells);
+            $this->assertContains('PEKAN 3 (Selasa, 21 Jul)', $cells);
+            $this->assertContains('PEKAN 4 (Selasa, 28 Jul)', $cells);
+            $this->assertEquals(5, $sheet->getColumnDimension('A')->getWidth(), "{$name}: kolom No ringkas");
+        }
+
+        // Presensi Juli: No, Nama, 3 pekan aktif, lalu Rekap Hadir/Izin/Sakit/Alpa.
+        $presensi = $spreadsheet->getSheetByName('Presensi')->toArray();
+        $subHeader = collect($presensi)->first(fn ($r) => ($r[2] ?? null) === 'PEKAN 1 (Selasa, 7 Jul)');
+        $this->assertSame(['Hadir', 'Izin', 'Sakit', 'Alpa'], array_slice($subHeader, 5, 4));
+    }
 }

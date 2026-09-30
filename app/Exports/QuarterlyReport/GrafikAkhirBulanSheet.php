@@ -6,6 +6,7 @@ use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCharts;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -24,7 +25,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * batang+garis (Capaian vs Target per murid) dan donat Ketuntasan -- sama
  * seperti "GRAFIK CAPAIAN BULAN" & "KETUNTASAN BULAN" di template sekolah.
  */
-class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithStrictNullComparison, WithStyles, WithTitle
+class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, WithColumnWidths, WithStrictNullComparison, WithStyles, WithTitle
 {
     use GradeBanding;
 
@@ -44,6 +45,12 @@ class GrafikAkhirBulanSheet implements FromArray, ShouldAutoSize, WithCharts, Wi
     private array $chartRanges = [];
 
     public function __construct(private readonly array $halaqahData) {}
+
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    public function columnWidths(): array
+    {
+        return ['A' => 5];
+    }
 
     public function title(): string
     {

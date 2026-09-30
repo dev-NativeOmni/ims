@@ -6,6 +6,7 @@ use App\Exports\QuarterlyReport\Concerns\GradeBanding;
 use App\Exports\QuarterlyReport\Concerns\PekanLabeling;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -21,7 +22,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * Sakit/Alpa) untuk Reguler, atau 12 pertemuan per bulan untuk Tahfizh -- sama
  * seperti sheet "PRESENSI" di template sekolah, plus baris JUMLAH per kelas.
  */
-class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
+class PresensiSheet implements FromArray, ShouldAutoSize, WithColumnWidths, WithEvents, WithStrictNullComparison, WithStyles, WithTitle
 {
     use GradeBanding, PekanLabeling;
 
@@ -49,6 +50,12 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrict
         private readonly array $halaqahData,
         private readonly bool $isTahfizhProgram,
     ) {}
+
+    /** Kolom A (No) dibuat ringkas; baris judul (BULAN/KELAS/Kelas) cukup meluber ke kolom sebelah. */
+    public function columnWidths(): array
+    {
+        return ['A' => 5];
+    }
 
     public function title(): string
     {
@@ -79,25 +86,30 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrict
                     $this->classRows[] = ++$row;
 
                     $pekanDates = $halaqah['monthly'][$mCode]['pekan_dates'] ?? [];
+                    $pekans = $this->activePekans($pekanDates);
+                    $pekanCount = count($pekans);
+                    $rekapStart = 3 + $pekanCount; // kolom (1-indexed) pertama Rekap Kehadiran
 
                     $headerTopRow = ++$row;
                     $this->headerTopRows[] = $headerTopRow;
-                    $rows[] = ['No', 'Nama Murid', 'Tanggal Tatap Muka', '', '', '', '', 'Rekap Kehadiran', '', '', ''];
-                    $rows[] = [
-                        '', '',
-                        $this->pekanLabel(1, $pekanDates),
-                        $this->pekanLabel(2, $pekanDates),
-                        $this->pekanLabel(3, $pekanDates),
-                        $this->pekanLabel(4, $pekanDates),
-                        $this->pekanLabel(5, $pekanDates),
-                        'Hadir', 'Izin', 'Sakit', 'Alpa',
-                    ];
+                    $rows[] = array_merge(
+                        ['No', 'Nama Murid'],
+                        $pekanCount > 0 ? array_merge(['Tanggal Tatap Muka'], array_fill(0, $pekanCount - 1, '')) : [],
+                        ['Rekap Kehadiran', '', '', '']
+                    );
+                    $rows[] = array_merge(
+                        ['', ''],
+                        array_map(fn (int $p) => $this->pekanLabel($p, $pekanDates), $pekans),
+                        ['Hadir', 'Izin', 'Sakit', 'Alpa']
+                    );
                     $row++;
 
                     $this->mergeRanges[] = 'A'.$headerTopRow.':A'.($headerTopRow + 1);
                     $this->mergeRanges[] = 'B'.$headerTopRow.':B'.($headerTopRow + 1);
-                    $this->mergeRanges[] = 'C'.$headerTopRow.':G'.$headerTopRow;
-                    $this->mergeRanges[] = 'H'.$headerTopRow.':K'.$headerTopRow;
+                    if ($pekanCount > 1) {
+                        $this->mergeRanges[] = 'C'.$headerTopRow.':'.Coordinate::stringFromColumnIndex($rekapStart - 1).$headerTopRow;
+                    }
+                    $this->mergeRanges[] = Coordinate::stringFromColumnIndex($rekapStart).$headerTopRow.':'.Coordinate::stringFromColumnIndex($rekapStart + 3).$headerTopRow;
 
                     $month = $halaqah['monthly'][$mCode];
                     $totals = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0];
@@ -108,19 +120,11 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrict
                             continue;
                         }
 
-                        $rows[] = [
-                            $idx + 1,
-                            $student->name,
-                            $sPres['pekan'][1] ?? '-',
-                            $sPres['pekan'][2] ?? '-',
-                            $sPres['pekan'][3] ?? '-',
-                            $sPres['pekan'][4] ?? '-',
-                            $sPres['pekan'][5] ?? '-',
-                            $sPres['hadir'],
-                            $sPres['izin'],
-                            $sPres['sakit'],
-                            $sPres['alpa'],
-                        ];
+                        $rows[] = array_merge(
+                            [$idx + 1, $student->name],
+                            array_map(fn (int $p) => $sPres['pekan'][$p] ?? '-', $pekans),
+                            [$sPres['hadir'], $sPres['izin'], $sPres['sakit'], $sPres['alpa']]
+                        );
                         $row++;
 
                         $totals['hadir'] += $sPres['hadir'];
@@ -129,7 +133,7 @@ class PresensiSheet implements FromArray, ShouldAutoSize, WithEvents, WithStrict
                         $totals['alpa'] += $sPres['alpa'];
                     }
 
-                    $rows[] = ['JUMLAH', '', '', '', '', '', '', $totals['hadir'], $totals['izin'], $totals['sakit'], $totals['alpa']];
+                    $rows[] = array_merge(['JUMLAH', ''], array_fill(0, $pekanCount, ''), array_values($totals));
                     $this->totalRows[] = ++$row;
 
                     $rows[] = [''];

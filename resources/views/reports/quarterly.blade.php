@@ -235,7 +235,7 @@
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-[10px] text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr>
-                                            <th rowspan="2" class="px-3 py-3 text-left w-10 border-b border-r dark:border-zinc-700">No</th>
+                                            <th rowspan="2" class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                             <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             @foreach ($halaqah['months'] as $mName)
                                                 <th colspan="15" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">{{ $mName }}</th>
@@ -255,7 +255,7 @@
                                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                         @foreach ($halaqah['students'] as $idx => $student)
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
-                                                <td class="px-3 py-2 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                                <td class="w-px whitespace-nowrap px-2 py-2 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-4 py-2 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $student->name }}</td>
                                                 @foreach ($halaqah['months'] as $mName)
                                                     @php $sPres = $halaqah['presensi'][$student->id][$mName]; @endphp
@@ -294,7 +294,7 @@
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr>
-                                            <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
+                                            <th rowspan="2" class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                             <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[200px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th colspan="{{ count($activePekans) }}" class="px-3 py-2 border-b border-r dark:border-zinc-700 uppercase tracking-wider">Kehadiran Pertemuan</th>
                                             <th colspan="4" class="px-3 py-2 border-b dark:border-zinc-700 uppercase tracking-wider">Rekap Kehadiran</th>
@@ -313,7 +313,7 @@
                                         @foreach ($halaqah['students'] as $idx => $student)
                                             @php $sPres = $month['presensi'][$student->id]; @endphp
                                             <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
-                                                <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                                <td class="w-px whitespace-nowrap px-2 py-3 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $student->name }}</td>
                                                 @foreach ($activePekans as $p)
                                                     <td class="px-2 py-3 border-r dark:border-zinc-700">
@@ -353,7 +353,7 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                     <tr>
-                                        <th class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
+                                        <th class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                         <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700 w-48">Hari/ Tanggal</th>
                                         <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700">Materi</th>
                                         <th class="px-4 py-3 text-center border-b border-r dark:border-zinc-700 w-36">Jumlah Murid</th>
@@ -363,7 +363,7 @@
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                                     @foreach ($month['jurnal'] as $jIdx => $jurnal)
                                         <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $jIdx + 1 }}</td>
+                                            <td class="w-px whitespace-nowrap px-2 py-3 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $jIdx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-700 dark:text-zinc-300">{{ $jurnal['tanggal'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-900 dark:text-white">{{ $jurnal['materi'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-center font-semibold text-gray-600 dark:text-zinc-300">{{ $jurnal['jumlah_murid'] === null ? '-' : $jurnal['jumlah_murid'].' Murid' }}</td>
@@ -405,7 +405,7 @@
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-[10px] text-center">
                                         <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                             <tr>
-                                                <th rowspan="2" class="px-3 py-3 text-left w-10 border-b border-r dark:border-zinc-700">No</th>
+                                                <th rowspan="2" class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                                 <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                                 <th rowspan="2" class="px-2 py-3 border-b border-r dark:border-zinc-700">Halaqoh</th>
                                                 @foreach ($month['pekan_dates'][$p] as $d)
@@ -430,7 +430,7 @@
                                             @foreach ($month['tahfizh_records'] as $idx => $row)
                                                 @php $wRecord = $row['pekan'][$p]; $rowIsUmmi = ($row['ummi'] ?? null) !== null; @endphp
                                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
-                                                    <td class="px-3 py-2.5 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                                    <td class="w-px whitespace-nowrap px-2 py-2.5 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                     <td class="px-4 py-2.5 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                     <td class="px-2 py-2.5 border-r dark:border-zinc-700 font-medium text-gray-600 dark:text-zinc-400">{{ $row['level'] }}</td>
 
@@ -467,7 +467,7 @@
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-[10px] text-center">
                                     <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                         <tr class="border-b dark:border-zinc-700">
-                                            <th rowspan="3" class="px-2 py-3 text-left border-b border-r dark:border-zinc-750">No</th>
+                                            <th rowspan="3" class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-750">No</th>
                                             <th rowspan="3" class="px-3 py-3 text-left min-w-[120px] sm:min-w-[150px] border-b border-r dark:border-zinc-750 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                             <th rowspan="3" class="px-2 py-3 border-b border-r dark:border-zinc-750">Halaqah</th>
                                             <th colspan="{{ count($activePekans) }}" class="px-2 py-2 border-b border-r dark:border-zinc-750">Jurnal & Setoran Pertemuan</th>
@@ -496,7 +496,7 @@
                                         @foreach ($month['reguler_records'] as $idx => $row)
                                             @php $sPres = $month['presensi'][$row['student_id']]; $rowIsUmmi = ($row['ummi'] ?? null) !== null; @endphp
                                             <tr class="hover:bg-gray-50/50 dark:hover:bg-zinc-850/20">
-                                                <td class="px-2 py-2.5 border-r dark:border-zinc-750 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                                <td class="w-px whitespace-nowrap px-2 py-2.5 border-r dark:border-zinc-750 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                                 <td class="px-3 py-2.5 border-r dark:border-zinc-750 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                                 <td class="px-2 py-2.5 border-r dark:border-zinc-750 font-semibold text-gray-700 dark:text-zinc-300">{{ $row['level'] }}</td>
 
@@ -604,7 +604,7 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                     <tr>
-                                        <th class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
+                                        <th class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                         <th class="px-4 py-3 text-left border-b border-r dark:border-zinc-700 min-w-[120px] sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th class="px-4 py-3 border-b border-r dark:border-zinc-700">Halaqoh Group</th>
                                         @if ($hasUmmi)
@@ -629,7 +629,7 @@
                                     @foreach ($records as $idx => $row)
                                         @php $ummi = $row['ummi'] ?? null; @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                            <td class="w-px whitespace-nowrap px-2 py-3 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">{{ $row['name'] }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-gray-500 dark:text-zinc-400">{{ $row['level'] }}</td>
                                             @if ($hasUmmi)
@@ -686,7 +686,7 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 text-xs text-center">
                                 <thead class="bg-gray-150 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 font-bold">
                                     <tr>
-                                        <th rowspan="2" class="px-4 py-3 text-left w-12 border-b border-r dark:border-zinc-700">No</th>
+                                        <th rowspan="2" class="w-px whitespace-nowrap px-2 py-3 text-center border-b border-r dark:border-zinc-700">No</th>
                                         <th rowspan="2" class="px-4 py-3 text-left min-w-[120px] sm:min-w-[180px] border-b border-r dark:border-zinc-700 sticky left-0 z-10 bg-gray-100 dark:bg-zinc-800 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">Nama Murid</th>
                                         <th colspan="{{ $hasUmmi ? 4 : 2 }}" class="px-3 py-2 border-b border-r dark:border-zinc-700">Target Triwulan</th>
                                         <th colspan="{{ $hasUmmi ? 4 : 2 }}" class="px-3 py-2 border-b border-r dark:border-zinc-700">Capaian Akhir</th>
@@ -720,7 +720,7 @@
                                             $sSum = $row['sakit'];
                                         @endphp
                                         <tr class="hover:bg-gray-55/50 dark:hover:bg-zinc-850/20">
-                                            <td class="px-4 py-3 border-r dark:border-zinc-700 text-left text-gray-400 font-bold">{{ $idx + 1 }}</td>
+                                            <td class="w-px whitespace-nowrap px-2 py-3 border-r dark:border-zinc-700 text-center text-gray-400 font-bold">{{ $idx + 1 }}</td>
                                             <td class="px-4 py-3 border-r dark:border-zinc-700 text-left font-bold text-gray-900 dark:text-zinc-200 sticky left-0 z-[1] bg-white dark:bg-zinc-900 shadow-[1px_0_0_0_rgb(0_0_0/0.08)]">
                                                 {{ $row['name'] }}
                                                 @if (! empty($row['start_surah']))
