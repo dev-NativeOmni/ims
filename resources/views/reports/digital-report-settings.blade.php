@@ -18,7 +18,29 @@
 
     <div class="py-6 sm:py-8" x-data="{
         academicYear: '{{ $academicYear }}',
-        reportPeriod: '{{ $reportPeriod }}',
+        // Periode & titimangsa pratinjau: aturan sama dengan StudentReportController::activePeriod()
+        // dan reportDate(), dihitung dari isian tanggal BLP di form (ikut berubah sebelum disimpan).
+        blpDates: @js($blpDates),
+        periodBlp: @js(\App\Http\Controllers\StudentReportController::PERIOD_BLP),
+        periodLabels: @js(\App\Http\Controllers\StudentReportController::REPORT_PERIODS),
+        periodDeadline(term) {
+            const y = parseInt(this.academicYear, 10);
+            const triwulanEnd = { 1: `${y}-09-30`, 2: `${y}-12-31`, 3: `${y + 1}-03-31`, 4: `${y + 1}-06-30` };
+            return this.blpDates[this.periodBlp[term]] || triwulanEnd[term];
+        },
+        get reportPeriod() {
+            const d = new Date();
+            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return [1, 2, 3].find((term) => today <= this.periodDeadline(term)) ?? 4;
+        },
+        formatDate(value) {
+            const [y, m, d] = value.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+        },
+        get reportDate() {
+            const value = this.blpDates[this.periodBlp[this.reportPeriod]];
+            return value ? this.formatDate(value) : '........................';
+        },
         showTahfizh: {{ $showTahfizh ? 'true' : 'false' }},
         showAdab: {{ $showAdab ? 'true' : 'false' }},
         showTanse: {{ $showTanse ? 'true' : 'false' }},
@@ -34,7 +56,6 @@
         headmasterNik: '{{ addslashes($headmasterNik) }}',
         coordTanseName: '{{ addslashes($coordTanseName) }}',
         coordTanseNik: '{{ addslashes($coordTanseNik) }}',
-        todayDate: '{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}',
         // Tanda tangan pejabat: sig = yang tampil di preview, sigSaved = yang tersimpan.
         sig: @js($officialSignatures),
         sigSaved: @js($officialSignatures),
@@ -90,9 +111,9 @@
                                 <div>
                                     <span class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Periode Rapor Aktif</span>
                                     <div class="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50 px-3 py-2">
-                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[$reportPeriod] }}</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white" x-text="periodLabels[reportPeriod]">{{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[$reportPeriod] }}</p>
                                         <p class="text-[11px] text-gray-500 dark:text-zinc-400">
-                                            Otomatis dari tanggal BLP &middot; s.d. {{ $reportPeriodUntil->locale('id')->translatedFormat('d F Y') }}
+                                            Otomatis dari tanggal BLP &middot; s.d. <span x-text="formatDate(periodDeadline(reportPeriod))">{{ $reportPeriodUntil->locale('id')->translatedFormat('d F Y') }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -133,7 +154,7 @@
                                             @foreach ($exams as $key => $examLabel)
                                                 <div class="flex items-center gap-2">
                                                     <label for="blp_{{ $key }}" class="w-12 shrink-0 text-xs font-semibold text-gray-600 dark:text-zinc-400" title="Rapor {{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[array_search($key, \App\Http\Controllers\StudentReportController::PERIOD_BLP)] }}">{{ $examLabel }}</label>
-                                                    <input type="date" name="blp_dates[{{ $key }}]" id="blp_{{ $key }}" value="{{ $blpDates[$key] }}"
+                                                    <input type="date" name="blp_dates[{{ $key }}]" id="blp_{{ $key }}" value="{{ $blpDates[$key] }}" x-model="blpDates['{{ $key }}']"
                                                            class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                                                 </div>
                                             @endforeach
@@ -307,7 +328,7 @@
                                 <p class="text-[8px] font-bold uppercase text-black mt-0.5 leading-none" x-text="reportSchoolName"></p>
                                 
                                 <div class="border border-black px-2 py-0.5 mt-1 bg-gray-50 text-[7px] font-bold text-black uppercase leading-none">
-                                    <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::REPORT_PERIODS) }}[reportPeriod]"></span>
+                                    <span x-text="periodLabels[reportPeriod]"></span>
                                 </div>
                                 <p class="text-[7px] font-bold text-black mt-0.5">Tahun Ajaran <span x-text="academicYear"></span></p>
                             </div>
@@ -407,7 +428,7 @@
                             <!-- Row 1 -->
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div>
-                                    <p class="invisible leading-tight" x-text="reportCity + ', ' + todayDate"></p>
+                                    <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Tahfidz</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_tahfizh']"><img :src="sig['coord_tahfizh']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
@@ -416,7 +437,7 @@
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTahfizhNik"></span></p>
                                 </div>
                                 <div>
-                                    <p class="leading-tight" x-text="reportCity + ', ' + todayDate"></p>
+                                    <p class="leading-tight" x-text="reportCity + ', ' + reportDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Keagamaan</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_keagamaan']"><img :src="sig['coord_keagamaan']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
