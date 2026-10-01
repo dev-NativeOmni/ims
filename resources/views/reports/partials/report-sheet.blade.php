@@ -115,6 +115,9 @@
                         <td class="p-2 align-middle text-left">
                             @if ($isUmmi)
                                 <p class="text-center font-black text-black text-lg leading-none">{{ $tahfizh['final_score'] }}<span class="text-[10px] font-semibold"> / 100</span></p>
+                                @if (! empty($tahfizh['final_predicate']))
+                                    <p class="text-center font-bold text-black text-[10px] mt-1">{{ $tahfizh['final_predicate'] }}</p>
+                                @endif
                                 <p class="mt-1.5 pt-1.5 border-t border-gray-300 text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>
                             @else
                                 <p class="text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>

@@ -394,7 +394,11 @@ class StudentReportController extends Controller
                 'program' => $data['student']->classRoom?->program?->name,
             ],
             // Satu baris triwulan rapor (lihat tahfizhTermRow()); nilai hanya ditampilkan untuk Kelas 10/Ummi.
-            'tahfizh' => $data['tahfizhTerm'] + ['final_score' => $data['tahfizhScore']['final_score']],
+            // Predikat nilai memakai skala yang sama dengan Nilai Adab (Mumtaz >= 90, Jayyid Jiddan >= 80, ...).
+            'tahfizh' => $data['tahfizhTerm'] + [
+                'final_score' => $data['tahfizhScore']['final_score'],
+                'final_predicate' => Setting::getAdabGradeLabel(Setting::getAdabGrade((float) $data['tahfizhScore']['final_score'])),
+            ],
             'adab' => [
                 'categories' => collect($data['adabCategories'])->pluck('title')->values()->all(),
                 'grade' => $data['adabGrade'],

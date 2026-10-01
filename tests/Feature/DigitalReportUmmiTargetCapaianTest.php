@@ -6,6 +6,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Program;
+use App\Models\Setting;
 use App\Models\Surah;
 use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -119,6 +120,20 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas', '/ 100']);
         $response->assertDontSee('1-5');
         $response->assertDontSee('Nilai Akhir Tahfizh');
+    }
+
+    #[Test]
+    public function tahfizh_score_predicate_follows_the_adab_scale(): void
+    {
+        $cases = [95 => 'Mumtaz (Sangat Baik)', 85 => 'Jayyid Jiddan (Baik Sekali)', 75 => 'Jayyid (Baik)', 65 => 'Maqbul (Cukup)', 50 => "Dha'if (Kurang)"];
+        foreach ($cases as $score => $predicate) {
+            $this->assertSame($predicate, Setting::getAdabGradeLabel(Setting::getAdabGrade($score)));
+        }
+
+        $this->student->update(['tahfizh_level' => 'ummi']);
+        $score = (float) Setting::calculateTahfizhScore($this->student->fresh())['final_score'];
+
+        $this->printTerm2()->assertOk()->assertSeeInOrder(['/ 100', Setting::getAdabGradeLabel(Setting::getAdabGrade($score))]);
     }
 
     #[Test]
