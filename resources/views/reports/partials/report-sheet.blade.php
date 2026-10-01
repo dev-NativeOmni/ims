@@ -57,7 +57,7 @@
         <tr>
             <td class="font-bold">Term</td>
             <td>:</td>
-            <td>{{ $sheet['student']['program'] ?: '-' }}</td>
+            <td>{{ \App\Http\Controllers\StudentReportController::TERM_ROMAN[$sheet['term']] }}</td>
         </tr>
     </table>
 

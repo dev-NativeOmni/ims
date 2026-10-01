@@ -123,4 +123,17 @@ class DigitalReportBlpDateTest extends TestCase
         $this->printed(1, 2)->assertSee('Semester I')->assertDontSee('Tengah Semester');
         $this->printed(2, 4)->assertSee('Semester II');
     }
+
+    #[Test]
+    public function identity_term_row_shows_roman_term_not_program(): void
+    {
+        $program = $this->student->classRoom?->program?->name;
+        foreach ([1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV'] as $term => $roman) {
+            $response = $this->printed($term >= 3 ? 2 : 1, $term);
+            $this->assertMatchesRegularExpression('#Term</td>\s*<td>:</td>\s*<td>'.$roman.'</td>#', $response->getContent());
+            if ($program) {
+                $response->assertDontSee('<td>'.$program.'</td>', false);
+            }
+        }
+    }
 }

@@ -344,7 +344,7 @@
                             </div>
                             <div class="grid grid-cols-[50px_1fr]">
                                 <span class="font-bold">Kelas / Term</span>
-                                <span>: X E2 / Program Reguler</span>
+                                <span>: X E2 / <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::TERM_ROMAN) }}[reportPeriod]"></span></span>
                             </div>
                         </div>
 

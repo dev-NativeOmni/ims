@@ -615,6 +615,11 @@ class StudentReportController extends Controller
         4 => 'Semester II',
     ];
 
+    /**
+     * Nomor term rapor (= periode 1-4) dalam angka romawi, untuk baris "Term" di identitas rapor.
+     */
+    public const TERM_ROMAN = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV'];
+
     public static function semesterOfPeriod(int $period): int
     {
         return $period >= 3 ? 2 : 1;
