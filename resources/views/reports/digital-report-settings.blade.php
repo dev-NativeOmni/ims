@@ -58,6 +58,13 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-rose-700 dark:text-rose-300 text-sm font-semibold flex items-center gap-2 shadow-sm">
+                    <x-heroicon-o-exclamation-triangle class="w-5 h-5 shrink-0" />
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
+
             {{-- Main 2-Column Grid: Form on Left, Live Sheet Preview on Right --}}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
@@ -459,7 +466,31 @@
                         <span>Opsi Cetak Rapor Per Kelas (Batch Print Rapor)</span>
                     </h3>
                     <p class="text-xs text-gray-500 mt-1">Cetak seluruh rapor murid dalam 1 kelas secara lengkap sekaligus dalam satu dokumen siap cetak/PDF.</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <strong>Kunci</strong> membekukan isi rapor seluruh santri kelas itu untuk periode terpilih, sehingga rapor tetap utuh walau data berikutnya berubah.
+                        Membuka kunci hanya bisa oleh Super Admin.
+                    </p>
                 </div>
+
+                {{-- Periode yang dicetak/dikunci: bisa periode lama, terpisah dari periode aktif di atas. --}}
+                <form method="GET" action="{{ route('digital-reports.settings') }}" class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label for="print_year" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1">Tahun Ajaran</label>
+                        <select name="print_year" id="print_year" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                            @foreach ($academicYearOptions as $yearOption)
+                                <option value="{{ $yearOption }}" @selected($printYear === $yearOption)>{{ $yearOption }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="print_term" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1">Periode</label>
+                        <select name="print_term" id="print_term" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                            @foreach (\App\Http\Controllers\StudentReportController::REPORT_PERIODS as $periodValue => $periodLabel)
+                                <option value="{{ $periodValue }}" @selected($printTerm === $periodValue)>{{ $periodLabel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @forelse ($classRooms as $cRoom)
@@ -468,10 +499,43 @@
                                 <h4 class="font-bold text-gray-900 dark:text-white text-base">{{ $cRoom->name }}</h4>
                                 <p class="text-xs text-gray-500 font-medium mt-0.5">Program: {{ $cRoom->program?->name ?: '-' }}</p>
                             </div>
-                            <a href="{{ route('digital-reports.class-print', ['classRoom' => $cRoom->id, 'academic_year' => $academicYear, 'semester' => $semester, 'term' => $reportPeriod]) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition w-full">
+                            @php $lock = $classLocks->get($cRoom->id); @endphp
+                            @if ($lock)
+                                <p class="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                                    <x-heroicon-o-lock-closed class="w-3.5 h-3.5" />
+                                    Terkunci {{ \Illuminate\Support\Carbon::parse($lock->locked_at)->locale('id')->translatedFormat('d M Y H:i') }} &middot; {{ $lock->total }} santri
+                                </p>
+                            @else
+                                <p class="text-[11px] text-gray-500 dark:text-zinc-400">Belum dikunci &middot; rapor dihitung dari data terkini</p>
+                            @endif
+                            <a href="{{ route('digital-reports.class-print', ['classRoom' => $cRoom->id, 'academic_year' => $printYear, 'term' => $printTerm]) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition w-full">
                                 <x-heroicon-o-printer class="w-4 h-4" />
                                 <span>Cetak Rapor Seluruh Kelas</span>
                             </a>
+                            @if (! $lock)
+                                <form method="POST" action="{{ route('digital-reports.class-lock', $cRoom) }}"
+                                      onsubmit="return confirm({{ \Illuminate\Support\Js::from("Kunci rapor {$printPeriodLabel} {$printYear} kelas {$cRoom->name}? Isi rapor seluruh santri kelas ini akan dibekukan.") }})">
+                                    @csrf
+                                    <input type="hidden" name="academic_year" value="{{ $printYear }}">
+                                    <input type="hidden" name="term" value="{{ $printTerm }}">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-bold text-xs rounded-xl transition w-full">
+                                        <x-heroicon-o-lock-closed class="w-4 h-4" />
+                                        <span>Kunci Rapor {{ $printPeriodLabel }}</span>
+                                    </button>
+                                </form>
+                            @elseif ($canUnlock)
+                                <form method="POST" action="{{ route('digital-reports.class-unlock', $cRoom) }}"
+                                      onsubmit="return confirm({{ \Illuminate\Support\Js::from("Buka kunci rapor {$printPeriodLabel} {$printYear} kelas {$cRoom->name}? Data yang dibekukan akan dibuang dan rapor kembali dihitung dari data terkini.") }})">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type="hidden" name="academic_year" value="{{ $printYear }}">
+                                    <input type="hidden" name="term" value="{{ $printTerm }}">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-bold text-xs rounded-xl transition w-full">
+                                        <x-heroicon-o-lock-open class="w-4 h-4" />
+                                        <span>Buka Kunci</span>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-gray-400 py-4 col-span-full">Belum ada kelas terdaftar.</p>

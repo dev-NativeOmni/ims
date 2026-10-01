@@ -85,7 +85,7 @@ class DigitalReportBlpDateTest extends TestCase
         $this->assertSame('2', Setting::get('semester'));
         $this->actingAs($this->admin)->get(route('digital-reports.settings'))->assertOk()
             ->assertSee('Tengah Semester II')
-            ->assertSee('semester=2&amp;term=3', false);
+            ->assertSee('term=3', false);
     }
 
     #[Test]

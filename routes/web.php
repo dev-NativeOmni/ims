@@ -544,6 +544,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin,admin'])->group(function () {
         Route::get('/digital-reports/settings', [StudentReportController::class, 'settings'])->name('digital-reports.settings');
         Route::post('/digital-reports/settings', [StudentReportController::class, 'updateSettings'])->name('digital-reports.settings.update');
+        // Kunci rapor per kelas per periode; buka kunci dibatasi lagi ke super_admin di controller.
+        Route::post('/digital-reports/class/{classRoom}/lock', [StudentReportController::class, 'lockClass'])->name('digital-reports.class-lock');
+        Route::delete('/digital-reports/class/{classRoom}/lock', [StudentReportController::class, 'unlockClass'])->name('digital-reports.class-unlock');
     });
 
     /*

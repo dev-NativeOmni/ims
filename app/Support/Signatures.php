@@ -97,6 +97,27 @@ class Signatures
     }
 
     /**
+     * Salinan tetap sebuah tanda tangan untuk rapor yang dikunci, supaya penggantian
+     * tanda tangan pejabat kelak tidak mengubah rapor lama. Nama berkas = hash isinya,
+     * jadi salinan yang sama dipakai bersama.
+     */
+    public static function archive(?string $path): ?string
+    {
+        $disk = Storage::disk(self::DISK);
+        if (! $path || ! $disk->exists($path)) {
+            return null;
+        }
+
+        $contents = (string) $disk->get($path);
+        $archived = 'signatures/archive/'.sha1($contents).'.'.pathinfo($path, PATHINFO_EXTENSION);
+        if (! $disk->exists($archived)) {
+            $disk->put($archived, $contents);
+        }
+
+        return $archived;
+    }
+
+    /**
      * Path absolut berkas untuk Excel, atau null bila tidak ada.
      */
     public static function absolutePath(?string $path): ?string

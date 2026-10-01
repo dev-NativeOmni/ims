@@ -319,7 +319,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
     {
         $response = $this->actingAs($this->teacherUser)->post(route('digital-reports.update', $this->studentReguler), [
             'academic_year' => '2025/2026',
-            'semester' => 1,
+            'term' => 1,
             'teacher_notes' => 'Catatan ulasan wali kelas.',
             'tahfizh_target_term' => 'Selesai Juz 29 di term ini',
             'status' => 'draft',
