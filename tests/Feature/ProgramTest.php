@@ -137,8 +137,11 @@ class ProgramTest extends TestCase
 
         // 4. Target rapor: Reguler = target paten 195 baris/triwulan; Tahsin (tanpa angka paten) =
         //    pertemuan aktif triwulan (kalender) x baris per level.
+        //    Periode dikunci ke Jan-Mar 2027 (tanpa pekan yang terbelah dua bulan): pertemuan dihitung
+        //    per bulan lalu dijumlah, sehingga pekan yang terbelah (mis. 30 Nov-4 Des 2026) masih
+        //    terhitung di kedua bulan -- belum diputuskan, lihat AcademicCalendarService::scheduledMeetings().
         $parse = function ($student) {
-            $response = $this->actingAs($this->adminUser)->get(route('digital-reports.show', $student));
+            $response = $this->actingAs($this->adminUser)->get(route('digital-reports.show', [$student, 'academic_year' => '2026/2027', 'term' => 3]));
             $response->assertStatus(200);
             $this->assertMatchesRegularExpression('/^Target Triwulan \d \([^)]+\): (\d+) baris x (\d+) pertemuan = (\d+) baris/', $response->viewData('termTargetText'));
             preg_match('/: (\d+) baris x (\d+) pertemuan = (\d+) baris/', $response->viewData('termTargetText'), $m);

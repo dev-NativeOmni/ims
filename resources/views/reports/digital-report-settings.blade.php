@@ -104,7 +104,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label for="academic_year" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Tahun Ajaran Aktif</label>
-                                    <input type="text" name="academic_year" id="academic_year" x-model="academicYear" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Contoh: 2025/2026">
+                                    <input type="text" name="academic_year" id="academic_year" x-model="academicYear" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Contoh: 2026/2027">
                                 </div>
 
                                 {{-- Otomatis dari tanggal BLP (StudentReportController::activePeriod()), tidak diatur manual. --}}

@@ -318,7 +318,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
     public function test_can_update_tahfizh_target_term_in_student_report()
     {
         $response = $this->actingAs($this->teacherUser)->post(route('digital-reports.update', $this->studentReguler), [
-            'academic_year' => '2025/2026',
+            'academic_year' => '2026/2027',
             'term' => 1,
             'teacher_notes' => 'Catatan ulasan wali kelas.',
             'tahfizh_target_term' => 'Selesai Juz 29 di term ini',
@@ -330,7 +330,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
         $this->assertDatabaseHas('student_reports', [
             'student_id' => $this->studentReguler->id,
-            'academic_year' => '2025/2026',
+            'academic_year' => '2026/2027',
             'semester' => 1,
             'tahfizh_target_term' => 'Selesai Juz 29 di term ini',
         ]);

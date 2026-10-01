@@ -14,6 +14,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\UmmiProgressService;
+use App\Support\AcademicYear;
 use App\Support\AyahLabel;
 use App\Support\TargetRules;
 use Carbon\Carbon;
@@ -195,7 +196,7 @@ class QuarterlyReportController extends Controller
     {
         // Auto-detect defaults from latest database record to ensure the dashboard works on seeded data
         $latestRecord = HafalanRecord::query()->latest('submitted_at')->first();
-        $detectedYearString = '2025/2026';
+        $detectedYearString = AcademicYear::active();
         $detectedTerm = '1';
 
         if ($latestRecord) {
@@ -218,7 +219,11 @@ class QuarterlyReportController extends Controller
             }
         }
 
-        $academicYear = $request->input('academic_year', $detectedYearString);
+        // Tahun ajaran sebelum AcademicYear::FIRST tidak dipakai (termasuk hasil deteksi dari setoran lama).
+        if (! AcademicYear::isValid($detectedYearString)) {
+            [$detectedYearString, $detectedTerm] = [AcademicYear::FIRST, '1'];
+        }
+        $academicYear = AcademicYear::isValid($request->input('academic_year')) ? $request->input('academic_year') : $detectedYearString;
         $selectedTerm = $request->input('term', $detectedTerm);
 
         // Determine months of the selected term

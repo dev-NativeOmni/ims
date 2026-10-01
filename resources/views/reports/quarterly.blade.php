@@ -118,8 +118,9 @@
                             Tahun Ajaran
                         </label>
                         <select name="academic_year" id="academic_year" class="block w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-transparent text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white" onchange="this.form.submit()">
-                            <option value="2025/2026" @selected($academicYear == '2025/2026') class="dark:bg-zinc-900">2025/2026</option>
-                            <option value="2026/2027" @selected($academicYear == '2026/2027') class="dark:bg-zinc-900">2026/2027</option>
+                            @foreach (\App\Support\AcademicYear::options($academicYear) as $yearOption)
+                                <option value="{{ $yearOption }}" @selected($academicYear == $yearOption) class="dark:bg-zinc-900">{{ $yearOption }}</option>
+                            @endforeach
                         </select>
                     </div>
 

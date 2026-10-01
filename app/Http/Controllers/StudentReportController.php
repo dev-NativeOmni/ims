@@ -17,6 +17,7 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
+use App\Support\AcademicYear;
 use App\Support\Signatures;
 use App\Support\TargetRules;
 use Carbon\Carbon;
@@ -89,7 +90,7 @@ class StudentReportController extends Controller
                 'totalSetoran' => $totalSetoran,
                 'totalMurajaah' => $totalMurajaah,
                 'canEditNotes' => $canEditNotes,
-                'academicYearOptions' => self::academicYearOptions($academicYear),
+                'academicYearOptions' => AcademicYear::options($academicYear),
             ]
         ));
     }
@@ -100,7 +101,7 @@ class StudentReportController extends Controller
         abort_unless($user->hasAnyRole(['super_admin', 'admin', 'teacher']), 403);
 
         $validated = $request->validate([
-            'academic_year' => 'required|string',
+            'academic_year' => ['required', 'string', fn ($attribute, $value, $fail) => AcademicYear::isValid($value) ?: $fail('Tahun ajaran tidak dipakai.')],
             'term' => 'required|integer|in:'.implode(',', array_keys(self::REPORT_PERIODS)),
             'teacher_notes' => 'nullable|string',
             'tahfizh_target_term' => 'nullable|string|max:255',
@@ -204,6 +205,7 @@ class StudentReportController extends Controller
             'term' => 'required|integer|in:'.implode(',', array_keys(self::REPORT_PERIODS)),
         ]);
         $academicYear = $validated['academic_year'];
+        abort_unless(AcademicYear::isValid($academicYear), 422, 'Tahun ajaran tidak dipakai.');
         $term = (int) $validated['term'];
         $semester = self::semesterOfPeriod($term);
         $period = self::REPORT_PERIODS[$term];
@@ -337,7 +339,9 @@ class StudentReportController extends Controller
      */
     private function requestedPeriod(Request $request): array
     {
-        $academicYear = (string) $request->input('academic_year', Setting::get('academic_year', '2025/2026'));
+        // Tahun ajaran sebelum AcademicYear::FIRST (mis. 2025/2026) tidak dipakai: diganti tahun aktif.
+        $academicYear = (string) $request->input('academic_year');
+        $academicYear = AcademicYear::isValid($academicYear) ? $academicYear : AcademicYear::active();
         $term = $request->integer('term');
 
         if (! isset(self::REPORT_PERIODS[$term])) {
@@ -356,30 +360,13 @@ class StudentReportController extends Controller
     public static function activePeriod(): int
     {
         $today = now()->startOfDay();
-        foreach (self::periodDeadlines(Setting::get('academic_year', '2025/2026')) as $term => $deadline) {
+        foreach (self::periodDeadlines(AcademicYear::active()) as $term => $deadline) {
             if ($today->lte($deadline)) {
                 return $term;
             }
         }
 
         return 4;
-    }
-
-    /**
-     * Pilihan tahun ajaran: tahun aktif, tahun yang punya catatan rapor, dan yang sedang dibuka.
-     *
-     * @return array<int, string>
-     */
-    public static function academicYearOptions(?string $current = null): array
-    {
-        return StudentReport::query()->distinct()->pluck('academic_year')
-            ->push(Setting::get('academic_year', '2025/2026'))
-            ->push($current)
-            ->filter()
-            ->unique()
-            ->sortDesc()
-            ->values()
-            ->all();
     }
 
     /**
@@ -917,7 +904,7 @@ class StudentReportController extends Controller
     public function settings(Request $request)
     {
         $classRooms = ClassRoom::orderBy('name')->get();
-        $academicYear = Setting::get('academic_year', '2025/2026');
+        $academicYear = AcademicYear::active();
         $reportPeriod = self::activePeriod();
         $reportPeriodUntil = self::periodDeadlines($academicYear)[$reportPeriod];
         $semester = self::semesterOfPeriod($reportPeriod);
@@ -948,10 +935,10 @@ class StudentReportController extends Controller
         $tanseRules = self::tanseRules();
 
         // Periode untuk cetak & kunci per kelas (bisa periode lama); bawaan = periode aktif.
-        $printYear = (string) $request->input('print_year', $academicYear);
+        $printYear = AcademicYear::isValid($request->input('print_year')) ? $request->input('print_year') : $academicYear;
         $printTerm = isset(self::REPORT_PERIODS[$request->integer('print_term')]) ? $request->integer('print_term') : $reportPeriod;
         $printPeriodLabel = self::REPORT_PERIODS[$printTerm];
-        $academicYearOptions = self::academicYearOptions($printYear);
+        $academicYearOptions = AcademicYear::options($printYear);
         $classLocks = StudentReport::where('academic_year', $printYear)
             ->where('term', $printTerm)
             ->whereNotNull('locked_class_room_id')
@@ -980,6 +967,11 @@ class StudentReportController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
+            'academic_year' => ['required', function ($attribute, $value, $fail) {
+                if (! AcademicYear::isValid((string) $value)) {
+                    $fail('Tahun ajaran harus berformat YYYY/YYYY dan paling awal '.AcademicYear::FIRST.'.');
+                }
+            }],
             'blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date',
             'tanse_a_min' => 'nullable|integer|between:1,100',
             'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
@@ -1002,13 +994,13 @@ class StudentReportController extends Controller
         }
 
         // Tanggal BLP disimpan untuk tahun ajaran yang sedang diatur di form ini.
-        $academicYear = (string) $request->input('academic_year', '2025/2026');
+        $academicYear = (string) $request->input('academic_year');
         $blp = collect(self::blpDates($academicYear))
             ->map(fn ($old, $key) => $request->input("blp_dates.{$key}") ?: null)
             ->all();
         Setting::set(self::blpSettingKey($academicYear), json_encode($blp));
 
-        Setting::set('academic_year', $request->input('academic_year', '2025/2026'));
+        Setting::set('academic_year', $academicYear);
         // Semester ikut periode aktif yang ditentukan tanggal BLP.
         Setting::set('semester', (string) self::semesterOfPeriod(self::activePeriod()));
         Setting::set('report_show_tahfizh', $request->has('report_show_tahfizh') ? '1' : '0');
