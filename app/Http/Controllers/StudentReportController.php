@@ -206,6 +206,13 @@ class StudentReportController extends Controller
         $academicYear = $validated['academic_year'];
         $term = (int) $validated['term'];
         $semester = self::semesterOfPeriod($term);
+        $period = self::REPORT_PERIODS[$term];
+
+        // Titimangsa rapor = tanggal BLP; jangan bekukan rapor yang tanggalnya masih kosong.
+        $reportDate = self::reportDate($academicYear, $semester, $term);
+        if (! $reportDate['is_set']) {
+            return redirect()->back()->with('error', "Tanggal BLP {$reportDate['exam']} untuk {$period} {$academicYear} belum diisi. Isi dulu di Pengaturan Rapor sebelum mengunci.");
+        }
 
         $students = Student::where('class_room_id', $classRoom->id)
             ->with(['classRoom.program', 'teacher.user', 'parents.user'])
@@ -244,8 +251,6 @@ class StudentReportController extends Controller
                 $locked++;
             }
         });
-
-        $period = self::REPORT_PERIODS[$term];
 
         return redirect()->back()->with('success', "Rapor {$period} {$academicYear} kelas {$classRoom->name} dikunci ({$locked} santri).");
     }
@@ -345,15 +350,19 @@ class StudentReportController extends Controller
     }
 
     /**
-     * Periode rapor aktif (Pengaturan Rapor); belum pernah diatur = triwulan berjalan dari semester tersimpan.
+     * Periode rapor aktif tahun ajaran aktif, otomatis dari tanggal BLP: periode pertama yang
+     * tanggal BLP-nya belum lewat (hari BLP itu sendiri masih periode tersebut). Lewat semua = Semester II.
      */
     public static function activePeriod(): int
     {
-        $saved = (int) Setting::get('report_period', 0);
+        $today = now()->startOfDay();
+        foreach (self::periodDeadlines(Setting::get('academic_year', '2025/2026')) as $term => $deadline) {
+            if ($today->lte($deadline)) {
+                return $term;
+            }
+        }
 
-        return isset(self::REPORT_PERIODS[$saved])
-            ? $saved
-            : self::resolveTanseTerm(Setting::get('academic_year', '2025/2026'), (int) Setting::get('semester', 1))['term'];
+        return 4;
     }
 
     /**
@@ -571,23 +580,41 @@ class StudentReportController extends Controller
     }
 
     /**
-     * Titimangsa rapor: triwulan pertama semester memakai tanggal ASTS, triwulan kedua
-     * memakai ASAS (semester 1) / ASAT (semester 2). Belum diatur = tanggal hari ini.
+     * BLP penutup tiap periode rapor: Tengah Semester = ASTS, Semester I = ASAS, Semester II = ASAT.
+     */
+    public const PERIOD_BLP = [1 => '1_asts', 2 => '1_asas', 3 => '2_asts', 4 => '2_asat'];
+
+    /**
+     * Titimangsa rapor = tanggal BLP periodenya. Belum diatur = null (rapor menampilkan titik-titik).
      *
-     * @return array{date: string, exam: string, is_set: bool}
+     * @return array{date: ?string, exam: string, is_set: bool}
      */
     public static function reportDate(string $academicYear, int $semester, int $term): array
     {
-        $exams = self::BLP_EXAMS[$semester === 2 ? 2 : 1];
-        $isSecondTerm = in_array($term, [2, 4], true);
-        $key = array_keys($exams)[$isSecondTerm ? 1 : 0];
+        $key = self::PERIOD_BLP[$term] ?? self::PERIOD_BLP[1];
         $saved = self::blpDates($academicYear)[$key];
 
         return [
-            'date' => Carbon::parse($saved ?? now())->locale('id')->translatedFormat('d F Y'),
-            'exam' => $exams[$key],
+            'date' => $saved ? Carbon::parse($saved)->locale('id')->translatedFormat('d F Y') : null,
+            'exam' => self::BLP_EXAMS[(int) $key[0]][$key],
             'is_set' => $saved !== null,
         ];
+    }
+
+    /**
+     * Hari terakhir tiap periode: tanggal BLP-nya, atau akhir triwulan bila BLP belum diatur.
+     *
+     * @return array<int, Carbon>
+     */
+    public static function periodDeadlines(string $academicYear): array
+    {
+        $blp = self::blpDates($academicYear);
+
+        return collect(self::PERIOD_BLP)->mapWithKeys(fn ($key, $term) => [
+            $term => $blp[$key]
+                ? Carbon::parse($blp[$key])->startOfDay()
+                : self::resolveTanseTerm($academicYear, self::semesterOfPeriod($term), $term)['end']->startOfDay(),
+        ])->all();
     }
 
     /**
@@ -891,9 +918,8 @@ class StudentReportController extends Controller
     {
         $classRooms = ClassRoom::orderBy('name')->get();
         $academicYear = Setting::get('academic_year', '2025/2026');
-        $semester = (int) Setting::get('semester', 1);
-        // Belum pernah diatur: triwulan berjalan dari semester tersimpan.
-        $reportPeriod = (int) Setting::get('report_period', self::resolveTanseTerm($academicYear, $semester)['term']);
+        $reportPeriod = self::activePeriod();
+        $reportPeriodUntil = self::periodDeadlines($academicYear)[$reportPeriod];
         $semester = self::semesterOfPeriod($reportPeriod);
 
         $showTahfizh = Setting::get('report_show_tahfizh', '1') === '1';
@@ -940,7 +966,7 @@ class StudentReportController extends Controller
         $canEditSignatures = $request->user()->hasRole('super_admin');
 
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
+            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'reportPeriodUntil', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -954,7 +980,6 @@ class StudentReportController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
-            'report_period' => 'required|integer|in:'.implode(',', array_keys(self::REPORT_PERIODS)),
             'blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date',
             'tanse_a_min' => 'nullable|integer|between:1,100',
             'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
@@ -984,8 +1009,8 @@ class StudentReportController extends Controller
         Setting::set(self::blpSettingKey($academicYear), json_encode($blp));
 
         Setting::set('academic_year', $request->input('academic_year', '2025/2026'));
-        Setting::set('report_period', (string) $request->integer('report_period'));
-        Setting::set('semester', (string) self::semesterOfPeriod($request->integer('report_period')));
+        // Semester ikut periode aktif yang ditentukan tanggal BLP.
+        Setting::set('semester', (string) self::semesterOfPeriod(self::activePeriod()));
         Setting::set('report_show_tahfizh', $request->has('report_show_tahfizh') ? '1' : '0');
         Setting::set('report_show_adab', $request->has('report_show_adab') ? '1' : '0');
         Setting::set('report_show_tanse', $request->has('report_show_tanse') ? '1' : '0');

@@ -99,9 +99,9 @@
                             </select>
                             <p class="mt-1.5 text-[11px] text-gray-500 dark:text-zinc-400">Tanse: {{ $tanseTerm['label'] }}</p>
                             <p class="mt-1.5 text-[11px] {{ $reportDate['is_set'] ? 'text-gray-500 dark:text-zinc-400' : 'text-amber-600 dark:text-amber-400' }}">
-                                Tanggal rapor (BLP {{ $reportDate['exam'] }}): <span class="font-semibold">{{ $reportDate['date'] }}</span>
+                                Tanggal rapor (BLP {{ $reportDate['exam'] }}): <span class="font-semibold">{{ $reportDate['date'] ?? 'belum diatur' }}</span>
                                 @unless ($reportDate['is_set'])
-                                    &mdash; belum diatur, memakai tanggal hari ini.
+                                    &mdash; isi di Pengaturan Rapor; di rapor cetak tampil titik-titik.
                                 @endunless
                             </p>
                         </div>

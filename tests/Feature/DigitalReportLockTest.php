@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\StudentReportController;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Models\StudentPoint;
@@ -25,6 +26,9 @@ class DigitalReportLockTest extends TestCase
     {
         parent::setUp();
         $this->setUpHafizPlusData();
+        Setting::set(StudentReportController::blpSettingKey(self::YEAR), json_encode([
+            '1_asts' => '2026-10-10', '1_asas' => '2026-12-19', '2_asts' => null, '2_asat' => null,
+        ]));
     }
 
     private function lock(int $term = 1, $user = null)
@@ -136,5 +140,15 @@ class DigitalReportLockTest extends TestCase
             ->assertOk()->assertSee('Buka Kunci');
         $this->actingAs($this->admin)->get(route('digital-reports.settings', ['print_year' => self::YEAR, 'print_term' => 1]))
             ->assertOk()->assertSee('Kunci Rapor Tengah Semester I')->assertDontSee('Buka Kunci');
+    }
+
+    #[Test]
+    public function locking_requires_the_blp_date_of_that_period(): void
+    {
+        $this->lock(3)->assertSessionHas('error');
+        $this->assertFalse(StudentReport::where('term', 3)->whereNotNull('locked_at')->exists());
+
+        $this->lock(1)->assertSessionHas('success');
+        $this->printed(1)->assertSee('Sukoharjo, 10 Oktober 2026');
     }
 }

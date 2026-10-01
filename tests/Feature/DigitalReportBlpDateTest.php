@@ -27,7 +27,7 @@ class DigitalReportBlpDateTest extends TestCase
     private function saveBlp(array $dates): void
     {
         $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
-            'academic_year' => '2026/2027', 'report_period' => 1, 'blp_dates' => $dates,
+            'academic_year' => '2026/2027', 'blp_dates' => $dates,
             'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
         ])->assertRedirect();
     }
@@ -51,14 +51,15 @@ class DigitalReportBlpDateTest extends TestCase
     }
 
     #[Test]
-    public function unset_blp_date_falls_back_to_today(): void
+    public function unset_blp_date_prints_dots_instead_of_today(): void
     {
         Carbon::setTestNow('2026-11-05');
 
         $date = StudentReportController::reportDate('2026/2027', 1, 2);
-        $this->assertSame('05 November 2026', $date['date']);
+        $this->assertNull($date['date']);
         $this->assertSame('ASAS', $date['exam']);
         $this->assertFalse($date['is_set']);
+        $this->printed(1, 2)->assertOk()->assertSee('Sukoharjo, ....')->assertDontSee('05 November 2026');
 
         Carbon::setTestNow();
     }
@@ -74,18 +75,45 @@ class DigitalReportBlpDateTest extends TestCase
     }
 
     #[Test]
-    public function report_period_sets_semester_and_class_print_term(): void
+    public function active_period_follows_blp_dates(): void
     {
-        $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
-            'academic_year' => '2026/2027', 'report_period' => 3,
-            'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
-        ])->assertRedirect();
+        $this->saveBlp(['1_asts' => '2026-10-10', '1_asas' => '2026-12-19', '2_asts' => '2027-03-20', '2_asat' => '2027-06-19']);
 
-        $this->assertSame('3', Setting::get('report_period'));
-        $this->assertSame('2', Setting::get('semester'));
+        $activeOn = function (string $date) {
+            Carbon::setTestNow($date);
+
+            return StudentReportController::activePeriod();
+        };
+
+        $this->assertSame(1, $activeOn('2026-10-01'), 'Belum sampai ASTS: masih Tengah Semester I.');
+        $this->assertSame(1, $activeOn('2026-10-10'), 'Hari BLP masih periode itu.');
+        $this->assertSame(2, $activeOn('2026-10-11'));
+        $this->assertSame(3, $activeOn('2026-12-20'));
+        $this->assertSame(4, $activeOn('2027-03-21'));
+        $this->assertSame(4, $activeOn('2027-07-05'), 'Lewat ASAT: tetap Semester II sampai tahun ajaran diganti.');
+
+        Carbon::setTestNow('2026-10-11');
         $this->actingAs($this->admin)->get(route('digital-reports.settings'))->assertOk()
-            ->assertSee('Tengah Semester II')
-            ->assertSee('term=3', false);
+            ->assertSee('Otomatis dari tanggal BLP')
+            ->assertSee('19 Desember 2026')
+            ->assertSee('term=2', false);
+        $this->actingAs($this->admin)->get(route('digital-reports.print', $this->student))->assertSee('Sukoharjo, 19 Desember 2026');
+        $this->assertSame('1', Setting::get('semester'));
+
+        Carbon::setTestNow();
+    }
+
+    #[Test]
+    public function unset_blp_uses_end_of_triwulan_as_period_boundary(): void
+    {
+        $this->saveBlp([]);
+
+        Carbon::setTestNow('2026-09-30');
+        $this->assertSame(1, StudentReportController::activePeriod());
+        Carbon::setTestNow('2026-10-01');
+        $this->assertSame(2, StudentReportController::activePeriod());
+
+        Carbon::setTestNow();
     }
 
     #[Test]

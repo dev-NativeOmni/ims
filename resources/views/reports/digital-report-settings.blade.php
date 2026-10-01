@@ -86,13 +86,15 @@
                                     <input type="text" name="academic_year" id="academic_year" x-model="academicYear" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Contoh: 2025/2026">
                                 </div>
 
+                                {{-- Otomatis dari tanggal BLP (StudentReportController::activePeriod()), tidak diatur manual. --}}
                                 <div>
-                                    <label for="report_period" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Periode Rapor Aktif</label>
-                                    <select name="report_period" id="report_period" x-model="reportPeriod" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
-                                        @foreach (\App\Http\Controllers\StudentReportController::REPORT_PERIODS as $periodValue => $periodLabel)
-                                            <option value="{{ $periodValue }}">{{ $periodLabel }}</option>
-                                        @endforeach
-                                    </select>
+                                    <span class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Periode Rapor Aktif</span>
+                                    <div class="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50 px-3 py-2">
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">{{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[$reportPeriod] }}</p>
+                                        <p class="text-[11px] text-gray-500 dark:text-zinc-400">
+                                            Otomatis dari tanggal BLP &middot; s.d. {{ $reportPeriodUntil->locale('id')->translatedFormat('d F Y') }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -122,7 +124,7 @@
                                     Tanggal BLP (Titimangsa Rapor) &middot; Tahun Ajaran <span x-text="academicYear"></span>
                                 </label>
                                 <p class="text-[11px] text-gray-500 dark:text-zinc-400">
-                                    Rapor Tengah Semester memakai tanggal ASTS, rapor Semester I memakai ASAS dan Semester II memakai ASAT. Bila kosong, rapor memakai tanggal hari ini.
+                                    Tanggal BLP menjadi tanggal rapor sekaligus batas periode: periode aktif berpindah ke periode berikutnya setelah tanggal BLP-nya lewat. Bila kosong, tanggal di rapor berupa titik-titik, batas periode memakai akhir triwulan, dan kelas belum bisa dikunci.
                                 </p>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     @foreach (\App\Http\Controllers\StudentReportController::BLP_EXAMS as $blpSemester => $exams)
@@ -130,7 +132,7 @@
                                             <p class="text-xs font-bold text-gray-800 dark:text-zinc-200">Semester {{ $blpSemester }}</p>
                                             @foreach ($exams as $key => $examLabel)
                                                 <div class="flex items-center gap-2">
-                                                    <label for="blp_{{ $key }}" class="w-12 shrink-0 text-xs font-semibold text-gray-600 dark:text-zinc-400">{{ $examLabel }}</label>
+                                                    <label for="blp_{{ $key }}" class="w-12 shrink-0 text-xs font-semibold text-gray-600 dark:text-zinc-400" title="Rapor {{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[array_search($key, \App\Http\Controllers\StudentReportController::PERIOD_BLP)] }}">{{ $examLabel }}</label>
                                                     <input type="date" name="blp_dates[{{ $key }}]" id="blp_{{ $key }}" value="{{ $blpDates[$key] }}"
                                                            class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                                                 </div>

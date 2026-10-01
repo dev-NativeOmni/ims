@@ -148,7 +148,7 @@ class SignatureTest extends TestCase
     private function raporSettings(array $extra = []): array
     {
         return $extra + [
-            'academic_year' => '2026/2027', 'report_period' => 1,
+            'academic_year' => '2026/2027',
             'report_coord_tahfizh_name' => 'Zainal Arifin, S.Pd', 'report_coord_tahfizh_nik' => '06.0577',
             'report_coord_keagamaan_name' => 'Rifqi Ihsan, S.Pd., Gr.', 'report_coord_keagamaan_nik' => '15.06.0393',
             'report_headmaster_title' => 'Kepala SMA Islam Al Azhar 7 Sukoharjo',

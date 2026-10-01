@@ -181,7 +181,8 @@
     </div>
 
     <!-- Signature Area (4 Kolom Sesuai PDF Rapor Baru Integrasi) -->
-    @php $titimangsa = $sheet['letterhead']['city'].', '.$sheet['letterhead']['date']; @endphp
+    {{-- Titimangsa = tanggal BLP periode; belum diatur = titik-titik untuk diisi tangan. --}}
+    @php $titimangsa = $sheet['letterhead']['city'].', '.($sheet['letterhead']['date'] ?? '........................'); @endphp
     <div class="signature-block w-full text-xs text-black mt-8">
         @foreach ([['coord_tahfizh', 'coord_keagamaan'], ['headmaster', 'coord_tanse']] as $rowIdx => $keys)
             <div class="grid grid-cols-2 gap-8 text-center {{ $rowIdx > 0 ? 'mt-6' : '' }}">
