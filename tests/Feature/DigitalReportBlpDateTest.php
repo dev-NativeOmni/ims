@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\StudentReportController;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,7 +27,7 @@ class DigitalReportBlpDateTest extends TestCase
     private function saveBlp(array $dates): void
     {
         $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
-            'academic_year' => '2026/2027', 'semester' => 1, 'blp_dates' => $dates,
+            'academic_year' => '2026/2027', 'report_period' => 1, 'blp_dates' => $dates,
             'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
         ])->assertRedirect();
     }
@@ -70,5 +71,20 @@ class DigitalReportBlpDateTest extends TestCase
         $this->assertSame('2026-10-10', StudentReportController::blpDates('2026/2027')['1_asts']);
         $this->assertNull(StudentReportController::blpDates('2027/2028')['1_asts']);
         $this->actingAs($this->admin)->get(route('digital-reports.settings'))->assertOk()->assertSee('value="2026-10-10"', false);
+    }
+
+    #[Test]
+    public function report_period_sets_semester_and_class_print_term(): void
+    {
+        $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
+            'academic_year' => '2026/2027', 'report_period' => 3,
+            'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
+        ])->assertRedirect();
+
+        $this->assertSame('3', Setting::get('report_period'));
+        $this->assertSame('2', Setting::get('semester'));
+        $this->actingAs($this->admin)->get(route('digital-reports.settings'))->assertOk()
+            ->assertSee('Tengah Semester II')
+            ->assertSee('semester=2&amp;term=3', false);
     }
 }

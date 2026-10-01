@@ -327,6 +327,22 @@ class StudentReportController extends Controller
         ];
     }
 
+    /**
+     * Periode rapor aktif (Pengaturan Rapor), dipetakan ke triwulan: tengah semester =
+     * triwulan pertama semester itu, akhir semester = triwulan kedua.
+     */
+    public const REPORT_PERIODS = [
+        1 => 'Tengah Semester I',
+        2 => 'Semester I',
+        3 => 'Tengah Semester II',
+        4 => 'Semester II',
+    ];
+
+    public static function semesterOfPeriod(int $period): int
+    {
+        return $period >= 3 ? 2 : 1;
+    }
+
     public static function resolveTanseTerm(string $academicYear, int $semester, ?int $requested = null): array
     {
         $startYear = (int) explode('/', $academicYear)[0];
@@ -613,6 +629,9 @@ class StudentReportController extends Controller
         $classRooms = ClassRoom::orderBy('name')->get();
         $academicYear = Setting::get('academic_year', '2025/2026');
         $semester = (int) Setting::get('semester', 1);
+        // Belum pernah diatur: triwulan berjalan dari semester tersimpan.
+        $reportPeriod = (int) Setting::get('report_period', self::resolveTanseTerm($academicYear, $semester)['term']);
+        $semester = self::semesterOfPeriod($reportPeriod);
 
         $showTahfizh = Setting::get('report_show_tahfizh', '1') === '1';
         $showAdab = Setting::get('report_show_adab', '1') === '1';
@@ -644,7 +663,7 @@ class StudentReportController extends Controller
         $canEditSignatures = $request->user()->hasRole('super_admin');
 
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
+            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -657,6 +676,7 @@ class StudentReportController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
+            'report_period' => 'required|integer|in:'.implode(',', array_keys(self::REPORT_PERIODS)),
             'blp_dates' => 'nullable|array', 'blp_dates.*' => 'nullable|date',
             'tanse_a_min' => 'nullable|integer|between:1,100',
             'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
@@ -686,7 +706,8 @@ class StudentReportController extends Controller
         Setting::set(self::blpSettingKey($academicYear), json_encode($blp));
 
         Setting::set('academic_year', $request->input('academic_year', '2025/2026'));
-        Setting::set('semester', $request->input('semester', 1));
+        Setting::set('report_period', (string) $request->integer('report_period'));
+        Setting::set('semester', (string) self::semesterOfPeriod($request->integer('report_period')));
         Setting::set('report_show_tahfizh', $request->has('report_show_tahfizh') ? '1' : '0');
         Setting::set('report_show_adab', $request->has('report_show_adab') ? '1' : '0');
         Setting::set('report_show_tanse', $request->has('report_show_tanse') ? '1' : '0');

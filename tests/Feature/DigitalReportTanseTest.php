@@ -123,7 +123,7 @@ class DigitalReportTanseTest extends TestCase
     public function tanse_thresholds_and_descriptions_follow_report_settings(): void
     {
         $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
-            'academic_year' => '2026/2027', 'semester' => 1,
+            'academic_year' => '2026/2027', 'report_period' => 1,
             'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
             'tanse_a_min' => 95, 'tanse_b_min' => 85,
             'tanse_notes' => ['A' => 'Deskripsi A baru', 'B' => '', 'C' => 'Deskripsi C baru'],
@@ -139,7 +139,7 @@ class DigitalReportTanseTest extends TestCase
     public function tanse_b_threshold_must_be_below_a(): void
     {
         $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
-            'academic_year' => '2026/2027', 'semester' => 1,
+            'academic_year' => '2026/2027', 'report_period' => 1,
             'report_main_title' => 'LAPORAN', 'report_school_name' => 'SMA', 'report_city' => 'Sukoharjo',
             'tanse_a_min' => 80, 'tanse_b_min' => 90,
         ])->assertSessionHasErrors('tanse_b_min');

@@ -18,7 +18,7 @@
 
     <div class="py-6 sm:py-8" x-data="{
         academicYear: '{{ $academicYear }}',
-        semester: '{{ $semester }}',
+        reportPeriod: '{{ $reportPeriod }}',
         showTahfizh: {{ $showTahfizh ? 'true' : 'false' }},
         showAdab: {{ $showAdab ? 'true' : 'false' }},
         showTanse: {{ $showTanse ? 'true' : 'false' }},
@@ -80,10 +80,11 @@
                                 </div>
 
                                 <div>
-                                    <label for="semester" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Semester Aktif</label>
-                                    <select name="semester" id="semester" x-model="semester" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="1">Semester 1 (Ganjil)</option>
-                                        <option value="2">Semester 2 (Genap)</option>
+                                    <label for="report_period" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Periode Rapor Aktif</label>
+                                    <select name="report_period" id="report_period" x-model="reportPeriod" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                        @foreach (\App\Http\Controllers\StudentReportController::REPORT_PERIODS as $periodValue => $periodLabel)
+                                            <option value="{{ $periodValue }}">{{ $periodLabel }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -114,7 +115,7 @@
                                     Tanggal BLP (Titimangsa Rapor) &middot; Tahun Ajaran <span x-text="academicYear"></span>
                                 </label>
                                 <p class="text-[11px] text-gray-500 dark:text-zinc-400">
-                                    Rapor triwulan pertama tiap semester memakai tanggal ASTS, triwulan kedua memakai ASAS (Semester 1) / ASAT (Semester 2). Bila kosong, rapor memakai tanggal hari ini.
+                                    Rapor Tengah Semester memakai tanggal ASTS, rapor Semester I memakai ASAS dan Semester II memakai ASAT. Bila kosong, rapor memakai tanggal hari ini.
                                 </p>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     @foreach (\App\Http\Controllers\StudentReportController::BLP_EXAMS as $blpSemester => $exams)
@@ -297,7 +298,7 @@
                                 <p class="text-[8px] font-bold uppercase text-black mt-0.5 leading-none" x-text="reportSchoolName"></p>
                                 
                                 <div class="border border-black px-2 py-0.5 mt-1 bg-gray-50 text-[7px] font-bold text-black uppercase leading-none">
-                                    SEMESTER : <span x-text="semester == '1' ? '1 (SATU)' : '2 (DUA)'"></span>
+                                    SEMESTER : <span x-text="reportPeriod <= 2 ? '1 (SATU)' : '2 (DUA)'"></span>
                                 </div>
                                 <p class="text-[7px] font-bold text-black mt-0.5">Tahun Ajaran <span x-text="academicYear"></span></p>
                             </div>
@@ -467,7 +468,7 @@
                                 <h4 class="font-bold text-gray-900 dark:text-white text-base">{{ $cRoom->name }}</h4>
                                 <p class="text-xs text-gray-500 font-medium mt-0.5">Program: {{ $cRoom->program?->name ?: '-' }}</p>
                             </div>
-                            <a href="{{ route('digital-reports.class-print', ['classRoom' => $cRoom->id, 'academic_year' => $academicYear, 'semester' => $semester]) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition w-full">
+                            <a href="{{ route('digital-reports.class-print', ['classRoom' => $cRoom->id, 'academic_year' => $academicYear, 'semester' => $semester, 'term' => $reportPeriod]) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition w-full">
                                 <x-heroicon-o-printer class="w-4 h-4" />
                                 <span>Cetak Rapor Seluruh Kelas</span>
                             </a>
