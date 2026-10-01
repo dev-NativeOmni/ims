@@ -253,9 +253,9 @@
                                     @include('reports.partials.signature-upload', ['key' => 'coord_tahfizh', 'canEdit' => $canEditSignatures])
                                 </div>
 
-                                {{-- Baris Atas: Kanan (Koordinator Keagamaan) --}}
+                                {{-- Baris Atas: Tengah (Koordinator Keagamaan/Adab) --}}
                                 <div class="p-3.5 bg-gray-50/70 dark:bg-zinc-800/40 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2.5">
-                                    <h4 class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">2. Koordinator Keagamaan (Kanan Atas)</h4>
+                                    <h4 class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">2. Koordinator Keagamaan / Adab (Tengah Atas)</h4>
                                     <div>
                                         <label for="report_coord_keagamaan_name" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">Nama Lengkap & Gelar</label>
                                         <input type="text" name="report_coord_keagamaan_name" id="report_coord_keagamaan_name" x-model="coordKeagamaanName" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
@@ -267,9 +267,24 @@
                                     @include('reports.partials.signature-upload', ['key' => 'coord_keagamaan', 'canEdit' => $canEditSignatures])
                                 </div>
 
-                                {{-- Baris Bawah: Kiri (Kepala Sekolah) --}}
+
+                                {{-- Baris Atas: Kanan (Koordinator Tanse) --}}
                                 <div class="p-3.5 bg-gray-50/70 dark:bg-zinc-800/40 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2.5">
-                                    <h4 class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">3. Kepala Sekolah (Kiri Bawah)</h4>
+                                    <h4 class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">3. Koordinator Tanse (Kanan Atas)</h4>
+                                    <div>
+                                        <label for="report_coord_tanse_name" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">Nama Lengkap & Gelar</label>
+                                        <input type="text" name="report_coord_tanse_name" id="report_coord_tanse_name" x-model="coordTanseName" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label for="report_coord_tanse_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
+                                        <input type="text" name="report_coord_tanse_nik" id="report_coord_tanse_nik" x-model="coordTanseNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                    @include('reports.partials.signature-upload', ['key' => 'coord_tanse', 'canEdit' => $canEditSignatures])
+                                </div>
+
+                                {{-- Baris Bawah: Tengah (Kepala Sekolah) --}}
+                                <div class="p-3.5 bg-gray-50/70 dark:bg-zinc-800/40 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2.5">
+                                    <h4 class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">4. Kepala Sekolah (Tengah Bawah)</h4>
                                     <div>
                                         <label for="report_headmaster_title" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">Jabatan</label>
                                         <input type="text" name="report_headmaster_title" id="report_headmaster_title" x-model="headmasterTitle" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
@@ -283,20 +298,6 @@
                                         <input type="text" name="report_headmaster_nik" id="report_headmaster_nik" x-model="headmasterNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
                                     </div>
                                     @include('reports.partials.signature-upload', ['key' => 'headmaster', 'canEdit' => $canEditSignatures])
-                                </div>
-
-                                {{-- Baris Bawah: Kanan (Koordinator Tanse) --}}
-                                <div class="p-3.5 bg-gray-50/70 dark:bg-zinc-800/40 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2.5">
-                                    <h4 class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">4. Koordinator Tanse (Kanan Bawah)</h4>
-                                    <div>
-                                        <label for="report_coord_tanse_name" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">Nama Lengkap & Gelar</label>
-                                        <input type="text" name="report_coord_tanse_name" id="report_coord_tanse_name" x-model="coordTanseName" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label for="report_coord_tanse_nik" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">NIK</label>
-                                        <input type="text" name="report_coord_tanse_nik" id="report_coord_tanse_nik" x-model="coordTanseNik" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
-                                    </div>
-                                    @include('reports.partials.signature-upload', ['key' => 'coord_tanse', 'canEdit' => $canEditSignatures])
                                 </div>
 
                             </div>
@@ -457,50 +458,50 @@
                             </table>
                         </div>
 
-                        <!-- Mini Live Signatures (Pixel-Perfect 4 Block Grid) -->
+                        <!-- Mini Live Signatures: tiga koordinator di atas, Kepala Sekolah di tengah bawah -->
                         <div class="border-t border-gray-200 pt-2 text-[7px] text-black">
-                            
+
                             <!-- Row 1 -->
-                            <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="grid grid-cols-3 gap-2 text-center">
                                 <div>
                                     <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Tahfizh</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_tahfizh']"><img :src="sig['coord_tahfizh']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
                                     </div>
-                                    <p class="font-black underline leading-tight" x-text="coordTahfizhName"></p>
+                                    <p class="font-black underline leading-tight truncate" x-text="coordTahfizhName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTahfizhNik"></span></p>
                                 </div>
                                 <div>
-                                    <p class="leading-tight" x-text="reportCity + ', ' + reportDate"></p>
+                                    <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Keagamaan</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_keagamaan']"><img :src="sig['coord_keagamaan']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
                                     </div>
-                                    <p class="font-black underline leading-tight" x-text="coordKeagamaanName"></p>
+                                    <p class="font-black underline leading-tight truncate" x-text="coordKeagamaanName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordKeagamaanNik"></span></p>
                                 </div>
-                            </div>
-
-                            <!-- Row 2 -->
-                            <div class="grid grid-cols-2 gap-3 text-center mt-2.5">
                                 <div>
-                                    <p class="leading-tight">Mengetahui,</p>
-                                    <p class="font-bold leading-tight truncate" x-text="headmasterTitle"></p>
-                                    <div class="h-6 flex items-center justify-center">
-                                        <template x-if="sig['headmaster']"><img :src="sig['headmaster']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
-                                    </div>
-                                    <p class="font-black underline leading-tight truncate" x-text="headmasterName"></p>
-                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="headmasterNik"></span></p>
-                                </div>
-                                <div>
-                                    <p class="invisible leading-tight">Mengetahui,</p>
+                                    <p class="leading-tight" x-text="reportCity + ', ' + reportDate"></p>
                                     <p class="font-bold leading-tight">Koordinator Tanse</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_tanse']"><img :src="sig['coord_tanse']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
                                     </div>
                                     <p class="font-black underline leading-tight truncate" x-text="coordTanseName"></p>
                                     <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTanseNik"></span></p>
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="mx-auto w-1/2 text-center mt-2.5">
+                                <div>
+                                    <p class="leading-tight" >Mengetahui,</p>
+                                    <p class="font-bold leading-tight truncate" x-text="headmasterTitle"></p>
+                                    <div class="h-6 flex items-center justify-center">
+                                        <template x-if="sig['headmaster']"><img :src="sig['headmaster']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
+                                    </div>
+                                    <p class="font-black underline leading-tight truncate" x-text="headmasterName"></p>
+                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="headmasterNik"></span></p>
                                 </div>
                             </div>
 

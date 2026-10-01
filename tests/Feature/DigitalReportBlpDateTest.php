@@ -147,4 +147,13 @@ class DigitalReportBlpDateTest extends TestCase
         $this->assertSame('LAPORAN TAHFIZH, ADAB DAN TANSE', Setting::get('report_main_title'));
         $this->printed(1, 1)->assertSee('I. LAPORAN TAHFIZH')->assertSee('Koordinator Tahfizh')->assertDontSee('TAHFIDZ');
     }
+
+    #[Test]
+    public function signatures_put_three_coordinators_on_top_and_headmaster_below(): void
+    {
+        $html = $this->printed(1, 1)->assertOk()->getContent();
+        $signatures = substr($html, strpos($html, 'signature-block'));
+
+        $this->assertMatchesRegularExpression('/Koordinator Tahfizh.*Koordinator Keagamaan.*Sukoharjo,.*Koordinator Tanse.*Mengetahui,.*Kepala SMA/s', $signatures);
+    }
 }

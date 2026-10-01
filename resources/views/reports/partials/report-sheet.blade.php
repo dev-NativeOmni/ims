@@ -210,20 +210,21 @@
         </p>
     </div>
 
-    <!-- Signature Area (4 Kolom Sesuai PDF Rapor Baru Integrasi) -->
+    <!-- Signature Area: tiga koordinator berjajar di atas, Kepala Sekolah di tengah bawah -->
     {{-- Titimangsa = tanggal BLP periode; belum diatur = titik-titik untuk diisi tangan. --}}
     @php $titimangsa = $sheet['letterhead']['city'].', '.($sheet['letterhead']['date'] ?? '........................'); @endphp
     <div class="signature-block w-full text-xs text-black mt-8">
-        @foreach ([['coord_tahfizh', 'coord_keagamaan'], ['headmaster', 'coord_tanse']] as $rowIdx => $keys)
-            <div class="grid grid-cols-2 gap-8 text-center {{ $rowIdx > 0 ? 'mt-6' : '' }}">
+        @foreach ([['coord_tahfizh', 'coord_keagamaan', 'coord_tanse'], ['headmaster']] as $rowIdx => $keys)
+            <div class="{{ $rowIdx === 0 ? 'grid grid-cols-3 gap-6' : 'mt-6 mx-auto w-1/2' }} text-center">
                 @foreach ($keys as $colIdx => $key)
                     @php $official = $sheet['signatories'][$key]; @endphp
                     <div>
-                        {{-- Baris pembuka: titimangsa di kanan atas, "Mengetahui," di kiri bawah; sisanya penyeimbang tak terlihat. --}}
+                        {{-- Baris atas: titimangsa di atas koordinator paling kanan (lainnya penyeimbang tak terlihat);
+                             baris bawah: "Mengetahui," di atas Kepala Sekolah. --}}
                         @if ($rowIdx === 0)
-                            <p class="{{ $colIdx === 0 ? 'invisible select-none' : '' }}">{{ $titimangsa }}</p>
+                            <p class="{{ $colIdx < 2 ? 'invisible select-none' : '' }}">{{ $titimangsa }}</p>
                         @else
-                            <p class="{{ $colIdx === 1 ? 'invisible select-none' : '' }}">Mengetahui,</p>
+                            <p>Mengetahui,</p>
                         @endif
                         <p class="font-semibold">{{ $official['title'] }}</p>
                         @include('reports.partials.signature-slot', ['uri' => $signature($key)])
@@ -234,5 +235,4 @@
             </div>
         @endforeach
     </div>
-
 </div>
