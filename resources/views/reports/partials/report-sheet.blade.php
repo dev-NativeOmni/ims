@@ -76,7 +76,8 @@
             @include('reports.partials.report-sheet-tahfizh-legacy')
         @else
             {{-- Satu baris untuk triwulan rapor, sama dengan Target Triwulan / Capaian Akhir di Laporan Triwulan.
-                 Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + Nilai di atas Deskripsi; Kelas 11/12: Surah|Ayat + baris, tanpa nilai. --}}
+                 Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + kolom Nilai, deskripsi di baris bawah selebar tabel;
+                 Kelas 11/12: Surah|Ayat + baris + kolom Deskripsi, tanpa nilai. --}}
             <table class="w-full border border-black text-xs text-center">
                 <thead>
                     <tr class="bg-gray-100 border-b border-black font-bold">
@@ -87,7 +88,7 @@
                             <th rowspan="2" class="p-1.5 border-r border-black">BARIS<br><span class="font-normal">Capaian / Target</span></th>
                         @endunless
                         <th rowspan="2" class="p-1.5 border-r border-black w-20">STATUS</th>
-                        <th rowspan="2" class="p-1.5 {{ $isUmmi ? 'w-[28%]' : 'w-[30%]' }}">{{ $isUmmi ? 'NILAI & DESKRIPSI' : 'DESKRIPSI' }}</th>
+                        <th rowspan="2" class="p-1.5 {{ $isUmmi ? 'w-32' : 'w-[30%]' }}">{{ $isUmmi ? 'NILAI' : 'DESKRIPSI' }}</th>
                     </tr>
                     <tr class="bg-gray-100 border-b border-black">
                         @foreach ([1, 2] as $unused)
@@ -113,18 +114,22 @@
                         <td class="p-1.5 border-r border-black align-middle font-bold whitespace-nowrap {{ $tahfizh['completed'] ? 'text-green-700' : 'text-rose-700' }}">
                             {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
-                        <td class="p-2 align-middle text-left">
-                            @if ($isUmmi)
-                                {{-- "89 / Jayyid Jiddan": predikat tanpa terjemahan dalam kurung. --}}
-                                <p class="text-center font-black text-black text-sm leading-none">
-                                    {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / {{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}@endif
-                                </p>
-                                <p class="mt-1.5 pt-1.5 border-t border-gray-300 text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>
-                            @else
-                                <p class="text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>
-                            @endif
-                        </td>
+                        @if ($isUmmi)
+                            {{-- "89 / Jayyid Jiddan": predikat tanpa terjemahan dalam kurung. --}}
+                            <td class="p-1.5 align-middle font-black text-black text-sm">
+                                {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / {{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}@endif
+                            </td>
+                        @else
+                            <td class="p-2 align-middle text-left text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</td>
+                        @endif
                     </tr>
+                    @if ($isUmmi)
+                        <tr class="border-b border-black">
+                            <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-left text-gray-700 leading-relaxed">
+                                <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         @endif

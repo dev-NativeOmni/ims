@@ -374,7 +374,7 @@
                                         <th colspan="4" class="p-0.5 border-r border-b border-black">Target Triwulan</th>
                                         <th colspan="4" class="p-0.5 border-r border-b border-black">Capaian Akhir</th>
                                         <th rowspan="2" class="p-0.5 border-r border-black">Status</th>
-                                        <th rowspan="2" class="p-0.5">Nilai &amp; Deskripsi</th>
+                                        <th rowspan="2" class="p-0.5">Nilai</th>
                                     </tr>
                                     <tr class="border-b border-black font-semibold">
                                         @foreach ([1, 2] as $unused)
@@ -397,10 +397,10 @@
                                         <td class="p-0.5 border-r border-black">Al-Bayyinah</td>
                                         <td class="p-0.5 border-r border-black">8</td>
                                         <td class="p-0.5 border-r border-black font-bold text-emerald-700">Tuntas</td>
-                                        <td class="p-0.5 text-left">
-                                            <p class="text-center font-black">87 / Jayyid Jiddan</p>
-                                            <p class="border-t border-gray-300 mt-0.5 pt-0.5 text-gray-600">{{ \Illuminate\Support\Str::limit($tahfizhNotes['tuntas'], 60) }}</p>
-                                        </td>
+                                        <td class="p-0.5 font-black">87 / Jayyid Jiddan</td>
+                                    </tr>
+                                    <tr class="border-b border-black">
+                                        <td colspan="11" class="p-0.5 text-left text-gray-600"><span class="font-bold text-black">Deskripsi:</span> {{ \Illuminate\Support\Str::limit($tahfizhNotes['tuntas'], 90) }}</td>
                                     </tr>
                                 </tbody>
                             </table>

@@ -114,14 +114,15 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
 
         $response = $this->printTerm2()->assertOk();
 
-        $response->assertSee('TARGET TRIWULAN')->assertSee('CAPAIAN AKHIR')->assertSee('NILAI &amp; DESKRIPSI', false);
+        $response->assertSee('TARGET TRIWULAN')->assertSee('CAPAIAN AKHIR')->assertSee('NILAI')->assertDontSee('NILAI &amp; DESKRIPSI', false);
         $response->assertDontSee('Jilid 1');
         // Target: Jilid 2, halaman rentang "24-25" -> 25, surah target; Capaian: Jilid 2 hal 25,
         // hafalan sesi Ummi An-Naba "1-5" -> ayat 5; posisi buku sampai target -> Tuntas.
         $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas']);
         $response->assertDontSee('1-5');
         $response->assertDontSee('Nilai Akhir Tahfizh');
-        $response->assertSee('Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah');
+        // Deskripsi di baris sendiri di bawah baris nilai, bukan di kolom Nilai.
+        $response->assertSeeInOrder(['Tuntas', '/ ', 'Deskripsi:', 'Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah']);
     }
 
     #[Test]
@@ -165,7 +166,7 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
 
         $response = $this->printTerm2()->assertOk();
 
-        $response->assertSee('BARIS')->assertDontSee('NILAI &amp; DESKRIPSI', false)->assertDontSee('/ 100');
+        $response->assertSee('BARIS')->assertDontSee('Deskripsi:')->assertDontSee('/ 100');
         $response->assertSeeInOrder(['TARGET TRIWULAN', 'CAPAIAN AKHIR', $this->surah->name_latin, '10', $this->surah->name_latin, '7']);
         $response->assertDontSee('1-7');
         $response->assertDontSee('Jilid');
