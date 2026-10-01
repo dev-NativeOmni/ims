@@ -395,7 +395,10 @@ class StudentReportController extends Controller
             ],
             // Satu baris triwulan rapor (lihat tahfizhTermRow()); nilai hanya ditampilkan untuk Kelas 10/Ummi.
             // Predikat nilai memakai skala yang sama dengan Nilai Adab (Mumtaz >= 90, Jayyid Jiddan >= 80, ...).
+            // Deskripsi: catatan guru di target triwulan bila ada, selain itu deskripsi bawaan Tuntas/Tidak Tuntas.
             'tahfizh' => $data['tahfizhTerm'] + [
+                'description' => $data['tahfizhTerm']['notes']
+                    ?: self::tahfizhNotes()[$data['tahfizhTerm']['completed'] ? 'tuntas' : 'tidak_tuntas'],
                 'final_score' => $data['tahfizhScore']['final_score'],
                 'final_predicate' => Setting::getAdabGradeLabel(Setting::getAdabGrade((float) $data['tahfizhScore']['final_score'])),
             ],
@@ -480,6 +483,24 @@ class StudentReportController extends Controller
         'B' => 'Alhamdulillah ananda sudah Baik dalam menerapkan budaya sekolah dan masih memerlukan bimbingan serta pembiasaan dalam kedisiplinan, tanggung jawab, dan sikap santun. Semoga bisa istiqomah dalam menjalankan pembiasaan budaya sekolah.',
         'C' => 'Alhamdulillah ananda sudah Cukup Baik dalam menerapkan budaya sekolah, namun masih memerlukan bimbingan, pendampingan, pembiasaan dan konsistensi dalam kedisiplinan, tanggung jawab, dan sikap santun.',
     ];
+
+    /**
+     * Deskripsi Tahfizh bawaan menurut status triwulan; bisa diubah di Pengaturan Rapor (lihat tahfizhNotes()).
+     */
+    public const TAHFIZH_NOTES = [
+        'tuntas' => 'Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah, pertahankan dan tingkatkan lagi hafalannya.',
+        'tidak_tuntas' => "Alhamdulillah, Ananda telah menunjukkan proses dan usaha yang baik dalam menghafal Al-Qur'an. Capaian hafalan Ananda masih perlu terus ditingkatkan agar dapat memenuhi target yang telah ditetapkan oleh sekolah. Semoga Ananda semakin semangat, istiqamah dalam menghafal Al-Qur'an.",
+    ];
+
+    /**
+     * @return array{tuntas: string, tidak_tuntas: string}
+     */
+    public static function tahfizhNotes(): array
+    {
+        $saved = json_decode((string) Setting::get('report_tahfizh_notes'), true) ?: [];
+
+        return collect(self::TAHFIZH_NOTES)->map(fn ($default, $key) => trim((string) ($saved[$key] ?? '')) ?: $default)->all();
+    }
 
     public const TANSE_DEFAULT_A_MIN = 90;
 
@@ -978,6 +999,7 @@ class StudentReportController extends Controller
 
         $blpDates = self::blpDates($academicYear);
         $tanseRules = self::tanseRules();
+        $tahfizhNotes = self::tahfizhNotes();
 
         // Periode untuk cetak & kunci per kelas (bisa periode lama); bawaan = periode aktif.
         $printYear = AcademicYear::isValid($request->input('print_year')) ? $request->input('print_year') : $academicYear;
@@ -998,7 +1020,7 @@ class StudentReportController extends Controller
         $canEditSignatures = $request->user()->hasRole('super_admin');
 
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'reportPeriodUntil', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules',
+            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'reportPeriodUntil', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules', 'tahfizhNotes',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -1021,6 +1043,7 @@ class StudentReportController extends Controller
             'tanse_a_min' => 'nullable|integer|between:1,100',
             'tanse_b_min' => 'nullable|integer|between:0,100|lt:tanse_a_min',
             'tanse_notes' => 'nullable|array', 'tanse_notes.*' => 'nullable|string|max:1000',
+            'tahfizh_notes' => 'nullable|array', 'tahfizh_notes.*' => 'nullable|string|max:1000',
             'signatures' => 'nullable|array', 'signatures.*' => Signatures::UPLOAD_RULES,
             'reset_signatures' => 'nullable|array', 'reset_signatures.*' => 'in:'.implode(',', array_keys(Signatures::OFFICIALS)),
         ], ['tanse_b_min.lt' => 'Batas predikat B harus lebih kecil dari batas predikat A.']);
@@ -1035,6 +1058,12 @@ class StudentReportController extends Controller
             Setting::set('report_tanse_b_min', (string) $request->integer('tanse_b_min'));
             Setting::set('report_tanse_notes', json_encode(collect(self::TANSE_NOTES)
                 ->map(fn ($default, $grade) => trim((string) $request->input("tanse_notes.{$grade}")) ?: $default)
+                ->all()));
+        }
+
+        if ($request->has('tahfizh_notes')) {
+            Setting::set('report_tahfizh_notes', json_encode(collect(self::TAHFIZH_NOTES)
+                ->map(fn ($default, $key) => trim((string) $request->input("tahfizh_notes.{$key}")) ?: $default)
                 ->all()));
         }
 

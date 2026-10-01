@@ -69,7 +69,8 @@
             $tahfizh = $sheet['tahfizh'];
             $isUmmi = ($tahfizh['layout'] ?? null) === 'ummi';
             $positionCols = $isUmmi ? ['jilid' => 'Jilid', 'halaman' => 'Hal.', 'surah' => 'Surah', 'ayat' => 'Ayat'] : ['surah' => 'Surah', 'ayat' => 'Ayat'];
-            $tahfizhDescription = $tahfizh['notes'] ?? null ?: ($tahfizh['completed'] ? 'Tercapai.' : 'Belum tercapai.');
+            // 'description' ada sejak deskripsi bawaan Tuntas/Tidak Tuntas; simpanan terkunci yang lebih lama belum punya.
+            $tahfizhDescription = $tahfizh['description'] ?? (($tahfizh['notes'] ?? null) ?: ($tahfizh['completed'] ? 'Tercapai.' : 'Belum tercapai.'));
         @endphp
         @if (isset($tahfizh['rows']))
             @include('reports.partials.report-sheet-tahfizh-legacy')

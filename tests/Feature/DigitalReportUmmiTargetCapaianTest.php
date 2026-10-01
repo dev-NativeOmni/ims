@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\StudentReportController;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
@@ -120,6 +121,7 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas']);
         $response->assertDontSee('1-5');
         $response->assertDontSee('Nilai Akhir Tahfizh');
+        $response->assertSee('Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah');
     }
 
     #[Test]
@@ -167,5 +169,18 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $response->assertSeeInOrder(['TARGET TRIWULAN', 'CAPAIAN AKHIR', $this->surah->name_latin, '10', $this->surah->name_latin, '7']);
         $response->assertDontSee('1-7');
         $response->assertDontSee('Jilid');
+        $response->assertSee('Capaian hafalan Ananda masih perlu terus ditingkatkan');
+    }
+
+    #[Test]
+    public function tahfizh_descriptions_can_be_changed_in_settings(): void
+    {
+        $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
+            'academic_year' => '2026/2027', 'report_main_title' => 'L', 'report_school_name' => 'S', 'report_city' => 'K',
+            'tahfizh_notes' => ['tuntas' => '', 'tidak_tuntas' => 'Terus semangat menghafal.'],
+        ])->assertRedirect();
+
+        $this->assertSame(StudentReportController::TAHFIZH_NOTES['tuntas'], StudentReportController::tahfizhNotes()['tuntas'], 'Kosong = kembali ke bawaan.');
+        $this->printTerm2()->assertSee('Terus semangat menghafal.');
     }
 }

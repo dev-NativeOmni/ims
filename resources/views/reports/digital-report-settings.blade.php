@@ -164,6 +164,21 @@
                             </div>
                         </div>
 
+                        {{-- Deskripsi Tahfizh bawaan (kolom Deskripsi tabel Tahfizh rapor) --}}
+                        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
+                                <x-heroicon-o-book-open class="w-5 h-5 text-teal-600" />
+                                <span>Deskripsi Tahfizh</span>
+                            </h3>
+                            <p class="text-[11px] text-gray-500 dark:text-zinc-400">Tercetak di kolom Deskripsi tabel Tahfizh menurut status triwulan, kecuali guru mengisi catatan pada target triwulan itu. Kosongkan untuk kembali ke teks bawaan.</p>
+                            @foreach (['tuntas' => 'Tuntas', 'tidak_tuntas' => 'Tidak Tuntas'] as $noteKey => $noteLabel)
+                                <div>
+                                    <label for="tahfizh_note_{{ $noteKey }}" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Deskripsi {{ $noteLabel }}</label>
+                                    <textarea name="tahfizh_notes[{{ $noteKey }}]" id="tahfizh_note_{{ $noteKey }}" rows="3" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">{{ old('tahfizh_notes.'.$noteKey, $tahfizhNotes[$noteKey]) }}</textarea>
+                                </div>
+                            @endforeach
+                        </div>
+
                         {{-- Predikat & Deskripsi Tanse --}}
                         <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
                             <h3 class="text-base font-bold text-gray-900 dark:text-white border-b pb-3 dark:border-zinc-800 flex items-center gap-2">
@@ -384,7 +399,7 @@
                                         <td class="p-0.5 border-r border-black font-bold text-emerald-700">Tuntas</td>
                                         <td class="p-0.5 text-left">
                                             <p class="text-center font-black">87 / Jayyid Jiddan</p>
-                                            <p class="border-t border-gray-300 mt-0.5 pt-0.5 text-gray-600">Tercapai.</p>
+                                            <p class="border-t border-gray-300 mt-0.5 pt-0.5 text-gray-600">{{ \Illuminate\Support\Str::limit($tahfizhNotes['tuntas'], 60) }}</p>
                                         </td>
                                     </tr>
                                 </tbody>
