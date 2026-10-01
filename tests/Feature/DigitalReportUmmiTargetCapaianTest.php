@@ -117,7 +117,7 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $response->assertDontSee('Jilid 1');
         // Target: Jilid 2, halaman rentang "24-25" -> 25, surah target; Capaian: Jilid 2 hal 25,
         // hafalan sesi Ummi An-Naba "1-5" -> ayat 5; posisi buku sampai target -> Tuntas.
-        $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas', '/ 100']);
+        $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas']);
         $response->assertDontSee('1-5');
         $response->assertDontSee('Nilai Akhir Tahfizh');
     }
@@ -133,7 +133,10 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $this->student->update(['tahfizh_level' => 'ummi']);
         $score = (float) Setting::calculateTahfizhScore($this->student->fresh())['final_score'];
 
-        $this->printTerm2()->assertOk()->assertSeeInOrder(['/ 100', Setting::getAdabGradeLabel(Setting::getAdabGrade($score))]);
+        $short = preg_replace('/\s*\(.*\)$/', '', Setting::getAdabGradeLabel(Setting::getAdabGrade($score)));
+        $this->printTerm2()->assertOk()
+            ->assertSee(rtrim(rtrim(number_format($score, 1, '.', ''), '0'), '.').' / '.$short)
+            ->assertDontSee('/ 100');
     }
 
     #[Test]

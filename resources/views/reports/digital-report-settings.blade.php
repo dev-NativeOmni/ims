@@ -383,8 +383,7 @@
                                         <td class="p-0.5 border-r border-black">8</td>
                                         <td class="p-0.5 border-r border-black font-bold text-emerald-700">Tuntas</td>
                                         <td class="p-0.5 text-left">
-                                            <p class="text-center font-black">87 / 100</p>
-                                            <p class="text-center font-bold">Jayyid Jiddan (Baik Sekali)</p>
+                                            <p class="text-center font-black">87 / Jayyid Jiddan</p>
                                             <p class="border-t border-gray-300 mt-0.5 pt-0.5 text-gray-600">Tercapai.</p>
                                         </td>
                                     </tr>
