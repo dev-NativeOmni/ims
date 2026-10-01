@@ -9,18 +9,16 @@ use App\Models\Program;
 use App\Models\Surah;
 use App\Models\UmmiRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Kolom Target & Capaian di rapor cetak murid UMMI (Kelas 10) harus
- * menampilkan format khusus:
- * - Target: "Ummi : Jilid X Hal Y" + "Tahfizh : Surah X Ayat Y"
- * - Capaian: "Ummi : ..." + "Tahfizh Ummi : ..." (hafalan di dalam sesi
- *   UMMI) + "Tahfizh Mandiri : ..." (setoran hafalan terpisah)
- * bukan format "QS. X (Ayat Y)" tunggal yang dipakai untuk target Reguler
- * murni.
+ * Tabel Tahfizh rapor cetak = satu baris untuk triwulan rapor, sama dengan Target Triwulan /
+ * Capaian Akhir di Laporan Triwulan; ayat & halaman cukup angka terakhirnya.
+ * - Kelas 10/Ummi: Jilid | Hal. | Surah | Ayat, Status, lalu Nilai di atas Deskripsi.
+ * - Kelas 11/12: Surah | Ayat, Baris capaian/target, Status, Deskripsi -- tanpa nilai.
  */
 class DigitalReportUmmiTargetCapaianTest extends TestCase
 {
@@ -30,10 +28,22 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
     {
         parent::setUp();
         $this->setUpHafizPlusData();
+        Carbon::setTestNow('2026-11-10'); // Semester I (triwulan Okt-Des 2026/2027)
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
+    private function printTerm2()
+    {
+        return $this->actingAs($this->admin)->get(route('digital-reports.print', [$this->student, 'academic_year' => '2026/2027', 'term' => 2]));
     }
 
     #[Test]
-    public function ummi_target_row_shows_separate_ummi_and_tahfizh_lines(): void
+    public function ummi_rapor_shows_one_term_row_with_book_position_and_score(): void
     {
         $program = Program::create(['name' => 'Tahfizh Kelas 10', 'status' => 'active']);
         $classRoom = ClassRoom::create([
@@ -94,22 +104,25 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             'status' => 'passed',
         ]);
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('digital-reports.print', $this->student));
+        // Target triwulan lain tidak ikut tampil (dulu 5 target sekaligus).
+        HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id,
+            'ummi_jilid' => 'Jilid 1', 'halaman_buku' => '8', 'target_date' => '2026-08-10', 'status' => 'active',
+        ]);
 
-        $response->assertStatus(200);
-        // Target: halaman disimpan sebagai rentang ("24-25") tapi rapor
-        // cukup menampilkan angka halaman terakhirnya saja.
-        $response->assertSee('Ummi : Jilid 2 Hal 25', false);
-        $response->assertSee('Tahfizh : Surah '.$this->surah->name_latin, false);
+        $response = $this->printTerm2()->assertOk();
 
-        // Capaian: tiga baris terpisah, Ummi + Tahfizh Ummi + Tahfizh Mandiri.
-        $response->assertSee('Tahfizh Ummi : Surah An-Naba Ayat 5', false);
-        $response->assertSee('Tahfizh Mandiri : Surah An-Nas Ayat 6', false);
+        $response->assertSee('TARGET TRIWULAN')->assertSee('CAPAIAN AKHIR')->assertSee('NILAI &amp; DESKRIPSI', false);
+        $response->assertDontSee('Jilid 1');
+        // Target: Jilid 2, halaman rentang "24-25" -> 25, surah target; Capaian: Jilid 2 hal 25,
+        // hafalan sesi Ummi An-Naba "1-5" -> ayat 5; posisi buku sampai target -> Tuntas.
+        $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas', '/ 100']);
+        $response->assertDontSee('1-5');
+        $response->assertDontSee('Nilai Akhir Tahfizh');
     }
 
     #[Test]
-    public function reguler_only_target_row_keeps_the_single_line_format(): void
+    public function reguler_rapor_shows_lines_and_no_score(): void
     {
         HafalanTarget::create([
             'student_id' => $this->student->id,
@@ -120,11 +133,21 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('digital-reports.print', $this->student));
+        $record = HafalanRecord::create([
+            'student_id' => $this->student->id,
+            'teacher_id' => $this->teacherProfile->id,
+            'submitted_at' => now(),
+        ]);
+        $record->surahs()->create([
+            'surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 7,
+            'submission_type' => 'new', 'status' => 'passed',
+        ]);
 
-        $response->assertStatus(200);
-        $response->assertSee('QS. '.$this->surah->name_latin.' (Ayat 10)', false);
-        $response->assertDontSee('Ummi : Jilid');
+        $response = $this->printTerm2()->assertOk();
+
+        $response->assertSee('BARIS')->assertDontSee('NILAI &amp; DESKRIPSI', false)->assertDontSee('/ 100');
+        $response->assertSeeInOrder(['TARGET TRIWULAN', 'CAPAIAN AKHIR', $this->surah->name_latin, '10', $this->surah->name_latin, '7']);
+        $response->assertDontSee('1-7');
+        $response->assertDontSee('Jilid');
     }
 }

@@ -65,44 +65,65 @@
     <div class="mb-6 space-y-3">
         <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIZH</h3>
 
-        <!-- Table 1: Targets & Capaian Terakhir -->
-        <table class="w-full table-fixed border border-black text-xs text-left">
-            <thead>
-                <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                    <th class="p-1.5 border-r border-black w-[6%]">No.</th>
-                    <th class="p-1.5 border-r border-black w-[36%]">TARGET SURAH YANG DIHAFAL</th>
-                    <th class="p-1.5 border-r border-black w-[36%]">CAPAIAN TERAKHIR YANG DIHAFALKAN</th>
-                    <th class="p-1.5 border-r border-black w-[10%]">STATUS</th>
-                    <th class="p-1.5 w-[12%]">Deskripsi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($sheet['tahfizh']['rows'] as $idx => $row)
+        @php
+            $tahfizh = $sheet['tahfizh'];
+            $isUmmi = ($tahfizh['layout'] ?? null) === 'ummi';
+            $positionCols = $isUmmi ? ['jilid' => 'Jilid', 'halaman' => 'Hal.', 'surah' => 'Surah', 'ayat' => 'Ayat'] : ['surah' => 'Surah', 'ayat' => 'Ayat'];
+            $tahfizhDescription = $tahfizh['notes'] ?? null ?: ($tahfizh['completed'] ? 'Tercapai.' : 'Belum tercapai.');
+        @endphp
+        @if (isset($tahfizh['rows']))
+            @include('reports.partials.report-sheet-tahfizh-legacy')
+        @else
+            {{-- Satu baris untuk triwulan rapor, sama dengan Target Triwulan / Capaian Akhir di Laporan Triwulan.
+                 Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + Nilai di atas Deskripsi; Kelas 11/12: Surah|Ayat + baris, tanpa nilai. --}}
+            <table class="w-full border border-black text-xs text-center">
+                <thead>
+                    <tr class="bg-gray-100 border-b border-black font-bold">
+                        <th rowspan="2" class="p-1.5 border-r border-black w-8">No.</th>
+                        <th colspan="{{ count($positionCols) }}" class="p-1.5 border-r border-black border-b">TARGET TRIWULAN</th>
+                        <th colspan="{{ count($positionCols) }}" class="p-1.5 border-r border-black border-b">CAPAIAN AKHIR</th>
+                        @unless ($isUmmi)
+                            <th rowspan="2" class="p-1.5 border-r border-black">BARIS<br><span class="font-normal">Capaian / Target</span></th>
+                        @endunless
+                        <th rowspan="2" class="p-1.5 border-r border-black w-20">STATUS</th>
+                        <th rowspan="2" class="p-1.5 {{ $isUmmi ? 'w-[28%]' : 'w-[30%]' }}">{{ $isUmmi ? 'NILAI & DESKRIPSI' : 'DESKRIPSI' }}</th>
+                    </tr>
+                    <tr class="bg-gray-100 border-b border-black">
+                        @foreach ([1, 2] as $unused)
+                            @foreach ($positionCols as $label)
+                                <th class="p-1 border-r border-black font-semibold">{{ $label }}</th>
+                            @endforeach
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
                     <tr class="border-b border-black">
-                        <td class="p-1.5 border-r border-black text-center align-middle">{{ $idx + 1 }}</td>
-                        {{-- Isi sel sudah berupa HTML hasil partial tahfizh-target-capaian-cell (nilai di-escape saat dibuat). --}}
-                        <td class="p-1.5 border-r border-black align-middle font-semibold">{!! $row['target'] !!}</td>
-                        <td class="p-1.5 border-r border-black align-middle font-semibold">{!! $row['capaian'] !!}</td>
-                        <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $row['completed'] ? 'text-green-700' : 'text-amber-700' }}">
-                            {{ $row['completed'] ? 'Tuntas' : 'Dalam Proses' }}
+                        <td class="p-1.5 border-r border-black align-middle">1</td>
+                        @foreach (['target', 'capaian'] as $side)
+                            @foreach (array_keys($positionCols) as $key)
+                                <td class="p-1.5 border-r border-black align-middle font-semibold">{{ $tahfizh[$side][$key] ?? '-' }}</td>
+                            @endforeach
+                        @endforeach
+                        @unless ($isUmmi)
+                            <td class="p-1.5 border-r border-black align-middle font-semibold whitespace-nowrap">
+                                {{ $tahfizh['lines'] ? $tahfizh['lines']['achieved'].' / '.$tahfizh['lines']['target'] : '-' }}
+                            </td>
+                        @endunless
+                        <td class="p-1.5 border-r border-black align-middle font-bold whitespace-nowrap {{ $tahfizh['completed'] ? 'text-green-700' : 'text-rose-700' }}">
+                            {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
-                        <td class="p-1.5 align-middle text-gray-700">
-                            {{ $row['notes'] ?: ($row['completed'] ? 'Tercapai.' : 'Sedang berjalan.') }}
+                        <td class="p-2 align-middle text-left">
+                            @if ($isUmmi)
+                                <p class="text-center font-black text-black text-lg leading-none">{{ $tahfizh['final_score'] }}<span class="text-[10px] font-semibold"> / 100</span></p>
+                                <p class="mt-1.5 pt-1.5 border-t border-gray-300 text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>
+                            @else
+                                <p class="text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</p>
+                            @endif
                         </td>
                     </tr>
-                @empty
-                    <tr class="border-b border-black">
-                        <td colspan="5" class="p-3 text-center text-gray-500 italic">{{ $sheet['tahfizh']['empty_text'] }}</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <!-- Nilai Akhir Tahfizh -->
-        <div class="border border-black rounded p-3 mt-4 flex items-center justify-between bg-gray-50">
-            <div class="text-xs font-black uppercase">Nilai Akhir Tahfizh</div>
-            <div class="text-2xl font-black">{{ $sheet['tahfizh']['final_score'] }}<span class="text-xs font-semibold"> / 100</span></div>
-        </div>
+                </tbody>
+            </table>
+        @endif
     </div>
 
     <!-- II. PENILAIAN ADAB -->

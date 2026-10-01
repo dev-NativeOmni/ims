@@ -351,21 +351,41 @@
                         <!-- Mini Section I: Tahfizh (Dynamic Toggle) -->
                         <div class="mb-2.5 space-y-1" x-show="showTahfizh" x-transition>
                             <h5 class="text-[8px] font-black uppercase text-black">I. LAPORAN TAHFIZH</h5>
-                            <table class="w-full border border-black text-[7px] text-left">
-                                <thead class="bg-gray-100 border-b border-black font-bold text-center">
+                            {{-- Contoh Kelas 10/Ummi; Kelas 11/12 memakai Surah|Ayat + Baris, tanpa nilai. --}}
+                            <table class="w-full border border-black text-[6px] text-center">
+                                <thead class="bg-gray-100 border-b border-black font-bold">
                                     <tr>
-                                        <th class="p-0.5 border-r border-black w-5">No.</th>
-                                        <th class="p-0.5 border-r border-black">Target Surah</th>
-                                        <th class="p-0.5 border-r border-black">Capaian Terakhir</th>
-                                        <th class="p-0.5">Status</th>
+                                        <th rowspan="2" class="p-0.5 border-r border-black w-4">No.</th>
+                                        <th colspan="4" class="p-0.5 border-r border-b border-black">Target Triwulan</th>
+                                        <th colspan="4" class="p-0.5 border-r border-b border-black">Capaian Akhir</th>
+                                        <th rowspan="2" class="p-0.5 border-r border-black">Status</th>
+                                        <th rowspan="2" class="p-0.5">Nilai &amp; Deskripsi</th>
+                                    </tr>
+                                    <tr class="border-b border-black font-semibold">
+                                        @foreach ([1, 2] as $unused)
+                                            <th class="p-0.5 border-r border-black">Jilid</th>
+                                            <th class="p-0.5 border-r border-black">Hal.</th>
+                                            <th class="p-0.5 border-r border-black">Surah</th>
+                                            <th class="p-0.5 border-r border-black">Ayat</th>
+                                        @endforeach
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="border-b border-black">
-                                        <td class="p-0.5 border-r border-black text-center">1</td>
-                                        <td class="p-0.5 border-r border-black">QS. Al-A'la (1-19)</td>
-                                        <td class="p-0.5 border-r border-black">QS. Al-A'la (1-19)</td>
-                                        <td class="p-0.5 text-center font-bold text-emerald-700">Tuntas</td>
+                                        <td class="p-0.5 border-r border-black">1</td>
+                                        <td class="p-0.5 border-r border-black">Jilid 1</td>
+                                        <td class="p-0.5 border-r border-black">27</td>
+                                        <td class="p-0.5 border-r border-black">Al-Bayyinah</td>
+                                        <td class="p-0.5 border-r border-black">8</td>
+                                        <td class="p-0.5 border-r border-black">Jilid 1</td>
+                                        <td class="p-0.5 border-r border-black">27</td>
+                                        <td class="p-0.5 border-r border-black">Al-Bayyinah</td>
+                                        <td class="p-0.5 border-r border-black">8</td>
+                                        <td class="p-0.5 border-r border-black font-bold text-emerald-700">Tuntas</td>
+                                        <td class="p-0.5 text-left">
+                                            <p class="text-center font-black">87 / 100</p>
+                                            <p class="border-t border-gray-300 mt-0.5 pt-0.5 text-gray-600">Tercapai.</p>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

@@ -1112,7 +1112,7 @@ class QuarterlyReportController extends Controller
 
             // Kelas 10/Ummi tab "Grafik Akhir Bulan": Jilid|Halaman & Surah|Ayat, target dibatasi
             // ke target guru BULAN INI saja -- beda dari Term/Indeks yang memakai target terakhir
-            // se-triwulan (buildUmmiTermPosition dipakai ulang, tinggal beda cakupan target-nya).
+            // se-triwulan (UmmiProgressService::termPosition dipakai ulang, tinggal beda cakupan target-nya).
             $ummiPosition = null;
             if ($isUmmiStudent) {
                 $monthKey = Carbon::parse($range['start'])->format('Y-m');
@@ -1123,9 +1123,9 @@ class QuarterlyReportController extends Controller
                 // dibatasi ke bulan ini, tapi urut tanggal naik -- balik ke terbaru dulu.
                 $monthUmmiRecords = $sUmmi->sortByDesc('tanggal')->values();
                 $monthPassedHafalan = $sHaf->where('status', 'passed')->values();
-                $ummiPosition = $this->buildUmmiTermPosition($monthTargets, $monthUmmiRecords, $monthPassedHafalan);
+                $ummiPosition = app(UmmiProgressService::class)->termPosition($monthTargets, $monthUmmiRecords, $monthPassedHafalan);
                 // Ketuntasan Ummi dipatok dari posisi Jilid|Halaman, bukan baris (lihat catatan di
-                // buildUmmiTermPosition()) -- ganti hasil hitung baris di atas.
+                // UmmiProgressService::termPosition()) -- ganti hasil hitung baris di atas.
                 $isTuntas = $ummiPosition['is_tuntas'];
             }
 
@@ -1211,9 +1211,9 @@ class QuarterlyReportController extends Controller
             }
 
             // Kelas 10/Ummi: ketuntasan dipatok dari posisi Jilid|Halaman, bukan baris (Ummi tidak
-            // punya target baris) -- lihat buildUmmiTermPosition().
+            // punya target baris) -- lihat UmmiProgressService::termPosition().
             $ummiPosition = $student->tahfizh_level === 'ummi'
-                ? $this->buildUmmiTermPosition(
+                ? app(UmmiProgressService::class)->termPosition(
                     $latestTargets->get($student->id, collect()),
                     $latestUmmiRecords->get($student->id, collect()),
                     $latestHafalans->get($student->id, collect())
@@ -1244,51 +1244,5 @@ class QuarterlyReportController extends Controller
         }
 
         return $termRecords;
-    }
-
-    /**
-     * Target & capaian murid Ummi di tabel Term/Indeks, dipecah jadi Jilid|Halaman dan Surah|Ayat.
-     * Target = target guru terakhir di triwulan ini; capaian = posisi terakhir yang tercatat
-     * (Jilid/Halaman dari setoran Ummi terakhir, Surah/Ayat dari hafalan sesi Ummi terakhir,
-     * kalau belum ada dari setoran Ziyadah terjauh).
-     *
-     * @return array{target_jilid: string, target_halaman: string, target_surah: string, target_ayat: string, capaian_jilid: string, capaian_halaman: string, capaian_surah: string, capaian_ayat: string}
-     */
-    private function buildUmmiTermPosition($targets, $ummiRecords, $hafalans): array
-    {
-        $bookTarget = $targets->first(fn ($t) => filled($t->ummi_jilid));
-        $surahTarget = $targets->first(fn ($t) => $t->surah_id !== null);
-
-        $lastBook = $ummiRecords->first(fn ($u) => filled($u->ummi_jilid));
-        $lastSurah = $ummiRecords
-            ->map(fn ($u) => $u->surahs->filter(fn ($s) => $s->surah_id !== null)->last())
-            ->first(fn ($s) => $s !== null);
-
-        $capaianSurah = $lastSurah?->surah?->name_latin;
-        $capaianAyat = $lastSurah ? AyahLabel::end($lastSurah->hafalan_ayah) : '-';
-        if ($lastSurah === null) {
-            $ziyadah = app(QuranLineTargetService::class)->furthestRecord($hafalans, true);
-            $capaianSurah = $ziyadah?->surah?->name_latin;
-            $capaianAyat = $ziyadah ? (string) $ziyadah->ayah_end : '-';
-        }
-
-        // Ketuntasan Ummi dipatok dari posisi Jilid|Halaman (bukan baris): tuntas bila posisi
-        // capaian sudah sampai/lewat posisi target. Surah|Ayat (Ziyadah) ditampilkan tapi tidak
-        // menentukan status ini -- itu target tambahan, patokan utama Ummi tetap buku Ummi-nya.
-        $targetBookValue = UmmiProgressService::pageValue($bookTarget?->ummi_jilid, $bookTarget?->halaman_buku);
-        $achievedBookValue = UmmiProgressService::pageValue($lastBook?->ummi_jilid, $lastBook?->ummi_halaman);
-        $isTuntas = $targetBookValue !== null && $achievedBookValue !== null && $achievedBookValue >= $targetBookValue;
-
-        return [
-            'target_jilid' => $bookTarget?->ummi_jilid ?: '-',
-            'target_halaman' => $bookTarget ? AyahLabel::end($bookTarget->halaman_buku) : '-',
-            'target_surah' => $surahTarget?->surah?->name_latin ?? '-',
-            'target_ayat' => $surahTarget ? $surahTarget->ayah_range : '-',
-            'capaian_jilid' => $lastBook?->ummi_jilid ?: '-',
-            'capaian_halaman' => $lastBook ? AyahLabel::end($lastBook->ummi_halaman) : '-',
-            'capaian_surah' => $capaianSurah ?? '-',
-            'capaian_ayat' => $capaianSurah !== null ? $capaianAyat : '-',
-            'is_tuntas' => $isTuntas,
-        ];
     }
 }

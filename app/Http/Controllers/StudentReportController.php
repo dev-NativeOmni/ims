@@ -17,11 +17,14 @@ use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
+use App\Services\UmmiProgressService;
 use App\Support\AcademicYear;
+use App\Support\AyahLabel;
 use App\Support\Signatures;
 use App\Support\TargetRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class StudentReportController extends Controller
@@ -378,13 +381,6 @@ class StudentReportController extends Controller
         $letterhead = self::letterhead();
         $tanseTerm = $data['tanseTerm'];
 
-        $tahfizhRows = collect($data['targetRecords'])->map(fn ($target) => [
-            'target' => trim(view('reports.partials.tahfizh-target-capaian-cell', $data + ['target' => $target, 'mode' => 'target'])->render()),
-            'capaian' => trim(view('reports.partials.tahfizh-target-capaian-cell', $data + ['target' => $target, 'mode' => 'capaian'])->render()),
-            'completed' => $target->status === 'completed',
-            'notes' => $target->notes,
-        ])->values()->all();
-
         return [
             'academic_year' => $data['academicYear'],
             'semester' => $data['semester'],
@@ -397,11 +393,8 @@ class StudentReportController extends Controller
                 'class' => $data['student']->classRoom?->name,
                 'program' => $data['student']->classRoom?->program?->name,
             ],
-            'tahfizh' => [
-                'rows' => $tahfizhRows,
-                'empty_text' => 'Target surah yang dihafal: '.($data['termTargetText'] ?: '-').' | Capaian terakhir: '.($data['latestCapaianText'] ?: '-'),
-                'final_score' => $data['tahfizhScore']['final_score'],
-            ],
+            // Satu baris triwulan rapor (lihat tahfizhTermRow()); nilai hanya ditampilkan untuk Kelas 10/Ummi.
+            'tahfizh' => $data['tahfizhTerm'] + ['final_score' => $data['tahfizhScore']['final_score']],
             'adab' => [
                 'categories' => collect($data['adabCategories'])->pluck('title')->values()->all(),
                 'grade' => $data['adabGrade'],
@@ -651,6 +644,60 @@ class StudentReportController extends Controller
         ];
     }
 
+    /**
+     * Satu baris tabel Tahfizh rapor untuk triwulan rapor, dihitung sama dengan tabel Term/Indeks
+     * Laporan Triwulan: Kelas 10/Ummi = posisi Jilid|Halaman & Surah|Ayat, tuntas dari posisi buku;
+     * selain itu target guru triwulan + posisi setoran terjauh, tuntas dari baris (termBreakdown).
+     * Ayat cukup ayat terakhir.
+     *
+     * @param  array{start: Carbon, end: Carbon}  $raporTerm
+     * @param  Collection|null  $allTargets  semua target murid (cetak per kelas), null = query
+     */
+    private function tahfizhTermRow(Student $student, array $raporTerm, $allTargets, $hafalanAll, $ummiAll): array
+    {
+        $start = $raporTerm['start'];
+        $end = $raporTerm['end']->copy()->endOfDay();
+
+        $termTargets = ($allTargets ?? HafalanTarget::with('surah')->where('student_id', $student->id)->get())
+            ->filter(fn ($t) => $t->target_date && Carbon::parse($t->target_date)->between($start, $end))
+            ->sortByDesc('target_date')
+            ->values();
+        $hafalanUntilEnd = $hafalanAll->filter(fn ($h) => $h->submitted_at && Carbon::parse($h->submitted_at)->lte($end))->values();
+        $notes = $termTargets->first(fn ($t) => filled($t->notes))?->notes;
+
+        if ($student->tahfizh_level === 'ummi') {
+            $ummiUntilEnd = $ummiAll->filter(fn ($u) => $u->tanggal && Carbon::parse($u->tanggal)->lte($end))->values();
+            $position = app(UmmiProgressService::class)->termPosition($termTargets, $ummiUntilEnd, $hafalanUntilEnd);
+
+            return [
+                'layout' => 'ummi',
+                'target' => ['jilid' => $position['target_jilid'], 'halaman' => $position['target_halaman'], 'surah' => $position['target_surah'], 'ayat' => AyahLabel::end($position['target_ayat'])],
+                'capaian' => ['jilid' => $position['capaian_jilid'], 'halaman' => $position['capaian_halaman'], 'surah' => $position['capaian_surah'], 'ayat' => AyahLabel::end($position['capaian_ayat'])],
+                'lines' => null,
+                'completed' => $position['is_tuntas'],
+                'notes' => $notes,
+            ];
+        }
+
+        $capaian = $this->positionCheck->latestByPosition($hafalanUntilEnd, $student->hafalan_direction);
+        $breakdown = TargetRules::linesForLevel($student->tahfizh_level) === null ? null : app(HafalanProgressService::class)->termBreakdown(
+            $student,
+            $termTargets->filter(fn ($t) => $t->surah),
+            app(AcademicCalendarService::class)->termMonths($start),
+            now()->min($raporTerm['end'])
+        );
+        $target = $breakdown['target'] ?? $termTargets->first(fn ($t) => $t->surah);
+
+        return [
+            'layout' => 'reguler',
+            'target' => ['surah' => $target?->surah?->name_latin ?? '-', 'ayat' => $target ? AyahLabel::end($target->ayah) : '-'],
+            'capaian' => ['surah' => $capaian?->surah?->name_latin ?? '-', 'ayat' => $capaian ? AyahLabel::end($capaian->ayah_end) : '-'],
+            'lines' => $breakdown ? ['achieved' => $breakdown['evaluation']['achieved_lines'] + 0, 'target' => (int) $breakdown['evaluation']['target_lines']] : null,
+            'completed' => (bool) ($breakdown['evaluation']['reached'] ?? false),
+            'notes' => $notes,
+        ];
+    }
+
     private function getReportData(Student $student, string $academicYear, int $semester, ?array $batch = null, ?int $term = null): array
     {
         if (! $student->relationLoaded('classRoom')) {
@@ -806,21 +853,13 @@ class StudentReportController extends Controller
             }
         }
 
-        // Nilai mentah untuk baris "Ummi :" / "Tahfizh Ummi :" / "Tahfizh
-        // Mandiri :" di kolom Target & Capaian rapor (khusus target yang
-        // dibuat lewat alur UMMI, ditandai dengan target->ummi_jilid terisi
-        // -- lihat reports/partials/tahfizh-target-capaian-cell.blade.php).
-        // "Tahfizh Ummi" = hafalan yang dicatat di dalam sesi UMMI itu
-        // sendiri (ummi_record_surahs). "Tahfizh Mandiri" = setoran hafalan
-        // terpisah/mandiri (hafalan_records), keduanya ditampilkan sekaligus
-        // karena murid Kelas 10 punya dua jalur hafalan yang berbeda.
-        $latestUmmiJilid = $studentUmmiAll->first()?->ummi_jilid;
-        $latestUmmiHalaman = $studentUmmiAll->first()?->ummi_halaman;
-        $latestUmmiSurahEntry = $studentUmmiAll->first()?->surahs->last();
-        $latestJuz30Hafalan = $studentHafalanAll
-            ->filter(fn ($sq) => ($sq->surah?->number ?? 0) >= 78 && ($sq->surah?->number ?? 0) <= 114)
-            ->sortBy(fn ($r) => $r->surah?->number ?? 114)
-            ->first() ?? $this->positionCheck->latestByPosition($studentHafalanAll, $student->hafalan_direction);
+        $tahfizhTerm = $this->tahfizhTermRow(
+            $student,
+            self::resolveTanseTerm($academicYear, $semester, $term),
+            $batch ? $batch['targetRecords']->get($student->id, collect()) : null,
+            $studentHafalanAll,
+            $studentUmmiAll
+        );
 
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();
@@ -876,14 +915,11 @@ class StudentReportController extends Controller
             'murajaahRecords',
             'targetRecords',
             'tahfizhScore',
+            'tahfizhTerm',
             'tahfizhLevelLabel',
             'termTargetText',
             'latestCapaianText',
             'latestCapaianNotes',
-            'latestUmmiJilid',
-            'latestUmmiHalaman',
-            'latestUmmiSurahEntry',
-            'latestJuz30Hafalan',
             'adabCategories',
             'adabCategoryScores',
             'avgAttendanceRate',

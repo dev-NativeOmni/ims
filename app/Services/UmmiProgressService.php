@@ -352,4 +352,51 @@ class UmmiProgressService
     {
         return $this->surahs ??= Surah::query()->get(['number', 'name_latin', 'total_ayah'])->keyBy('number');
     }
+
+    /**
+     * Target & capaian murid Ummi satu periode, dipecah jadi Jilid|Halaman dan Surah|Ayat (Laporan
+     * Triwulan tabel Term/Indeks & grafik bulanan, serta tabel Tahfizh rapor).
+     * Target = target guru terakhir di triwulan ini; capaian = posisi terakhir yang tercatat
+     * (Jilid/Halaman dari setoran Ummi terakhir, Surah/Ayat dari hafalan sesi Ummi terakhir,
+     * kalau belum ada dari setoran Ziyadah terjauh).
+     *
+     * @return array{target_jilid: string, target_halaman: string, target_surah: string, target_ayat: string, capaian_jilid: string, capaian_halaman: string, capaian_surah: string, capaian_ayat: string}
+     */
+    public function termPosition($targets, $ummiRecords, $hafalans): array
+    {
+        $bookTarget = $targets->first(fn ($t) => filled($t->ummi_jilid));
+        $surahTarget = $targets->first(fn ($t) => $t->surah_id !== null);
+
+        $lastBook = $ummiRecords->first(fn ($u) => filled($u->ummi_jilid));
+        $lastSurah = $ummiRecords
+            ->map(fn ($u) => $u->surahs->filter(fn ($s) => $s->surah_id !== null)->last())
+            ->first(fn ($s) => $s !== null);
+
+        $capaianSurah = $lastSurah?->surah?->name_latin;
+        $capaianAyat = $lastSurah ? AyahLabel::end($lastSurah->hafalan_ayah) : '-';
+        if ($lastSurah === null) {
+            $ziyadah = app(QuranLineTargetService::class)->furthestRecord($hafalans, true);
+            $capaianSurah = $ziyadah?->surah?->name_latin;
+            $capaianAyat = $ziyadah ? (string) $ziyadah->ayah_end : '-';
+        }
+
+        // Ketuntasan Ummi dipatok dari posisi Jilid|Halaman (bukan baris): tuntas bila posisi
+        // capaian sudah sampai/lewat posisi target. Surah|Ayat (Ziyadah) ditampilkan tapi tidak
+        // menentukan status ini -- itu target tambahan, patokan utama Ummi tetap buku Ummi-nya.
+        $targetBookValue = self::pageValue($bookTarget?->ummi_jilid, $bookTarget?->halaman_buku);
+        $achievedBookValue = self::pageValue($lastBook?->ummi_jilid, $lastBook?->ummi_halaman);
+        $isTuntas = $targetBookValue !== null && $achievedBookValue !== null && $achievedBookValue >= $targetBookValue;
+
+        return [
+            'target_jilid' => $bookTarget?->ummi_jilid ?: '-',
+            'target_halaman' => $bookTarget ? AyahLabel::end($bookTarget->halaman_buku) : '-',
+            'target_surah' => $surahTarget?->surah?->name_latin ?? '-',
+            'target_ayat' => $surahTarget ? $surahTarget->ayah_range : '-',
+            'capaian_jilid' => $lastBook?->ummi_jilid ?: '-',
+            'capaian_halaman' => $lastBook ? AyahLabel::end($lastBook->ummi_halaman) : '-',
+            'capaian_surah' => $capaianSurah ?? '-',
+            'capaian_ayat' => $capaianSurah !== null ? $capaianAyat : '-',
+            'is_tuntas' => $isTuntas,
+        ];
+    }
 }
