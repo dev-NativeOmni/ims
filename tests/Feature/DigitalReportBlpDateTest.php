@@ -136,4 +136,15 @@ class DigitalReportBlpDateTest extends TestCase
             }
         }
     }
+
+    #[Test]
+    public function saved_report_title_is_respelled_to_tahfizh(): void
+    {
+        Setting::set('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE');
+
+        (require database_path('migrations/2026_10_01_000002_rename_tahfidz_to_tahfizh_in_settings.php'))->up();
+
+        $this->assertSame('LAPORAN TAHFIZH, ADAB DAN TANSE', Setting::get('report_main_title'));
+        $this->printed(1, 1)->assertSee('I. LAPORAN TAHFIZH')->assertSee('Koordinator Tahfizh')->assertDontSee('TAHFIDZ');
+    }
 }

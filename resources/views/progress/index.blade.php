@@ -181,7 +181,7 @@
                         <div class="flex justify-between items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-wrap gap-3">
                             <div>
                                 <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                    Laporan Capaian Tahfidz — Pembelajaran UMMI {{ $selectedClass?->name }}
+                                    Laporan Capaian Tahfizh — Pembelajaran UMMI {{ $selectedClass?->name }}
                                 </h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                                     Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.

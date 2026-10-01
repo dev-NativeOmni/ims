@@ -52,7 +52,7 @@ export default (config) => ({
             text += `*Baarakallaahu lanaa bil qur'an* ✨`;
             return text;
         } else {
-            let text = `📝 *Laporan Tahfidz ${this.className}*\n`;
+            let text = `📝 *Laporan Tahfizh ${this.className}*\n`;
             text += `👤 *Halaqoh ${this.musyrifName}*\n`;
             text += `📅 *${this.selectedDateFormatted}*\n\n`;
 

@@ -224,9 +224,9 @@
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                                {{-- Baris Atas: Kiri (Koordinator Tahfidz) --}}
+                                {{-- Baris Atas: Kiri (Koordinator Tahfizh) --}}
                                 <div class="p-3.5 bg-gray-50/70 dark:bg-zinc-800/40 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-2.5">
-                                    <h4 class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">1. Koordinator Tahfidz (Kiri Atas)</h4>
+                                    <h4 class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">1. Koordinator Tahfizh (Kiri Atas)</h4>
                                     <div>
                                         <label for="report_coord_tahfizh_name" class="block text-[11px] font-bold text-gray-600 dark:text-zinc-400 mb-1">Nama Lengkap & Gelar</label>
                                         <input type="text" name="report_coord_tahfizh_name" id="report_coord_tahfizh_name" x-model="coordTahfizhName" required class="w-full rounded-lg border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs text-gray-900 dark:text-white">
@@ -350,7 +350,7 @@
 
                         <!-- Mini Section I: Tahfizh (Dynamic Toggle) -->
                         <div class="mb-2.5 space-y-1" x-show="showTahfizh" x-transition>
-                            <h5 class="text-[8px] font-black uppercase text-black">I. LAPORAN TAHFIDZ</h5>
+                            <h5 class="text-[8px] font-black uppercase text-black">I. LAPORAN TAHFIZH</h5>
                             <table class="w-full border border-black text-[7px] text-left">
                                 <thead class="bg-gray-100 border-b border-black font-bold text-center">
                                     <tr>
@@ -429,7 +429,7 @@
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div>
                                     <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
-                                    <p class="font-bold leading-tight">Koordinator Tahfidz</p>
+                                    <p class="font-bold leading-tight">Koordinator Tahfizh</p>
                                     <div class="h-6 flex items-center justify-center">
                                         <template x-if="sig['coord_tahfizh']"><img :src="sig['coord_tahfizh']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
                                     </div>

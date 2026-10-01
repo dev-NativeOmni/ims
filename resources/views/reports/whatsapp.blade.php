@@ -81,7 +81,7 @@
                                         :class="layout === 'tahfidz' ? 'bg-white dark:bg-zinc-900 text-gray-905 dark:text-white shadow-sm font-semibold' : 'text-gray-500 hover:text-gray-900'"
                                         class="flex-1 px-4 py-2.5 text-xs rounded-lg transition-all duration-150 inline-flex items-center justify-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-book-open class="w-4 h-4" />
-                                    <span>Tahfidz Reguler</span>
+                                    <span>Tahfizh Reguler</span>
                                 </button>
                                 <button type="button"
                                         @click="layout = 'ummi'"
@@ -261,7 +261,7 @@
                         text += `*Baarakallaahu lanaa bil qur'an* ✨`;
                         return text;
                     } else {
-                        let text = `📝 *Laporan Tahfidz ${this.className}*\n`;
+                        let text = `📝 *Laporan Tahfizh ${this.className}*\n`;
                         text += `👤 *Halaqoh ${this.musyrifName}*\n`;
                         text += `📅 *${this.selectedDateFormatted}*\n\n`;
 

@@ -61,9 +61,9 @@
         </tr>
     </table>
 
-    <!-- I. LAPORAN TAHFIDZ -->
+    <!-- I. LAPORAN TAHFIZH -->
     <div class="mb-6 space-y-3">
-        <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIDZ</h3>
+        <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIZH</h3>
 
         <!-- Table 1: Targets & Capaian Terakhir -->
         <table class="w-full table-fixed border border-black text-xs text-left">

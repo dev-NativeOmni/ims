@@ -28,7 +28,7 @@
     <!-- Main Title Section -->
     <div class="text-center my-3">
         <h1 class="text-xl sm:text-3xl font-black text-slate-900 tracking-wide uppercase leading-none" style="color: #0f172a !important;">
-            LAPORAN CAPAIAN TAHFIDZ
+            LAPORAN CAPAIAN TAHFIZH
         </h1>
 
         <!-- Subtitle Badge UMMI -->

@@ -449,7 +449,7 @@
                             Fitur Unggulan TAD Management System
                         </div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight leading-tight">
-                            Satu Platform, Semua Kebutuhan Pelacakan Tahfidz
+                            Satu Platform, Semua Kebutuhan Pelacakan Tahfizh
                         </h2>
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base leading-relaxed">
                             Pencatatan hafalan harian, murajaah multi-surat cerdas, input spreadsheet secepat kilat, dan laporan WhatsApp otomatis dalam satu sentuhan.
@@ -459,7 +459,7 @@
                     <!-- Split Columns: Glassmorphic Mockup Dashboard & Stats -->
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                         
-                        <!-- Left Mockup: Glassmorphic Tahfidz Tracker Hub -->
+                        <!-- Left Mockup: Glassmorphic Tahfizh Tracker Hub -->
                         <div class="lg:col-span-7 glass-liquid-card rounded-3xl p-5 sm:p-7 relative group transition-colors duration-300">
                             <!-- Subtle Mockup Glow Accent -->
                             <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -470,7 +470,7 @@
                                     <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
                                     <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
                                     <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-                                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">TAD Tahfidz Hub • Dashboard Live</span>
+                                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 ml-2 hidden sm:inline">TAD Tahfizh Hub • Dashboard Live</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -559,7 +559,7 @@
                         <div class="lg:col-span-5 flex flex-col gap-6">
                             <div class="space-y-3">
                                 <h3 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white leading-snug">
-                                    Pantau Capaian Tahfidz dengan Akurasi Real-Time
+                                    Pantau Capaian Tahfizh dengan Akurasi Real-Time
                                 </h3>
                                 <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
                                     Sistem pelacakan terpadu yang memadukan input cerdas, grafik analitik target kurikulum, evaluasi adab santri, dan transmisi otomatis ke orang tua.
@@ -980,7 +980,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-white/10">
                                 <div>
                                     <h4 class="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">Dasbor Ustadz Penguji — Ust. Ahmad Rabbani</h4>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Halaqah Tahfidz Gemilang • SMA Islam Al Azhar 7</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Halaqah Tahfizh Gemilang • SMA Islam Al Azhar 7</p>
                                 </div>
                                 <button class="self-start sm:self-auto px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-xs font-bold text-white rounded-full transition-all duration-150 shadow-md shadow-orange-500/25 hover:scale-105">
                                     + Input Cepat Setoran

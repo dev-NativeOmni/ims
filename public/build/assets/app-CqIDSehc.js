@@ -12,7 +12,7 @@ import{C as m,p as h,h as u}from"./vendor-core-DPkL8UBR.js";import{a as p}from".
 `}),a+=`
 NB : Pada Klasikal Hafalan Ummi, semua murid telah menyetorkan hafalan pada surat tersebut dengan Metode Ummi.
 
-`,a+="*Baarakallaahu lanaa bil qur'an* ✨",a}else{let a=`📝 *Laporan Tahfidz ${this.className}*
+`,a+="*Baarakallaahu lanaa bil qur'an* ✨",a}else{let a=`📝 *Laporan Tahfizh ${this.className}*
 `;return a+=`👤 *Halaqoh ${this.musyrifName}*
 `,a+=`📅 *${this.selectedDateFormatted}*
 

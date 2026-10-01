@@ -436,12 +436,12 @@ class StudentReportController extends Controller
 
         return [
             'header' => [
-                'main_title' => Setting::get('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE'),
+                'main_title' => Setting::get('report_main_title', 'LAPORAN TAHFIZH, ADAB DAN TANSE'),
                 'school_name' => Setting::get('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO'),
                 'city' => Setting::get('report_city', 'Sukoharjo'),
             ],
             'signatories' => [
-                'coord_tahfizh' => $official('coord_tahfizh', 'Koordinator Tahfidz', '15.06.0393'),
+                'coord_tahfizh' => $official('coord_tahfizh', 'Koordinator Tahfizh', '15.06.0393'),
                 'coord_keagamaan' => $official('coord_keagamaan', 'Koordinator Keagamaan', '15.06.0393'),
                 'headmaster' => $official('headmaster', Setting::get('report_headmaster_title', 'Kepala SMA Islam Al Azhar 7 Sukoharjo'), '08.04.0160'),
                 'coord_tanse' => $official('coord_tanse', 'Koordinator Tanse', '15.06.0393'),
@@ -919,7 +919,7 @@ class StudentReportController extends Controller
         $showTanse = Setting::get('report_show_tanse', '1') === '1';
 
         // Template Settings
-        $reportMainTitle = Setting::get('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE');
+        $reportMainTitle = Setting::get('report_main_title', 'LAPORAN TAHFIZH, ADAB DAN TANSE');
         $reportSchoolName = Setting::get('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO');
         $reportCity = Setting::get('report_city', 'Sukoharjo');
 
@@ -1013,7 +1013,7 @@ class StudentReportController extends Controller
         Setting::set('report_show_tanse', $request->has('report_show_tanse') ? '1' : '0');
 
         // Template Settings
-        Setting::set('report_main_title', $request->input('report_main_title', 'LAPORAN TAHFIDZ, ADAB DAN TANSE'));
+        Setting::set('report_main_title', $request->input('report_main_title', 'LAPORAN TAHFIZH, ADAB DAN TANSE'));
         Setting::set('report_school_name', $request->input('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO'));
         Setting::set('report_city', $request->input('report_city', 'Sukoharjo'));
 
