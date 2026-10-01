@@ -298,7 +298,7 @@
                                 <p class="text-[8px] font-bold uppercase text-black mt-0.5 leading-none" x-text="reportSchoolName"></p>
                                 
                                 <div class="border border-black px-2 py-0.5 mt-1 bg-gray-50 text-[7px] font-bold text-black uppercase leading-none">
-                                    SEMESTER : <span x-text="reportPeriod <= 2 ? '1 (SATU)' : '2 (DUA)'"></span>
+                                    <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::REPORT_PERIODS) }}[reportPeriod]"></span>
                                 </div>
                                 <p class="text-[7px] font-bold text-black mt-0.5">Tahun Ajaran <span x-text="academicYear"></span></p>
                             </div>

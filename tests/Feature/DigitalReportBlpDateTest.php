@@ -87,4 +87,12 @@ class DigitalReportBlpDateTest extends TestCase
             ->assertSee('Tengah Semester II')
             ->assertSee('semester=2&amp;term=3', false);
     }
+
+    #[Test]
+    public function print_header_shows_report_period(): void
+    {
+        $this->printed(1, 1)->assertSee('Tengah Semester I')->assertDontSee('1 (SATU)');
+        $this->printed(1, 2)->assertSee('Semester I')->assertDontSee('Tengah Semester');
+        $this->printed(2, 4)->assertSee('Semester II');
+    }
 }

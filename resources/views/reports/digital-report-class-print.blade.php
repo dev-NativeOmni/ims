@@ -165,7 +165,7 @@
                     
                     <!-- Semester Box -->
                     <div class="border border-black px-4 py-0.5 mt-2 bg-gray-50 text-[9px] font-bold text-black uppercase">
-                        SEMESTER : {{ $semester == 1 ? '1 (SATU)' : '2 (DUA)' }}
+                        {{ \App\Http\Controllers\StudentReportController::REPORT_PERIODS[$tanseTerm['term']] }}
                     </div>
                     
                     <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran {{ $academicYear }}</p>
