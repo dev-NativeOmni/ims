@@ -15,8 +15,8 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Target Ummi per bulan: tabel per murid (isi serentak + penyesuaian per murid), satu target
- * per murid per bulan, status Buku & Hafalan terpisah dan otomatis.
+ * Target Ummi per triwulan: tabel per murid dengan 3 kolom bulan (isi serentak per bulan +
+ * penyesuaian per murid), satu target per murid per bulan, status Buku & Hafalan terpisah dan otomatis.
  */
 class UmmiTargetTest extends TestCase
 {
@@ -56,21 +56,27 @@ class UmmiTargetTest extends TestCase
         return (int) Surah::where('number', $number)->value('id');
     }
 
-    private function save(array $targets, ?string $deadline = null)
+    /** Simpan isian kolom September (triwulan Jul–Sep); $targets = [student_id => isian]. */
+    private function save(array $targets, ?string $deadline = null, string $month = '2026-09')
     {
         return $this->actingAs($this->teacherUser)->post(route('hafalan-targets.ummi.store'), [
-            'month' => '2026-09', 'teacher_id' => $this->teacherProfile->id, 'targets' => $targets, 'deadline' => $deadline,
+            'period' => '2026-07-01', 'teacher_id' => $this->teacherProfile->id,
+            'targets' => collect($targets)->map(fn ($row) => [$month => $row])->all(),
+            'deadlines' => array_filter([$month => $deadline]),
         ]);
     }
 
     #[Test]
     public function the_table_lists_the_halaqah_with_current_positions(): void
     {
+        // Tautan lama per bulan (?month=) membuka triwulan yang memuat bulan itu.
         $response = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.ummi', ['month' => '2026-09']));
 
-        $response->assertOk()->assertSee('Murid Kedua')->assertSee('Terapkan ke semua baris')->assertDontSee('Halaman Peraga');
+        $response->assertOk()->assertSee('Murid Kedua')->assertSee('Terapkan ke bulan itu')->assertDontSee('Halaman Peraga');
+        $this->assertSame('2026-07-01', $response->viewData('period'));
+        $this->assertSame(['2026-07', '2026-08', '2026-09'], array_keys($response->viewData('months')));
         $this->assertCount(2, $response->viewData('students'));
-        $this->assertSame('2026-09-30', $response->viewData('deadline')->toDateString(), 'Hari aktif terakhir September.');
+        $this->assertSame('2026-09-30', $response->viewData('months')['2026-09']['deadline']->toDateString(), 'Hari aktif terakhir September.');
     }
 
     #[Test]
@@ -102,7 +108,7 @@ class UmmiTargetTest extends TestCase
         $this->save([
             $this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30'],
             $this->other->id => ['jilid' => 'Jilid 2', 'halaman' => '55'],
-        ])->assertSessionHasErrors("targets.{$this->other->id}");
+        ])->assertSessionHasErrors("targets.{$this->other->id}.2026-09");
 
         $this->assertSame(0, HafalanTarget::count());
     }
@@ -153,9 +159,10 @@ class UmmiTargetTest extends TestCase
         $target = HafalanTarget::where('student_id', $this->student->id)->first();
         $this->assertSame(['2026-09-18', true], [$target->target_date->toDateString(), $target->deadline_manual]);
 
-        $page = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.ummi', ['month' => '2026-09']));
-        $this->assertSame('2026-09-18', $page->viewData('deadline')->toDateString());
-        $this->assertTrue($page->viewData('deadlineManual'));
+        $page = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.ummi', ['period' => '2026-07-01']));
+        $this->assertSame('2026-09-18', $page->viewData('months')['2026-09']['deadline']->toDateString());
+        $this->assertTrue($page->viewData('months')['2026-09']['manual']);
+        $this->assertFalse($page->viewData('months')['2026-08']['manual'], 'Deadline manual hanya untuk bulannya.');
 
         // Penyesuaian otomatis (kalender/malam) tidak menimpa deadline manual.
         $this->artisan('tad:sync-completed-targets')->assertSuccessful();
@@ -171,7 +178,7 @@ class UmmiTargetTest extends TestCase
     public function the_manual_deadline_must_stay_in_the_target_month(): void
     {
         $this->save([$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '30']], '2026-10-02')
-            ->assertSessionHasErrors('deadline');
+            ->assertSessionHasErrors('deadlines.2026-09');
 
         $this->assertSame(0, HafalanTarget::count());
     }
@@ -200,5 +207,32 @@ class UmmiTargetTest extends TestCase
 
         $this->actingAs($this->teacherUser)->put(route('hafalan-targets.update', $target), $form + ['target_date' => '2026-09-30'])->assertRedirect();
         $this->assertFalse($target->fresh()->deadline_manual);
+    }
+
+    #[Test]
+    public function the_three_months_of_a_term_are_saved_in_one_submit(): void
+    {
+        $this->actingAs($this->teacherUser)->post(route('hafalan-targets.ummi.store'), [
+            'period' => '2026-07-01', 'teacher_id' => $this->teacherProfile->id,
+            'targets' => [$this->student->id => [
+                '2026-07' => ['jilid' => 'Jilid 1', 'halaman' => '30'],
+                '2026-08' => ['jilid' => 'Jilid 2', 'halaman' => '10'],
+                '2026-09' => ['jilid' => 'Jilid 2', 'halaman' => '30', 'surah_id' => $this->surahId(86), 'ayah' => '17'],
+            ]],
+            'deadlines' => ['2026-08' => '2026-08-21'],
+        ])->assertSessionHas('success')->assertRedirect(route('hafalan-targets.ummi', ['period' => '2026-07-01', 'teacher_id' => $this->teacherProfile->id]));
+
+        $targets = HafalanTarget::where('student_id', $this->student->id)->orderBy('target_date')->get();
+        $this->assertSame([['Jilid 1', '30'], ['Jilid 2', '10'], ['Jilid 2', '30']], $targets->map(fn ($t) => [$t->ummi_jilid, $t->halaman_buku])->all());
+        $this->assertSame(['2026-08-21', true], [$targets[1]->target_date->toDateString(), $targets[1]->deadline_manual]);
+        $this->assertFalse($targets[2]->deadline_manual);
+
+        // Bulan yang tidak dikirim (mis. dinonaktifkan) tidak berubah.
+        $this->save([$this->student->id => ['jilid' => 'Jilid 2', 'halaman' => '35']]);
+        $this->assertSame(3, HafalanTarget::where('student_id', $this->student->id)->count());
+        $this->assertSame('30', $targets[0]->fresh()->halaman_buku);
+
+        $page = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.ummi', ['period' => '2026-07-01']));
+        $this->assertSame('10', $page->viewData('targets')->get($this->student->id)->get('2026-08')->halaman_buku);
     }
 }

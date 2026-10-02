@@ -350,6 +350,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('hafalan-targets.juz-order');
         Route::get('/hafalan-targets/urutan/{student}', [HafalanTargetController::class, 'juzOrders'])
             ->name('hafalan-targets.juz-orders');
+        // Kunci target per kelas per bulan (hak akses dicek di controller, lihat App\Models\TargetLock).
+        Route::post('/hafalan-targets/kunci', [HafalanTargetController::class, 'lockMonth'])
+            ->name('hafalan-targets.lock');
+        Route::delete('/hafalan-targets/kunci', [HafalanTargetController::class, 'unlockMonth'])
+            ->name('hafalan-targets.unlock');
         // Target Ummi (Kelas 10): tabel per murid per bulan dengan isi serentak.
         Route::get('/hafalan-targets/ummi-bulanan', [HafalanTargetController::class, 'ummi'])
             ->name('hafalan-targets.ummi');

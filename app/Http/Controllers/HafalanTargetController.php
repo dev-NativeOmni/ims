@@ -7,6 +7,7 @@ use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\StudentClassHistory;
 use App\Models\Surah;
+use App\Models\TargetLock;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use App\Services\AcademicCalendarService;
@@ -253,6 +254,7 @@ class HafalanTargetController extends Controller
         ]);
 
         $count = 0;
+        $locked = [];
         foreach ($validated['targets'] as $row) {
             if (empty($row['surah_id']) || empty($row['ayah'])) {
                 continue;
@@ -268,6 +270,13 @@ class HafalanTargetController extends Controller
                 continue;
             }
 
+            $targetDate = $row['target_date'] ?: now()->addWeeks(2)->toDateString();
+            if (TargetLock::blocksStudent($student, $targetDate)) {
+                $locked[] = $student->name;
+
+                continue;
+            }
+
             $teacherId = $this->resolveTeacherId($request, $student);
 
             HafalanTarget::create([
@@ -275,7 +284,7 @@ class HafalanTargetController extends Controller
                 'teacher_id' => $teacherId,
                 'surah_id' => $row['surah_id'],
                 'ayah' => $row['ayah'],
-                'target_date' => $row['target_date'] ?: now()->addWeeks(2)->toDateString(),
+                'target_date' => $targetDate,
                 'notes' => $row['notes'] ?? null,
                 'status' => $this->defaultOpenTargetStatus(),
             ]);
@@ -284,7 +293,7 @@ class HafalanTargetController extends Controller
 
         return redirect()
             ->route('hafalan-targets.index', ['program' => 'reguler', 'class_room_id' => $validated['class_room_id']])
-            ->with('success', "Berhasil menyimpan {$count} target hafalan reguler.");
+            ->with('success', "Berhasil menyimpan {$count} target hafalan reguler.".($locked ? ' Dilewati (bulan terkunci): '.implode(', ', $locked).'.' : ''));
     }
 
     public function storeBulkUmmi(Request $request): RedirectResponse
@@ -340,7 +349,13 @@ class HafalanTargetController extends Controller
         $students = $studentsQuery->get();
 
         $count = 0;
+        $locked = [];
         foreach ($students as $student) {
+            if (TargetLock::blocksStudent($student, $validated['target_date'])) {
+                $locked[] = $student->name;
+
+                continue;
+            }
             HafalanTarget::create([
                 'student_id' => $student->id,
                 'teacher_id' => $teacherProfile->id,
@@ -363,7 +378,7 @@ class HafalanTargetController extends Controller
 
         return redirect()
             ->route('hafalan-targets.index', $redirectParams)
-            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} murid Kelas 10 di Halaqah Musyrif.");
+            ->with('success', "Berhasil menyimpan target Ummi serentak untuk {$count} murid Kelas 10 di Halaqah Musyrif.".($locked ? ' Dilewati (bulan terkunci): '.implode(', ', $locked).'.' : ''));
     }
 
     public function bulkComplete(Request $request): RedirectResponse
@@ -408,15 +423,21 @@ class HafalanTargetController extends Controller
             ->get();
 
         $count = 0;
+        $locked = 0;
         foreach ($targets as $target) {
             $this->authorize('delete', $target);
+            if ($target->student && TargetLock::blocksStudent($target->student, $target->target_date)) {
+                $locked++;
+
+                continue;
+            }
             $target->delete();
             $count++;
         }
 
         return redirect()
             ->back()
-            ->with('success', "Berhasil menghapus {$count} target hafalan terpilih.");
+            ->with('success', "Berhasil menghapus {$count} target hafalan terpilih.".($locked ? " {$locked} target di bulan terkunci tidak dihapus." : ''));
     }
 
     public function create(Request $request): View
@@ -462,6 +483,10 @@ class HafalanTargetController extends Controller
 
         $data = $this->targetPayload($validated);
         $data['student_id'] = $student->id;
+
+        if (! empty($data['target_date']) && TargetLock::blocksStudent($student, $data['target_date'])) {
+            return back()->withInput()->withErrors(['target_date' => TargetLock::message($student, $data['target_date'])]);
+        }
 
         $data['teacher_id'] = $this->resolveTeacherId($request, $student);
 
@@ -536,6 +561,13 @@ class HafalanTargetController extends Controller
         $this->authorizeTargetAccess($request, $hafalanTarget);
         $this->authorize('update', $hafalanTarget);
 
+        // Bulan terkunci: isian beku (status tetap bisa lewat tombol Selesai/Terlewat & otomatis).
+        $lockedDate = collect([$hafalanTarget->target_date, $request->input('target_date')])->filter()
+            ->first(fn ($date) => $hafalanTarget->student && TargetLock::blocksStudent($hafalanTarget->student, $date));
+        if ($lockedDate) {
+            return back()->withInput()->withErrors(['target_date' => TargetLock::message($hafalanTarget->student, $lockedDate)]);
+        }
+
         $visibleStudentIds = $this->visibleStudentIds($request->user());
 
         if ($hafalanTarget->ummi_jilid) {
@@ -590,6 +622,10 @@ class HafalanTargetController extends Controller
     {
         $this->authorizeTargetAccess($request, $hafalanTarget);
         $this->authorize('delete', $hafalanTarget);
+
+        if ($hafalanTarget->student && TargetLock::blocksStudent($hafalanTarget->student, $hafalanTarget->target_date)) {
+            return back()->with('error', TargetLock::message($hafalanTarget->student, $hafalanTarget->target_date));
+        }
 
         $hafalanTarget->delete();
 
@@ -774,6 +810,9 @@ class HafalanTargetController extends Controller
         ];
 
         return view('hafalan-targets.term', [
+            'locks' => $selectedClass ? TargetLock::forMonths($selectedClass->id, array_keys($months)) : collect(),
+            'canLock' => TargetLock::canLock($request->user()),
+            'canUnlock' => TargetLock::canUnlock($request->user()),
             'periods' => $periods,
             'period' => $period,
             'teachers' => $isTeacherOnly && $currentTeacherId ? $teachers->where('id', $currentTeacherId)->values() : $teachers,
@@ -811,6 +850,11 @@ class HafalanTargetController extends Controller
         abort_unless($selectedClass, 403, 'Kelas tidak boleh diakses oleh akun ini.');
 
         $months = $targets->termMonths($selectedClass, Carbon::parse($period));
+        // Bulan terkunci untuk kelas ini tidak diubah sama sekali (isiannya juga tidak dikirim form).
+        $lockedMonths = TargetLock::forMonths($selectedClass->id, array_keys($months));
+        $termStart = reset($months)['start'];
+        $termEnd = end($months)['end'];
+        $months = array_diff_key($months, $lockedMonths->all());
         $students = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId, $classDate)->keyBy('id');
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = $request->input('targets', []);
@@ -844,8 +888,6 @@ class HafalanTargetController extends Controller
             return back()->withInput()->withErrors($errors);
         }
 
-        $termStart = reset($months)['start'];
-        $termEnd = end($months)['end'];
         $saved = 0;
         DB::transaction(function () use ($entries, $months, $request, $targets, $termStart, $termEnd, &$saved) {
             foreach ($entries as [$student, $monthKey, $surah, $ayah]) {
@@ -895,6 +937,47 @@ class HafalanTargetController extends Controller
         return redirect()
             ->route('hafalan-targets.term', array_filter(['period' => $period, 'class_room_id' => $selectedClass->id, 'teacher_id' => $request->input('teacher_id')]))
             ->with('success', $saved > 0 ? "Target triwulan {$selectedClass->name} disimpan ({$saved} perubahan)." : 'Tidak ada perubahan target.');
+    }
+
+    /**
+     * Kunci target satu kelas untuk satu bulan (App\Models\TargetLock).
+     */
+    public function lockMonth(Request $request): RedirectResponse
+    {
+        abort_unless(TargetLock::canLock($request->user()), 403, 'Akun ini tidak boleh mengunci target.');
+        $validated = $request->validate([
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        TargetLock::query()->firstOrCreate(
+            ['class_room_id' => (int) $validated['class_room_id'], 'month' => $validated['month'].'-01'],
+            ['locked_by' => $request->user()->id, 'locked_at' => now()]
+        );
+
+        $label = Carbon::parse($validated['month'].'-01')->locale('id')->translatedFormat('F Y');
+        $class = ClassRoom::query()->whereKey($validated['class_room_id'])->value('name');
+
+        return back()->with('success', "Target {$label} kelas {$class} dikunci.");
+    }
+
+    /**
+     * Buka kunci target (khusus Super Admin).
+     */
+    public function unlockMonth(Request $request): RedirectResponse
+    {
+        abort_unless(TargetLock::canUnlock($request->user()), 403, 'Hanya Super Admin yang dapat membuka kunci target.');
+        $validated = $request->validate([
+            'class_room_id' => ['required', 'integer', 'exists:class_rooms,id'],
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        TargetLock::query()->where('class_room_id', (int) $validated['class_room_id'])->whereDate('month', $validated['month'].'-01')->delete();
+
+        $label = Carbon::parse($validated['month'].'-01')->locale('id')->translatedFormat('F Y');
+        $class = ClassRoom::query()->whereKey($validated['class_room_id'])->value('name');
+
+        return back()->with('success', "Kunci target {$label} kelas {$class} dibuka.");
     }
 
     /**
@@ -1054,45 +1137,36 @@ class HafalanTargetController extends Controller
      * per bulan (Jilid + Halaman Buku, Surah + Ayat opsional), deadline = hari aktif terakhir
      * bulan itu (TargetDeadlineService). Status Buku & Hafalan dinilai terpisah (HafalanTargetAutoCompletionService).
      */
+    /**
+     * Target Ummi (Kelas 10) per triwulan: satu tabel, 3 kolom bulan (Jilid & Halaman Buku, Surah &
+     * Ayat opsional) -- sama dengan Target Triwulan Kelas 11/12. Bulan terkunci (TargetLock) tidak
+     * bisa diubah.
+     */
     public function ummi(Request $request, AcademicCalendarService $calendar, UmmiProgressService $ummi): View
     {
-        [$month, $monthOptions, $teachers, $currentTeacherId, $classRooms, $students] = $this->ummiContext($request);
-        [$monthStart, $monthEnd] = [Carbon::parse($month.'-01')->startOfMonth(), Carbon::parse($month.'-01')->endOfMonth()];
+        [$periods, $period] = $this->termPeriods($this->ummiRequestedPeriod($request, $calendar), $calendar);
+        [, , $teachers, $currentTeacherId, $classRooms, $students] = $this->ummiContext($request);
 
-        $targets = HafalanTarget::query()
-            ->with('surah')
-            ->whereIn('student_id', $students->pluck('id'))
-            ->whereNotNull('ummi_jilid')
-            ->whereBetween('target_date', [$monthStart->toDateString(), $monthEnd->toDateString().' 23:59:59'])
-            ->orderBy('target_date')
-            ->orderBy('id')
-            ->get()
-            ->keyBy('student_id');
-
-        $positions = $ummi->positionsFor($students->pluck('id')->all(), now());
-        $autoDeadline = app(TargetDeadlineService::class)->forMonth($monthStart);
-        // Deadline manual yang sudah disimpan di tabel ini (terbanyak) lebih tinggi dari otomatis.
-        $manualDeadline = $targets->where('deadline_manual', true)
-            ->map(fn (HafalanTarget $target) => $target->target_date?->toDateString())
-            ->filter()->countBy()->sortDesc()->keys()->first();
-        $deadline = $manualDeadline ? Carbon::parse($manualDeadline) : $autoDeadline;
+        $targets = $this->ummiTermTargets($students->pluck('id'), $period, $calendar);
+        $months = $this->ummiMonths($period, $calendar, $targets->flatten());
+        $locks = $classRooms->mapWithKeys(fn (ClassRoom $class) => [$class->id => TargetLock::forMonths($class->id, array_keys($months))]);
 
         return view('hafalan-targets.ummi', [
-            'month' => $month,
-            'monthOptions' => $monthOptions,
+            'periods' => $periods,
+            'period' => $period,
+            'months' => $months,
             'teachers' => $teachers,
             'currentTeacherId' => $currentTeacherId,
             'classRooms' => $classRooms,
+            'selectedClassId' => $classRooms->contains('id', (int) $request->input('class_room_id')) ? (int) $request->input('class_room_id') : null,
             'students' => $students,
             'targets' => $targets,
-            'positions' => $positions,
-            'deadline' => $deadline,
-            'autoDeadline' => $autoDeadline,
-            'deadlineManual' => $manualDeadline !== null,
-            'monthStart' => $monthStart,
-            'monthEnd' => $monthEnd,
+            'positions' => $ummi->positionsFor($students->pluck('id')->all(), now()),
+            'locks' => $locks,
             'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
             'canEdit' => $request->user()->can('create', HafalanTarget::class),
+            'canLock' => TargetLock::canLock($request->user()),
+            'canUnlock' => TargetLock::canUnlock($request->user()),
         ]);
     }
 
@@ -1100,48 +1174,56 @@ class HafalanTargetController extends Controller
     {
         $this->authorize('create', HafalanTarget::class);
 
-        [$month, , , , $classRooms, $students] = $this->ummiContext($request);
-        [$monthStart, $monthEnd] = [Carbon::parse($month.'-01')->startOfMonth(), Carbon::parse($month.'-01')->endOfMonth()];
+        [, $period] = $this->termPeriods($this->ummiRequestedPeriod($request, $calendar), $calendar);
+        [, , , , , $students] = $this->ummiContext($request);
         $students = $students->keyBy('id');
+        $existing = $this->ummiTermTargets($students->keys(), $period, $calendar);
+        $months = $this->ummiMonths($period, $calendar, $existing->flatten());
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = (array) $request->input('targets', []);
 
-        $request->validate([
-            'deadline' => ['nullable', 'date', 'after_or_equal:'.$monthStart->toDateString(), 'before_or_equal:'.$monthEnd->toDateString()],
-        ], [
-            'deadline.after_or_equal' => 'Deadline harus di bulan yang sama dengan target.',
-            'deadline.before_or_equal' => 'Deadline harus di bulan yang sama dengan target.',
-        ]);
-        // Deadline dari pil hijau: sama dengan otomatis = ikut otomatis; berbeda = manual (lebih tinggi).
-        $autoDeadline = app(TargetDeadlineService::class)->forMonth($monthStart)->toDateString();
-        $deadline = $request->filled('deadline') ? Carbon::parse($request->input('deadline'))->toDateString() : $autoDeadline;
-        $deadlineManual = $deadline !== $autoDeadline;
-
-        // Validasi semua baris dulu; simpan hanya bila semuanya benar.
+        // Deadline per bulan: sama dengan otomatis = ikut otomatis; tanggal lain (di bulan itu) = manual.
         $errors = [];
+        $deadlines = [];
+        foreach ($months as $monthKey => $month) {
+            $value = $request->input("deadlines.{$monthKey}");
+            $date = $value ? Carbon::parse($value) : $month['deadline'];
+            if ($date->lt($month['start']) || $date->gt($month['end'])) {
+                $errors["deadlines.{$monthKey}"] = "Deadline {$month['label']} harus di bulan itu.";
+            }
+            $deadlines[$monthKey] = [$date->toDateString(), $date->toDateString() !== $month['auto_deadline']->toDateString()];
+        }
+
+        // Validasi semua sel dulu; simpan hanya bila semuanya benar. Sel yang tidak dikirim (bulan
+        // terkunci / dinonaktifkan) = tidak diubah.
         $rows = [];
-        foreach ($input as $studentId => $row) {
-            $student = $students->get((int) $studentId);
-            if (! $student) {
-                continue;
-            }
-            $jilid = trim((string) ($row['jilid'] ?? ''));
-            $page = trim((string) ($row['halaman'] ?? ''));
-            $surah = $surahs->get((int) ($row['surah_id'] ?? 0));
-            $ayah = (int) ($row['ayah'] ?? 0);
-            $field = "targets.{$student->id}";
+        foreach ($students as $student) {
+            foreach ($months as $monthKey => $month) {
+                if (! array_key_exists($monthKey, (array) ($input[$student->id] ?? []))) {
+                    continue;
+                }
+                if (TargetLock::blocksStudent($student, $month['start'])) {
+                    continue;
+                }
+                $cell = (array) $input[$student->id][$monthKey];
+                $jilid = trim((string) ($cell['jilid'] ?? ''));
+                $page = trim((string) ($cell['halaman'] ?? ''));
+                $surah = $surahs->get((int) ($cell['surah_id'] ?? 0));
+                $ayah = (int) ($cell['ayah'] ?? 0);
+                $field = "targets.{$student->id}.{$monthKey}";
 
-            if ($jilid === '' && $page === '' && ! $surah) {
-                $rows[] = [$student, null];
+                if ($jilid === '' && $page === '' && ! $surah) {
+                    $rows[] = [$student, $monthKey, null];
 
-                continue;
-            }
-            if (! in_array($jilid, self::UMMI_JILID, true) || ! ctype_digit($page) || (int) $page < 1 || (int) $page > UmmiProgressService::PAGES_PER_JILID) {
-                $errors[$field] = "{$student->name}: isi Jilid dan Halaman Buku (1–".UmmiProgressService::PAGES_PER_JILID.').';
-            } elseif ($surah && $ayah > (int) $surah->total_ayah) {
-                $errors[$field] = "{$student->name}: ayat {$surah->name_latin} maksimal {$surah->total_ayah}.";
-            } else {
-                $rows[] = [$student, ['ummi_jilid' => $jilid, 'halaman_buku' => $page, 'surah_id' => $surah?->id, 'ayah' => $surah && $ayah > 0 ? $ayah : null]];
+                    continue;
+                }
+                if (! in_array($jilid, self::UMMI_JILID, true) || ! ctype_digit($page) || (int) $page < 1 || (int) $page > UmmiProgressService::PAGES_PER_JILID) {
+                    $errors[$field] = "{$student->name} ({$month['label']}): isi Jilid dan Halaman Buku (1–".UmmiProgressService::PAGES_PER_JILID.').';
+                } elseif ($surah && $ayah > (int) $surah->total_ayah) {
+                    $errors[$field] = "{$student->name} ({$month['label']}): ayat {$surah->name_latin} maksimal {$surah->total_ayah}.";
+                } else {
+                    $rows[] = [$student, $monthKey, ['ummi_jilid' => $jilid, 'halaman_buku' => $page, 'surah_id' => $surah?->id, 'ayah' => $surah && $ayah > 0 ? $ayah : null]];
+                }
             }
         }
         if ($errors) {
@@ -1149,29 +1231,23 @@ class HafalanTargetController extends Controller
         }
 
         $saved = 0;
-        DB::transaction(function () use ($rows, $monthStart, $monthEnd, $request, $status, $deadline, $deadlineManual, &$saved) {
-            foreach ($rows as [$student, $values]) {
-                $existing = HafalanTarget::query()
-                    ->where('student_id', $student->id)
-                    ->whereNotNull('ummi_jilid')
-                    ->whereBetween('target_date', [$monthStart->toDateString(), $monthEnd->toDateString().' 23:59:59'])
-                    ->orderBy('target_date')
-                    ->orderBy('id')
-                    ->get()
-                    ->last();
+        DB::transaction(function () use ($rows, $existing, $deadlines, $request, $status, &$saved) {
+            foreach ($rows as [$student, $monthKey, $values]) {
+                $current = $existing->get($student->id)?->get($monthKey);
 
                 if ($values === null) {
-                    if ($existing) {
-                        $existing->delete();
+                    if ($current) {
+                        $current->delete();
                         $saved++;
                     }
 
                     continue;
                 }
 
-                $values += ['target_date' => $deadline, 'deadline_manual' => $deadlineManual, 'halaman_peraga' => null, 'auto_month' => null];
+                [$deadline, $manual] = $deadlines[$monthKey];
+                $values += ['target_date' => $deadline, 'deadline_manual' => $manual, 'halaman_peraga' => null, 'auto_month' => null];
 
-                if ($existing && collect($values)->every(fn ($value, $key) => (string) ($key === 'target_date' ? $existing->target_date?->toDateString() : $existing->{$key}) === (string) $value)) {
+                if ($current && collect($values)->every(fn ($value, $key) => (string) ($key === 'target_date' ? $current->target_date?->toDateString() : $current->{$key}) === (string) $value)) {
                     continue;
                 }
 
@@ -1180,8 +1256,8 @@ class HafalanTargetController extends Controller
                     'status' => 'active', 'completed_at' => null,
                     'book_status' => 'active', 'surah_status' => $values['surah_id'] ? 'active' : null,
                 ];
-                $target = $existing
-                    ? tap($existing)->update($values)
+                $target = $current
+                    ? tap($current)->update($values)
                     : HafalanTarget::create($values + ['student_id' => $student->id, 'teacher_id' => $this->resolveTeacherId($request, $student)]);
                 $status->refresh($target->fresh());
                 $saved++;
@@ -1189,8 +1265,71 @@ class HafalanTargetController extends Controller
         });
 
         return redirect()
-            ->route('hafalan-targets.ummi', $request->only(['month', 'teacher_id', 'class_room_id']))
+            ->route('hafalan-targets.ummi', array_filter(['period' => $period, 'teacher_id' => $request->input('teacher_id'), 'class_room_id' => $request->input('class_room_id')]))
             ->with('success', $saved > 0 ? "Target Ummi disimpan ({$saved} perubahan)." : 'Tidak ada perubahan target.');
+    }
+
+    /**
+     * Triwulan yang diminta: `period`, atau triwulan yang memuat `month` (tautan lama per bulan).
+     */
+    private function ummiRequestedPeriod(Request $request, AcademicCalendarService $calendar): ?string
+    {
+        if ($request->filled('period')) {
+            return (string) $request->input('period');
+        }
+
+        return $request->filled('month') && preg_match('/^\d{4}-\d{2}$/', (string) $request->input('month'))
+            ? $calendar->termStartDate(Carbon::parse($request->input('month').'-01'))->toDateString()
+            : null;
+    }
+
+    /**
+     * Target Ummi murid-murid di triwulan ini: [student_id => ["Y-m" => target terakhir bulan itu]].
+     *
+     * @return Collection<int, Collection<string, HafalanTarget>>
+     */
+    private function ummiTermTargets(Collection $studentIds, string $period, AcademicCalendarService $calendar): Collection
+    {
+        $termMonths = $calendar->termMonths(Carbon::parse($period));
+
+        return HafalanTarget::query()
+            ->with('surah')
+            ->whereIn('student_id', $studentIds)
+            ->whereNotNull('ummi_jilid')
+            ->whereBetween('target_date', [reset($termMonths)['start']->toDateString(), end($termMonths)['end']->toDateString().' 23:59:59'])
+            ->orderBy('target_date')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('student_id')
+            ->map(fn ($targets) => $targets->groupBy(fn (HafalanTarget $t) => $t->target_date->format('Y-m'))->map->last());
+    }
+
+    /**
+     * Bulan-bulan triwulan: label, rentang, deadline otomatis, dan deadline tampil (manual terbanyak
+     * dari target tersimpan bulan itu, atau otomatis).
+     *
+     * @return array<string, array{label: string, start: Carbon, end: Carbon, auto_deadline: Carbon, deadline: Carbon, manual: bool}>
+     */
+    private function ummiMonths(string $period, AcademicCalendarService $calendar, Collection $storedTargets): array
+    {
+        $months = [];
+        foreach ($calendar->termMonths(Carbon::parse($period)) as $monthKey => $range) {
+            $auto = app(TargetDeadlineService::class)->forMonth($range['start']);
+            $manual = $storedTargets
+                ->filter(fn (HafalanTarget $t) => $t->deadline_manual && $t->target_date?->format('Y-m') === $monthKey)
+                ->map(fn (HafalanTarget $t) => $t->target_date->toDateString())
+                ->countBy()->sortDesc()->keys()->first();
+            $months[$monthKey] = [
+                'label' => $range['start']->locale('id')->translatedFormat('F Y'),
+                'start' => $range['start'],
+                'end' => $range['end'],
+                'auto_deadline' => $auto,
+                'deadline' => $manual ? Carbon::parse($manual) : $auto,
+                'manual' => $manual !== null,
+            ];
+        }
+
+        return $months;
     }
 
     /**

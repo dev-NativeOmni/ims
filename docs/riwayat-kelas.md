@@ -81,6 +81,8 @@ Sudah dipakai di:
 - Target Triwulan: `HafalanTargetController::termClassRooms()`, `termStudents()`
 - Matriks Presensi Harian Adab (bulanan & triwulan): `AdabController::getAttendanceMatrixData()`
 - Input Spreadsheet: `SpreadsheetInputController::index()` (kelas pada akhir bulan lembar kerja)
+- Kunci target per kelas per bulan: `TargetLock::classOf()` / `blocksStudent()` (kelas pada akhir
+  bulan target), dipakai semua jalur simpan target di `HafalanTargetController`
 
 Rapor yang sudah **dikunci** tidak bergantung pada riwayat ini: isinya, termasuk nama kelas, dibekukan
 saat dikunci.

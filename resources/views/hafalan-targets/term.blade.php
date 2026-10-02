@@ -91,7 +91,7 @@
                         <thead class="bg-gray-50 dark:bg-zinc-800/60 text-gray-500 dark:text-zinc-400">
                             <tr>
                                 <th class="sticky left-0 z-10 bg-gray-50 dark:bg-zinc-800 px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider">Murid</th>
-                                @foreach ($months as $month)
+                                @foreach ($months as $monthKey => $month)
                                     <th class="px-3 py-3 text-left min-w-[230px]">
                                         <p class="text-[11px] font-black uppercase tracking-wider">{{ $month['label'] }}</p>
                                         <p class="mt-0.5 text-[11px] font-semibold normal-case {{ $month['has_meeting'] ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600' }}">
@@ -100,6 +100,7 @@
                                         <p class="text-[10px] font-normal normal-case text-gray-400">
                                             {{ $month['has_meeting'] ? $month['meetings'].' pertemuan aktif' : 'Tidak ada pertemuan aktif' }}
                                         </p>
+                                        @include('hafalan-targets.partials.month-lock', ['lock' => $locks->get($monthKey), 'classId' => $selectedClass?->id])
                                     </th>
                                 @endforeach
                                 <th class="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wider min-w-[190px]">Target Triwulan &amp; Capaian</th>
@@ -129,10 +130,12 @@
                                             $surahValue = (string) old("targets.{$student->id}.{$monthKey}.surah_id", $stored?->surah_id);
                                             $ayahValue = old("targets.{$student->id}.{$monthKey}.ayah", $stored?->ayah);
                                             $hasError = $errors->has("targets.{$student->id}.{$monthKey}");
+                                            // Bulan terkunci: isian beku (tidak dikirim), status tetap otomatis.
+                                            $locked = $locks->has($monthKey);
                                         @endphp
-                                        <td class="px-3 py-3">
+                                        <td class="px-3 py-3 {{ $locked ? 'bg-gray-50 dark:bg-zinc-800/40' : '' }}">
                                             <div class="flex gap-1.5">
-                                                <select name="targets[{{ $student->id }}][{{ $monthKey }}][surah_id]" @disabled(! $canEdit)
+                                                <select name="targets[{{ $student->id }}][{{ $monthKey }}][surah_id]" @disabled(! $canEdit || $locked)
                                                         x-on:change="syncMax($event.target)"
                                                         class="min-w-0 flex-1 rounded-lg text-xs py-1.5 pl-2 pr-7 dark:bg-zinc-800 dark:text-zinc-200 {{ $hasError ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700' }}">
                                                     <option value="">– Surah –</option>
@@ -140,7 +143,7 @@
                                                         <option value="{{ $surah->id }}" @selected($surahValue === (string) $surah->id)>{{ $surah->option_label }}</option>
                                                     @endforeach
                                                 </select>
-                                                <input type="number" min="1" name="targets[{{ $student->id }}][{{ $monthKey }}][ayah]" value="{{ $ayahValue }}" placeholder="Ayat" @disabled(! $canEdit)
+                                                <input type="number" min="1" name="targets[{{ $student->id }}][{{ $monthKey }}][ayah]" value="{{ $ayahValue }}" placeholder="Ayat" @disabled(! $canEdit || $locked)
                                                        x-init="syncMax($el.previousElementSibling)"
                                                        class="w-16 rounded-lg text-xs py-1.5 px-2 dark:bg-zinc-800 dark:text-zinc-200 {{ $hasError ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700' }}">
                                             </div>
@@ -199,11 +202,13 @@
 
                 @if ($canEdit && $rows->isNotEmpty())
                     <div class="sticky bottom-24 xl:bottom-4 z-20 mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur px-4 py-3 shadow-lg">
-                        <p class="text-xs text-gray-500 dark:text-zinc-400">Kosongkan surah &amp; ayat untuk menghapus target bulan itu.</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400">Kosongkan surah &amp; ayat untuk menghapus target bulan itu. Bulan terkunci tidak ikut diubah.</p>
                         <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm cursor-pointer">Simpan Target</button>
                     </div>
                 @endif
             </form>
+
+            @include('hafalan-targets.partials.month-lock-forms', ['classId' => $selectedClass?->id])
         </div>
     </div>
 
