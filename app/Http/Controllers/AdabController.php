@@ -7,7 +7,9 @@ use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\Setting;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\User;
+use App\Support\AcademicYear;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -845,8 +847,7 @@ class AdabController extends Controller
         $year = $request->integer('year', (int) now()->format('Y'));
         $month = $request->integer('month', (int) now()->format('n'));
 
-        $classRoom = ClassRoom::with(['students' => fn ($q) => $q->where('status', 'active')->orderBy('name'), 'program'])
-            ->find($classRoomId);
+        $classRoom = ClassRoom::with('program')->find($classRoomId);
 
         if (! $classRoom) {
             return response()->json(['error' => 'Kelas tidak ditemukan.'], 404);
@@ -863,30 +864,43 @@ class AdabController extends Controller
             }
         }
 
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
-        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
-        $daysInMonth = (int) $startDate->daysInMonth;
-        $todayStr = now()->toDateString();
-        $effectiveDatesSet = Setting::getEffectiveDatesSet($year, $month);
-
-        $dayNamesShort = [
-            1 => 'Sen',
-            2 => 'Sel',
-            3 => 'Rab',
-            4 => 'Kam',
-            5 => 'Jum',
-            6 => 'Sab',
-            7 => 'Min',
+        // Periode matriks: satu bulan (bawaan) atau satu triwulan (3 bulan) tahun ajaran.
+        $allMonths = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
+        $isTerm = $request->input('period') === 'term';
+        if ($isTerm) {
+            $academicYear = AcademicYear::isValid($request->input('academic_year')) ? $request->input('academic_year') : AcademicYear::active();
+            $currentTerm = [7 => 1, 8 => 1, 9 => 1, 10 => 2, 11 => 2, 12 => 2, 1 => 3, 2 => 3, 3 => 3, 4 => 4, 5 => 4, 6 => 4][(int) now()->month];
+            $term = in_array($request->integer('term'), [1, 2, 3, 4], true) ? $request->integer('term') : $currentTerm;
+            $termStartYear = AcademicYear::startYear($academicYear) + ($term >= 3 ? 1 : 0);
+            $startDate = Carbon::create($termStartYear, [1 => 7, 2 => 10, 3 => 1, 4 => 4][$term], 1)->startOfDay();
+            $endDate = $startDate->copy()->addMonthsNoOverflow(2)->endOfMonth()->endOfDay();
+            $periodLabel = "Triwulan {$term} · {$academicYear} ({$allMonths[$startDate->month]} – {$allMonths[$endDate->month]} {$endDate->year})";
+        } else {
+            $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
+            $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+            $periodLabel = ($allMonths[$month] ?? '').' '.$year;
+        }
+
+        $todayStr = now()->toDateString();
+        $monthKeys = [];
+        $effectiveDatesSet = [];
+        for ($cursor = $startDate->copy()->startOfMonth(); $cursor->lte($endDate); $cursor->addMonthNoOverflow()) {
+            $monthKeys[] = [$cursor->year, $cursor->month];
+            $effectiveDatesSet += Setting::getEffectiveDatesSet($cursor->year, $cursor->month);
+        }
+
+        $dayNamesShort = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 7 => 'Min'];
+        $monthShort = [1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agt', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'];
 
         $daysMetadata = [];
         $totalEffectiveDays = 0;
         $effectiveDayCountUntilToday = 0;
 
-        for ($d = 1; $d <= $daysInMonth; $d++) {
-            $date = Carbon::createFromDate($year, $month, $d);
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
             $dateStr = $date->toDateString();
-            $dayOfWeek = (int) $date->dayOfWeekIso;
             $isEffective = isset($effectiveDatesSet[$dateStr]);
             $isPastOrToday = $dateStr <= $todayStr;
 
@@ -898,33 +912,48 @@ class AdabController extends Controller
             }
 
             $daysMetadata[] = [
-                'day' => $d,
+                'day' => $date->day,
                 'date' => $dateStr,
-                'day_name_short' => $dayNamesShort[$dayOfWeek] ?? '',
-                'day_of_week' => $dayOfWeek,
+                'label' => $date->day.' '.$monthShort[$date->month].' '.$date->year,
+                'month_short' => $monthShort[$date->month],
+                'is_month_start' => $date->day === 1,
+                'day_name_short' => $dayNamesShort[$date->dayOfWeekIso] ?? '',
+                'day_of_week' => $date->dayOfWeekIso,
                 'is_effective' => $isEffective,
                 'is_today' => $dateStr === $todayStr,
                 'is_past_or_today' => $isPastOrToday,
                 'is_future' => $dateStr > $todayStr,
             ];
         }
+        $daysInMonth = count($daysMetadata);
 
-        $students = $classRoom->students;
+        // Murid kelas ini pada periode itu (riwayat kelas, docs/riwayat-kelas.md), bukan kelas saat ini.
+        $students = Student::query()
+            ->inClassOn($classRoom->id, StudentClassHistory::referenceDate($endDate))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
         $studentIds = $students->pluck('id');
 
-        // Fetch all adab records for this class & month
+        // Fetch all adab records for this class & period
         $adabRecords = AdabRecord::whereIn('student_id', $studentIds)
             ->whereBetween('assessment_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get()
             ->groupBy('student_id');
 
-        // Fetch mentor assessments for this month
+        // Nilai pendamping bulanan di periode ini; triwulan = rata-rata bulan yang sudah dinilai.
         $mentorAssessments = AdabMentorAssessment::whereIn('student_id', $studentIds)
             ->with('mentor')
-            ->where('year', $year)
-            ->where('month', $month)
+            ->where(function ($q) use ($monthKeys) {
+                foreach ($monthKeys as [$y, $m]) {
+                    $q->orWhere(fn ($w) => $w->where('year', $y)->where('month', $m));
+                }
+            })
+            ->orderBy('year')->orderBy('month')
             ->get()
-            ->keyBy('student_id');
+            ->groupBy('student_id');
+        // Bulan yang semestinya sudah dinilai: bulan periode yang sudah dimulai (minimal satu).
+        $monthsToScore = max(1, collect($monthKeys)->filter(fn ($ym) => Carbon::create($ym[0], $ym[1], 1)->lte(now()))->count());
 
         $studentRows = [];
         $totalFilledEffectiveAll = 0;
@@ -952,7 +981,7 @@ class AdabController extends Controller
                         $filledEffectiveCount++;
                         $status = 'filled';
                     } elseif ($dayMeta['is_past_or_today']) {
-                        $missedDates[] = $dayMeta['day'];
+                        $missedDates[] = ['date' => $dateStr, 'label' => $isTerm ? $dayMeta['day'].' '.$dayMeta['month_short'] : 'Tgl '.$dayMeta['day']];
                         $status = 'missed';
                     } else {
                         $status = 'future';
@@ -961,7 +990,8 @@ class AdabController extends Controller
                     $status = 'off';
                 }
 
-                $dailyStatus[$dayMeta['day']] = [
+                // Kunci = tanggal (Y-m-d): pada periode triwulan nomor hari berulang tiap bulan.
+                $dailyStatus[$dateStr] = [
                     'status' => $status,
                     'score' => $score,
                     'has_record' => $hasRecord,
@@ -981,9 +1011,11 @@ class AdabController extends Controller
                 $perfectCount++;
             }
 
-            $mentorAssessment = $mentorAssessments->get($student->id);
-            $mentorScore = $mentorAssessment?->mentor_score !== null ? (int) $mentorAssessment->mentor_score : null;
-            if ($mentorAssessment !== null) {
+            $studentAssessments = $mentorAssessments->get($student->id, collect())->whereNotNull('mentor_score');
+            $mentorAssessment = $studentAssessments->last();
+            $mentorScore = $studentAssessments->isNotEmpty() ? (int) round($studentAssessments->avg('mentor_score')) : null;
+            $hasMentorScored = $studentAssessments->count() >= $monthsToScore;
+            if ($hasMentorScored) {
                 $mentorScoredCount++;
             }
 
@@ -1009,17 +1041,10 @@ class AdabController extends Controller
                 'mentor_notes' => $mentorAssessment?->notes ?? '',
                 'mentor_name' => $mentorAssessment?->mentor?->name ?? null,
                 'mentor_updated_at' => $mentorAssessment?->updated_at?->format('d M Y H:i'),
-                'has_mentor_scored' => $mentorAssessment !== null,
+                'has_mentor_scored' => $hasMentorScored,
                 'has_missed' => $missedEffectiveCount > 0,
             ];
         }
-
-        $allMonths = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
-            4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
-            10 => 'Oktober', 11 => 'November', 12 => 'Desember',
-        ];
 
         $classAvgRate = count($students) > 0 && $totalEffectiveDays > 0
             ? round(($totalFilledEffectiveAll / (count($students) * $totalEffectiveDays)) * 100, 1)
@@ -1029,8 +1054,10 @@ class AdabController extends Controller
             'class_room_id' => $classRoom->id,
             'class_room_name' => $classRoom->name,
             'program_name' => $classRoom->program?->name ?? '',
+            'period' => $isTerm ? 'term' : 'month',
+            'period_label' => $periodLabel,
             'month' => $month,
-            'month_name' => $allMonths[$month] ?? '',
+            'month_name' => $isTerm ? $periodLabel : ($allMonths[$month] ?? ''),
             'year' => $year,
             'days_in_month' => $daysInMonth,
             'total_effective_days' => $totalEffectiveDays,

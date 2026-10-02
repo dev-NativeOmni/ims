@@ -79,6 +79,7 @@ Sudah dipakai di:
   `printClass()`, `lockClass()`
 - Grafik Tahfizh & Laporan Harian WhatsApp: `ReportController::getPeriodicProgressData()`, `whatsappDaily()`
 - Target Triwulan: `HafalanTargetController::termClassRooms()`, `termStudents()`
+- Matriks Presensi Harian Adab (bulanan & triwulan): `AdabController::getAttendanceMatrixData()`
 - Input Spreadsheet: `SpreadsheetInputController::index()` (kelas pada akhir bulan lembar kerja)
 
 Rapor yang sudah **dikunci** tidak bergantung pada riwayat ini: isinya, termasuk nama kelas, dibekukan

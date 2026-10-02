@@ -23,7 +23,12 @@
                 <div class="relative z-10 max-w-2xl">
                     <h3 class="text-lg sm:text-xl font-bold mb-1.5 sm:mb-2">Evaluasi Akhlak & Adab Harian</h3>
                     <p class="text-teal-100 text-xs sm:text-sm leading-relaxed">
-                        Evaluasi kedisiplinan dan pembiasaan adab islami harian murid. Penilaian mencakup 3 modul mandiri murid (adab kepada Allah, adab kepada Rasulullah, adab belajar) dengan bobot 50% dan penilaian pendamping adab dengan bobot 50%.
+                        @php
+                            // Isi mengikuti Pengaturan Adab: kategori kuisioner & bobot penilaian.
+                            $adabCategoryTitles = collect(\App\Models\Setting::getAdabQuestions())->pluck('title')->map(fn ($t) => trim(preg_replace('/^[^\p{L}]+/u', '', (string) $t)))->filter()->values();
+                            $adabWeight = \App\Models\Setting::adabScoring()['attendance_weight'];
+                        @endphp
+                        Evaluasi kedisiplinan dan pembiasaan adab islami harian murid. Penilaian mencakup {{ $adabCategoryTitles->count() }} modul kuisioner mandiri murid ({{ $adabCategoryTitles->join(', ', ', dan ') }}) dengan bobot {{ $adabWeight }}% dan penilaian pendamping adab dengan bobot {{ 100 - $adabWeight }}%.
                     </p>
                 </div>
             </div>
@@ -499,7 +504,7 @@
                     
                     <!-- Filter Bar -->
                     <div class="bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                     Pilih Kelas
@@ -514,7 +519,19 @@
                                 </select>
                             </div>
 
+                            {{-- Periode: satu bulan, atau satu triwulan (3 bulan sekaligus) untuk melihat & melengkapi semua tanggal. --}}
                             <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Periode
+                                </label>
+                                <select x-model="periodType" @change="fetchMatrixData()"
+                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    <option value="month">Bulanan</option>
+                                    <option value="term">Triwulan</option>
+                                </select>
+                            </div>
+
+                            <div x-show="periodType === 'month'">
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
                                     Bulan
                                 </label>
@@ -526,18 +543,31 @@
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
-                                    Tahun
-                                </label>
                                 <select x-model="selectedYear" @change="fetchMatrixData()"
-                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                        class="mt-2 w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
                                     @foreach (\App\Support\AcademicYear::calendarYears(1, true) as $y)
                                         <option value="{{ $y }}" @selected($y == (int) request('year', now()->format('Y')))>
                                             {{ $y }}
                                         </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div x-show="periodType === 'term'" x-cloak>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                                    Triwulan
+                                </label>
+                                <select x-model="selectedTerm" @change="fetchMatrixData()"
+                                        class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    <option value="1">Triwulan 1 (Jul – Sep)</option>
+                                    <option value="2">Triwulan 2 (Okt – Des)</option>
+                                    <option value="3">Triwulan 3 (Jan – Mar)</option>
+                                    <option value="4">Triwulan 4 (Apr – Jun)</option>
+                                </select>
+                                <select x-model="selectedAcademicYear" @change="fetchMatrixData()"
+                                        class="mt-2 w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
+                                    @foreach (\App\Support\AcademicYear::options() as $yearOption)
+                                        <option value="{{ $yearOption }}">{{ $yearOption }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -641,13 +671,15 @@
                                         </th>
 
                                         <!-- Days Columns (1..DaysInMonth) -->
-                                        <template x-for="day in daysMetadata" :key="day.day">
+                                        <template x-for="(day, dIdx) in daysMetadata" :key="day.date">
                                             <th :class="[
+                                                    periodType === 'term' && day.is_month_start ? 'border-l-2 border-l-indigo-300 dark:border-l-indigo-700' : '',
                                                     day.is_today ? 'bg-indigo-100/70 dark:bg-indigo-950/60 ring-1 ring-indigo-500' : '',
                                                     day.is_effective ? 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200' : 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-600'
                                                 ]"
                                                 class="px-1 py-1.5 text-center min-w-[32px] max-w-[34px] select-none font-bold"
                                                 :title="day.date + ' (' + (day.is_effective ? 'Hari Efektif Adab' : 'Libur / Non-Efektif') + ')'">
+                                                <div class="text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400" x-show="periodType === 'term' && (day.is_month_start || dIdx === 0)" x-text="day.month_short"></div>
                                                 <div class="text-[11px]" x-text="day.day"></div>
                                                 <div class="text-[9px] font-normal uppercase opacity-75" x-text="day.day_name_short"></div>
                                             </th>
@@ -712,52 +744,56 @@
                                                 </template>
                                                 <template x-if="st.missed_dates.length > 0">
                                                     <div class="flex flex-wrap gap-1 max-w-[220px]">
-                                                        <template x-for="dNum in st.missed_dates" :key="dNum">
-                                                            <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + getFormattedDate(dNum)"
+                                                        {{-- Maks. 12 label (periode triwulan bisa puluhan); semua tanggal tetap bisa diklik di kolom harian. --}}
+                                                        <template x-for="missed in st.missed_dates.slice(0, 12)" :key="missed.date">
+                                                            <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + missed.date"
                                                                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 hover:bg-rose-200 text-rose-700 dark:bg-rose-950/60 dark:hover:bg-rose-900 dark:text-rose-300 transition cursor-pointer"
-                                                               :title="'Bantu isi kuisioner tgl ' + dNum + ' ' + monthName">
-                                                                <span x-text="'Tgl ' + dNum"></span>
+                                                               :title="'Bantu isi kuisioner ' + missed.date">
+                                                                <span x-text="missed.label"></span>
                                                             </a>
                                                         </template>
+                                                        <span x-show="st.missed_dates.length > 12" class="inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400"
+                                                              x-text="'+' + (st.missed_dates.length - 12) + ' lainnya'"></span>
                                                     </div>
                                                 </template>
                                             </td>
 
                                             <!-- Days Cells (1..DaysInMonth) -->
-                                            <template x-for="day in daysMetadata" :key="day.day">
+                                            <template x-for="day in daysMetadata" :key="day.date">
                                                 <td :class="[
+                                                        periodType === 'term' && day.is_month_start ? 'border-l-2 border-l-indigo-300 dark:border-l-indigo-700' : '',
                                                         day.is_today ? 'ring-1 ring-indigo-400 dark:ring-indigo-600' : '',
-                                                        st.daily_status[day.day]?.status === 'off' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-300 dark:text-zinc-700' : ''
+                                                        st.daily_status[day.date]?.status === 'off' ? 'bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-300 dark:text-zinc-700' : ''
                                                     ]"
                                                     class="p-0.5 text-center align-middle">
                                                     
                                                     <!-- State 1: Filled (Green) -->
-                                                    <template x-if="st.daily_status[day.day]?.status === 'filled'">
+                                                    <template x-if="st.daily_status[day.date]?.status === 'filled'">
                                                         <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + day.date"
                                                            class="w-5.5 h-5.5 mx-auto rounded-md bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-pointer transition active:scale-95"
-                                                           :title="'Tgl ' + day.day + ' ' + monthName + ': Sudah isi (' + (st.daily_status[day.day]?.score || 100) + ' poin) - Klik untuk lihat/edit'">
+                                                           :title="day.label + ': Sudah isi (' + (st.daily_status[day.date]?.score || 100) + ' poin) - Klik untuk lihat/edit'">
                                                             ✓
                                                         </a>
                                                     </template>
 
                                                     <!-- State 2: Missed on effective day (Red) -->
-                                                    <template x-if="st.daily_status[day.day]?.status === 'missed'">
+                                                    <template x-if="st.daily_status[day.date]?.status === 'missed'">
                                                         <a :href="'{{ url('adab/student') }}/' + st.student_id + '/create?date=' + day.date"
                                                            class="w-5.5 h-5.5 mx-auto rounded-md bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 flex items-center justify-center font-black text-[10px] shadow-2xs cursor-pointer transition active:scale-95 animate-pulse"
-                                                           :title="'Tgl ' + day.day + ' ' + monthName + ': Terlewat / Belum Mengisi (Klik untuk bantu isi)'">
+                                                           :title="day.label + ': Terlewat / Belum Mengisi (Klik untuk bantu isi)'">
                                                             ✕
                                                         </a>
                                                     </template>
 
                                                     <!-- State 3: Off / Holiday / Weekend -->
-                                                    <template x-if="st.daily_status[day.day]?.status === 'off'">
+                                                    <template x-if="st.daily_status[day.date]?.status === 'off'">
                                                         <span class="text-zinc-300 dark:text-zinc-700 select-none text-[10px]">-</span>
                                                     </template>
 
                                                     <!-- State 4: Future effective day -->
-                                                    <template x-if="st.daily_status[day.day]?.status === 'future'">
+                                                    <template x-if="st.daily_status[day.date]?.status === 'future'">
                                                         <div class="w-3.5 h-3.5 mx-auto rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-300 dark:text-zinc-600 flex items-center justify-center text-[8px]"
-                                                             :title="'Tgl ' + day.day + ' ' + monthName + ': Jadwal Mendatang'">
+                                                             :title="day.label + ': Jadwal Mendatang'">
                                                             ○
                                                         </div>
                                                     </template>
@@ -812,7 +848,7 @@
                             <div>
                                 <h3 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                                     <x-heroicon-o-clipboard-document-check class="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                    <span>Tabel Keterangan Nilai Pendamping & Rekapitulasi (<span x-text="monthName + ' ' + selectedYear"></span>)</span>
+                                    <span>Tabel Keterangan Nilai Pendamping & Rekapitulasi (<span x-text="periodType === 'term' ? monthName : monthName + ' ' + selectedYear"></span>)</span>
                                 </h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                                     Monitoring kelengkapan nilai pembina/pendamping adab dan skor akhir komposit ({{ \App\Models\Setting::adabScoring()['attendance_weight'] }}% Kehadiran Mandiri + {{ 100 - \App\Models\Setting::adabScoring()['attendance_weight'] }}% Nilai Pendamping).
@@ -1187,6 +1223,10 @@
                 selectedClassId: {{ (int) request('class_room_id', $classRooms->first()?->id ?? 0) }},
                 selectedMonth: {{ (int) request('month', now()->format('n')) }},
                 selectedYear: {{ (int) request('year', now()->format('Y')) }},
+                // Periode triwulan: semua tanggal 3 bulan sekaligus (lihat AdabController::getAttendanceMatrixData).
+                periodType: 'month',
+                selectedTerm: {{ [7 => 1, 8 => 1, 9 => 1, 10 => 2, 11 => 2, 12 => 2, 1 => 3, 2 => 3, 3 => 3, 4 => 4, 5 => 4, 6 => 4][(int) now()->month] }},
+                selectedAcademicYear: @js(\App\Support\AcademicYear::active()),
                 searchQuery: '',
                 onlyMissed: false,
                 mentorFilter: 'all',
@@ -1197,14 +1237,6 @@
                 daysMetadata: [],
                 students: [],
                 summary: {},
-
-                get formattedMonthPadded() {
-                    return String(this.selectedMonth).padStart(2, '0');
-                },
-
-                getFormattedDate(dayNum) {
-                    return `${this.selectedYear}-${this.formattedMonthPadded}-${String(dayNum).padStart(2, '0')}`;
-                },
 
                 get filteredStudents() {
                     let list = this.students;
@@ -1248,6 +1280,11 @@
                         url.searchParams.set('class_room_id', this.selectedClassId);
                         url.searchParams.set('month', this.selectedMonth);
                         url.searchParams.set('year', this.selectedYear);
+                        if (this.periodType === 'term') {
+                            url.searchParams.set('period', 'term');
+                            url.searchParams.set('term', this.selectedTerm);
+                            url.searchParams.set('academic_year', this.selectedAcademicYear);
+                        }
 
                         const response = await fetch(url.toString(), {
                             headers: {
