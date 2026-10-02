@@ -162,6 +162,8 @@
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
                         <x-heroicon-o-sparkles class="w-5 h-5 text-amber-500" /> Kepatuhan Adab Harian
                     </h4>
+                    {{-- Nilai di kartu ini & di rapor = akumulasi triwulan rapor (Setting::calculateAdabScoreForRange). --}}
+                    <p class="-mt-2 mb-3 text-[11px] font-semibold text-amber-700 dark:text-amber-400">Akumulasi {{ $tanseTerm['label'] }}</p>
                     
                         @php
                             $totalGrade = \App\Models\Setting::getAdabGrade($avgTotal);
@@ -193,6 +195,10 @@
                                 <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $avgAttendanceRate }}%</span>
                             </div>
                             <div class="flex justify-between">
+                                <span class="text-gray-400">Hari terisi / hari efektif triwulan</span>
+                                <span class="font-semibold text-gray-600 dark:text-zinc-400">{{ $adabDaysFilled }} / {{ $adabDaysTotal }}</span>
+                            </div>
+                            <div class="flex justify-between">
                                 <span class="text-gray-500 font-medium">Nilai Pendamping Adab ({{ 100 - \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</span>
                                 <span class="font-bold text-purple-600 dark:text-purple-400">{{ $avgMentorScore !== null ? round($avgMentorScore) : '-' }}</span>
                             </div>
@@ -204,6 +210,7 @@
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
                         <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-rose-500" /> Kedisiplinan &amp; Prestasi (Tanse)
                     </h4>
+                    <p class="-mt-2 mb-3 text-[11px] font-semibold text-rose-700 dark:text-rose-400">Akumulasi {{ $tanseTerm['label'] }}</p>
                     
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4 text-center">

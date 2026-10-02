@@ -963,6 +963,12 @@ class StudentReportController extends Controller
             $studentUmmiAll
         );
 
+        // Adab dinilai per triwulan rapor (akumulasi triwulan, bukan bulan berjalan): kuisioner dalam
+        // triwulan itu saja, nilai lihat Setting::calculateAdabScoreForRange().
+        $adabTerm = self::resolveTanseTerm($academicYear, $semester, $term);
+        $adabRecords = $adabRecords->filter(fn ($r) => $r->assessment_date
+            && Carbon::parse($r->assessment_date)->between($adabTerm['start'], $adabTerm['end']))->values();
+
         // Dynamic Adab Evaluation & Scores
         $adabCategories = Setting::getAdabQuestions();
         $adabCategoryScores = [];
@@ -982,11 +988,11 @@ class StudentReportController extends Controller
             $adabCategoryScores[$catIdx] = $count > 0 ? round(($total / $count) * 100, 1) : 0;
         }
 
-        $thisYear = (int) now()->format('Y');
-        $thisMonth = (int) now()->format('n');
-        $adabScoreData = Setting::calculateAdabScore($student->id, $thisYear, $thisMonth);
+        $adabScoreData = Setting::calculateAdabScoreForRange($student->id, $adabTerm['start'], $adabTerm['end']);
 
         $avgAttendanceRate = $adabScoreData['attendance_rate'];
+        $adabDaysFilled = $adabScoreData['effective_days_filled'];
+        $adabDaysTotal = $adabScoreData['effective_days_total'];
         $avgMentorScore = $adabScoreData['mentor_score'];
         $avgTotal = $adabScoreData['final_score'];
         $adabGrade = $adabScoreData['grade'];
@@ -1025,6 +1031,8 @@ class StudentReportController extends Controller
             'adabCategories',
             'adabCategoryScores',
             'avgAttendanceRate',
+            'adabDaysFilled',
+            'adabDaysTotal',
             'avgMentorScore',
             'avgTotal',
             'adabGrade',

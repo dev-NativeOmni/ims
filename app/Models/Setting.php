@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\SchoolCalendar;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -243,6 +244,71 @@ class Setting extends Model
     public static function adabDescription(string $grade): string
     {
         return self::adabScoring()['descriptions'][$grade] ?? self::ADAB_SCORING_DEFAULTS['descriptions']['E'];
+    }
+
+    /**
+     * Nilai Adab untuk satu rentang tanggal (mis. satu triwulan rapor), bukan satu bulan:
+     * - kerajinan = hari terisi / hari efektif Adab dalam rentang, dihitung s.d. hari ini bila rentang
+     *   masih berjalan (hari yang belum terjadi tidak menurunkan nilai);
+     * - nilai pendamping = rata-rata nilai bulanan pendamping di bulan-bulan rentang itu (null bila belum ada);
+     * - nilai akhir = adabCompositeScore() dengan bobot Pengaturan Adab.
+     *
+     * @return array{attendance_rate: float, effective_days_filled: int, effective_days_total: int, mentor_score: ?float, mentor_months: int, final_score: float, grade: string, grade_label: string}
+     */
+    public static function calculateAdabScoreForRange(int $studentId, CarbonInterface $start, CarbonInterface $end): array
+    {
+        $from = Carbon::parse($start)->startOfDay();
+        $until = Carbon::parse($end)->startOfDay()->min(today());
+        $cacheKey = "range_{$studentId}_{$from->toDateString()}_{$until->toDateString()}";
+        if (isset(self::$studentAdabScoreCache[$cacheKey])) {
+            return self::$studentAdabScoreCache[$cacheKey];
+        }
+
+        $effectiveDates = [];
+        $monthKeys = [];
+        for ($cursor = $from->copy()->startOfMonth(); $cursor->lte(Carbon::parse($end)); $cursor->addMonthNoOverflow()) {
+            $monthKeys[] = [$cursor->year, $cursor->month];
+            if ($until->gte($from)) {
+                $effectiveDates += self::getEffectiveDatesSet($cursor->year, $cursor->month, $until->toDateString());
+            }
+        }
+        $effectiveDates = array_filter($effectiveDates, fn ($v, $date) => $date >= $from->toDateString() && $date <= $until->toDateString(), ARRAY_FILTER_USE_BOTH);
+
+        $filled = $until->gte($from) ? AdabRecord::where('student_id', $studentId)
+            ->whereDate('assessment_date', '>=', $from->toDateString())
+            ->whereDate('assessment_date', '<=', $until->toDateString())
+            ->pluck('assessment_date')
+            ->map(fn ($d) => substr((string) ($d instanceof CarbonInterface ? $d->toDateString() : $d), 0, 10))
+            ->unique()
+            ->filter(fn ($d) => isset($effectiveDates[$d]))
+            ->count() : 0;
+
+        $total = count($effectiveDates);
+        $attendanceRate = $total > 0 ? min(100.0, round(($filled / $total) * 100, 1)) : 0.0;
+
+        $mentorScores = AdabMentorAssessment::where('student_id', $studentId)
+            ->where(function ($q) use ($monthKeys) {
+                foreach ($monthKeys as [$y, $m]) {
+                    $q->orWhere(fn ($w) => $w->where('year', $y)->where('month', $m));
+                }
+            })
+            ->whereNotNull('mentor_score')
+            ->pluck('mentor_score');
+        $mentorScore = $mentorScores->isNotEmpty() ? round((float) $mentorScores->avg(), 1) : null;
+
+        $finalScore = self::adabCompositeScore($attendanceRate, $mentorScore);
+        $grade = self::getAdabGrade($finalScore);
+
+        return self::$studentAdabScoreCache[$cacheKey] = [
+            'attendance_rate' => $attendanceRate,
+            'effective_days_filled' => $filled,
+            'effective_days_total' => $total,
+            'mentor_score' => $mentorScore,
+            'mentor_months' => $mentorScores->count(),
+            'final_score' => $finalScore,
+            'grade' => $grade,
+            'grade_label' => self::getAdabGradeLabel($grade),
+        ];
     }
 
     /**
