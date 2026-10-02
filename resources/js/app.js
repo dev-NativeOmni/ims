@@ -6,6 +6,10 @@ window.Chart = Chart;
 window.ChartDataLabels = ChartDataLabels;
 window.htmlToImage = htmlToImage;
 
+// Unduh PNG laporan & grafik berukuran F4 tetap (lihat resources/js/f4-export.js).
+import * as f4Export from './f4-export';
+window.f4Export = f4Export;
+
 import './bootstrap';
 import Alpine from 'alpinejs';
 

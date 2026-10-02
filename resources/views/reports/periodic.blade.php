@@ -499,51 +499,20 @@
             }
         </script>
         <script>
+            // Unduh PNG kartu laporan: F4 portrait tetap, isi utuh (resources/js/f4-export.js).
             function downloadUmmiCard() {
                 const cardEl = document.getElementById('ummiGrade10ReportCard');
                 if (!cardEl) {
                     alert('Elemen laporan tidak ditemukan.');
                     return;
                 }
-                
-                const executeDownload = () => {
-                    const width = cardEl.scrollWidth || cardEl.offsetWidth;
-                    const height = cardEl.scrollHeight || cardEl.offsetHeight;
-
-                    htmlToImage.toPng(cardEl, {
-                        pixelRatio: 2,
-                        backgroundColor: '#ffffff',
-                        width: width + 24,
-                        height: height + 24,
-                        style: {
-                            margin: '0 auto',
-                            padding: '12px',
-                            boxSizing: 'border-box',
-                            left: '0',
-                            top: '0',
-                            transform: 'none'
-                        }
-                    }).then(dataUrl => {
-                        const a = document.createElement('a');
-                        a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}_{{ $monthName }}.png';
-                        a.href = dataUrl;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                    }).catch(err => {
-                        console.error('Gagal mengunduh gambar:', err);
-                        alert('Gagal membuat gambar PNG: ' + err.message);
-                    });
-                };
-
-                if (typeof htmlToImage === 'undefined') {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
-                    script.onload = executeDownload;
-                    document.head.appendChild(script);
-                } else {
-                    executeDownload();
-                }
+                window.f4Export.elementToF4Png(cardEl, {
+                    fileName: @js('Laporan_Capaian_Ummi_'.($selectedClass?->name ?? '').'_'.($monthName ?? '')),
+                    orientation: 'portrait',
+                }).catch(err => {
+                    console.error('Gagal mengunduh gambar:', err);
+                    alert('Gagal membuat gambar PNG: ' + err.message);
+                });
             }
 
             function printUmmiCard(orientation = 'landscape') {
@@ -552,49 +521,11 @@
             }
 
             // Global functions for download and print
+            // Unduh PNG grafik: halaman F4 landscape berjudul (resources/js/f4-export.js).
             function downloadChart(chartId, title) {
                 const canvas = document.getElementById(chartId);
                 if (!canvas) return;
-                const tempCanvas = document.createElement('canvas');
-
-                const bannerHeight = 70;
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height + bannerHeight;
-
-                const tempCtx = tempCanvas.getContext('2d');
-                
-                // Fill white background
-                tempCtx.fillStyle = '#ffffff';
-                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-                
-                // Draw Title Header Banner
-                tempCtx.textAlign = 'center';
-                tempCtx.fillStyle = '#111827';
-                tempCtx.font = 'bold 18px Arial, sans-serif';
-                tempCtx.fillText(title, tempCanvas.width / 2, 32);
-
-                tempCtx.fillStyle = '#6B7280';
-                tempCtx.font = '13px Arial, sans-serif';
-                tempCtx.fillText("TAD-SMAIA7", tempCanvas.width / 2, 54);
-
-                // Divider line
-                tempCtx.strokeStyle = '#E5E7EB';
-                tempCtx.lineWidth = 1;
-                tempCtx.beginPath();
-                tempCtx.moveTo(20, 62);
-                tempCtx.lineTo(tempCanvas.width - 20, 62);
-                tempCtx.stroke();
-
-                // Draw original chart below banner
-                tempCtx.drawImage(canvas, 0, bannerHeight);
-                
-                const url = tempCanvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = title + '.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                window.f4Export.canvasToF4Png(canvas, { title, fileName: title });
             }
 
             function printChart(chartId, title) {

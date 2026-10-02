@@ -112,43 +112,34 @@
             const ctx = out.getContext('2d');
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
+            // Judul digambar oleh f4Export di halaman F4; kanvas ini hanya berisi kedua donut.
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#111827';
-            ctx.font = 'bold 18px Arial, sans-serif';
-            ctx.fillText(title, width / 2, 34);
-            ctx.fillStyle = '#6B7280';
-            ctx.font = '13px Arial, sans-serif';
-            ctx.fillText('TAD-SMAIA7', width / 2, 56);
             donuts.forEach((d, i) => {
                 const el = document.getElementById(d.id);
                 const cx = width / 4 + (i * width) / 2;
                 ctx.fillStyle = i === 0 ? '#0284c7' : '#059669';
                 ctx.font = 'bold 15px Arial, sans-serif';
-                ctx.fillText(d.label.toUpperCase(), cx, 96);
+                ctx.fillText(d.label.toUpperCase(), cx, 36);
                 ctx.fillStyle = '#6B7280';
                 ctx.font = '12px Arial, sans-serif';
-                ctx.fillText(d.caption, cx, 116);
+                ctx.fillText(d.caption, cx, 56);
                 if (el) {
-                    const drawHeight = height - 150;
+                    const drawHeight = height - 90;
                     const drawWidth = drawHeight * el.width / el.height;
-                    ctx.drawImage(el, cx - drawWidth / 2, 132, drawWidth, drawHeight);
+                    ctx.drawImage(el, cx - drawWidth / 2, 72, drawWidth, drawHeight);
                 } else {
                     ctx.fillStyle = '#d97706';
-                    ctx.fillText('Belum ada target ' + d.empty, cx, 260);
+                    ctx.fillText('Belum ada target ' + d.empty, cx, 200);
                 }
             });
-            const url = out.toDataURL('image/png');
+            // Unduh & cetak memakai halaman F4 landscape yang sama (resources/js/f4-export.js).
             if (mode === 'download') {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = title + '.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                window.f4Export.canvasToF4Png(out, { title, fileName: title });
                 return;
             }
+            const url = window.f4Export.canvasToF4Page(out, { title }).toDataURL('image/png');
             const win = window.open('', '_blank');
-            win.document.write('<html><head><title>' + title + '</title><style>@page{size:330mm 215mm;margin:1.5cm}body{margin:0;text-align:center}img{max-width:100%;max-height:180mm}</style></head><body><img src="' + url + '" onload="window.print()"></body></html>');
+            win.document.write('<html><head><title>' + title + '</title><style>@page{size:330mm 215mm;margin:0}body{margin:0}img{width:330mm;height:215mm;display:block}</style></head><body><img src="' + url + '" onload="window.print()"></body></html>');
             win.document.close();
         };
 

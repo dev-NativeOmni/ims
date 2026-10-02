@@ -226,27 +226,16 @@
 
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
                     <script>
+                        // Unduh PNG kartu laporan: F4 portrait tetap, isi utuh (resources/js/f4-export.js).
                         function downloadUmmiCardProgress() {
                             const cardEl = document.getElementById('ummiGrade10ReportCard');
                             if (!cardEl) {
                                 alert('Elemen laporan tidak ditemukan.');
                                 return;
                             }
-                            const width = cardEl.offsetWidth;
-                            const height = cardEl.offsetHeight;
-                            htmlToImage.toPng(cardEl, {
-                                pixelRatio: 2,
-                                backgroundColor: '#ffffff',
-                                width: width,
-                                height: height,
-                                style: { margin: '0', left: '0', top: '0', transform: 'none' }
-                            }).then(dataUrl => {
-                                const a = document.createElement('a');
-                                a.download = 'Laporan_Capaian_Ummi_{{ $selectedClass?->name }}.png';
-                                a.href = dataUrl;
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
+                            window.f4Export.elementToF4Png(cardEl, {
+                                fileName: @js('Laporan_Capaian_Ummi_'.($selectedClass?->name ?? '')),
+                                orientation: 'portrait',
                             }).catch(err => {
                                 console.error('Gagal mengunduh gambar:', err);
                                 alert('Gagal mengunduh gambar: ' + err.message);
@@ -432,45 +421,15 @@
                 document.head.appendChild(s);
             }
 
+            // Unduh PNG grafik: halaman F4 landscape berjudul (resources/js/f4-export.js).
             function downloadChartWithTitle() {
                 const originalCanvas = document.getElementById('progressChart');
                 if (!originalCanvas) return;
-
-                const tempCanvas = document.createElement('canvas');
-                const ctx = tempCanvas.getContext('2d');
-
-                const titleText = "Diagram Progres Hafalan Murid";
-                const subTitleText = "TAD Management System (Tahfizh, Adab, Disiplin) — Tanggal Ekspor: " + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                const bannerHeight = 80;
-                tempCanvas.width = originalCanvas.width;
-                tempCanvas.height = originalCanvas.height + bannerHeight;
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#111827';
-                ctx.font = 'bold 18px Inter, sans-serif';
-                ctx.fillText(titleText, tempCanvas.width / 2, 35);
-
-                ctx.fillStyle = '#6B7280';
-                ctx.font = '13px Inter, sans-serif';
-                ctx.fillText("TAD-SMAIA7", tempCanvas.width / 2, 58);
-
-                ctx.strokeStyle = '#E5E7EB';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(20, 72);
-                ctx.lineTo(tempCanvas.width - 20, 72);
-                ctx.stroke();
-
-                ctx.drawImage(originalCanvas, 0, bannerHeight);
-
-                const a = document.createElement('a');
-                a.download = 'Grafik_Perkembangan_Hafalan.png';
-                a.href = tempCanvas.toDataURL('image/png');
-                a.click();
+                window.f4Export.canvasToF4Png(originalCanvas, {
+                    title: 'Diagram Progres Hafalan Murid',
+                    subtitle: 'TAD-SMAIA7 — Tanggal Ekspor: ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                    fileName: 'Grafik_Perkembangan_Hafalan',
+                });
             }
             window.downloadChartWithTitle = downloadChartWithTitle;
 
