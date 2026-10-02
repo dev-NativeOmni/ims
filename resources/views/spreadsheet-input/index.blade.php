@@ -296,7 +296,7 @@
                         this.scrollToColumn(this.todayDate);
                     } else {
                         if (confirm('Tanggal hari ini (' + this.formatDateIndo(this.todayDate) + ') tidak ada dalam filter aktif saat ini. Buka lembar kerja bulan ini?')) {
-                            window.location.href = "{{ route('spreadsheet-input.index') }}?class_room_id=" + this.selectedClass + "&month=" + this.currentMonth + "&week=all";
+                            window.location.href = "{{ route('spreadsheet-input.index') }}?class_room_id=" + this.selectedClass + "&month=" + this.currentMonth + "&week=all&teacher_id={{ $selectedTeacherId }}";
                         }
                     }
                 },
@@ -438,7 +438,20 @@
 
             <!-- FILTER PANEL -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-2xl p-4 sm:p-5">
-                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 items-end">
+                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ $showTeacherFilter ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-3.5 sm:gap-4 items-end">
+                    @if ($showTeacherFilter)
+                        <div>
+                            <label for="teacher_id" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+                                Guru Pengampu
+                            </label>
+                            <select id="teacher_id" name="teacher_id" onchange="this.form.submit()" class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs">
+                                <option value="" class="dark:bg-zinc-900">Semua Guru</option>
+                                @foreach ($teacherOptions as $teacher)
+                                    <option value="{{ $teacher->id }}" @selected($selectedTeacherId === $teacher->id) class="dark:bg-zinc-900">{{ $teacher->user?->name ?? 'Guru #'.$teacher->id }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div>
                         <label for="class_room_id" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
                             Kelas Halaqoh
@@ -642,6 +655,7 @@
                     <input type="hidden" name="month" :value="selectedMonth">
                     <input type="hidden" name="type" :value="tab">
                     <input type="hidden" name="week" value="{{ $selectedWeek }}">
+                    <input type="hidden" name="teacher_id" value="{{ $selectedTeacherId }}">
 
                     <!-- ========================================== -->
                     <!-- DESKTOP / TABLET SPREADSHEET VIEW          -->

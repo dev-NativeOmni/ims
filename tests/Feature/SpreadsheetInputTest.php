@@ -6,7 +6,10 @@ use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\Program;
+use App\Models\Student;
+use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -462,5 +465,37 @@ class SpreadsheetInputTest extends TestCase
         // Guru sendiri mengubah presensi di spreadsheet -> tetap tersimpan.
         $save(['attendance' => 'hadir', 'attendance_original' => 'izin'] + ['hafalans' => $stale['hafalans']]);
         $this->assertSame('hadir', Attendance::where('student_id', $this->student->id)->whereDate('tanggal', '2026-09-15')->value('status'));
+    }
+
+    #[Test]
+    public function admin_can_filter_spreadsheet_by_teacher(): void
+    {
+        $otherTeacher = TeacherProfile::create([
+            'user_id' => User::factory()->create(['role_id' => $this->teacherUser->role_id, 'name' => 'Guru Kedua', 'status' => 'active'])->id,
+            'employee_number' => 'TEST-GURU-002',
+        ]);
+        $otherClass = ClassRoom::create(['program_id' => $this->student->classRoom->program_id, 'name' => 'Kelas B Test', 'level' => 'Pemula']);
+        Student::create(['class_room_id' => $this->student->class_room_id, 'teacher_id' => $otherTeacher->id, 'name' => 'Santri Guru Kedua Sekelas', 'status' => 'active']);
+        Student::create(['class_room_id' => $otherClass->id, 'teacher_id' => $otherTeacher->id, 'name' => 'Santri Guru Kedua Kelas B', 'status' => 'active']);
+
+        $all = $this->actingAs($this->admin)->get(route('spreadsheet-input.index', ['class_room_id' => $this->student->class_room_id]));
+        $all->assertOk()->assertSee('Guru Pengampu')->assertSee('Guru Kedua');
+        $this->assertCount(2, $all->viewData('students'), 'Tanpa filter: semua murid kelas.');
+
+        $filtered = $this->actingAs($this->admin)->get(route('spreadsheet-input.index', ['class_room_id' => $this->student->class_room_id, 'teacher_id' => $this->teacherProfile->id]));
+        $this->assertSame(['Santri Test'], $filtered->viewData('students')->pluck('name')->all());
+        $this->assertSame(['Kelas A Test'], $filtered->viewData('classRooms')->pluck('name')->all(), 'Kelas ikut dibatasi ke kelas guru itu.');
+
+        // Ganti guru: tetap di kelas yang sama bila guru itu punya murid di sana.
+        $switched = $this->actingAs($this->admin)->get(route('spreadsheet-input.index', ['class_room_id' => $this->student->class_room_id, 'teacher_id' => $otherTeacher->id]));
+        $this->assertSame(['Santri Guru Kedua Sekelas'], $switched->viewData('students')->pluck('name')->all());
+
+        // Kelas tidak termasuk kelas guru terpilih -> pindah ke kelas pertama guru itu.
+        $fallback = $this->actingAs($this->admin)->get(route('spreadsheet-input.index', ['class_room_id' => $otherClass->id, 'teacher_id' => $this->teacherProfile->id]));
+        $this->assertSame((string) $this->student->class_room_id, (string) $fallback->viewData('selectedClassId'));
+        $this->assertSame(['Santri Test'], $fallback->viewData('students')->pluck('name')->all());
+
+        // Guru biasa tidak melihat filter.
+        $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index'))->assertOk()->assertDontSee('Guru Pengampu');
     }
 }

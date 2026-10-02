@@ -32,10 +32,24 @@ class SpreadsheetInputController extends Controller
 
         $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
+        // Filter guru pengampu: hanya bagi akun yang melihat murid lebih dari satu guru (admin,
+        // koordinator); guru biasa hanya melihat muridnya sendiri jadi filter tidak muncul.
+        $teacherOptions = TeacherProfile::query()
+            ->with('user')
+            ->whereIn('id', Student::query()->whereIn('id', $visibleStudentIds)->where('status', 'active')->whereNotNull('teacher_id')->distinct()->pluck('teacher_id'))
+            ->get()
+            ->sortBy(fn ($teacher) => $teacher->user?->name)
+            ->values();
+        $showTeacherFilter = $teacherOptions->count() > 1;
+        $selectedTeacherId = $showTeacherFilter && $teacherOptions->contains('id', $request->integer('teacher_id'))
+            ? $request->integer('teacher_id')
+            : null;
+
         // Get classes matching user scope
         $classRoomIds = Student::query()
             ->whereIn('id', $visibleStudentIds)
             ->where('status', 'active')
+            ->when($selectedTeacherId, fn ($q) => $q->where('teacher_id', $selectedTeacherId))
             ->pluck('class_room_id')
             ->filter()
             ->unique()
@@ -48,7 +62,8 @@ class SpreadsheetInputController extends Controller
             ->get();
 
         $selectedClassId = $request->input('class_room_id');
-        if (! $selectedClassId && $classRooms->isNotEmpty()) {
+        // Kelas terpilih harus termasuk daftar (mis. setelah ganti guru pengampu); kalau tidak, kelas pertama.
+        if ((! $selectedClassId || ! $classRooms->contains('id', (int) $selectedClassId)) && $classRooms->isNotEmpty()) {
             $selectedClassId = $classRooms->first()->id;
         }
 
@@ -169,6 +184,7 @@ class SpreadsheetInputController extends Controller
                 ->where('class_room_id', $selectedClassId)
                 ->whereIn('id', $visibleStudentIds)
                 ->where('status', 'active')
+                ->when($selectedTeacherId, fn ($q) => $q->where('teacher_id', $selectedTeacherId))
                 ->orderBy('name')
                 ->get();
 
@@ -309,6 +325,9 @@ class SpreadsheetInputController extends Controller
 
         return view('spreadsheet-input.index', [
             'classRooms' => $classRooms,
+            'teacherOptions' => $teacherOptions,
+            'showTeacherFilter' => $showTeacherFilter,
+            'selectedTeacherId' => $selectedTeacherId,
             'selectedClassId' => $selectedClassId,
             'selectedClass' => $selectedClass,
             'selectedMonth' => $selectedMonth,
@@ -525,6 +544,7 @@ class SpreadsheetInputController extends Controller
                 'class_room_id' => $classRoomId,
                 'month' => $validated['month'],
                 'week' => $request->input('week', 'all'),
+                'teacher_id' => $request->integer('teacher_id') ?: null,
             ])
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
     }
