@@ -181,24 +181,33 @@ class Setting extends Model
      * Aturan penilaian Adab bawaan; bisa diubah di Pengaturan Adab (adabScoring()).
      * - attendance_weight: bobot (%) kerajinan pengisian kuisioner; sisanya (100 - bobot) nilai pendamping.
      * - thresholds: nilai minimal tiap predikat (A..D); di bawah D = E. Juga dipakai predikat nilai Tahfizh rapor.
+     * - grades: istilah predikat A..E (Indonesia & Arab).
      * - descriptions: deskripsi Adab di rapor per predikat.
      */
     public const ADAB_SCORING_DEFAULTS = [
         'attendance_weight' => 40,
         'thresholds' => ['A' => 90, 'B' => 80, 'C' => 70, 'D' => 60],
+        // Istilah predikat: tampil "Sangat Baik / Mumtaz"; istilah Arab saja dipakai untuk nilai Tahfizh rapor.
+        'grades' => [
+            'A' => ['term' => 'Sangat Baik', 'arabic' => 'Mumtaz'],
+            'B' => ['term' => 'Baik', 'arabic' => 'Jayyid'],
+            'C' => ['term' => 'Cukup', 'arabic' => 'Maqbul'],
+            'D' => ['term' => 'Kurang', 'arabic' => "Dho'if"],
+            'E' => ['term' => 'Sangat Kurang', 'arabic' => "Dho'if Jiddan"],
+        ],
         'descriptions' => [
-            'A' => 'Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.',
-            'B' => 'Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.',
-            'C' => 'Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.',
-            'D' => 'Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.',
-            'E' => "Kurang (Dha'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.",
+            'A' => 'Menunjukkan sikap yang sangat sopan, santun, dan menghormati guru serta teman.',
+            'B' => 'Menunjukkan kesopanan kepada guru dan teman.',
+            'C' => 'Cukup menunjukkan sikap sopan kepada guru dan teman, namun masih perlu ditingkatkan.',
+            'D' => 'Kurang menunjukkan sikap sopan kepada guru dan teman serta perlu mendapat bimbingan.',
+            'E' => 'Belum menunjukkan sikap sopan kepada guru dan teman serta membutuhkan bimbingan lebih lanjut.',
         ],
     ];
 
     /**
      * Aturan penilaian Adab tersimpan (Pengaturan Adab), dilengkapi nilai bawaan.
      *
-     * @return array{attendance_weight: int, thresholds: array<string, int>, descriptions: array<string, string>}
+     * @return array{attendance_weight: int, thresholds: array<string, int>, grades: array<string, array{term: string, arabic: string}>, descriptions: array<string, string>}
      */
     public static function adabScoring(): array
     {
@@ -208,6 +217,10 @@ class Setting extends Model
         return [
             'attendance_weight' => (int) ($saved['attendance_weight'] ?? $defaults['attendance_weight']),
             'thresholds' => collect($defaults['thresholds'])->map(fn ($default, $grade) => (int) ($saved['thresholds'][$grade] ?? $default))->all(),
+            'grades' => collect($defaults['grades'])->map(fn ($default, $grade) => [
+                'term' => trim((string) ($saved['grades'][$grade]['term'] ?? '')) ?: $default['term'],
+                'arabic' => trim((string) ($saved['grades'][$grade]['arabic'] ?? $default['arabic'])),
+            ])->all(),
             'descriptions' => collect($defaults['descriptions'])->map(fn ($default, $grade) => trim((string) ($saved['descriptions'][$grade] ?? '')) ?: $default)->all(),
         ];
     }
@@ -296,13 +309,19 @@ class Setting extends Model
      */
     public static function getAdabGradeLabel(string $grade): string
     {
-        return match ($grade) {
-            'A' => 'Mumtaz (Sangat Baik)',
-            'B' => 'Jayyid Jiddan (Baik Sekali)',
-            'C' => 'Jayyid (Baik)',
-            'D' => 'Maqbul (Cukup)',
-            default => 'Dha\'if (Kurang)',
-        };
+        $names = self::adabScoring()['grades'][$grade] ?? self::adabScoring()['grades']['E'];
+
+        return implode(' / ', array_filter([$names['term'], $names['arabic']]));
+    }
+
+    /**
+     * Istilah Arab predikat (mis. "Mumtaz"), dipakai ringkas seperti "89 / Mumtaz"; kosong = istilah Indonesia.
+     */
+    public static function adabGradeArabic(string $grade): string
+    {
+        $names = self::adabScoring()['grades'][$grade] ?? self::adabScoring()['grades']['E'];
+
+        return $names['arabic'] !== '' ? $names['arabic'] : $names['term'];
     }
 
     /**

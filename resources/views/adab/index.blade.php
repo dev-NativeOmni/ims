@@ -1034,7 +1034,7 @@
                                 <x-heroicon-o-light-bulb class="w-5 h-5 text-amber-500" /> Tips Pembinaan Karakter Murid
                             </h4>
                             <ul class="space-y-2 text-xs text-gray-600 dark:text-zinc-400 leading-relaxed list-disc list-inside">
-                                <li><strong>Target Kepatuhan Tinggi:</strong> Murid dengan kepatuhan adab di atas 85% dikategorikan sebagai <span class="text-green-600 dark:text-emerald-400 font-semibold">Mumtaz</span>. Berikan pujian untuk mempertahankan konsistensi.</li>
+                                <li><strong>Target Kepatuhan Tinggi:</strong> Murid dengan nilai adab {{ \App\Models\Setting::adabScoring()['thresholds']['A'] }} ke atas dikategorikan sebagai <span class="text-green-600 dark:text-emerald-400 font-semibold">{{ \App\Models\Setting::getAdabGradeLabel('A') }}</span>. Berikan pujian untuk mempertahankan konsistensi.</li>
                                 <li><strong>Intervensi Dini:</strong> Jika adab Al-Qur'an memiliki nilai kepatuhan yang rendah, kaji ulang jadwal murojaah harian bersama asatidzah/guru tahfizh.</li>
                                 <li><strong>Kolaborasi dengan Orang Tua:</strong> Manfaatkan menu adab untuk mendiskusikan kepatuhan harian murid saat berada di lingkungan rumah bersama orang tua wali.</li>
                             </ul>
@@ -1144,14 +1144,15 @@
                     return 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300';
                 },
 
+                // Batas & istilah predikat dari Pengaturan Adab (Setting::adabScoring()).
+                gradeThresholds: @js(\App\Models\Setting::adabScoring()['thresholds']),
+                gradeLabels: @js(collect(['A', 'B', 'C', 'D', 'E'])->mapWithKeys(fn ($g) => [$g => \App\Models\Setting::getAdabGradeLabel($g)])),
+
                 getScoreGradeLabel(score) {
                     if (score === '' || score === null) return '';
                     const s = Number(score);
-                    if (s >= 90) return 'Mumtaz (A)';
-                    if (s >= 80) return 'Jayyid Jiddan (B)';
-                    if (s >= 70) return 'Jayyid (C)';
-                    if (s >= 60) return 'Maqbūl (D)';
-                    return 'Perlu Pembinaan (E)';
+                    const grade = ['A', 'B', 'C', 'D'].find(g => s >= this.gradeThresholds[g]) ?? 'E';
+                    return this.gradeLabels[grade] + ' (' + grade + ')';
                 },
 
                 async submitAll() {

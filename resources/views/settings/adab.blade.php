@@ -140,6 +140,7 @@
                             <div class="rounded-lg p-3 {{ $cls }} dark:opacity-80">
                                 <div class="text-2xl font-black">{{ $g }}</div>
                                 <div class="font-semibold mt-1">{{ $range }}</div>
+                                <div class="text-[11px] mt-0.5">{{ \App\Models\Setting::getAdabGradeLabel($g) }}</div>
                             </div>
                         @endforeach
                     </div>
@@ -175,28 +176,40 @@
                     <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">Bila nilai pendamping belum ada, nilai akhir = nilai kerajinan kuisioner saja.</p>
                 </div>
 
-                <div>
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">Nilai Minimal Tiap Predikat</span>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        @foreach (['A' => 'Mumtaz', 'B' => 'Jayyid Jiddan', 'C' => 'Jayyid', 'D' => 'Maqbul'] as $grade => $label)
-                            <div>
-                                <label for="threshold_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">{{ $grade }} &middot; {{ $label }} &ge;</label>
-                                <input type="number" min="1" max="100" name="thresholds[{{ $grade }}]" id="threshold_{{ $grade }}" value="{{ old('thresholds.'.$grade, $scoring['thresholds'][$grade]) }}" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
-                            </div>
-                        @endforeach
-                    </div>
-                    <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">Di bawah batas Maqbul = E &middot; Dha'if. Batas harus menurun: A &gt; B &gt; C &gt; D.</p>
-                </div>
-
+                {{-- Per predikat: nilai minimal, istilah (Indonesia & Arab), dan deskripsi rapor. --}}
                 <div class="space-y-3">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">Deskripsi Adab di Rapor</span>
-                    @foreach (['A' => 'Mumtaz', 'B' => 'Jayyid Jiddan', 'C' => 'Jayyid', 'D' => 'Maqbul', 'E' => "Dha'if"] as $grade => $label)
-                        <div>
-                            <label for="adab_description_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">{{ $grade }} &middot; {{ $label }}</label>
-                            <textarea name="descriptions[{{ $grade }}]" id="adab_description_{{ $grade }}" rows="2" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">{{ old('descriptions.'.$grade, $scoring['descriptions'][$grade]) }}</textarea>
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">Predikat: Nilai, Istilah &amp; Deskripsi Rapor</span>
+                    @foreach (['A', 'B', 'C', 'D', 'E'] as $grade)
+                        <div class="rounded-xl border border-gray-200 dark:border-zinc-800 p-3 space-y-2">
+                            <div class="grid grid-cols-2 sm:grid-cols-[3rem_7rem_1fr_1fr] gap-2 items-end">
+                                <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 leading-none pb-2">{{ $grade }}</div>
+                                <div>
+                                    <label for="threshold_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">Nilai minimal</label>
+                                    @if ($grade === 'E')
+                                        <div class="py-2 text-sm text-gray-500 dark:text-zinc-400">di bawah D</div>
+                                    @else
+                                        <input type="number" min="1" max="100" name="thresholds[{{ $grade }}]" id="threshold_{{ $grade }}" value="{{ old('thresholds.'.$grade, $scoring['thresholds'][$grade]) }}" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                                    @endif
+                                </div>
+                                <div>
+                                    <label for="grade_term_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">Istilah</label>
+                                    <input type="text" name="grades[{{ $grade }}][term]" id="grade_term_{{ $grade }}" value="{{ old('grades.'.$grade.'.term', $scoring['grades'][$grade]['term']) }}" placeholder="mis. Sangat Baik" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="grade_arabic_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">Istilah Arab</label>
+                                    <input type="text" name="grades[{{ $grade }}][arabic]" id="grade_arabic_{{ $grade }}" value="{{ old('grades.'.$grade.'.arabic', $scoring['grades'][$grade]['arabic']) }}" placeholder="mis. Mumtaz" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="adab_description_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">Deskripsi di rapor</label>
+                                <textarea name="descriptions[{{ $grade }}]" id="adab_description_{{ $grade }}" rows="2" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">{{ old('descriptions.'.$grade, $scoring['descriptions'][$grade]) }}</textarea>
+                            </div>
                         </div>
                     @endforeach
-                    <p class="text-[11px] text-gray-500 dark:text-zinc-400">Kosongkan untuk kembali ke teks bawaan.</p>
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400">
+                        Batas nilai harus menurun: A &gt; B &gt; C &gt; D. Istilah tampil "Istilah / Istilah Arab" (mis. Sangat Baik / Mumtaz);
+                        nilai Tahfizh Kelas 10 di rapor memakai istilah Arab saja (mis. 89 / Mumtaz). Istilah atau deskripsi kosong = teks bawaan.
+                    </p>
                 </div>
 
                 <div class="flex justify-end">

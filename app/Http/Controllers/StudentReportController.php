@@ -405,13 +405,13 @@ class StudentReportController extends Controller
                 'program' => $data['student']->classRoom?->program?->name,
             ],
             // Satu baris triwulan rapor (lihat tahfizhTermRow()); nilai hanya ditampilkan untuk Kelas 10/Ummi.
-            // Predikat nilai memakai skala yang sama dengan Nilai Adab (Mumtaz >= 90, Jayyid Jiddan >= 80, ...).
+            // Predikat nilai memakai batas & istilah Arab predikat Adab (Pengaturan Adab), mis. "89 / Mumtaz".
             // Deskripsi: catatan guru di target triwulan bila ada, selain itu deskripsi bawaan Tuntas/Tidak Tuntas.
             'tahfizh' => $data['tahfizhTerm'] + [
                 'description' => $data['tahfizhTerm']['notes']
                     ?: self::tahfizhNotes()[$data['tahfizhTerm']['completed'] ? 'tuntas' : 'tidak_tuntas'],
                 'final_score' => $data['tahfizhScore']['final_score'],
-                'final_predicate' => Setting::getAdabGradeLabel(Setting::getAdabGrade((float) $data['tahfizhScore']['final_score'])),
+                'final_predicate' => Setting::adabGradeArabic(Setting::getAdabGrade((float) $data['tahfizhScore']['final_score'])),
             ],
             'adab' => [
                 'categories' => collect($data['adabCategories'])->pluck('title')->values()->all(),
@@ -470,7 +470,7 @@ class StudentReportController extends Controller
                 'notes' => null,
                 'description' => self::tahfizhNotes()['tuntas'],
                 'final_score' => 87,
-                'final_predicate' => Setting::getAdabGradeLabel(Setting::getAdabGrade(87)),
+                'final_predicate' => Setting::adabGradeArabic(Setting::getAdabGrade(87)),
             ],
             'adab' => [
                 'categories' => collect(Setting::getAdabQuestions())->pluck('title')->values()->all(),
