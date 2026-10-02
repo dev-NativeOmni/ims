@@ -154,4 +154,39 @@ class UmmiChartTest extends TestCase
         ]))->viewData('ummiChart')['rows'][0];
         $this->assertSame(65, $term['book_base'] + array_sum($term['book_months']), 'Puncak tumpukan = J2 h.25, tidak melampaui.');
     }
+
+    #[Test]
+    public function ummi_card_shows_the_target_of_the_selected_period(): void
+    {
+        $this->ummi('2026-08-20', 'Jilid 2', '5', 112, '1-4');
+        $target = fn (string $date, string $jilid, string $halaman, int $surah, int $ayah) => HafalanTarget::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'status' => 'active',
+            'ummi_jilid' => $jilid, 'halaman_buku' => $halaman, 'surah_id' => Surah::where('number', $surah)->value('id'),
+            'ayah' => $ayah, 'target_date' => $date,
+        ]);
+        $target('2026-07-31', 'Jilid 1', '30', 113, 5);
+        $target('2026-08-31', 'Jilid 2', '1-5', 111, 5);
+
+        $august = fn () => $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 8, 'year' => 2026,
+        ]));
+        $row = $august()->assertOk()->viewData('studentReports')[0];
+        $this->assertSame(['jilid' => '2', 'halaman' => '5', 'hafalan' => 'Surah 111 (5)'], $row['ummi_target'], 'Target Agustus, bukan Juli; halaman & ayat cukup angka terakhir.');
+        $august()->assertSeeInOrder(['Target', 'Capaian', 'Hafalan', 'Surah 111 (5)']);
+
+        $july = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 7, 'year' => 2026,
+        ]))->viewData('studentReports')[0];
+        $this->assertSame('Surah 113 (5)', $july['ummi_target']['hafalan']);
+
+        $september = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 9, 'year' => 2026,
+        ]))->viewData('studentReports')[0];
+        $this->assertSame(['jilid' => '-', 'halaman' => '-', 'hafalan' => '-'], $september['ummi_target'], 'Belum ada target di September.');
+
+        $term = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'quarterly', 'quarter' => 1, 'year' => 2026,
+        ]))->viewData('studentReports')[0];
+        $this->assertSame('Surah 111 (5)', $term['ummi_target']['hafalan'], 'Term = target terakhir di triwulan.');
+    }
 }

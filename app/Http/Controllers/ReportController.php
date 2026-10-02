@@ -20,6 +20,7 @@ use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\SchoolCalendar;
 use App\Services\UmmiProgressService;
+use App\Support\AyahLabel;
 use App\Support\TargetRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -1063,6 +1064,18 @@ class ReportController extends Controller
             ->get()
             ->groupBy('student_id');
 
+        // Kelas 10/Ummi: target guru yang dibuat DI DALAM rentang filter (bulan / term), terbaru dulu --
+        // aturan pilih target sama dengan Laporan Triwulan & rapor (UmmiProgressService::termPosition()).
+        $periodUmmiTargets = $isGrade10
+            ? HafalanTarget::query()
+                ->with('surah')
+                ->whereIn('student_id', $studentIds)
+                ->whereBetween('target_date', [$startDate, $endDate])
+                ->orderBy('target_date', 'desc')
+                ->get()
+                ->groupBy('student_id')
+            : collect();
+
         // Bulk fetch latest UmmiRecords for Grade 10 / Ummi students
         $allUmmiRecords = UmmiRecord::query()
             ->with('surahs.surah')
@@ -1172,6 +1185,18 @@ class ReportController extends Controller
                 ? $latestUmmi->surahs_end_label
                 : ($latestUmmi?->materi ?? '-');
 
+            $ummiTarget = null;
+            if ($isGrade10) {
+                $position = app(UmmiProgressService::class)->termPosition($periodUmmiTargets->get($student->id, collect()), collect(), collect());
+                preg_match('/(\d+)/', $position['target_jilid'], $mTargetJilid);
+                $targetAyatEnd = AyahLabel::end($position['target_ayat']);
+                $ummiTarget = [
+                    'jilid' => $position['target_jilid'] === '-' ? '-' : ($mTargetJilid[1] ?? $position['target_jilid']),
+                    'halaman' => $position['target_halaman'],
+                    'hafalan' => $position['target_surah'] === '-' ? '-' : $position['target_surah'].($targetAyatEnd !== '-' ? ' ('.$targetAyatEnd.')' : ''),
+                ];
+            }
+
             $ziyadahText = '-';
             if ($latestHafalanPassed && $latestHafalanPassed->surah) {
                 $ziyadahText = $latestHafalanPassed->surah->name_latin.($latestHafalanPassed->ayah_end ? ' ('.$latestHafalanPassed->ayah_end.')' : '');
@@ -1215,6 +1240,7 @@ class ReportController extends Controller
                 'ummi_halaman' => $ummiHalaman,
                 'ummi_capaian' => $ummiCapaian,
                 'ziyadah' => $ziyadahText,
+                'ummi_target' => $ummiTarget,
                 'violations_count' => $violationsCount,
                 'sakit' => $sakit,
                 'izin' => $izin,

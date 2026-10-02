@@ -12,6 +12,11 @@
 
     $className = $selectedClass?->name ?? '';
     $hideZiyadah = (bool) preg_match('/(E2|E3|X\.?E2|X\.?E3|E-2|E-3)/i', $className);
+    // Kolom Target (Jilid | Hal. | Hafalan) hanya bila halaman pemanggil menyediakan 'ummi_target'
+    // (Grafik Tahfizh: target guru di rentang filter); halaman Progres tidak.
+    $showTarget = collect($studentReports)->contains(fn ($row) => array_key_exists('ummi_target', $row));
+    $capaianCols = $hideZiyadah ? 3 : 4;
+    $totalCols = 2 + ($showTarget ? 3 : 0) + $capaianCols;
 @endphp
 
 <div id="ummiGrade10ReportCard" class="mx-auto max-w-5xl rounded-[28px] p-5 sm:p-8 shadow-2xl relative font-sans border-[5px] border-amber-400" style="background-color: #ffffff !important; color: #0f172a !important; box-sizing: border-box !important;">
@@ -55,9 +60,23 @@
     <div class="mt-4 overflow-hidden rounded-xl border-2 border-emerald-700 shadow-sm" style="background-color: #ffffff !important;">
         <table class="w-full text-left border-collapse text-xs" style="background-color: #ffffff !important; color: #0f172a !important;">
             <thead>
+                @if ($showTarget)
+                    <tr class="bg-emerald-700 text-white text-center font-bold tracking-wide" style="background-color: #047857 !important; color: #ffffff !important;">
+                        <th rowspan="2" class="py-2 px-2 border-r border-emerald-600 w-10">No</th>
+                        <th rowspan="2" class="py-2 px-3 border-r border-emerald-600 text-left">Nama Murid</th>
+                        <th colspan="3" class="py-1.5 px-2 border-r border-b border-emerald-600" style="background-color: #b45309 !important;">Target</th>
+                        <th colspan="{{ $capaianCols }}" class="py-1.5 px-2 border-b border-emerald-600">Capaian</th>
+                    </tr>
+                @endif
                 <tr class="bg-emerald-700 text-white text-center font-bold tracking-wide" style="background-color: #047857 !important; color: #ffffff !important;">
-                    <th class="py-2 px-2 border-r border-emerald-600 w-10">No</th>
-                    <th class="py-2 px-3 border-r border-emerald-600 text-left">Nama Murid</th>
+                    @unless ($showTarget)
+                        <th class="py-2 px-2 border-r border-emerald-600 w-10">No</th>
+                        <th class="py-2 px-3 border-r border-emerald-600 text-left">Nama Murid</th>
+                    @else
+                        <th class="py-2 px-2 border-r border-amber-600 w-12" style="background-color: #b45309 !important;">Jilid</th>
+                        <th class="py-2 px-2 border-r border-amber-600 w-12" style="background-color: #b45309 !important;">Hal.</th>
+                        <th class="py-2 px-3 border-r border-emerald-600 text-left" style="background-color: #b45309 !important;">Hafalan</th>
+                    @endunless
                     <th class="py-2 px-2 border-r border-emerald-600 w-14">Jilid</th>
                     <th class="py-2 px-2 border-r border-emerald-600 w-16">Halaman</th>
                     <th class="py-2 px-3 {{ $hideZiyadah ? '' : 'border-r border-emerald-600' }} text-left">Capaian Hafalan</th>
@@ -75,6 +94,11 @@
                         <td class="py-1.5 px-3 border-r border-zinc-200 font-bold" style="color: #0f172a !important;">
                             {{ is_object($row['student'] ?? null) ? $row['student']->name : ($row['student']['name'] ?? ($row['student_name'] ?? '-')) }}
                         </td>
+                        @if ($showTarget)
+                            <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-bold" style="color: #92400e !important;">{{ $row['ummi_target']['jilid'] ?? '-' }}</td>
+                            <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-bold" style="color: #92400e !important;">{{ $row['ummi_target']['halaman'] ?? '-' }}</td>
+                            <td class="py-1.5 px-3 border-r border-zinc-200 font-semibold" style="color: #92400e !important;">{{ $row['ummi_target']['hafalan'] ?? '-' }}</td>
+                        @endif
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-black" style="color: #1e3a8a !important;">
                             {{ $row['ummi_jilid'] ?: '-' }}
                         </td>
@@ -102,7 +126,7 @@
                     </tr>
                 @empty
                     <tr style="background-color: #ffffff !important;">
-                        <td colspan="{{ $hideZiyadah ? 5 : 6 }}" class="py-6 text-center text-xs font-semibold" style="color: #64748b !important;">
+                        <td colspan="{{ $totalCols }}" class="py-6 text-center text-xs font-semibold" style="color: #64748b !important;">
                             Belum ada data catatan Pembelajaran UMMI untuk kelas ini.
                         </td>
                     </tr>
