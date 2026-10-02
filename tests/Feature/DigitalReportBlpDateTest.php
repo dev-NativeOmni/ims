@@ -135,6 +135,9 @@ class DigitalReportBlpDateTest extends TestCase
                 $response->assertDontSee('<td>'.$program.'</td>', false);
             }
         }
+
+        // Sebaris: Nama | Kelas, lalu NIS/NISN | Term.
+        $this->printed(1, 1)->assertSeeInOrder(['Nama', $this->student->name, 'Kelas', 'NIS/NISN', 'Term']);
     }
 
     #[Test]

@@ -37,24 +37,24 @@
         <div class="shrink-0 w-[85px]"></div>
     </div>
 
-    <!-- Identitas Siswa -->
-    <table class="text-xs text-black mb-6" style="line-height: 1.6; min-width: 300px;">
+    <!-- Identitas Siswa: Nama & NIS di kiri, Kelas & Term di kanan (sebaris) -->
+    <table class="w-full text-xs text-black mb-6" style="line-height: 1.6;">
+        <colgroup>
+            <col class="w-20"><col class="w-4"><col>
+            <col class="w-14"><col class="w-4"><col class="w-28">
+        </colgroup>
         <tr>
-            <td class="w-20 font-bold">Nama</td>
-            <td class="w-4">:</td>
-            <td>{{ $sheet['student']['name'] }}</td>
-        </tr>
-        <tr>
-            <td class="font-bold">NIS/NISN</td>
+            <td class="font-bold">Nama</td>
             <td>:</td>
-            <td>{{ $sheet['student']['number'] ?: '-' }}</td>
-        </tr>
-        <tr>
+            <td>{{ $sheet['student']['name'] }}</td>
             <td class="font-bold">Kelas</td>
             <td>:</td>
             <td>{{ $sheet['student']['class'] ?: '-' }}</td>
         </tr>
         <tr>
+            <td class="font-bold">NIS/NISN</td>
+            <td>:</td>
+            <td>{{ $sheet['student']['number'] ?: '-' }}</td>
             <td class="font-bold">Term</td>
             <td>:</td>
             <td>{{ \App\Http\Controllers\StudentReportController::TERM_ROMAN[$sheet['term']] }}</td>

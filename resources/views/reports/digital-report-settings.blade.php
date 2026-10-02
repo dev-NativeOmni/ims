@@ -352,16 +352,12 @@
                             <div class="shrink-0 w-[38px]"></div>
                         </div>
 
-                        <!-- Mini Identitas Siswa -->
-                        <div class="text-[8px] text-black mb-3 space-y-0.5 border-b border-gray-100 pb-2">
-                            <div class="grid grid-cols-[50px_1fr]">
-                                <span class="font-bold">Nama</span>
-                                <span>: Abbas Surya Permana (Contoh)</span>
-                            </div>
-                            <div class="grid grid-cols-[50px_1fr]">
-                                <span class="font-bold">Kelas / Term</span>
-                                <span>: X E2 / <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::TERM_ROMAN) }}[reportPeriod]"></span></span>
-                            </div>
+                        <!-- Mini Identitas Siswa: Nama & NIS di kiri, Kelas & Term di kanan -->
+                        <div class="text-[8px] text-black mb-3 border-b border-gray-100 pb-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5">
+                            <div class="grid grid-cols-[38px_1fr]"><span class="font-bold">Nama</span><span>: Abbas Surya Permana (Contoh)</span></div>
+                            <div class="grid grid-cols-[28px_1fr]"><span class="font-bold">Kelas</span><span>: X E2</span></div>
+                            <div class="grid grid-cols-[38px_1fr]"><span class="font-bold">NIS/NISN</span><span>: 26102-001</span></div>
+                            <div class="grid grid-cols-[28px_1fr]"><span class="font-bold">Term</span><span>: <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::TERM_ROMAN) }}[reportPeriod]"></span></span></div>
                         </div>
 
                         <!-- Mini Section I: Tahfizh (Dynamic Toggle) -->
