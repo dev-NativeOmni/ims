@@ -10,10 +10,12 @@
     $signature = fn ($key) => $signatureUris[$sheet['signatories'][$key]['signature'] ?? ''] ?? null;
     $adabCount = count($sheet['adab']['categories']);
 @endphp
-<div class="print-container max-w-4xl mx-auto bg-white p-8 sm:p-12 border shadow-sm rounded-none min-h-[330mm] {{ ($pageBreak ?? false) ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
+<div class="print-container mx-auto bg-white shadow-sm {{ ($pageBreak ?? false) ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
+    {{-- Bingkai hias F4 (vektor, dibuat dari contoh sekolah); isi lembar ada di dalam garis dalamnya. --}}
+    <img src="{{ asset('images/rapor-border-f4.svg') }}" class="rapor-border" alt="" aria-hidden="true">
 
     <!-- Kop Surat Terpadu -->
-    <div class="grid grid-cols-[85px_1fr_85px] items-center border-b border-black pb-4 mb-6">
+    <div class="grid grid-cols-[85px_1fr_85px] items-center border-b border-black pb-3 mb-4">
         <!-- Left Logo: SMA Islam Al Azhar 7 -->
         <div class="shrink-0 flex justify-start">
             <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" />
@@ -38,7 +40,7 @@
     </div>
 
     <!-- Identitas Siswa: Nama & NIS di kiri, Kelas & Term di kanan (sebaris) -->
-    <table class="w-full text-xs text-black mb-6" style="line-height: 1.6;">
+    <table class="w-full text-xs text-black mb-4" style="line-height: 1.6;">
         <colgroup>
             <col class="w-20"><col class="w-4"><col>
             <col class="w-14"><col class="w-4"><col class="w-28">
@@ -62,7 +64,7 @@
     </table>
 
     <!-- I. LAPORAN TAHFIZH -->
-    <div class="mb-6 space-y-3">
+    <div class="mb-4 space-y-2">
         <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIZH</h3>
 
         @php
@@ -76,8 +78,8 @@
             @include('reports.partials.report-sheet-tahfizh-legacy')
         @else
             {{-- Satu baris untuk triwulan rapor, sama dengan Target Triwulan / Capaian Akhir di Laporan Triwulan.
-                 Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + kolom Nilai, deskripsi di baris bawah selebar tabel;
-                 Kelas 11/12: Surah|Ayat + baris + kolom Deskripsi, tanpa nilai. --}}
+                 Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + kolom Nilai; Kelas 11/12: Surah|Ayat + Baris, tanpa nilai.
+                 Deskripsi di baris bawah selebar tabel (kolom sempit membuat lembar melewati bingkai). --}}
             <table class="w-full border border-black text-xs text-center">
                 <thead>
                     <tr class="bg-gray-100 border-b border-black font-bold">
@@ -87,8 +89,10 @@
                         @unless ($isUmmi)
                             <th rowspan="2" class="p-1.5 border-r border-black">BARIS<br><span class="font-normal">Capaian / Target</span></th>
                         @endunless
-                        <th rowspan="2" class="p-1.5 border-r border-black w-20">STATUS</th>
-                        <th rowspan="2" class="p-1.5 {{ $isUmmi ? 'w-32' : 'w-[30%]' }}">{{ $isUmmi ? 'NILAI' : 'DESKRIPSI' }}</th>
+                        <th rowspan="2" class="p-1.5 w-20 {{ $isUmmi ? 'border-r border-black' : '' }}">STATUS</th>
+                        @if ($isUmmi)
+                            <th rowspan="2" class="p-1.5 w-32">NILAI</th>
+                        @endif
                     </tr>
                     <tr class="bg-gray-100 border-b border-black">
                         @foreach ([1, 2] as $unused)
@@ -111,7 +115,7 @@
                                 {{ $tahfizh['lines'] ? $tahfizh['lines']['achieved'].' / '.$tahfizh['lines']['target'] : '-' }}
                             </td>
                         @endunless
-                        <td class="p-1.5 border-r border-black align-middle font-bold whitespace-nowrap {{ $tahfizh['completed'] ? 'text-green-700' : 'text-rose-700' }}">
+                        <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi ? 'border-r border-black' : '' }} {{ $tahfizh['completed'] ? 'text-green-700' : 'text-rose-700' }}">
                             {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
                         @if ($isUmmi)
@@ -119,24 +123,21 @@
                             <td class="p-1.5 align-middle font-black text-black text-sm">
                                 {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / {{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}@endif
                             </td>
-                        @else
-                            <td class="p-2 align-middle text-left text-gray-700 leading-relaxed">{{ $tahfizhDescription }}</td>
                         @endif
                     </tr>
-                    @if ($isUmmi)
-                        <tr class="border-b border-black">
-                            <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-left text-gray-700 leading-relaxed">
-                                <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
-                            </td>
-                        </tr>
-                    @endif
+                    <tr class="border-b border-black">
+                        {{-- No + 2x kolom posisi + Status + (Nilai untuk Ummi | Baris untuk 11/12) --}}
+                        <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-left text-gray-700 leading-relaxed">
+                            <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         @endif
     </div>
 
     <!-- II. PENILAIAN ADAB -->
-    <div class="mb-6 space-y-3">
+    <div class="mb-4 space-y-2">
         <h3 class="text-xs font-black uppercase text-black">II. PENILAIAN ADAB</h3>
 
         <table class="w-full border border-black text-xs text-left">
@@ -170,7 +171,7 @@
     </div>
 
     <!-- III. LAPORAN TANSE -->
-    <div class="mb-6 space-y-3">
+    <div class="mb-4 space-y-2">
         <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE <span class="font-semibold normal-case">&mdash; {{ $sheet['tanse']['term_label'] }}</span></h3>
 
         <table class="w-full border border-black text-xs text-left">
@@ -205,9 +206,9 @@
     <!-- Signature Area: tiga koordinator berjajar di atas, Kepala Sekolah di tengah bawah -->
     {{-- Titimangsa = tanggal BLP periode; belum diatur = titik-titik untuk diisi tangan. --}}
     @php $titimangsa = $sheet['letterhead']['city'].', '.($sheet['letterhead']['date'] ?? '........................'); @endphp
-    <div class="signature-block w-full text-xs text-black mt-8">
+    <div class="signature-block w-full text-xs text-black mt-5">
         @foreach ([['coord_tahfizh', 'coord_keagamaan', 'coord_tanse'], ['headmaster']] as $rowIdx => $keys)
-            <div class="{{ $rowIdx === 0 ? 'grid grid-cols-3 gap-6' : 'mt-6 mx-auto w-1/2' }} text-center">
+            <div class="{{ $rowIdx === 0 ? 'grid grid-cols-3 gap-6' : 'mt-3 mx-auto w-1/2' }} text-center">
                 @foreach ($keys as $colIdx => $key)
                     @php $official = $sheet['signatories'][$key]; @endphp
                     <div>

@@ -8,9 +8,10 @@
     <!-- Tailwind CSS fallback for standalone print -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Lembar rapor = satu halaman F4 penuh berbingkai (lihat .print-container & .rapor-border). */
         @page {
             size: 215mm 330mm;
-            margin: 10mm 12mm 10mm 12mm;
+            margin: 0;
         }
         @media print {
             .no-print {
@@ -29,12 +30,12 @@
                 break-before: page;
             }
             .print-container {
+                height: 330mm !important;
                 min-height: 0 !important;
-                padding: 0 !important;
+                margin: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
-                width: 100% !important;
-                max-width: 100% !important;
+                overflow: hidden;
             }
             .signature-block, .report-section, tr {
                 page-break-inside: avoid !important;
@@ -43,6 +44,22 @@
         }
         body {
             font-family: 'Times New Roman', 'Liberation Serif', serif;
+        }
+        /* Lembar F4 berbingkai: isi berada di dalam garis dalam bingkai (garis di 18,2 mm dari tepi). */
+        .print-container {
+            position: relative;
+            box-sizing: border-box;
+            width: 215mm;
+            min-height: 330mm;
+            padding: 21mm 23mm;
+        }
+        .rapor-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 215mm;
+            height: 330mm;
+            pointer-events: none;
         }
         .report-table {
             border-collapse: collapse;

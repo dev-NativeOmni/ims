@@ -166,7 +166,7 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
 
         $response = $this->printTerm2()->assertOk();
 
-        $response->assertSee('BARIS')->assertDontSee('Deskripsi:')->assertDontSee('/ 100');
+        $response->assertSee('BARIS')->assertSee('Deskripsi:')->assertDontSee('>NILAI<', false)->assertDontSee('/ 100');
         $response->assertSeeInOrder(['TARGET TRIWULAN', 'CAPAIAN AKHIR', $this->surah->name_latin, '10', $this->surah->name_latin, '7']);
         $response->assertDontSee('1-7');
         $response->assertDontSee('Jilid');
