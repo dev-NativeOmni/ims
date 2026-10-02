@@ -468,24 +468,29 @@ class Setting extends Model
     }
 
     /**
-     * Combine a student's latest target-completion status with their
-     * latest exam score into the final tahfizh grade (max 100) shown on
-     * the report card.
+     * Nilai Tahfizh rapor (maks. 100) = skor target + skor ujian (Pengaturan Penilaian Tahfizh).
+     *
+     * Dengan rentang ($from-$to, mis. satu triwulan rapor): hanya target & ujian dalam rentang itu, dan
+     * bila $completed diisi (ketuntasan triwulan, sama dengan kolom STATUS rapor) status itu yang dipakai
+     * untuk skor target. Tanpa rentang: target & ujian terakhir sepanjang waktu (perilaku lama).
      */
-    public static function calculateTahfizhScore(Student $student): array
+    public static function calculateTahfizhScore(Student $student, ?CarbonInterface $from = null, ?CarbonInterface $to = null, ?bool $completed = null): array
     {
         $config = self::getTahfizhScoringConfig();
+        $range = $from && $to ? [Carbon::parse($from)->toDateString(), Carbon::parse($to)->toDateString()] : null;
 
         $latestTarget = HafalanTarget::query()
             ->where('student_id', $student->id)
-            ->whereNotNull('surah_id')
+            ->where(fn ($q) => $q->whereNotNull('surah_id')->orWhereNotNull('ummi_jilid'))
+            ->when($range, fn ($q) => $q->whereDate('target_date', '>=', $range[0])->whereDate('target_date', '<=', $range[1]))
             ->orderByDesc('target_date')
             ->orderByDesc('id')
             ->first();
 
         $targetScore = null;
         if ($latestTarget) {
-            $targetScore = $latestTarget->status === 'completed'
+            $isCompleted = $completed ?? ($latestTarget->status === 'completed');
+            $targetScore = $isCompleted
                 ? $config['target_weight']
                 : $config['target_incomplete_score'];
             $targetScore = min($targetScore, $config['target_weight']);
@@ -493,6 +498,7 @@ class Setting extends Model
 
         $latestExam = TahfizhExam::query()
             ->where('student_id', $student->id)
+            ->when($range, fn ($q) => $q->whereDate('exam_date', '>=', $range[0])->whereDate('exam_date', '<=', $range[1]))
             ->orderByDesc('exam_date')
             ->orderByDesc('id')
             ->first();
@@ -507,8 +513,8 @@ class Setting extends Model
         return [
             'target_score' => $targetScore,
             'target_weight' => $config['target_weight'],
-            'target_status' => $latestTarget?->status,
-            'target_label' => $latestTarget ? ($latestTarget->status === 'completed' ? 'Tuntas' : 'Belum Tuntas') : null,
+            'target_status' => $latestTarget ? (($completed ?? $latestTarget->status === 'completed') ? 'completed' : $latestTarget->status) : null,
+            'target_label' => $latestTarget ? (($completed ?? $latestTarget->status === 'completed') ? 'Tuntas' : 'Belum Tuntas') : null,
             'exam_score' => $examScore,
             'exam_weight' => $config['exam_weight'],
             'exam_date' => $latestExam?->exam_date,

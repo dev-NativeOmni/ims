@@ -120,40 +120,75 @@
                     <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-1.5">
                         <x-heroicon-o-book-open class="w-5 h-5 text-indigo-500" /> Perkembangan Tahfizh
                     </h4>
+                    <p class="-mt-2 mb-3 text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">Akumulasi {{ $tahfizhTermStats['label'] }}</p>
                     
                     <div class="mb-4 text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 px-3 py-2 rounded-xl border border-indigo-100 dark:border-indigo-950/30">
                         {{ $termTargetText }}
                     </div>
 
+                    {{-- Semua angka di kartu ini = akumulasi triwulan rapor (StudentReportController::getReportData). --}}
+                    @php
+                        $tt = $tahfizhTerm;
+                        $lines = $tt['lines'] ?? null;
+                        $linesPercent = $lines && $lines['target'] > 0 ? min(100, round($lines['achieved'] / $lines['target'] * 100)) : null;
+                    @endphp
                     <div class="space-y-4">
-                        <div class="flex justify-between items-baseline">
-                            <span class="text-xs text-gray-500">Progress Hafalan Quran</span>
-                            <span class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ number_format($progress['progress_percent'] ?? 0, 2) }}%</span>
+                        <div>
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-xs text-gray-500">Capaian Triwulan</span>
+                                <span class="text-xs font-black {{ $tt['completed'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">{{ $tt['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}</span>
+                            </div>
+                            @if ($lines)
+                                <div class="flex justify-between items-baseline mt-1">
+                                    <span class="text-[11px] text-gray-400">Baris capaian / target</span>
+                                    <span class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ $lines['achieved'] }} / {{ $lines['target'] }}</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden mt-1.5">
+                                    <div class="h-full bg-indigo-600 rounded-full" style="width: {{ $linesPercent }}%"></div>
+                                </div>
+                            @else
+                                <div class="grid grid-cols-2 gap-2 mt-1.5 text-[11px]">
+                                    <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border dark:border-zinc-800 p-2">
+                                        <span class="block text-gray-400">Target</span>
+                                        <span class="font-bold text-gray-800 dark:text-zinc-200">
+                                            {{ ($tt['layout'] ?? '') === 'ummi' ? ($tt['target']['jilid'] ?? '-').' hal '.($tt['target']['halaman'] ?? '-') : ($tt['target']['surah'] ?? '-').' : '.($tt['target']['ayat'] ?? '-') }}
+                                        </span>
+                                    </div>
+                                    <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border dark:border-zinc-800 p-2">
+                                        <span class="block text-gray-400">Capaian</span>
+                                        <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                            {{ ($tt['layout'] ?? '') === 'ummi' ? ($tt['capaian']['jilid'] ?? '-').' hal '.($tt['capaian']['halaman'] ?? '-') : ($tt['capaian']['surah'] ?? '-').' : '.($tt['capaian']['ayat'] ?? '-') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div class="w-full bg-gray-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                            <div class="h-full bg-indigo-600 rounded-full" style="width: {{ min(100, max(0, $progress['progress_percent'] ?? 0)) }}%"></div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 pt-2 text-xs text-center">
+
+                        <div class="grid grid-cols-2 gap-4 text-xs text-center">
                             <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border dark:border-zinc-800">
-                                <span class="block text-gray-400">Total Setoran</span>
-                                <span class="text-base font-bold text-gray-900 dark:text-zinc-200">{{ $totalSetoran }}</span>
+                                <span class="block text-gray-400">Setoran Triwulan</span>
+                                <span class="text-base font-bold text-gray-900 dark:text-zinc-200">{{ $tahfizhTermStats['setoran'] }}</span>
                             </div>
                             <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border dark:border-zinc-800">
-                                <span class="block text-gray-400">Total Murajaah</span>
-                                <span class="text-base font-bold text-gray-900 dark:text-zinc-200">{{ $totalMurajaah }}</span>
+                                <span class="block text-gray-400">Murajaah Triwulan</span>
+                                <span class="text-base font-bold text-gray-900 dark:text-zinc-200">{{ $tahfizhTermStats['murajaah'] }}</span>
                             </div>
                         </div>
 
-                        <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border dark:border-zinc-800 text-xs">
-                            <span class="block text-gray-400 mb-1">Rerata Nilai Setoran</span>
+                        <div class="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border dark:border-zinc-800 text-xs space-y-1.5">
                             <div class="flex justify-between items-center">
-                                <span class="font-semibold text-gray-700 dark:text-zinc-300">Skala 1-100</span>
-                                <span class="text-base font-bold text-indigo-600 dark:text-indigo-400">
-                                    {{ $progress['average_hafalan_score'] > 0 ? round($progress['average_hafalan_score'], 1) : '-' }}
-                                </span>
+                                <span class="text-gray-400">Rerata Nilai Setoran Triwulan</span>
+                                <span class="text-base font-bold text-indigo-600 dark:text-indigo-400">{{ $tahfizhTermStats['average_score'] ?? '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Nilai Tahfizh Rapor (target + ujian triwulan)</span>
+                                <span class="text-base font-bold text-indigo-600 dark:text-indigo-400">{{ $tahfizhScore['final_score'] }}</span>
                             </div>
                         </div>
+
+                        <p class="text-[11px] text-gray-400">
+                            Hafalan keseluruhan s.d. hari ini: <span class="font-semibold text-gray-600 dark:text-zinc-300">{{ number_format($progress['progress_percent'] ?? 0, 2) }}%</span>
+                        </p>
                     </div>
                 </div>
 

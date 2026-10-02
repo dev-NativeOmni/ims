@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
-use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Setting;
@@ -83,16 +82,12 @@ class StudentReportController extends Controller
         $data = $this->getReportData($student, $academicYear, $semester, null, $term);
         $data['report'] = $report;
 
-        $totalSetoran = HafalanRecordSurah::whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))->where('status', 'passed')->count();
-        $totalMurajaah = MurajaahRecord::where('student_id', $student->id)->where('status', 'passed')->count();
 
         $canEditNotes = $user->hasAnyRole(['super_admin', 'admin', 'teacher']) && $report->status !== 'locked' && ! $report->isLocked();
 
         return view('reports.digital-report', array_merge(
             $data,
             [
-                'totalSetoran' => $totalSetoran,
-                'totalMurajaah' => $totalMurajaah,
                 'canEditNotes' => $canEditNotes,
                 'academicYearOptions' => AcademicYear::options($academicYear),
             ]
@@ -857,8 +852,6 @@ class StudentReportController extends Controller
             $target->matching_record = $matchingRecord;
         }
 
-        $tahfizhScore = Setting::calculateTahfizhScore($student);
-
         // Compute Tahfizh Level and targets
         $tahfizhLevelLabel = $student->tahfizh_level_label;
         $termTargetText = '';
@@ -963,6 +956,23 @@ class StudentReportController extends Controller
             $studentUmmiAll
         );
 
+        // Tahfizh per triwulan rapor: nilai dari target & ujian triwulan itu (status tuntas = kolom STATUS
+        // rapor), dan ringkasan setoran/murajaah triwulan untuk kartu Perkembangan Tahfizh.
+        $tahfizhPeriod = self::resolveTanseTerm($academicYear, $semester, $term);
+        $tahfizhScore = Setting::calculateTahfizhScore($student, $tahfizhPeriod['start'], $tahfizhPeriod['end'], $tahfizhTerm['completed']);
+        $inTahfizhPeriod = fn ($date) => $date && Carbon::parse($date)->between($tahfizhPeriod['start'], $tahfizhPeriod['end']);
+        $termSetoran = $studentHafalanAll->filter(fn ($h) => $inTahfizhPeriod($h->submitted_at));
+        $termMurajaahCount = $batch
+            ? $batch['murajaahRecords']->get($student->id, collect())->filter(fn ($m) => $inTahfizhPeriod($m->reviewed_at))->count()
+            : MurajaahRecord::where('student_id', $student->id)->where('status', 'passed')
+                ->whereBetween('reviewed_at', [$tahfizhPeriod['start'], $tahfizhPeriod['end']->copy()->endOfDay()])->count();
+        $tahfizhTermStats = [
+            'label' => $tahfizhPeriod['label'],
+            'setoran' => $termSetoran->count(),
+            'murajaah' => $termMurajaahCount,
+            'average_score' => $termSetoran->whereNotNull('score')->isNotEmpty() ? round((float) $termSetoran->whereNotNull('score')->avg('score'), 1) : null,
+        ];
+
         // Adab dinilai per triwulan rapor (akumulasi triwulan, bukan bulan berjalan): kuisioner dalam
         // triwulan itu saja, nilai lihat Setting::calculateAdabScoreForRange().
         $adabTerm = self::resolveTanseTerm($academicYear, $semester, $term);
@@ -1024,6 +1034,7 @@ class StudentReportController extends Controller
             'targetRecords',
             'tahfizhScore',
             'tahfizhTerm',
+            'tahfizhTermStats',
             'tahfizhLevelLabel',
             'termTargetText',
             'latestCapaianText',

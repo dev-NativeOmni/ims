@@ -380,10 +380,11 @@ class TahfizhLevelAndUmmiTest extends TestCase
         $response->assertViewHas('tahfizhLevelLabel', 'Reguler');
         $response->assertViewHas('latestCapaianText', 'QS. Al-Fatihah (Ayat 7)');
         $response->assertViewHas('latestCapaianNotes', 'Sangat baik');
-        // Regresi: totalSetoran dulu menghitung langsung dari kolom status di header
-        // hafalan_records, yang sudah tidak ada lagi sejak header/detail split -- di
-        // SQLite ini diam-diam mengembalikan 0 alih-alih error, jadi harus dites eksplisit.
-        $response->assertViewHas('totalSetoran', 1);
+        // Regresi: jumlah setoran dulu dihitung dari kolom status di header hafalan_records (sudah
+        // tidak ada sejak header/detail split) dan diam-diam bernilai 0. Kini per triwulan rapor.
+        $stats = $response->viewData('tahfizhTermStats');
+        $this->assertSame(1, $stats['setoran']);
+        $this->assertEquals(95, $stats['average_score']);
     }
 
     public function test_progress_computes_correct_completed_juz()
