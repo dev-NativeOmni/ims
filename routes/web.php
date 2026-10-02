@@ -284,6 +284,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin,admin,supervisor,coordinator_tahfizh'])->group(function () {
         Route::get('/pengaturan-adab', [SettingController::class, 'editAdab'])->name('settings.adab');
         Route::post('/pengaturan-adab', [SettingController::class, 'updateAdab'])->name('settings.adab.update');
+        Route::post('/pengaturan-adab/penilaian', [SettingController::class, 'updateAdabScoring'])->name('settings.adab.scoring');
         Route::get('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsIndex'])->name('settings.hafalan-targets');
         Route::post('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsUpdate'])->name('settings.hafalan-targets.update');
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');

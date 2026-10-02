@@ -289,11 +289,7 @@ class AdabController extends Controller
                 }
                 $mentorScore = $mentorAssessment ? (float) $mentorAssessment->mentor_score : null;
 
-                if ($mentorScore !== null) {
-                    $finalScore = round(($attendanceRate * 0.40) + ($mentorScore * 0.60), 1);
-                } else {
-                    $finalScore = $attendanceRate;
-                }
+                $finalScore = Setting::adabCompositeScore($attendanceRate, $mentorScore);
                 $grade = Setting::getAdabGrade($finalScore);
 
                 $studentsDetail[] = [
@@ -991,11 +987,7 @@ class AdabController extends Controller
                 $mentorScoredCount++;
             }
 
-            if ($mentorScore !== null) {
-                $finalScore = round(($attendanceRate * 0.40) + ($mentorScore * 0.60), 1);
-            } else {
-                $finalScore = $attendanceRate;
-            }
+            $finalScore = Setting::adabCompositeScore($attendanceRate, $mentorScore !== null ? (float) $mentorScore : null);
 
             $grade = Setting::getAdabGrade($finalScore);
             $gradeLabel = Setting::getAdabGradeLabel($grade);

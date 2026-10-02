@@ -173,7 +173,7 @@
                                                 <th class="p-3">No</th>
                                                 <th class="p-3">Nama Murid</th>
                                                 <th class="p-3 text-center">Hari Terisi (dari {{ $effectiveDaysTotal }} Efektif)</th>
-                                                <th class="p-3 text-center">Kerajinan Kuisioner (40%)</th>
+                                                <th class="p-3 text-center">Kerajinan Kuisioner ({{ \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</th>
                                                 <th class="p-3 text-center">Skor Akhir Adab</th>
                                                 <th class="p-3 text-center">Predikat</th>
                                             </tr>

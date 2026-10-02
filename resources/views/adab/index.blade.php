@@ -815,7 +815,7 @@
                                     <span>Tabel Keterangan Nilai Pendamping & Rekapitulasi (<span x-text="monthName + ' ' + selectedYear"></span>)</span>
                                 </h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    Monitoring kelengkapan nilai pembina/pendamping adab dan skor akhir komposit (40% Kehadiran Mandiri + 60% Nilai Pendamping).
+                                    Monitoring kelengkapan nilai pembina/pendamping adab dan skor akhir komposit ({{ \App\Models\Setting::adabScoring()['attendance_weight'] }}% Kehadiran Mandiri + {{ 100 - \App\Models\Setting::adabScoring()['attendance_weight'] }}% Nilai Pendamping).
                                 </p>
                             </div>
 
@@ -842,8 +842,8 @@
                                     <tr>
                                         <th class="px-3 py-2.5 text-center w-12">No</th>
                                         <th class="px-4 py-2.5 text-left">Nama Murid</th>
-                                        <th class="px-3 py-2.5 text-center">Presensi Mandiri (40%)</th>
-                                        <th class="px-3 py-2.5 text-center text-purple-700 dark:text-purple-400">Nilai Pendamping (60%)</th>
+                                        <th class="px-3 py-2.5 text-center">Presensi Mandiri ({{ \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</th>
+                                        <th class="px-3 py-2.5 text-center text-purple-700 dark:text-purple-400">Nilai Pendamping ({{ 100 - \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</th>
                                         <th class="px-3 py-2.5 text-center">Nilai Akhir Adab</th>
                                         <th class="px-3 py-2.5 text-center">Predikat</th>
                                         <th class="px-4 py-2.5 text-left min-w-[200px]">Catatan Pembina / Catatan Perkembangan</th>

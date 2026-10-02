@@ -125,13 +125,18 @@
                             <x-heroicon-o-chart-bar class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                             <span>Formula Logika Penilaian Adab Terpadu</span>
                         </h4>
-                        <span class="text-xs font-bold bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2.5 py-1 rounded-full">Kerajinan 40% + Pendamping 60%</span>
+                        <span class="text-xs font-bold bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2.5 py-1 rounded-full">Kerajinan {{ $scoring['attendance_weight'] }}% + Pendamping {{ 100 - $scoring['attendance_weight'] }}%</span>
                     </div>
                     <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                        Penilaian adab murid dihitung dari <strong>Kerajinan Pengisian Kuisioner (40%)</strong> pada Hari Kerja Efektif (Senin-Jumat, menyesuaikan tanggal merah) dan <strong>Nilai Pendamping Adab (60%)</strong>.
+                        Penilaian adab murid dihitung dari <strong>Kerajinan Pengisian Kuisioner ({{ $scoring['attendance_weight'] }}%)</strong> pada Hari Kerja Efektif (Senin-Jumat, menyesuaikan tanggal merah) dan <strong>Nilai Pendamping Adab ({{ 100 - $scoring['attendance_weight'] }}%)</strong>.
                     </p>
                     <div class="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-3 text-center text-xs pt-2">
-                        @foreach (['A'=>['90–100%','bg-emerald-100 text-emerald-700'], 'B'=>['80–89%','bg-teal-100 text-teal-700'], 'C'=>['70–79%','bg-amber-100 text-amber-700'], 'D'=>['60–69%','bg-orange-100 text-orange-700'], 'E'=>['0–59%','bg-rose-100 text-rose-700']] as $g => [$range, $cls])
+                        @php
+                            $t = $scoring['thresholds'];
+                            $ranges = ['A' => "{$t['A']}–100%", 'B' => "{$t['B']}–".($t['A'] - 1).'%', 'C' => "{$t['C']}–".($t['B'] - 1).'%', 'D' => "{$t['D']}–".($t['C'] - 1).'%', 'E' => '0–'.($t['D'] - 1).'%'];
+                            $gradeClasses = ['A' => 'bg-emerald-100 text-emerald-700', 'B' => 'bg-teal-100 text-teal-700', 'C' => 'bg-amber-100 text-amber-700', 'D' => 'bg-orange-100 text-orange-700', 'E' => 'bg-rose-100 text-rose-700'];
+                        @endphp
+                        @foreach (collect($ranges)->map(fn ($range, $g) => [$range, $gradeClasses[$g]]) as $g => [$range, $cls])
                             <div class="rounded-lg p-3 {{ $cls }} dark:opacity-80">
                                 <div class="text-2xl font-black">{{ $g }}</div>
                                 <div class="font-semibold mt-1">{{ $range }}</div>
@@ -147,6 +152,56 @@
                     </a>
                     <button type="submit" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all duration-150">
                         Simpan Semua Pengaturan Adab
+                    </button>
+                </div>
+            </form>
+
+            {{-- Rumus nilai, batas predikat & deskripsi rapor (Setting::adabScoring) -- form terpisah dari kuisioner. --}}
+            <form method="POST" action="{{ route('settings.adab.scoring') }}" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-5">
+                @csrf
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Rumus Nilai, Predikat &amp; Deskripsi Rapor</h3>
+                    <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                        Berlaku untuk semua halaman Adab, dashboard, dan rapor. Batas predikat juga dipakai untuk predikat nilai Tahfizh Kelas 10 di rapor.
+                    </p>
+                </div>
+
+                <div x-data="{ weight: {{ (int) old('attendance_weight', $scoring['attendance_weight']) }} }">
+                    <label for="attendance_weight" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">Bobot Kerajinan Pengisian Kuisioner (%)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" min="0" max="100" name="attendance_weight" id="attendance_weight" x-model.number="weight" class="w-28 rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                        <span class="text-sm text-gray-600 dark:text-zinc-400">Nilai Pendamping: <strong x-text="Math.max(0, 100 - (weight || 0)) + '%'"></strong></span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">Bila nilai pendamping belum ada, nilai akhir = nilai kerajinan kuisioner saja.</p>
+                </div>
+
+                <div>
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">Nilai Minimal Tiap Predikat</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @foreach (['A' => 'Mumtaz', 'B' => 'Jayyid Jiddan', 'C' => 'Jayyid', 'D' => 'Maqbul'] as $grade => $label)
+                            <div>
+                                <label for="threshold_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">{{ $grade }} &middot; {{ $label }} &ge;</label>
+                                <input type="number" min="1" max="100" name="thresholds[{{ $grade }}]" id="threshold_{{ $grade }}" value="{{ old('thresholds.'.$grade, $scoring['thresholds'][$grade]) }}" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">Di bawah batas Maqbul = E &middot; Dha'if. Batas harus menurun: A &gt; B &gt; C &gt; D.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300">Deskripsi Adab di Rapor</span>
+                    @foreach (['A' => 'Mumtaz', 'B' => 'Jayyid Jiddan', 'C' => 'Jayyid', 'D' => 'Maqbul', 'E' => "Dha'if"] as $grade => $label)
+                        <div>
+                            <label for="adab_description_{{ $grade }}" class="block text-[11px] font-semibold text-gray-600 dark:text-zinc-400 mb-1">{{ $grade }} &middot; {{ $label }}</label>
+                            <textarea name="descriptions[{{ $grade }}]" id="adab_description_{{ $grade }}" rows="2" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white">{{ old('descriptions.'.$grade, $scoring['descriptions'][$grade]) }}</textarea>
+                        </div>
+                    @endforeach
+                    <p class="text-[11px] text-gray-500 dark:text-zinc-400">Kosongkan untuk kembali ke teks bawaan.</p>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition">
+                        Simpan Rumus &amp; Predikat
                     </button>
                 </div>
             </form>

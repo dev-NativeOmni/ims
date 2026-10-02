@@ -189,11 +189,11 @@
                                 </div>
                             @endforeach
                             <div class="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-1.5 mt-1">
-                                <span class="text-gray-500 font-medium">Kerajinan Kuisioner (40%)</span>
+                                <span class="text-gray-500 font-medium">Kerajinan Kuisioner ({{ \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</span>
                                 <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $avgAttendanceRate }}%</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-500 font-medium">Nilai Pendamping Adab (60%)</span>
+                                <span class="text-gray-500 font-medium">Nilai Pendamping Adab ({{ 100 - \App\Models\Setting::adabScoring()['attendance_weight'] }}%)</span>
                                 <span class="font-bold text-purple-600 dark:text-purple-400">{{ $avgMentorScore !== null ? round($avgMentorScore) : '-' }}</span>
                             </div>
                         </div>

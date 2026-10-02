@@ -178,7 +178,62 @@ class Setting extends Model
     }
 
     /**
-     * Calculate composite adab score: 40% questionnaire attendance + 60% mentor score.
+     * Aturan penilaian Adab bawaan; bisa diubah di Pengaturan Adab (adabScoring()).
+     * - attendance_weight: bobot (%) kerajinan pengisian kuisioner; sisanya (100 - bobot) nilai pendamping.
+     * - thresholds: nilai minimal tiap predikat (A..D); di bawah D = E. Juga dipakai predikat nilai Tahfizh rapor.
+     * - descriptions: deskripsi Adab di rapor per predikat.
+     */
+    public const ADAB_SCORING_DEFAULTS = [
+        'attendance_weight' => 40,
+        'thresholds' => ['A' => 90, 'B' => 80, 'C' => 70, 'D' => 60],
+        'descriptions' => [
+            'A' => 'Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.',
+            'B' => 'Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.',
+            'C' => 'Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.',
+            'D' => 'Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.',
+            'E' => "Kurang (Dha'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.",
+        ],
+    ];
+
+    /**
+     * Aturan penilaian Adab tersimpan (Pengaturan Adab), dilengkapi nilai bawaan.
+     *
+     * @return array{attendance_weight: int, thresholds: array<string, int>, descriptions: array<string, string>}
+     */
+    public static function adabScoring(): array
+    {
+        $saved = json_decode((string) self::get('adab_scoring'), true) ?: [];
+        $defaults = self::ADAB_SCORING_DEFAULTS;
+
+        return [
+            'attendance_weight' => (int) ($saved['attendance_weight'] ?? $defaults['attendance_weight']),
+            'thresholds' => collect($defaults['thresholds'])->map(fn ($default, $grade) => (int) ($saved['thresholds'][$grade] ?? $default))->all(),
+            'descriptions' => collect($defaults['descriptions'])->map(fn ($default, $grade) => trim((string) ($saved['descriptions'][$grade] ?? '')) ?: $default)->all(),
+        ];
+    }
+
+    /**
+     * Nilai akhir Adab = bobot kerajinan x kehadiran kuisioner + sisa bobot x nilai pendamping.
+     * Belum ada nilai pendamping = nilai kehadiran saja. Satu-satunya tempat rumus ini.
+     */
+    public static function adabCompositeScore(float $attendanceRate, ?float $mentorScore): float
+    {
+        if ($mentorScore === null) {
+            return $attendanceRate;
+        }
+
+        $weight = self::adabScoring()['attendance_weight'] / 100;
+
+        return round(($attendanceRate * $weight) + ($mentorScore * (1 - $weight)), 1);
+    }
+
+    public static function adabDescription(string $grade): string
+    {
+        return self::adabScoring()['descriptions'][$grade] ?? self::ADAB_SCORING_DEFAULTS['descriptions']['E'];
+    }
+
+    /**
+     * Calculate composite adab score (bobot dari Pengaturan Adab, lihat adabCompositeScore()).
      */
     public static function calculateAdabScore(int $studentId, int $year, int $month): array
     {
@@ -204,11 +259,7 @@ class Setting extends Model
 
         $mentorScore = $mentorAssessment ? (float) $mentorAssessment->mentor_score : null;
 
-        if ($mentorScore !== null) {
-            $finalScore = round(($attendanceRate * 0.40) + ($mentorScore * 0.60), 1);
-        } else {
-            $finalScore = $attendanceRate;
-        }
+        $finalScore = self::adabCompositeScore($attendanceRate, $mentorScore);
 
         $grade = self::getAdabGrade($finalScore);
         $gradeLabel = self::getAdabGradeLabel($grade);
@@ -231,17 +282,10 @@ class Setting extends Model
      */
     public static function getAdabGrade(float $score): string
     {
-        if ($score >= 90) {
-            return 'A';
-        }
-        if ($score >= 80) {
-            return 'B';
-        }
-        if ($score >= 70) {
-            return 'C';
-        }
-        if ($score >= 60) {
-            return 'D';
+        foreach (self::adabScoring()['thresholds'] as $grade => $minimum) {
+            if ($score >= $minimum) {
+                return $grade;
+            }
         }
 
         return 'E';

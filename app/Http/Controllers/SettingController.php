@@ -82,8 +82,42 @@ class SettingController extends Controller
     public function editAdab()
     {
         $categories = Setting::getAdabQuestions();
+        $scoring = Setting::adabScoring();
 
-        return view('settings.adab', compact('categories'));
+        return view('settings.adab', compact('categories', 'scoring'));
+    }
+
+    /**
+     * Rumus nilai, batas predikat, dan deskripsi rapor Adab (Setting::adabScoring()).
+     */
+    public function updateAdabScoring(Request $request)
+    {
+        $validated = $request->validate([
+            'attendance_weight' => 'required|integer|between:0,100',
+            'thresholds.A' => 'required|integer|between:1,100',
+            'thresholds.B' => 'required|integer|between:1,100|lt:thresholds.A',
+            'thresholds.C' => 'required|integer|between:1,100|lt:thresholds.B',
+            'thresholds.D' => 'required|integer|between:1,100|lt:thresholds.C',
+            'descriptions' => 'nullable|array',
+            'descriptions.*' => 'nullable|string|max:1000',
+        ], [
+            'thresholds.*.lt' => 'Batas nilai predikat harus menurun: A > B > C > D.',
+        ], [
+            'attendance_weight' => 'bobot kerajinan kuisioner',
+            'thresholds.A' => 'batas Mumtaz (A)', 'thresholds.B' => 'batas Jayyid Jiddan (B)',
+            'thresholds.C' => 'batas Jayyid (C)', 'thresholds.D' => 'batas Maqbul (D)',
+        ]);
+
+        Setting::set('adab_scoring', json_encode([
+            'attendance_weight' => (int) $validated['attendance_weight'],
+            'thresholds' => collect(['A', 'B', 'C', 'D'])->mapWithKeys(fn ($grade) => [$grade => (int) $validated['thresholds'][$grade]])->all(),
+            // Kosong = kembali ke teks bawaan.
+            'descriptions' => collect(Setting::ADAB_SCORING_DEFAULTS['descriptions'])
+                ->map(fn ($default, $grade) => trim((string) ($validated['descriptions'][$grade] ?? '')) ?: $default)
+                ->all(),
+        ]));
+
+        return redirect()->route('settings.adab')->with('success', 'Rumus, predikat, dan deskripsi penilaian adab berhasil disimpan.');
     }
 
     public function updateAdab(Request $request)

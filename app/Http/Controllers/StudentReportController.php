@@ -535,15 +535,12 @@ class StudentReportController extends Controller
             ->all();
     }
 
+    /**
+     * Deskripsi Adab di rapor menurut predikat nilai (teks diatur di Pengaturan Adab).
+     */
     public static function adabDescription(float $avgTotal): string
     {
-        return match (true) {
-            $avgTotal >= 90 => 'Sangat baik (Mumtaz), konsisten beribadah kepada Allah, berperilaku sopan terhadap sesama teman, menerapkan adab belajar secara tertib dan disiplin, serta menjaga kebersihan lingkungan dengan sangat baik.',
-            $avgTotal >= 80 => 'Baik sekali (Jayyid Jiddan), rutin melaksanakan ibadah harian, bersikap sopan kepada teman, tertib dalam mengikuti pelajaran, dan turut menjaga kebersihan lingkungan dengan baik.',
-            $avgTotal >= 70 => 'Baik (Jayyid), menunjukkan kesopanan kepada guru dan teman, mengikuti kegiatan belajar dengan tertib, dan menjaga kebersihan diri serta lingkungan.',
-            $avgTotal >= 60 => 'Cukup (Maqbul), sudah berusaha membiasakan adab harian dengan cukup baik, namun masih memerlukan pengawasan dan motivasi berkala agar lebih konsisten.',
-            default => "Kurang (Dha'if), memerlukan pembinaan moral intensif serta bimbingan khusus baik di sekolah maupun asrama untuk meningkatkan kedisiplinan dan adab sehari-hari.",
-        };
+        return Setting::adabDescription(Setting::getAdabGrade($avgTotal));
     }
 
     /**
