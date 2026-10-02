@@ -494,7 +494,7 @@ class SpreadsheetInputController extends Controller
                             if ($type === 'hafalan') {
                                 $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                             } elseif ($type === 'ummi') {
-                                if ($student->tahfizh_level === 'ummi' || $hasUmmiInput) {
+                                if ($student->usesUmmi() || $hasUmmiInput) {
                                     $this->saveUmmiRecords($studentId, $teacherId, $date, $cellData, $targetDates);
                                 } else {
                                     $this->saveHafalanRecords($studentId, $teacherId, $date, $cellData, $targetDates);

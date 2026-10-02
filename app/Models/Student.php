@@ -141,6 +141,17 @@ class Student extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    /**
+     * Murid metode Ummi: level tahfizh "ummi" ATAU berada di kelas 10 (kelas pada periode laporan bila
+     * relasi classRoom sudah dipasang ke kelas periode itu). Satu aturan untuk Grafik, Laporan Triwulan,
+     * rapor, dan Target -- dulu Laporan Triwulan & rapor hanya melihat level, sehingga murid kelas 10
+     * berlevel "reguler" kehilangan data Ummi-nya.
+     */
+    public function usesUmmi(): bool
+    {
+        return $this->tahfizh_level === 'ummi' || ($this->classRoom?->isGradeTen() ?? false);
+    }
+
     public function getTahfizhLevelLabelAttribute(): string
     {
         return match ($this->tahfizh_level) {

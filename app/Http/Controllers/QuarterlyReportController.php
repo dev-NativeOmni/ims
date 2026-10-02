@@ -411,7 +411,7 @@ class QuarterlyReportController extends Controller
             'monthly' => $monthly,
             'term_records' => $termRecords,
             // Ada murid Ummi (Kelas 10) -> tabel Term/Indeks menambah kolom Jilid|Halaman.
-            'has_ummi' => $groupStudents->contains(fn ($student) => $student->tahfizh_level === 'ummi'),
+            'has_ummi' => $groupStudents->contains(fn ($student) => $student->usesUmmi()),
             'months' => array_values($monthsMap),
             'total_students' => count($groupStudents),
             'tuntas_count' => collect($termRecords)->where('is_tuntas', true)->count(),
@@ -926,7 +926,7 @@ class QuarterlyReportController extends Controller
             $sHaf = $gHafalanRecords->where('student_id', $student->id);
             $sAttAll = $gAttendances->where('student_id', $student->id);
             $sUmmi = $gUmmiRecords->where('student_id', $student->id);
-            $isUmmiStudent = $student->tahfizh_level === 'ummi';
+            $isUmmiStudent = $student->usesUmmi();
             $pekanRecords = [];
             $totalCapaianLines = 0;
 
@@ -1213,7 +1213,7 @@ class QuarterlyReportController extends Controller
 
             // Kelas 10/Ummi: ketuntasan dipatok dari posisi Jilid|Halaman, bukan baris (Ummi tidak
             // punya target baris) -- lihat UmmiProgressService::termPosition().
-            $ummiPosition = $student->tahfizh_level === 'ummi'
+            $ummiPosition = $student->usesUmmi()
                 ? app(UmmiProgressService::class)->termPosition(
                     $latestTargets->get($student->id, collect()),
                     $latestUmmiRecords->get($student->id, collect()),

@@ -1172,8 +1172,9 @@ class ReportController extends Controller
                 $tidakTuntasCount++;
             }
 
-            // Ummi Record Details
-            $latestUmmi = $allUmmiRecords->get($student->id, collect())->first();
+            // Ummi Record Details: Jilid/Halaman dari catatan Ummi terakhir YANG BERISI jilid (pertemuan
+            // terakhir bisa tanpa jilid) -- sama dengan UmmiProgressService::termPosition() & grafik Ummi.
+            $latestUmmi = $allUmmiRecords->get($student->id, collect())->first(fn ($record) => filled($record->ummi_jilid));
             $ummiJilidRaw = $latestUmmi?->ummi_jilid ?: '-';
             preg_match('/(\d+)/', (string) $ummiJilidRaw, $mJilid);
             $ummiJilidNum = isset($mJilid[1]) ? $mJilid[1] : (is_numeric($ummiJilidRaw) ? $ummiJilidRaw : $ummiJilidRaw);

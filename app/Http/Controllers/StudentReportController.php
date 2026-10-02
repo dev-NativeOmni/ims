@@ -752,7 +752,7 @@ class StudentReportController extends Controller
         $hafalanUntilEnd = $hafalanAll->filter(fn ($h) => $h->submitted_at && Carbon::parse($h->submitted_at)->lte($end))->values();
         $notes = $termTargets->first(fn ($t) => filled($t->notes))?->notes;
 
-        if ($student->tahfizh_level === 'ummi') {
+        if ($student->usesUmmi()) {
             $ummiUntilEnd = $ummiAll->filter(fn ($u) => $u->tanggal && Carbon::parse($u->tanggal)->lte($end))->values();
             $position = app(UmmiProgressService::class)->termPosition($termTargets, $ummiUntilEnd, $hafalanUntilEnd);
 
@@ -901,7 +901,7 @@ class StudentReportController extends Controller
         $latestCapaianText = '';
         $latestCapaianNotes = '';
 
-        if ($student->tahfizh_level === 'ummi') {
+        if ($student->usesUmmi()) {
             $latestUmmiRecord = $studentUmmiAll->first();
 
             if ($latestUmmiRecord) {

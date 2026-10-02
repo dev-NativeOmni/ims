@@ -257,8 +257,17 @@ class QuarterlyReportTeacherExportTest extends TestCase
             ->assertSee('>Halaman</th>', false)
             ->assertSee('Jilid 5');
 
+        // Murid kelas 10 tetap murid Ummi walau levelnya "reguler" (Student::usesUmmi) -- dulu datanya hilang.
         $this->student->update(['tahfizh_level' => 'reguler']);
         $this->actingAs($this->admin)->get(route('reports.quarterly', $query))
+            ->assertOk()
+            ->assertSee('>Halaman</th>', false)
+            ->assertSee('Jilid 5');
+
+        // Kelas 11 berlevel reguler: tanpa kolom Jilid/Halaman.
+        $classXI = ClassRoom::create(['program_id' => $program->id, 'name' => 'XI F9', 'level' => 'XI', 'tahfizh_days' => [1, 2, 3, 4, 5]]);
+        $this->student->update(['class_room_id' => $classXI->id]);
+        $this->actingAs($this->admin)->get(route('reports.quarterly', ['class_room_id' => $classXI->id] + $query))
             ->assertOk()
             ->assertDontSee('>Halaman</th>', false);
     }
