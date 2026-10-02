@@ -112,7 +112,7 @@ class DigitalReportTanseTest extends TestCase
         ]));
 
         $response->assertOk();
-        $response->assertSee('Triwulan 1 (Jul - Sep)');
+        $response->assertSee('III. LAPORAN TANSE</h3>', false)->assertDontSee('Triwulan 1 (Jul - Sep)');
         $response->assertSee('Predikat B');
         $response->assertSee('rowspan="2"', false);
         $this->assertSame(1, substr_count($response->getContent(), 'Alhamdulillah ananda sudah'), 'Deskripsi Tanse hanya satu sel.');

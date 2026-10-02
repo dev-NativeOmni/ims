@@ -172,7 +172,7 @@
 
     <!-- III. LAPORAN TANSE -->
     <div class="mb-4 space-y-2">
-        <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE <span class="font-semibold normal-case">&mdash; {{ $sheet['tanse']['term_label'] }}</span></h3>
+        <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE</h3>
 
         <table class="w-full border border-black text-xs text-left">
             <thead>
