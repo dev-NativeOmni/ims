@@ -498,4 +498,21 @@ class SpreadsheetInputTest extends TestCase
         // Guru biasa tidak melihat filter.
         $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index'))->assertOk()->assertDontSee('Guru Pengampu');
     }
+
+    #[Test]
+    public function spreadsheet_ummi_rejects_ayah_beyond_surah_length(): void
+    {
+        $total = (int) $this->surah->total_ayah;
+        $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $this->student->class_room_id,
+            'month' => '2026-08',
+            'type' => 'ummi',
+            'records' => [$this->student->id => ['dates' => ['2026-08-04' => [
+                'attendance' => 'hadir', 'tatap_muka' => 1, 'ummi_jilid' => 'Jilid 1', 'ummi_halaman_awal' => '1', 'ummi_halaman_akhir' => '2',
+                'hafalans' => [['surah_id' => $this->surah->id, 'ayah' => '1-'.($total + 2)]],
+            ]]]],
+        ])->assertSessionHas('error', fn ($msg) => str_contains($msg, 'melebihi jumlah ayat surah'));
+
+        $this->assertDatabaseMissing('ummi_records', ['student_id' => $this->student->id]);
+    }
 }

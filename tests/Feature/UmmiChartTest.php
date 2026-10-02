@@ -208,4 +208,35 @@ class UmmiChartTest extends TestCase
         $this->assertSame('Surah 112 (4)', $row['ummi_capaian'], 'Bukan materi "Sukun" dari pertemuan tanpa hafalan.');
         $response->assertDontSee('Sukun');
     }
+
+    #[Test]
+    public function ayah_beyond_surah_length_counts_as_end_of_surah_and_can_be_fixed(): void
+    {
+        // Surah 98 (8 ayat di data uji): catatan terakhir "1-10" (salah input) tetap terbaca sebagai ayat 8.
+        $this->ummi('2026-09-02', 'Jilid 1', '21-24', 99, '1-8');
+        $this->ummi('2026-09-09', 'Jilid 1', '25-27', 98, '1-10');
+
+        $row = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 9, 'year' => 2026,
+        ]))->assertOk()->viewData('ummiChart')['rows'][0];
+        $this->assertSame('Surah 98 8', $row['hafalan_label'], 'Bukan mundur ke catatan sebelumnya (Surah 99).');
+
+        $this->artisan('tad:perbaiki-ayat-ummi', ['--dry-run' => true])->assertSuccessful();
+        $this->assertDatabaseHas('ummi_record_surahs', ['hafalan_ayah' => '1-10']);
+
+        $this->artisan('tad:perbaiki-ayat-ummi', ['--force' => true])->assertSuccessful();
+        $this->assertDatabaseHas('ummi_record_surahs', ['hafalan_ayah' => '1-8', 'surah_id' => Surah::where('number', 98)->value('id')]);
+        $this->assertDatabaseMissing('ummi_record_surahs', ['hafalan_ayah' => '1-10']);
+    }
+
+    #[Test]
+    public function ummi_input_form_rejects_ayah_beyond_surah_length(): void
+    {
+        $surah98 = Surah::where('number', 98)->first();
+
+        $this->actingAs($this->admin)->post(route('ummi-records.store'), [
+            'class_room_id' => $this->classRoom->id, 'tanggal' => '2026-09-09', 'disimak_guru' => 'Ya', 'disimak_ortu' => 'Ya',
+            'hafalan_surah_ids' => [$surah98->id], 'hafalan_ayahs' => ['1-10'],
+        ])->assertSessionHasErrors(['hafalan_ayahs' => 'Ayat hafalan '.$surah98->name_latin.' "1-10" melebihi jumlah ayat surah ('.$surah98->total_ayah.' ayat).']);
+    }
 }

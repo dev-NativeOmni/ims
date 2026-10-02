@@ -14,6 +14,7 @@ use App\Models\UmmiRecord;
 use App\Services\SchoolCalendar;
 use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
+use App\Support\UmmiAyah;
 use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -696,6 +697,9 @@ class SpreadsheetInputController extends Controller
         $hafalansList = array_values(array_filter($rawHafalans, function ($h) {
             return ! empty($h['surah_id']);
         }));
+        if ($ayahError = UmmiAyah::firstError(array_map(fn ($h) => [$h['surah_id'], $h['ayah'] ?? null], $hafalansList))) {
+            throw new \InvalidArgumentException($ayahError.' ('.Carbon::parse($date)->translatedFormat('j M Y').')');
+        }
 
         if (! $hasUmmiFields && empty($hafalansList)) {
             UmmiRecord::where('student_id', $studentId)

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\AyahLabel;
+use App\Support\UmmiAyah;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -71,7 +72,10 @@ class UmmiRecord extends Model
             ->map(function (UmmiRecordSurah $surah) {
                 $label = $surah->surah?->name_latin ?? '-';
 
-                return $surah->hafalan_ayah ? $label.' ('.AyahLabel::end($surah->hafalan_ayah).')' : $label;
+                // Ayat melebihi panjang surah (salah input) = akhir surah (App\Support\UmmiAyah).
+                $ayah = $surah->surah ? UmmiAyah::clamp((string) $surah->hafalan_ayah, (int) $surah->surah->total_ayah) : $surah->hafalan_ayah;
+
+                return $surah->hafalan_ayah ? $label.' ('.AyahLabel::end($ayah).')' : $label;
             })
             ->implode(', ');
     }

@@ -15,6 +15,7 @@ use App\Observers\HafalanTargetStatusObserver;
 use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
 use App\Services\UmmiTatapMukaService;
+use App\Support\UmmiAyah;
 use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -356,7 +357,15 @@ class HafalanRecordController extends Controller
             'disimak_ortu' => ['required', Rule::in(['Ya', 'Tidak'])],
             'catatan' => ['nullable', 'string'],
         ]);
-        $validator->after(fn ($v) => UmmiBook::checkPages($v, $request->all()));
+        $validator->after(function ($v) use ($request) {
+            UmmiBook::checkPages($v, $request->all());
+            // Ayat hafalan tidak boleh melebihi jumlah ayat surah (lihat App\Support\UmmiAyah).
+            $ayahError = UmmiAyah::firstError(collect((array) $request->input('hafalan_surah_ids', []))
+                ->map(fn ($sid, $idx) => [$sid, $request->input("hafalan_ayahs.{$idx}")]));
+            if ($ayahError) {
+                $v->errors()->add('hafalan_ayahs', $ayahError);
+            }
+        });
         $validated = $validator->validate();
 
         // Posisi lama ikut dinomori ulang (tanggal/murid bisa pindah halaqoh atau triwulan).
@@ -585,6 +594,9 @@ class HafalanRecordController extends Controller
         $validator->after(function ($v) use ($request) {
             foreach ((array) $request->input('records', []) as $index => $item) {
                 UmmiBook::checkPages($v, (array) $item, "records.{$index}.");
+                if ($ayahError = UmmiAyah::firstError([[$item['surah_id'] ?? null, $item['hafalan_ayah'] ?? null]])) {
+                    $v->errors()->add("records.{$index}.hafalan_ayah", $ayahError);
+                }
             }
         });
         $validated = $validator->validate();

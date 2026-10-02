@@ -8,6 +8,7 @@ use App\Models\Surah;
 use App\Models\UmmiRecord;
 use App\Support\AyahLabel;
 use App\Support\HafalanOrder;
+use App\Support\UmmiAyah;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -175,7 +176,7 @@ class UmmiProgressService
         return [
             'book' => self::pageValue($target->ummi_jilid, $target->halaman_buku),
             'hafalan' => $target->surah
-                ? $this->hafalanValue((int) $target->surah->number, (int) ($target->ayah ?: $target->surah->total_ayah))
+                ? $this->hafalanValue((int) $target->surah->number, min((int) ($target->ayah ?: $target->surah->total_ayah), (int) $target->surah->total_ayah))
                 : null,
         ];
     }
@@ -242,7 +243,7 @@ class UmmiProgressService
 
         $targetBook = $target ? self::pageValue($target->ummi_jilid, $target->halaman_buku) : null;
         $targetHafalan = $target?->surah
-            ? $this->hafalanValue((int) $target->surah->number, (int) ($target->ayah ?: $target->surah->total_ayah))
+            ? $this->hafalanValue((int) $target->surah->number, min((int) ($target->ayah ?: $target->surah->total_ayah), (int) $target->surah->total_ayah))
             : null;
 
         $inPeriod = $records->filter(fn ($r) => Carbon::parse($r->tanggal)->betweenIncluded($start->copy()->startOfDay(), $end->copy()->endOfDay()));
@@ -313,7 +314,9 @@ class UmmiProgressService
                     return $entry->surah ? $this->hafalanValue((int) $entry->surah->number, (int) $entry->surah->total_ayah) : null;
                 }
 
-                return $this->hafalanValue((int) $entry->surah->number, (int) max($m[0]));
+                // Ayat melebihi panjang surah (salah input, mis. Al-Bayyinah "1-10") = akhir surah,
+                // supaya catatan itu tetap terbaca dan tidak mundur ke catatan sebelumnya.
+                return $this->hafalanValue((int) $entry->surah->number, min((int) max($m[0]), (int) $entry->surah->total_ayah));
             })
             ->filter()
             ->last();
@@ -373,7 +376,8 @@ class UmmiProgressService
             ->first(fn ($s) => $s !== null);
 
         $capaianSurah = $lastSurah?->surah?->name_latin;
-        $capaianAyat = $lastSurah ? AyahLabel::end($lastSurah->hafalan_ayah) : '-';
+        // Ayat melebihi panjang surah (salah input) dibatasi ke akhir surah, sama dengan grafik Ummi.
+        $capaianAyat = $lastSurah ? AyahLabel::end($lastSurah->surah ? UmmiAyah::clamp((string) $lastSurah->hafalan_ayah, (int) $lastSurah->surah->total_ayah) : $lastSurah->hafalan_ayah) : '-';
         if ($lastSurah === null) {
             $ziyadah = app(QuranLineTargetService::class)->furthestRecord($hafalans, true);
             $capaianSurah = $ziyadah?->surah?->name_latin;

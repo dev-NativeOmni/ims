@@ -11,6 +11,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
+use App\Support\UmmiAyah;
 use App\Support\UmmiBook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -407,6 +408,14 @@ class QuickInputController extends Controller
 
         $validator->after(function ($validator) use ($request, $visibleStudentIds) {
             UmmiBook::checkPages($validator, $request->all());
+
+            // Ayat hafalan tidak boleh melebihi jumlah ayat surah (lihat App\Support\UmmiAyah).
+            $ayahPairs = $request->has('hafalan_surah_ids')
+                ? collect((array) $request->input('hafalan_surah_ids', []))->map(fn ($sid, $idx) => [$sid, $request->input("hafalan_ayahs.{$idx}")])
+                : [[$request->input('hafalan_surah_id'), $request->input('hafalan_ayah')]];
+            if ($ayahError = UmmiAyah::firstError($ayahPairs)) {
+                $validator->errors()->add('hafalan_ayahs', $ayahError);
+            }
 
             $classRoomId = (int) $request->input('class_room_id');
             $hasAccess = Student::query()
