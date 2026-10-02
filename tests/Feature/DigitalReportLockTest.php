@@ -69,8 +69,10 @@ class DigitalReportLockTest extends TestCase
 
         $this->printed(1)->assertOk()
             ->assertSee('SEKOLAH LAMA')->assertDontSee('SEKOLAH BARU')
-            ->assertSee('Catatan beku')
-            ->assertSee('Terkunci');
+            ->assertSee('Terkunci')
+            ->assertDontSee('CATATAN &amp; EVALUASI WALI KELAS', false);
+        // Catatan wali kelas tidak lagi dicetak, tapi tetap ikut dibekukan di simpanan.
+        $this->assertSame('Catatan beku', $report->fresh()->snapshot['teacher_notes']);
 
         // Periode lain tidak ikut terkunci.
         $this->printed(2)->assertOk()->assertSee('SEKOLAH BARU')->assertDontSee('Terkunci');

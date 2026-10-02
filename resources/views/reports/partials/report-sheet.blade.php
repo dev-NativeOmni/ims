@@ -202,14 +202,6 @@
         </table>
     </div>
 
-    <!-- Catatan Wali Kelas -->
-    <div class="mb-6 p-3 border border-black rounded-none text-xs">
-        <h4 class="font-bold text-black uppercase mb-1">CATATAN & EVALUASI WALI KELAS:</h4>
-        <p class="italic text-gray-900 leading-relaxed font-semibold">
-            "{{ $sheet['teacher_notes'] ?: 'Belum ada catatan deskriptif dari wali kelas.' }}"
-        </p>
-    </div>
-
     <!-- Signature Area: tiga koordinator berjajar di atas, Kepala Sekolah di tengah bawah -->
     {{-- Titimangsa = tanggal BLP periode; belum diatur = titik-titik untuk diisi tangan. --}}
     @php $titimangsa = $sheet['letterhead']['city'].', '.($sheet['letterhead']['date'] ?? '........................'); @endphp
