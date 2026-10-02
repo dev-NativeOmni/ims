@@ -82,9 +82,9 @@
                     </select>
 
                     <select name="year" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-xs font-semibold py-2 px-3 focus:ring-indigo-500 dark:text-white">
-                        @for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
+                        @foreach (\App\Support\AcademicYear::calendarYears(1) as $y)
                             <option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>
-                        @endfor
+                        @endforeach
                     </select>
                 @endif
 

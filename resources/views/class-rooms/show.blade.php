@@ -134,9 +134,9 @@
                             <div class="w-32">
                                 <label for="year" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tahun</label>
                                 <select id="year" name="year" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                    @for ($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                                    @foreach (\App\Support\AcademicYear::calendarYears(2) as $y)
                                         <option value="{{ $y }}" @selected($year == $y)>{{ $y }}</option>
-                                    @endfor
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="w-36">

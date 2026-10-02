@@ -486,7 +486,7 @@
                                 @change="selectedMonth = selectedYearNum + '-' + selectedMonthNum; $nextTick(() => $el.form.submit())"
                                 class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm py-2.5 px-3 focus:border-teal-500 focus:ring-teal-500 dark:text-white font-medium cursor-pointer shadow-xs"
                             >
-                                @foreach (range((int) date('Y') - 1, (int) date('Y') + 1) as $y)
+                                @foreach (\App\Support\AcademicYear::calendarYears(1) as $y)
                                     <option value="{{ $y }}" class="dark:bg-zinc-900">{{ $y }}</option>
                                 @endforeach
                             </select>

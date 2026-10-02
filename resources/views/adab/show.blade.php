@@ -169,9 +169,9 @@
                             <div>
                                 <label class="block text-[11px] sm:text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 mb-1">Tahun</label>
                                 <select name="year" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs sm:text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                    @for ($y = date('Y') - 1; $y <= date('Y') + 1; $y++)
+                                    @foreach (\App\Support\AcademicYear::calendarYears(1) as $y)
                                         <option value="{{ $y }}" @selected($y === $thisYear)>{{ $y }}</option>
-                                    @endfor
+                                    @endforeach
                                 </select>
                             </div>
                             <div>

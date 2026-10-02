@@ -20,6 +20,7 @@ use App\Services\HafalanProgressService;
 use App\Services\QuranLineTargetService;
 use App\Services\SchoolCalendar;
 use App\Services\UmmiProgressService;
+use App\Support\AcademicYear;
 use App\Support\AyahLabel;
 use App\Support\TargetRules;
 use Illuminate\Contracts\View\View;
@@ -735,7 +736,7 @@ class ReportController extends Controller
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
             ],
-            'years' => range(date('Y') - 4, date('Y') + 1),
+            'years' => AcademicYear::calendarYears(1),
         ]);
     }
 

@@ -82,4 +82,23 @@ class AcademicYearTest extends TestCase
         $this->assertNotNull(Setting::get('report_blp_dates_2026-2027'));
         $this->assertSame('2026/2027', Setting::get('academic_year'));
     }
+
+    #[Test]
+    public function year_and_term_pickers_start_at_2026(): void
+    {
+        Carbon::setTestNow('2026-10-02');
+
+        $this->assertSame([2026, 2027], AcademicYear::calendarYears(1));
+        $this->assertSame([2026], AcademicYear::calendarYears(0, true));
+
+        $periods = $this->actingAs($this->admin)->get(route('hafalan-targets.term'))->assertOk()->viewData('periods');
+        $this->assertSame(['2027-01-01', '2026-10-01', '2026-07-01'], $periods->keys()->all(), 'Tanpa triwulan 2025/2026.');
+        $this->actingAs($this->admin)->get(route('hafalan-targets.term'))->assertDontSee('2025/2026');
+
+        foreach (['reports.periodic', 'adab.chart'] as $route) {
+            $this->actingAs($this->admin)->get(route($route))->assertOk()->assertDontSee('<option value="2025"', false)->assertDontSee('<option value="2024"', false);
+        }
+
+        Carbon::setTestNow();
+    }
 }

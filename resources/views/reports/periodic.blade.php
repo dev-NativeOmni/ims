@@ -73,9 +73,9 @@
                         <label for="year" class="block text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">Tahun</label>
                         <select name="year" id="year" @change="$el.form.submit()"
                                 class="block w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white shadow-xs focus:border-teal-500 focus:ring-teal-500 text-xs sm:text-sm py-2 px-3 font-medium cursor-pointer">
-                            @for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
+                            @foreach (\App\Support\AcademicYear::calendarYears(1) as $y)
                                 <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>{{ $y }}</option>
-                            @endfor
+                            @endforeach
                         </select>
                     </div>
 

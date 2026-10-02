@@ -15,6 +15,7 @@ use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
 use App\Services\TargetDeadlineService;
 use App\Services\UmmiProgressService;
+use App\Support\AcademicYear;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
@@ -894,22 +895,28 @@ class HafalanTargetController extends Controller
     }
 
     /**
-     * Pilihan triwulan: 6 triwulan terakhir (termasuk yang berjalan) dan triwulan terpilih.
+     * Pilihan triwulan: triwulan berikutnya, yang berjalan, dan 5 sebelumnya -- tetapi tidak sebelum
+     * triwulan pertama AcademicYear::FIRST (2026/2027), tahun ajaran sebelumnya tidak dipakai.
      *
      * @return array{0: Collection<string, string>, 1: string}
      */
     private function termPeriods(?string $requested, AcademicCalendarService $calendar): array
     {
         $currentStart = $calendar->termStartDate(today());
-        $periods = collect(range(-1, 5))->mapWithKeys(function ($i) use ($currentStart) {
-            $start = $currentStart->copy()->subMonthsNoOverflow($i * 3);
-            $termNumber = [7 => 1, 10 => 2, 1 => 3, 4 => 4][$start->month];
-            $academicYear = $start->month >= 7 ? $start->year.'/'.($start->year + 1) : ($start->year - 1).'/'.$start->year;
+        $firstStart = Carbon::create(AcademicYear::startYear(AcademicYear::FIRST), 7, 1)->startOfDay();
+        $periods = collect(range(-1, 5))
+            ->reject(fn ($i) => $currentStart->copy()->subMonthsNoOverflow($i * 3)->lt($firstStart))
+            ->mapWithKeys(function ($i) use ($currentStart) {
+                $start = $currentStart->copy()->subMonthsNoOverflow($i * 3);
+                $termNumber = [7 => 1, 10 => 2, 1 => 3, 4 => 4][$start->month];
+                $academicYear = $start->month >= 7 ? $start->year.'/'.($start->year + 1) : ($start->year - 1).'/'.$start->year;
 
-            return [$start->toDateString() => "Triwulan {$termNumber} · {$academicYear} ({$start->locale('id')->translatedFormat('M')} – {$start->copy()->addMonths(2)->locale('id')->translatedFormat('M Y')})"];
-        });
+                return [$start->toDateString() => "Triwulan {$termNumber} · {$academicYear} ({$start->locale('id')->translatedFormat('M')} – {$start->copy()->addMonths(2)->locale('id')->translatedFormat('M Y')})"];
+            });
 
-        return [$periods, $periods->has($requested) ? $requested : $currentStart->toDateString()];
+        $fallback = $periods->has($currentStart->toDateString()) ? $currentStart->toDateString() : $periods->keys()->last();
+
+        return [$periods, $periods->has($requested) ? $requested : $fallback];
     }
 
     private function termClassRooms(Collection $visibleStudentIds, ?int $teacherId = null): Collection

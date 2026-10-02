@@ -68,4 +68,17 @@ class AcademicYear
             ->map(fn ($start) => $start.'/'.($start + 1))
             ->all();
     }
+
+    /**
+     * Pilihan tahun kalender untuk filter bulan/tahun: dari tahun mulainya FIRST (2026) s.d. tahun
+     * berjalan + $ahead. Tahun sebelum aplikasi dipakai tidak ditawarkan.
+     *
+     * @return array<int, int>
+     */
+    public static function calendarYears(int $ahead = 1, bool $newestFirst = false): array
+    {
+        $years = range(self::startYear(self::FIRST), max(self::startYear(self::FIRST), (int) now()->year + $ahead));
+
+        return $newestFirst ? array_reverse($years) : $years;
+    }
 }

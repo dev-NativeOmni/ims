@@ -289,11 +289,11 @@
                                     </label>
                                     <select x-model="selectedYear" @change="fetchClassData()"
                                             class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-teal-500 focus:ring-teal-500">
-                                        @for ($y = (int) now()->format('Y') + 1; $y >= 2024; $y--)
+                                        @foreach (\App\Support\AcademicYear::calendarYears(1, true) as $y)
                                             <option value="{{ $y }}" @selected($y == (int) now()->format('Y'))>
                                                 {{ $y }}
                                             </option>
-                                        @endfor
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -534,11 +534,11 @@
                                 </label>
                                 <select x-model="selectedYear" @change="fetchMatrixData()"
                                         class="w-full rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold px-3 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
-                                    @for ($y = (int) now()->format('Y') + 1; $y >= 2024; $y--)
+                                    @foreach (\App\Support\AcademicYear::calendarYears(1, true) as $y)
                                         <option value="{{ $y }}" @selected($y == (int) request('year', now()->format('Y')))>
                                             {{ $y }}
                                         </option>
-                                    @endfor
+                                    @endforeach
                                 </select>
                             </div>
 

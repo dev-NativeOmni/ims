@@ -89,7 +89,7 @@
                             Tahun
                         </label>
                         <select name="year" id="year" class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm font-semibold py-2.5 px-3 focus:ring-teal-500 focus:border-teal-500">
-                            @foreach (range(date('Y') - 2, date('Y') + 2) as $y)
+                            @foreach (\App\Support\AcademicYear::calendarYears(2) as $y)
                                 <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>
                                     {{ $y }}
                                 </option>
