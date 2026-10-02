@@ -10,6 +10,7 @@ use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\StudentPoint;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
@@ -774,12 +775,11 @@ class ReportController extends Controller
         $user = $request->user();
         $visibleStudentIds = $this->visibleStudentIds($user);
 
-        // Fetch classrooms available to user
+        // Kelas yang pernah ditempati murid yang terlihat (riwayat kelas), supaya kelas lama tetap bisa
+        // dibuka untuk periode lalu.
         $classRooms = ClassRoom::query()
             ->with('program')
-            ->whereHas('students', function ($q) use ($visibleStudentIds) {
-                $q->whereIn('id', $visibleStudentIds);
-            })
+            ->whereIn('id', StudentClassHistory::query()->whereIn('student_id', $visibleStudentIds)->select('class_room_id'))
             ->orderBy('name')
             ->get();
 
@@ -863,13 +863,16 @@ class ReportController extends Controller
             }
         }
 
-        // Get class students
+        // Murid kelas ini pada akhir periode (riwayat kelas, docs/riwayat-kelas.md), dengan jadwal kelas
+        // ini untuk hitungan target -- bukan kelas mereka saat ini.
+        $periodClass = $classRooms->firstWhere('id', $selectedClassId);
         $students = Student::query()
             ->with(['teacher.user'])
             ->whereIn('id', $visibleStudentIds)
-            ->where('class_room_id', $selectedClassId)
+            ->inClassOn($selectedClassId, StudentClassHistory::referenceDate($endDate))
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->each(fn (Student $student) => $periodClass && $student->setRelation('classRoom', $periodClass));
 
         $studentIds = $students->pluck('id');
 
@@ -1424,11 +1427,9 @@ class ReportController extends Controller
         $user = $request->user();
         $visibleStudentIds = $this->visibleStudentIds($user);
 
-        // Fetch classrooms available to user
+        // Kelas yang pernah ditempati murid yang terlihat (riwayat kelas).
         $classRooms = ClassRoom::query()
-            ->whereHas('students', function ($q) use ($visibleStudentIds) {
-                $q->whereIn('id', $visibleStudentIds);
-            })
+            ->whereIn('id', StudentClassHistory::query()->whereIn('student_id', $visibleStudentIds)->select('class_room_id'))
             ->orderBy('name')
             ->get();
 
@@ -1451,11 +1452,11 @@ class ReportController extends Controller
         $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
         $selectedDate = $request->input('date', date('Y-m-d'));
 
-        // Get class students
+        // Murid kelas ini pada tanggal laporan (riwayat kelas, docs/riwayat-kelas.md).
         $students = Student::query()
             ->with(['teacher.user'])
             ->whereIn('id', $visibleStudentIds)
-            ->where('class_room_id', $selectedClassId)
+            ->inClassOn($selectedClassId, StudentClassHistory::referenceDate($selectedDate))
             ->orderBy('name')
             ->get();
 

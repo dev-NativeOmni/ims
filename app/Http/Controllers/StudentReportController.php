@@ -10,6 +10,7 @@ use App\Models\HafalanTarget;
 use App\Models\MurajaahRecord;
 use App\Models\Setting;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\StudentPoint;
 use App\Models\StudentReport;
 use App\Models\UmmiRecord;
@@ -174,10 +175,11 @@ class StudentReportController extends Controller
             $lockedAt = $lockedReports->max('locked_at');
         } else {
             $students = $this->progressService->visibleStudentQuery($user)
-                ->where('class_room_id', $classRoom->id)
+                ->inClassOn($classRoom->id, self::classReferenceDate($academicYear, $semester, $term))
                 ->with(['classRoom.program', 'teacher.user', 'parents.user'])
                 ->orderBy('name')
-                ->get();
+                ->get()
+                ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom->loadMissing('program')));
             abort_if($students->isEmpty(), 404, 'Tidak ada murid di kelas ini yang dapat Anda akses.');
 
             $batchContext = $this->batchContext($students->pluck('id')->all(), $academicYear, $term);
@@ -219,10 +221,11 @@ class StudentReportController extends Controller
             return redirect()->back()->with('error', "Tanggal BLP {$reportDate['exam']} untuk {$period} {$academicYear} belum diisi. Isi dulu di Pengaturan Rapor sebelum mengunci.");
         }
 
-        $students = Student::where('class_room_id', $classRoom->id)
+        $students = Student::inClassOn($classRoom->id, self::classReferenceDate($academicYear, $semester, $term))
             ->with(['classRoom.program', 'teacher.user', 'parents.user'])
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom->loadMissing('program')));
         if ($students->isEmpty()) {
             return redirect()->back()->with('error', "Kelas {$classRoom->name} belum punya santri.");
         }
@@ -354,6 +357,14 @@ class StudentReportController extends Controller
         }
 
         return [$academicYear, self::semesterOfPeriod($term), $term];
+    }
+
+    /**
+     * Tanggal acuan kelas santri untuk periode rapor: akhir triwulan rapor, atau hari ini bila belum selesai.
+     */
+    private static function classReferenceDate(string $academicYear, int $semester, ?int $term): Carbon
+    {
+        return StudentClassHistory::referenceDate(self::resolveTanseTerm($academicYear, $semester, $term)['end']);
     }
 
     /**
@@ -787,6 +798,15 @@ class StudentReportController extends Controller
     {
         if (! $student->relationLoaded('classRoom')) {
             $student->load(['classRoom.program', 'teacher.user', 'parents.user']);
+        }
+
+        // Kelas pada periode rapor menurut riwayat kelas, bukan kelas saat ini (docs/riwayat-kelas.md).
+        // Cetak/kunci per kelas ($batch) sudah memilih santri & kelasnya lewat inClassOn().
+        if (! $batch) {
+            $classAtPeriod = $student->classRoomOn(self::classReferenceDate($academicYear, $semester, $term));
+            if ($classAtPeriod && $classAtPeriod->id !== $student->classRoom?->id) {
+                $student->setRelation('classRoom', $classAtPeriod);
+            }
         }
 
         // Tahfizh

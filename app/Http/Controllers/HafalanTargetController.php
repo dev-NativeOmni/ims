@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\User;
@@ -751,13 +752,14 @@ class HafalanTargetController extends Controller
             ? $user->teacherProfile?->id
             : ($request->filled('teacher_id') ? (int) $request->input('teacher_id') : null);
 
-        $classRooms = $this->termClassRooms($visibleStudentIds, $currentTeacherId);
+        $classDate = $this->termClassDate($period);
+        $classRooms = $this->termClassRooms($visibleStudentIds, $currentTeacherId, $classDate);
         $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
 
         $months = $selectedClass ? $targets->termMonths($selectedClass, Carbon::parse($period)) : [];
         $rows = collect();
         if ($selectedClass) {
-            $rows = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId)
+            $rows = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId, $classDate)
                 ->map(fn (Student $student) => [
                     'student' => $student,
                     'plan' => $targets->termPlan($student, Carbon::parse($period), $selectedClass, $months),
@@ -803,12 +805,13 @@ class HafalanTargetController extends Controller
 
         $visibleStudentIds = $this->visibleStudentIds($user);
         [, $period] = $this->termPeriods($request->input('period'), $calendar);
-        $selectedClass = $this->termClassRooms($visibleStudentIds, $currentTeacherId)->firstWhere('id', (int) $request->input('class_room_id'))
-            ?? $this->termClassRooms($visibleStudentIds)->firstWhere('id', (int) $request->input('class_room_id'));
+        $classDate = $this->termClassDate($period);
+        $selectedClass = $this->termClassRooms($visibleStudentIds, $currentTeacherId, $classDate)->firstWhere('id', (int) $request->input('class_room_id'))
+            ?? $this->termClassRooms($visibleStudentIds, null, $classDate)->firstWhere('id', (int) $request->input('class_room_id'));
         abort_unless($selectedClass, 403, 'Kelas tidak boleh diakses oleh akun ini.');
 
         $months = $targets->termMonths($selectedClass, Carbon::parse($period));
-        $students = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId)->keyBy('id');
+        $students = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId, $classDate)->keyBy('id');
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = $request->input('targets', []);
 
@@ -919,7 +922,18 @@ class HafalanTargetController extends Controller
         return [$periods, $periods->has($requested) ? $requested : $fallback];
     }
 
-    private function termClassRooms(Collection $visibleStudentIds, ?int $teacherId = null): Collection
+    /**
+     * Tanggal acuan kelas untuk triwulan yang dimulai $period (akhir triwulan, atau hari ini bila berjalan).
+     */
+    private function termClassDate(string $period): Carbon
+    {
+        return StudentClassHistory::referenceDate(Carbon::parse($period)->addMonthsNoOverflow(3)->subDay());
+    }
+
+    /**
+     * Kelas (non-Kelas 10) yang ditempati murid terlihat pada tanggal acuan triwulan (riwayat kelas).
+     */
+    private function termClassRooms(Collection $visibleStudentIds, ?int $teacherId, Carbon $classDate): Collection
     {
         $studentsQuery = Student::query()
             ->whereIn('id', $visibleStudentIds)
@@ -931,19 +945,20 @@ class HafalanTargetController extends Controller
 
         return ClassRoom::query()
             ->with('program')
-            ->whereIn('id', $studentsQuery->select('class_room_id'))
+            ->whereIn('id', StudentClassHistory::query()->activeOn($classDate)->whereIn('student_id', $studentsQuery->select('students.id'))->select('class_room_id'))
             ->orderBy('name')
             ->get()
             ->reject(fn (ClassRoom $class) => $class->isGradeTen())
             ->values();
     }
 
-    private function termStudents(ClassRoom $classRoom, Collection $visibleStudentIds, ?int $teacherId = null): Collection
+    private function termStudents(ClassRoom $classRoom, Collection $visibleStudentIds, ?int $teacherId, Carbon $classDate): Collection
     {
+        // Murid kelas ini pada triwulan itu (riwayat kelas, docs/riwayat-kelas.md), bukan kelas saat ini.
         return Student::query()
             ->with(['classRoom.program', 'teacher.user'])
             ->whereIn('id', $visibleStudentIds)
-            ->where('class_room_id', $classRoom->id)
+            ->inClassOn($classRoom->id, $classDate)
             ->where('status', 'active')
             ->when($teacherId, fn ($q) => $q->where('teacher_id', $teacherId))
             ->orderBy('name')

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +35,48 @@ class Student extends Model
             'juz_orders' => 'array',
             'birth_date' => 'date',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Riwayat kelas (docs/riwayat-kelas.md): setiap kelas berubah -- lewat form, impor, atau
+        // kode mana pun yang memakai model -- dicatat supaya laporan periode lalu tetap benar.
+        static::created(fn (Student $student) => StudentClassHistory::record($student));
+        static::updated(function (Student $student) {
+            if ($student->wasChanged('class_room_id')) {
+                StudentClassHistory::record($student);
+            }
+        });
+    }
+
+    public function classHistories(): HasMany
+    {
+        return $this->hasMany(StudentClassHistory::class)->orderBy('start_date');
+    }
+
+    /**
+     * Santri yang berada di kelas ini pada tanggal itu menurut riwayat kelas (bukan kelas saat ini).
+     */
+    public function scopeInClassOn(Builder $query, int $classRoomId, CarbonInterface|string $date): Builder
+    {
+        return $query->whereIn($query->qualifyColumn('id'), StudentClassHistory::query()
+            ->select('student_id')
+            ->where('class_room_id', $classRoomId)
+            ->activeOn($date));
+    }
+
+    /**
+     * Kelas santri pada tanggal itu (riwayat kelas); tanpa riwayat = kelas saat ini.
+     */
+    public function classRoomOn(CarbonInterface|string $date): ?ClassRoom
+    {
+        $history = $this->classHistories->first(fn (StudentClassHistory $h) => $h->coversDate($date));
+
+        if (! $history || $history->class_room_id === $this->class_room_id) {
+            return $this->classRoom;
+        }
+
+        return $history->classRoom()->with('program')->first();
     }
 
     public function user(): BelongsTo

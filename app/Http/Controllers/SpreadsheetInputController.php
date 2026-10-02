@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
@@ -45,11 +46,19 @@ class SpreadsheetInputController extends Controller
             ? $request->integer('teacher_id')
             : null;
 
+        // Bulan lembar kerja menentukan kelas murid: kelas pada akhir bulan itu (atau hari ini bila bulan
+        // berjalan) menurut riwayat kelas -- docs/riwayat-kelas.md.
+        $selectedMonth = $request->input('month', date('Y-m'));
+        $classDate = StudentClassHistory::referenceDate(Carbon::parse($selectedMonth.'-01')->endOfMonth());
+
         // Get classes matching user scope
-        $classRoomIds = Student::query()
-            ->whereIn('id', $visibleStudentIds)
-            ->where('status', 'active')
-            ->when($selectedTeacherId, fn ($q) => $q->where('teacher_id', $selectedTeacherId))
+        $classRoomIds = StudentClassHistory::query()
+            ->activeOn($classDate)
+            ->whereIn('student_id', Student::query()
+                ->whereIn('id', $visibleStudentIds)
+                ->where('status', 'active')
+                ->when($selectedTeacherId, fn ($q) => $q->where('teacher_id', $selectedTeacherId))
+                ->select('id'))
             ->pluck('class_room_id')
             ->filter()
             ->unique()
@@ -68,9 +77,6 @@ class SpreadsheetInputController extends Controller
         }
 
         $selectedClass = $classRooms->firstWhere('id', $selectedClassId);
-
-        // Get selected month (default to current month)
-        $selectedMonth = $request->input('month', date('Y-m'));
 
         // Parse month dates (Monday to Friday only)
         $year = (int) date('Y', strtotime($selectedMonth.'-01'));
@@ -181,12 +187,13 @@ class SpreadsheetInputController extends Controller
         if ($selectedClassId) {
             $students = Student::query()
                 ->with(['classRoom.program', 'teacher.user'])
-                ->where('class_room_id', $selectedClassId)
+                ->inClassOn((int) $selectedClassId, $classDate)
                 ->whereIn('id', $visibleStudentIds)
                 ->where('status', 'active')
                 ->when($selectedTeacherId, fn ($q) => $q->where('teacher_id', $selectedTeacherId))
                 ->orderBy('name')
-                ->get();
+                ->get()
+                ->each(fn (Student $student) => $selectedClass && $student->setRelation('classRoom', $selectedClass));
 
             $studentIds = $students->pluck('id')->toArray();
             $startDate = $selectedMonth.'-01';

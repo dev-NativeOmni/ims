@@ -8,6 +8,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use App\Models\HafalanTarget;
 use App\Models\Student;
+use App\Models\StudentClassHistory;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Services\AcademicCalendarService;
@@ -423,12 +424,19 @@ class QuarterlyReportController extends Controller
      */
     private function buildReportData(Request $request, ?TeacherProfile $teacher = null): array
     {
+        $termContext = $this->resolveTermContext($request);
+        // Anggota kelas = kelas santri pada tanggal acuan triwulan (riwayat kelas, docs/riwayat-kelas.md),
+        // supaya santri yang pindah tetap di laporan kelas lamanya untuk triwulan itu.
+        $classDate = StudentClassHistory::referenceDate($termContext['termEndDate']);
+
         // Load all classrooms with their program (guru: hanya kelas yang punya murid aktif dia ampu)
         $classRooms = ClassRoom::query()
             ->with('program')
             ->when($teacher, fn ($query) => $query->whereIn(
                 'id',
-                $teacher->students()->where('status', 'active')->select('class_room_id')
+                StudentClassHistory::query()->activeOn($classDate)
+                    ->whereIn('student_id', $teacher->students()->where('status', 'active')->select('students.id'))
+                    ->select('class_room_id')
             ))
             ->orderBy('name')
             ->get();
@@ -440,7 +448,6 @@ class QuarterlyReportController extends Controller
             $selectedClassId = $selectedClass?->id;
         }
 
-        $termContext = $this->resolveTermContext($request);
         $academicYear = $termContext['academicYear'];
         $selectedTerm = $termContext['selectedTerm'];
         $monthsMap = $termContext['monthsMap'];
@@ -457,21 +464,13 @@ class QuarterlyReportController extends Controller
             ? collect()
             : Student::query()
                 ->with(['classRoom', 'teacher.user'])
-                ->where('class_room_id', $selectedClassId)
+                ->inClassOn((int) $selectedClassId, $classDate)
                 ->when($teacher, fn ($query) => $query->where('teacher_id', $teacher->id))
                 ->where('status', 'active')
                 ->orderBy('name')
-                ->get();
-
-        // Fallback for empty seeded classrooms (admin saja -- guru tidak boleh melihat murid lain)
-        if ($students->isEmpty() && ! $teacher) {
-            $students = Student::query()
-                ->with(['classRoom', 'teacher.user'])
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->take(10)
-                ->get();
-        }
+                ->get()
+                // Target baris dihitung dengan jadwal kelas ini (kelas pada triwulan itu), bukan kelas saat ini.
+                ->each(fn (Student $student) => $selectedClass && $student->setRelation('classRoom', $selectedClass));
 
         $studentIds = $students->pluck('id')->toArray();
 
@@ -532,6 +531,7 @@ class QuarterlyReportController extends Controller
         $monthRanges = $termContext['monthRanges'];
         $termStartDate = $termContext['termStartDate'];
         $termEndDate = $termContext['termEndDate'];
+        $classDate = StudentClassHistory::referenceDate($termEndDate);
 
         $classRooms = ClassRoom::query()->with('program')->orderBy('level')->orderBy('name')->get()
             ->filter(function (ClassRoom $classRoom) use ($isTahfizhProgram) {
@@ -548,10 +548,11 @@ class QuarterlyReportController extends Controller
         foreach ($classRooms as $classRoom) {
             $groupStudents = $teacherProfile->students()
                 ->with(['classRoom', 'teacher.user'])
-                ->where('class_room_id', $classRoom->id)
+                ->inClassOn($classRoom->id, $classDate)
                 ->where('status', 'active')
                 ->orderBy('name')
-                ->get();
+                ->get()
+                ->each(fn (Student $student) => $student->setRelation('classRoom', $classRoom));
 
             if ($groupStudents->isEmpty()) {
                 continue;
