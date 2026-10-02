@@ -1181,9 +1181,12 @@ class ReportController extends Controller
             } else {
                 $ummiHalaman = '-';
             }
-            $ummiCapaian = ($latestUmmi && $latestUmmi->surahs->isNotEmpty())
-                ? $latestUmmi->surahs_end_label
-                : ($latestUmmi?->materi ?? '-');
+            // Capaian hafalan = surah dari catatan Ummi terakhir YANG BERISI surah (sampai akhir periode),
+            // bukan materi pertemuan terakhir (mis. "Sukun") saat pertemuan itu tanpa hafalan -- sama
+            // dengan UmmiProgressService::termPosition() di Laporan Triwulan & rapor.
+            $lastUmmiWithSurah = $allUmmiRecords->get($student->id, collect())
+                ->first(fn ($record) => $record->surahs->contains(fn ($entry) => $entry->surah_id !== null));
+            $ummiCapaian = $lastUmmiWithSurah?->surahs_end_label ?: '-';
 
             $ummiTarget = null;
             if ($isGrade10) {

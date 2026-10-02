@@ -271,6 +271,17 @@ class StudentProgressService
                 ->latest()
                 ->first();
             $latestUmmiSurah = $latestUmmiRecord?->surahs->last();
+            // Catatan Ummi terakhir yang berisi hafalan surah (pertemuan terakhir bisa tanpa hafalan,
+            // hanya materi mis. "Sukun") -- untuk kolom Capaian Hafalan.
+            $latestUmmiSurahRecord = $latestUmmiRecord?->surahs->contains(fn ($entry) => $entry->surah_id !== null)
+                ? $latestUmmiRecord
+                : UmmiRecord::query()
+                    ->with('surahs.surah')
+                    ->where('student_id', $student->id)
+                    ->whereHas('surahs', fn ($q) => $q->whereNotNull('surah_id'))
+                    ->latest('tanggal')
+                    ->latest()
+                    ->first();
 
             $latestUmmiTarget = HafalanTarget::query()
                 ->with('surah')
@@ -361,6 +372,7 @@ class StudentProgressService
 
                 // Ummi Metrics
                 'ummi_record' => $latestUmmiRecord,
+                'ummi_surah_record' => $latestUmmiSurahRecord,
                 'ummi_target' => $latestUmmiTarget,
                 'ummi_jilid_str' => $currentJilidStr,
                 'ummi_jilid_num' => $currentJilidNum,

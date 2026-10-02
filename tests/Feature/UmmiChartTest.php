@@ -189,4 +189,23 @@ class UmmiChartTest extends TestCase
         ]))->viewData('studentReports')[0];
         $this->assertSame('Surah 111 (5)', $term['ummi_target']['hafalan'], 'Term = target terakhir di triwulan.');
     }
+
+    #[Test]
+    public function ummi_card_capaian_hafalan_skips_sessions_without_surah(): void
+    {
+        $this->ummi('2026-08-10', 'Jilid 2', '20', 112, '1-4');
+        UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'tanggal' => '2026-08-20',
+            'ummi_jilid' => 'Jilid 2', 'ummi_halaman' => '23', 'tatap_muka' => 2, 'materi' => 'Sukun',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 8, 'year' => 2026,
+        ]));
+        $row = $response->assertOk()->viewData('studentReports')[0];
+
+        $this->assertSame('23', $row['ummi_halaman'], 'Jilid/Halaman tetap dari catatan terakhir.');
+        $this->assertSame('Surah 112 (4)', $row['ummi_capaian'], 'Bukan materi "Sukun" dari pertemuan tanpa hafalan.');
+        $response->assertDontSee('Sukun');
+    }
 }
