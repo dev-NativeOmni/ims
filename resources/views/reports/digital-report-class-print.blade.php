@@ -45,22 +45,7 @@
         body {
             font-family: 'Times New Roman', 'Liberation Serif', serif;
         }
-        /* Lembar F4 berbingkai: isi berada di dalam garis dalam bingkai (garis di 18,2 mm dari tepi). */
-        .print-container {
-            position: relative;
-            box-sizing: border-box;
-            width: 215mm;
-            min-height: 330mm;
-            padding: 21mm 23mm;
-        }
-        .rapor-border {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 215mm;
-            height: 330mm;
-            pointer-events: none;
-        }
+        /* Ukuran lembar & bingkai: lihat blok style di partials/report-sheet. */
         .report-table {
             border-collapse: collapse;
             width: 100%;

@@ -5,11 +5,53 @@
     supaya rapor terkunci tetap utuh walau data/pengaturan berubah.
     $signatureUris: path berkas tanda tangan => data URI.
     $pageBreak: true untuk lembar kedua dst. pada cetak per kelas.
+    $live: true di pratinjau Pengaturan Rapor -- teks kop/periode/pejabat & tanda tangan diikat ke
+    state Alpine form (x-text), modul diikat ke centang Modul (x-show). Cetak: false.
 --}}
 @php
+    $live = $live ?? false;
     $signature = fn ($key) => $signatureUris[$sheet['signatories'][$key]['signature'] ?? ''] ?? null;
     $adabCount = count($sheet['adab']['categories']);
+    // Atribut pengikat Alpine untuk pratinjau (ekspresi ditulis tetap di sini, bukan dari input).
+    $bind = fn (string $expression) => $live ? 'x-text="'.$expression.'"' : '';
+    // Modul yang dicetak (Pengaturan Rapor > Modul); simpanan terkunci lama tanpa 'modules' = semua tampil.
+    $showModule = fn (string $module) => $live || ($sheet['modules'][$module] ?? true);
+    $moduleToggle = fn (string $flag) => $live ? 'x-show="'.$flag.'"' : '';
+    $liveOfficials = [
+        'coord_tahfizh' => ['coordTahfizhName', 'coordTahfizhNik', null],
+        'coord_keagamaan' => ['coordKeagamaanName', 'coordKeagamaanNik', null],
+        'coord_tanse' => ['coordTanseName', 'coordTanseNik', null],
+        'headmaster' => ['headmasterName', 'headmasterNik', 'headmasterTitle'],
+    ];
 @endphp
+@once
+    <style>
+        /* Lembar F4 berbingkai: isi berada di dalam garis dalam bingkai (garis di 18,2 mm dari tepi). */
+        .print-container {
+            position: relative;
+            box-sizing: border-box;
+            width: 215mm;
+            min-height: 330mm;
+            padding: 21mm 23mm;
+        }
+        .rapor-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 215mm;
+            height: 330mm;
+            max-width: none;
+            pointer-events: none;
+        }
+        /* Kertas selalu putih: tangkal aturan mode gelap global app.css (.dark .bg-white dst., !important)
+           saat lembar tampil di halaman aplikasi (pratinjau Pengaturan Rapor). */
+        .dark .print-container.bg-white { background-color: #fff !important; color: #000 !important; border: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        .dark .print-container .bg-gray-100 { background-color: #f3f4f6 !important; }
+        .dark .print-container .text-gray-900, .dark .print-container .text-gray-800 { color: #1f2937 !important; }
+        .dark .print-container .text-gray-600 { color: #4b5563 !important; }
+        .dark .print-container .text-gray-500 { color: #6b7280 !important; }
+    </style>
+@endonce
 <div class="print-container mx-auto bg-white shadow-sm {{ ($pageBreak ?? false) ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
     {{-- Bingkai hias F4 (vektor, dibuat dari contoh sekolah); isi lembar ada di dalam garis dalamnya. --}}
     <img src="{{ asset('images/rapor-border-f4.svg') }}" class="rapor-border" alt="" aria-hidden="true">
@@ -24,15 +66,15 @@
         <!-- Title & Basmalah -->
         <div class="flex-1 flex flex-col items-center px-2">
             <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
-            <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center">{{ $sheet['letterhead']['main_title'] }}</h1>
-            <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5">{{ $sheet['letterhead']['school_name'] }}</h2>
+            <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center" {!! $bind('reportMainTitle') !!}>{{ $sheet['letterhead']['main_title'] }}</h1>
+            <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5" {!! $bind('reportSchoolName') !!}>{{ $sheet['letterhead']['school_name'] }}</h2>
 
             <!-- Periode Rapor -->
-            <div class="border border-black px-4 py-0.5 mt-2 bg-gray-50 text-[9px] font-bold text-black uppercase">
+            <div class="border border-black px-4 py-0.5 mt-2 bg-gray-50 text-[9px] font-bold text-black uppercase" {!! $bind('periodLabels[reportPeriod]') !!}>
                 {{ $sheet['period_label'] }}
             </div>
 
-            <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran {{ $sheet['academic_year'] }}</p>
+            <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran <span {!! $bind('academicYear') !!}>{{ $sheet['academic_year'] }}</span></p>
         </div>
 
         <!-- Right Spacer for Header Balance -->
@@ -59,12 +101,13 @@
             <td>{{ $sheet['student']['number'] ?: '-' }}</td>
             <td class="font-bold">Term</td>
             <td>:</td>
-            <td>{{ \App\Http\Controllers\StudentReportController::TERM_ROMAN[$sheet['term']] }}</td>
+            <td{!! $live ? ' x-text="'.e(\Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::TERM_ROMAN)).'[reportPeriod]"' : '' !!}>{{ \App\Http\Controllers\StudentReportController::TERM_ROMAN[$sheet['term']] }}</td>
         </tr>
     </table>
 
     <!-- I. LAPORAN TAHFIZH -->
-    <div class="mb-4 space-y-2">
+    @if ($showModule('tahfizh'))
+    <div class="mb-4 space-y-2" {!! $moduleToggle('showTahfizh') !!}>
         <h3 class="text-xs font-black uppercase text-black">I. LAPORAN TAHFIZH</h3>
 
         @php
@@ -136,8 +179,11 @@
         @endif
     </div>
 
+    @endif
+
     <!-- II. PENILAIAN ADAB -->
-    <div class="mb-4 space-y-2">
+    @if ($showModule('adab'))
+    <div class="mb-4 space-y-2" {!! $moduleToggle('showAdab') !!}>
         <h3 class="text-xs font-black uppercase text-black">II. PENILAIAN ADAB</h3>
 
         <table class="w-full border border-black text-xs text-left">
@@ -170,8 +216,11 @@
         </table>
     </div>
 
+    @endif
+
     <!-- III. LAPORAN TANSE -->
-    <div class="mb-4 space-y-2">
+    @if ($showModule('tanse'))
+    <div class="mb-4 space-y-2" {!! $moduleToggle('showTanse') !!}>
         <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE</h3>
 
         <table class="w-full border border-black text-xs text-left">
@@ -203,6 +252,8 @@
         </table>
     </div>
 
+    @endif
+
     <!-- Signature Area: tiga koordinator berjajar di atas, Kepala Sekolah di tengah bawah -->
     {{-- Titimangsa = tanggal BLP periode; belum diatur = titik-titik untuk diisi tangan. --}}
     @php $titimangsa = $sheet['letterhead']['city'].', '.($sheet['letterhead']['date'] ?? '........................'); @endphp
@@ -215,14 +266,22 @@
                         {{-- Baris atas: titimangsa di atas koordinator paling kanan (lainnya penyeimbang tak terlihat);
                              baris bawah: "Mengetahui," di atas Kepala Sekolah. --}}
                         @if ($rowIdx === 0)
-                            <p class="{{ $colIdx < 2 ? 'invisible select-none' : '' }}">{{ $titimangsa }}</p>
+                            <p class="{{ $colIdx < 2 ? 'invisible select-none' : '' }}" {!! $bind("reportCity + ', ' + reportDate") !!}>{{ $titimangsa }}</p>
                         @else
                             <p>Mengetahui,</p>
                         @endif
-                        <p class="font-semibold">{{ $official['title'] }}</p>
-                        @include('reports.partials.signature-slot', ['uri' => $signature($key)])
-                        <p class="font-bold underline text-black">{{ $official['name'] }}</p>
-                        <p class="text-[10px] text-gray-600">NIK. {{ $official['nik'] }}</p>
+                        @php [$liveName, $liveNik, $liveTitle] = $liveOfficials[$key]; @endphp
+                        <p class="font-semibold" {!! $liveTitle ? $bind($liveTitle) : '' !!}>{{ $official['title'] }}</p>
+                        @if ($live)
+                            {{-- Pratinjau: tanda tangan tersimpan / yang baru dipilih di form (state Alpine `sig`). --}}
+                            <div class="h-16 flex items-center justify-center">
+                                <template x-if="sig['{{ $key }}']"><img :src="sig['{{ $key }}']" alt="Tanda tangan" class="max-h-full max-w-[160px] object-contain"></template>
+                            </div>
+                        @else
+                            @include('reports.partials.signature-slot', ['uri' => $signature($key)])
+                        @endif
+                        <p class="font-bold underline text-black" {!! $bind($liveName) !!}>{{ $official['name'] }}</p>
+                        <p class="text-[10px] text-gray-600">NIK. <span {!! $bind($liveNik) !!}>{{ $official['nik'] }}</span></p>
                     </div>
                 @endforeach
             </div>

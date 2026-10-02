@@ -419,6 +419,66 @@ class StudentReportController extends Controller
             'teacher_notes' => $data['report']?->teacher_notes,
             'letterhead' => $letterhead['header'] + ['date' => $data['reportDate']['date']],
             'signatories' => $letterhead['signatories'],
+            'modules' => self::reportModules(),
+        ];
+    }
+
+    /**
+     * Modul yang dicetak (Pengaturan Rapor > Modul Rapor yang Ditampilkan).
+     *
+     * @return array{tahfizh: bool, adab: bool, tanse: bool}
+     */
+    private static function reportModules(): array
+    {
+        return collect(['tahfizh', 'adab', 'tanse'])
+            ->mapWithKeys(fn ($module) => [$module => Setting::get("report_show_{$module}", '1') === '1'])
+            ->all();
+    }
+
+    /**
+     * Lembar contoh untuk pratinjau Pengaturan Rapor: susunan & teks bawaan sama dengan rapor cetak
+     * (partial report-sheet yang sama), isi santri berupa contoh Kelas 10.
+     */
+    private function previewSheet(string $academicYear, int $term): array
+    {
+        $letterhead = self::letterhead();
+        $tanseTerm = self::resolveTanseTerm($academicYear, self::semesterOfPeriod($term), $term);
+
+        return [
+            'academic_year' => $academicYear,
+            'semester' => self::semesterOfPeriod($term),
+            'term' => $term,
+            'period_label' => self::REPORT_PERIODS[$term],
+            'student' => ['id' => 0, 'name' => 'Abbas Surya Permana (Contoh)', 'number' => '26102-001', 'class' => 'X E2', 'program' => null],
+            'tahfizh' => [
+                'layout' => 'ummi',
+                'target' => ['jilid' => 'Jilid 1', 'halaman' => '27', 'surah' => 'Al-Bayyinah', 'ayat' => '8'],
+                'capaian' => ['jilid' => 'Jilid 1', 'halaman' => '27', 'surah' => 'Al-Bayyinah', 'ayat' => '8'],
+                'lines' => null,
+                'completed' => true,
+                'notes' => null,
+                'description' => self::tahfizhNotes()['tuntas'],
+                'final_score' => 87,
+                'final_predicate' => Setting::getAdabGradeLabel(Setting::getAdabGrade(87)),
+            ],
+            'adab' => [
+                'categories' => collect(Setting::getAdabQuestions())->pluck('title')->values()->all(),
+                'grade' => 'A',
+                'score' => 92,
+                'grade_label' => Setting::getAdabGradeLabel('A'),
+                'description' => self::adabDescription(92),
+            ],
+            'tanse' => [
+                'term_label' => $tanseTerm['label'],
+                'reward_points' => 0,
+                'violation_points' => 0,
+                'grade' => 'A',
+                'notes' => self::tanseNote('A'),
+            ],
+            'teacher_notes' => null,
+            'letterhead' => $letterhead['header'] + ['date' => self::reportDate($academicYear, self::semesterOfPeriod($term), $term)['date']],
+            'signatories' => $letterhead['signatories'],
+            'modules' => self::reportModules(),
         ];
     }
 
@@ -1014,6 +1074,7 @@ class StudentReportController extends Controller
             ->get()
             ->keyBy('locked_class_room_id');
         $canUnlock = $request->user()->hasRole('super_admin');
+        $previewSheet = $this->previewSheet($academicYear, $reportPeriod);
 
         // Tanda tangan pejabat (sama dengan Pengaturan Umum); hanya Super Admin yang boleh mengganti.
         $officialSignatures = Signatures::officialPreviews();
@@ -1027,7 +1088,7 @@ class StudentReportController extends Controller
             'headmasterTitle', 'headmasterName', 'headmasterNik',
             'coordTanseName', 'coordTanseNik',
             'officialSignatures', 'canEditSignatures',
-            'printYear', 'printTerm', 'printPeriodLabel', 'academicYearOptions', 'classLocks', 'canUnlock'
+            'printYear', 'printTerm', 'printPeriodLabel', 'academicYearOptions', 'classLocks', 'canUnlock', 'previewSheet'
         ));
     }
 

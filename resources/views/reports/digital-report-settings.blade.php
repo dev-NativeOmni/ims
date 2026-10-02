@@ -313,7 +313,7 @@
                 </div>
 
                 {{-- RIGHT COLUMN: Live Interactive Document Preview (5 cols) --}}
-                <div class="lg:col-span-5 lg:sticky lg:top-6 space-y-3">
+                <div class="lg:col-span-5 lg:sticky lg:top-6 space-y-3 min-w-0">
                     
                     {{-- Preview Card Header --}}
                     <div class="flex items-center justify-between px-1">
@@ -329,185 +329,32 @@
                         <span class="text-[10px] text-gray-400">Miniatur Lembar Cetak</span>
                     </div>
 
-                    {{-- Paper Mockup Sheet --}}
-                    <div class="bg-white text-gray-900 rounded-xl p-4 sm:p-5 border border-gray-300 shadow-xl overflow-hidden select-none" style="font-family: 'Times New Roman', serif;">
-                        
-                        <!-- Mini Kop Surat -->
-                        <div class="grid grid-cols-[38px_1fr_38px] items-center border-b border-black pb-2.5 mb-3">
-                            <div class="shrink-0 flex justify-start">
-                                <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-9 w-auto object-contain" alt="Logo" />
-                            </div>
-                            
-                            <div class="flex-1 flex flex-col items-center px-1 text-center">
-                                <img src="{{ asset('images/image1.png') }}" class="h-3.5 object-contain mb-1" alt="Basmalah" />
-                                <h4 class="text-[9px] font-black uppercase text-black leading-tight tracking-tight" x-text="reportMainTitle"></h4>
-                                <p class="text-[8px] font-bold uppercase text-black mt-0.5 leading-none" x-text="reportSchoolName"></p>
-                                
-                                <div class="border border-black px-2 py-0.5 mt-1 bg-gray-50 text-[7px] font-bold text-black uppercase leading-none">
-                                    <span x-text="periodLabels[reportPeriod]"></span>
-                                </div>
-                                <p class="text-[7px] font-bold text-black mt-0.5">Tahun Ajaran <span x-text="academicYear"></span></p>
-                            </div>
-                            
-                            <div class="shrink-0 w-[38px]"></div>
+                    {{-- Lembar sama persis dengan rapor cetak (partial report-sheet, data contoh), diperkecil sesuai lebar
+                         kolom. Teks kop/periode/pejabat, tanda tangan & centang Modul ikut form secara langsung. --}}
+                    <div x-data="{
+                            scale: 0.45,
+                            height: 560,
+                            fit() {
+                                this.scale = this.$el.clientWidth / this.$refs.sheet.offsetWidth;
+                                this.height = this.$refs.sheet.offsetHeight * this.scale;
+                            },
+                            init() {
+                                this.$nextTick(() => this.fit());
+                                new ResizeObserver(() => this.fit()).observe(this.$el);
+                                new ResizeObserver(() => this.fit()).observe(this.$refs.sheet);
+                            },
+                         }"
+                         class="relative w-full min-w-0 rounded-xl border border-gray-300 shadow-xl overflow-hidden select-none" style="background-color: #fff"
+                         :style="`height: ${height}px`">
+                        {{-- Absolut: lembar 215 mm tidak ikut melebarkan kolom grid (skala dihitung dari lebar kotak). --}}
+                        <div x-ref="sheet" class="absolute top-0 left-0 origin-top-left" style="width: 215mm" :style="`transform: scale(${scale})`">
+                            @include('reports.partials.report-sheet', ['sheet' => $previewSheet, 'signatureUris' => [], 'live' => true])
                         </div>
-
-                        <!-- Mini Identitas Siswa: Nama & NIS di kiri, Kelas & Term di kanan -->
-                        <div class="text-[8px] text-black mb-3 border-b border-gray-100 pb-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5">
-                            <div class="grid grid-cols-[38px_1fr]"><span class="font-bold">Nama</span><span>: Abbas Surya Permana (Contoh)</span></div>
-                            <div class="grid grid-cols-[28px_1fr]"><span class="font-bold">Kelas</span><span>: X E2</span></div>
-                            <div class="grid grid-cols-[38px_1fr]"><span class="font-bold">NIS/NISN</span><span>: 26102-001</span></div>
-                            <div class="grid grid-cols-[28px_1fr]"><span class="font-bold">Term</span><span>: <span x-text="{{ \Illuminate\Support\Js::from(\App\Http\Controllers\StudentReportController::TERM_ROMAN) }}[reportPeriod]"></span></span></div>
-                        </div>
-
-                        <!-- Mini Section I: Tahfizh (Dynamic Toggle) -->
-                        <div class="mb-2.5 space-y-1" x-show="showTahfizh" x-transition>
-                            <h5 class="text-[8px] font-black uppercase text-black">I. LAPORAN TAHFIZH</h5>
-                            {{-- Contoh Kelas 10/Ummi; Kelas 11/12 memakai Surah|Ayat + Baris, tanpa nilai. --}}
-                            <table class="w-full border border-black text-[6px] text-center">
-                                <thead class="bg-gray-100 border-b border-black font-bold">
-                                    <tr>
-                                        <th rowspan="2" class="p-0.5 border-r border-black w-4">No.</th>
-                                        <th colspan="4" class="p-0.5 border-r border-b border-black">Target Triwulan</th>
-                                        <th colspan="4" class="p-0.5 border-r border-b border-black">Capaian Akhir</th>
-                                        <th rowspan="2" class="p-0.5 border-r border-black">Status</th>
-                                        <th rowspan="2" class="p-0.5">Nilai</th>
-                                    </tr>
-                                    <tr class="border-b border-black font-semibold">
-                                        @foreach ([1, 2] as $unused)
-                                            <th class="p-0.5 border-r border-black">Jilid</th>
-                                            <th class="p-0.5 border-r border-black">Hal.</th>
-                                            <th class="p-0.5 border-r border-black">Surah</th>
-                                            <th class="p-0.5 border-r border-black">Ayat</th>
-                                        @endforeach
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-black">
-                                        <td class="p-0.5 border-r border-black">1</td>
-                                        <td class="p-0.5 border-r border-black">Jilid 1</td>
-                                        <td class="p-0.5 border-r border-black">27</td>
-                                        <td class="p-0.5 border-r border-black">Al-Bayyinah</td>
-                                        <td class="p-0.5 border-r border-black">8</td>
-                                        <td class="p-0.5 border-r border-black">Jilid 1</td>
-                                        <td class="p-0.5 border-r border-black">27</td>
-                                        <td class="p-0.5 border-r border-black">Al-Bayyinah</td>
-                                        <td class="p-0.5 border-r border-black">8</td>
-                                        <td class="p-0.5 border-r border-black font-bold text-emerald-700">Tuntas</td>
-                                        <td class="p-0.5 font-black">87 / Jayyid Jiddan</td>
-                                    </tr>
-                                    <tr class="border-b border-black">
-                                        <td colspan="11" class="p-0.5 text-left text-gray-600"><span class="font-bold text-black">Deskripsi:</span> {{ \Illuminate\Support\Str::limit($tahfizhNotes['tuntas'], 90) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Mini Section II: Adab (Dynamic Toggle) -->
-                        <div class="mb-2.5 space-y-1" x-show="showAdab" x-transition>
-                            <h5 class="text-[8px] font-black uppercase text-black">II. PENILAIAN ADAB</h5>
-                            <table class="w-full border border-black text-[7px] text-left">
-                                <thead class="bg-gray-100 border-b border-black font-bold text-center">
-                                    <tr>
-                                        <th class="p-0.5 border-r border-black w-5">No.</th>
-                                        <th class="p-0.5 border-r border-black">Komponen</th>
-                                        <th class="p-0.5 border-r border-black w-10">Nilai</th>
-                                        <th class="p-0.5">Deskripsi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-black">
-                                        <td class="p-0.5 border-r border-black text-center">1</td>
-                                        <td class="p-0.5 border-r border-black">Adab Kepada Allah</td>
-                                        <td class="p-0.5 border-r border-black text-center font-bold">A (100)</td>
-                                        <td class="p-0.5 italic text-gray-600">Mumtaz (Sangat Baik)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Mini Section III: Tanse (Dynamic Toggle) -->
-                        <div class="mb-3 space-y-1" x-show="showTanse" x-transition>
-                            <h5 class="text-[8px] font-black uppercase text-black">III. LAPORAN TANSE</h5>
-                            <table class="w-full border border-black text-[7px] text-left">
-                                <thead class="bg-gray-100 border-b border-black font-bold text-center">
-                                    <tr>
-                                        <th class="p-0.5 border-r border-black w-5">No.</th>
-                                        <th class="p-0.5 border-r border-black">Jenis</th>
-                                        <th class="p-0.5 border-r border-black w-8">Poin</th>
-                                        <th class="p-0.5">Deskripsi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-black">
-                                        <td class="p-0.5 border-r border-black text-center">1</td>
-                                        <td class="p-0.5 border-r border-black">Penghargaan</td>
-                                        <td class="p-0.5 border-r border-black text-center text-emerald-700 font-bold">0</td>
-                                        <td rowspan="2" class="p-0.5 text-gray-700 align-top"><span class="font-bold">Predikat A</span> &mdash; Alhamdulillah ananda sudah Sangat Baik&hellip;</td>
-                                    </tr>
-                                    <tr class="border-b border-black">
-                                        <td class="p-0.5 border-r border-black text-center">2</td>
-                                        <td class="p-0.5 border-r border-black">Pelanggaran</td>
-                                        <td class="p-0.5 border-r border-black text-center text-rose-700 font-bold">0</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Mini Live Signatures: tiga koordinator di atas, Kepala Sekolah di tengah bawah -->
-                        <div class="border-t border-gray-200 pt-2 text-[7px] text-black">
-
-                            <!-- Row 1 -->
-                            <div class="grid grid-cols-3 gap-2 text-center">
-                                <div>
-                                    <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
-                                    <p class="font-bold leading-tight">Koordinator Tahfizh</p>
-                                    <div class="h-6 flex items-center justify-center">
-                                        <template x-if="sig['coord_tahfizh']"><img :src="sig['coord_tahfizh']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
-                                    </div>
-                                    <p class="font-black underline leading-tight truncate" x-text="coordTahfizhName"></p>
-                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTahfizhNik"></span></p>
-                                </div>
-                                <div>
-                                    <p class="invisible leading-tight" x-text="reportCity + ', ' + reportDate"></p>
-                                    <p class="font-bold leading-tight">Koordinator Keagamaan</p>
-                                    <div class="h-6 flex items-center justify-center">
-                                        <template x-if="sig['coord_keagamaan']"><img :src="sig['coord_keagamaan']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
-                                    </div>
-                                    <p class="font-black underline leading-tight truncate" x-text="coordKeagamaanName"></p>
-                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordKeagamaanNik"></span></p>
-                                </div>
-                                <div>
-                                    <p class="leading-tight" x-text="reportCity + ', ' + reportDate"></p>
-                                    <p class="font-bold leading-tight">Koordinator Tanse</p>
-                                    <div class="h-6 flex items-center justify-center">
-                                        <template x-if="sig['coord_tanse']"><img :src="sig['coord_tanse']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
-                                    </div>
-                                    <p class="font-black underline leading-tight truncate" x-text="coordTanseName"></p>
-                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="coordTanseNik"></span></p>
-                                </div>
-                            </div>
-
-                            <!-- Row 2 -->
-                            <div class="mx-auto w-1/2 text-center mt-2.5">
-                                <div>
-                                    <p class="leading-tight" >Mengetahui,</p>
-                                    <p class="font-bold leading-tight truncate" x-text="headmasterTitle"></p>
-                                    <div class="h-6 flex items-center justify-center">
-                                        <template x-if="sig['headmaster']"><img :src="sig['headmaster']" alt="" class="max-h-6 max-w-[70px] object-contain"></template>
-                                    </div>
-                                    <p class="font-black underline leading-tight truncate" x-text="headmasterName"></p>
-                                    <p class="text-[6px] text-gray-600 leading-none">NIK. <span x-text="headmasterNik"></span></p>
-                                </div>
-                            </div>
-
-                        </div>
-
                     </div>
 
                     <p class="text-[11px] text-gray-500 dark:text-zinc-400 text-center italic flex items-center justify-center gap-1">
                         <x-heroicon-o-light-bulb class="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        <span>Tampilan di atas adalah miniatur format cetak sebenarnya.</span>
+                        <span>Tampilan di atas memakai format cetak yang sama persis (data santri berupa contoh).</span>
                     </p>
                 </div>
 

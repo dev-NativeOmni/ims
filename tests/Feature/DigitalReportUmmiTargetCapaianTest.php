@@ -179,9 +179,21 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
             'academic_year' => '2026/2027', 'report_main_title' => 'L', 'report_school_name' => 'S', 'report_city' => 'K',
             'tahfizh_notes' => ['tuntas' => '', 'tidak_tuntas' => 'Terus semangat menghafal.'],
+            'report_show_tahfizh' => '1', 'report_show_adab' => '1', 'report_show_tanse' => '1',
         ])->assertRedirect();
 
         $this->assertSame(StudentReportController::TAHFIZH_NOTES['tuntas'], StudentReportController::tahfizhNotes()['tuntas'], 'Kosong = kembali ke bawaan.');
         $this->printTerm2()->assertSee('Terus semangat menghafal.');
+    }
+
+    #[Test]
+    public function unchecked_modules_are_left_out_of_the_printed_report(): void
+    {
+        $this->actingAs($this->admin)->post(route('digital-reports.settings.update'), [
+            'academic_year' => '2026/2027', 'report_main_title' => 'L', 'report_school_name' => 'S', 'report_city' => 'K',
+            'report_show_tahfizh' => '1', 'report_show_tanse' => '1',
+        ])->assertRedirect();
+
+        $this->printTerm2()->assertSee('I. LAPORAN TAHFIZH</h3>', false)->assertDontSee('II. PENILAIAN ADAB</h3>', false)->assertSee('III. LAPORAN TANSE</h3>', false);
     }
 }
