@@ -82,7 +82,6 @@ class StudentReportController extends Controller
         $data = $this->getReportData($student, $academicYear, $semester, null, $term);
         $data['report'] = $report;
 
-
         $canEditNotes = $user->hasAnyRole(['super_admin', 'admin', 'teacher']) && $report->status !== 'locked' && ! $report->isLocked();
 
         return view('reports.digital-report', array_merge(
