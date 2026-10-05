@@ -45,13 +45,28 @@
             <!-- Filter Panel -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-5">
                 <form method="GET" action="{{ route('tahfizh-exams.index') }}" class="flex flex-wrap items-end gap-3">
+                    <!-- Triwulan: membatasi riwayat ujian & menentukan triwulan Status Ujian -->
+                    <div class="flex-1 min-w-[250px]">
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Triwulan</label>
+                        <select name="triwulan" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">{{ $examStatus ? 'Triwulan berjalan' : 'Semua Triwulan' }}</option>
+                            @foreach ($triwulanOptions as $yearLabel => $options)
+                                <optgroup label="Tahun Ajaran {{ $yearLabel }}">
+                                    @foreach ($options as $value => $label)
+                                        <option value="{{ $value }}" @selected($selectedTriwulan === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Status Ujian Triwulan -->
                     <div class="flex-1 min-w-[180px]">
-                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Status Ujian ({{ $termLabel }})</label>
+                        <label class="block text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1.5">Status Ujian</label>
                         <select name="exam_status" onchange="this.form.submit()" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <option value="">Semua</option>
-                            <option value="belum" @selected($examStatus === 'belum')>Belum ujian triwulan ini</option>
-                            <option value="sudah" @selected($examStatus === 'sudah')>Sudah ujian triwulan ini</option>
+                            <option value="belum" @selected($examStatus === 'belum')>Belum ujian di triwulan ini</option>
+                            <option value="sudah" @selected($examStatus === 'sudah')>Sudah ujian di triwulan ini</option>
                         </select>
                     </div>
 
@@ -196,6 +211,15 @@
         @else
         <!-- List Table -->
         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Riwayat Ujian Tahfizh</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{{ $termLabel ? 'Triwulan '.$termLabel : 'Semua triwulan' }}</p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    {{ $exams->total() }} ujian
+                </span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
                     <thead class="bg-zinc-50 dark:bg-zinc-900/50">
@@ -261,7 +285,7 @@
                                         <svg class="h-10 w-10 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        <p class="text-sm font-medium">Belum ada riwayat ujian tahfizh.</p>
+                                        <p class="text-sm font-medium">Belum ada riwayat ujian tahfizh{{ $termLabel ? ' di triwulan ini' : '' }}.</p>
                                         <a href="{{ route('tahfizh-exams.create') }}" class="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
                                             <span>Mulai ujian pertama</span>
                                             <x-heroicon-m-arrow-right class="w-3.5 h-3.5" />

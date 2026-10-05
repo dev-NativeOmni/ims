@@ -9,7 +9,7 @@ use App\Models\Surah;
 use App\Models\TahfizhExam;
 use App\Models\TeacherProfile;
 use App\Models\User;
-use App\Services\AcademicCalendarService;
+use App\Support\AcademicYear;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,17 +22,23 @@ class TahfizhExamController extends Controller
         7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
     ];
 
-    public function index(Request $request, AcademicCalendarService $calendar): View
+    public function index(Request $request): View
     {
         $user = $request->user();
 
-        $months = $calendar->termMonths(Carbon::today());
-        $termStart = reset($months)['start'];
-        $termEnd = end($months)['end'];
-        $termLabel = self::MONTH_NAMES[$termStart->month].' - '.self::MONTH_NAMES[$termEnd->month].' '.$termEnd->year;
-
         $examStatus = $request->input('exam_status');
         $examStatus = in_array($examStatus, ['belum', 'sudah'], true) ? $examStatus : null;
+
+        // Filter Triwulan ("2026-1" = tahun ajaran 2026/2027 triwulan 1). Kosong = semua riwayat, kecuali
+        // Status Ujian dipilih: status belum/sudah selalu dihitung per triwulan (bawaan: triwulan berjalan).
+        $triwulan = $this->parseTriwulan($request->input('triwulan'));
+        if (! $triwulan && $examStatus) {
+            $triwulan = [AcademicYear::forDate(Carbon::today()), AcademicYear::termOf(Carbon::today())];
+        }
+        [$termStart, $termEnd] = $triwulan ? AcademicYear::termRange(...$triwulan) : [null, null];
+        $termLabel = $termStart ? self::termLabel($termStart, $termEnd) : null;
+        $triwulanOptions = $this->triwulanOptions();
+        $selectedTriwulan = $triwulan ? AcademicYear::startYear($triwulan[0]).'-'.$triwulan[1] : '';
 
         $maxScore = Setting::getTahfizhScoringConfig()['exam_weight'];
         $passThreshold = round($maxScore * 0.7, 1);
@@ -62,6 +68,8 @@ class TahfizhExamController extends Controller
                     'examStatus' => $examStatus,
                     'passStatus' => null,
                     'termLabel' => $termLabel,
+                    'triwulanOptions' => $triwulanOptions,
+                    'selectedTriwulan' => $selectedTriwulan,
                 ],
                 $this->formData($user)
             ));
@@ -90,7 +98,7 @@ class TahfizhExamController extends Controller
             ->when($request->filled('surah_id'), function ($query) use ($request) {
                 $query->where('surah_id', $request->integer('surah_id'));
             })
-            ->when($examStatus === 'sudah', function ($query) use ($termStart, $termEnd) {
+            ->when($termStart, function ($query) use ($termStart, $termEnd) {
                 $query->whereDate('exam_date', '>=', $termStart->toDateString())
                     ->whereDate('exam_date', '<=', $termEnd->toDateString());
             })
@@ -108,9 +116,54 @@ class TahfizhExamController extends Controller
                 'examStatus' => $examStatus,
                 'passStatus' => $passStatus,
                 'termLabel' => $termLabel,
+                'triwulanOptions' => $triwulanOptions,
+                'selectedTriwulan' => $selectedTriwulan,
             ],
             $this->formData($user)
         ));
+    }
+
+    /**
+     * "2026-1" => ['2026/2027', 1]; tidak valid/kosong => null.
+     *
+     * @return array{0: string, 1: int}|null
+     */
+    private function parseTriwulan(?string $value): ?array
+    {
+        if (! preg_match('/^(\d{4})-([1-4])$/', (string) $value, $match)) {
+            return null;
+        }
+        $year = $match[1].'/'.((int) $match[1] + 1);
+
+        return AcademicYear::isValid($year) ? [$year, (int) $match[2]] : null;
+    }
+
+    /**
+     * Pilihan filter Triwulan per tahun ajaran (terbaru dulu), s.d. triwulan berjalan.
+     *
+     * @return array<string, array<string, string>> tahun ajaran => [nilai => label]
+     */
+    private function triwulanOptions(): array
+    {
+        $today = Carbon::today();
+
+        return collect(AcademicYear::options())
+            ->mapWithKeys(fn (string $year) => [$year => collect(array_reverse(array_keys(AcademicYear::TERM_START_MONTHS)))
+                ->map(fn (int $term) => [$term, ...AcademicYear::termRange($year, $term)])
+                ->filter(fn (array $option) => $option[1]->lte($today))
+                ->mapWithKeys(fn (array $option) => [
+                    AcademicYear::startYear($year).'-'.$option[0] => "Triwulan {$option[0]} (".self::termLabel($option[1], $option[2], short: true).')',
+                ])
+                ->all()])
+            ->filter()
+            ->all();
+    }
+
+    private static function termLabel(Carbon $start, Carbon $end, bool $short = false): string
+    {
+        $month = fn (Carbon $date) => $short ? substr(self::MONTH_NAMES[$date->month], 0, 3) : self::MONTH_NAMES[$date->month];
+
+        return $month($start).' - '.$month($end).' '.$end->year;
     }
 
     public function create(Request $request): View

@@ -13,6 +13,9 @@ class AcademicYear
 {
     public const FIRST = '2026/2027';
 
+    /** Triwulan dalam satu tahun ajaran => bulan pertama-nya (1 Jul-Sep, 2 Okt-Des, 3 Jan-Mar, 4 Apr-Jun). */
+    public const TERM_START_MONTHS = [1 => 7, 2 => 10, 3 => 1, 4 => 4];
+
     /**
      * Tahun ajaran aktif dari Pengaturan Rapor (tidak valid/sebelum FIRST = FIRST).
      */
@@ -48,6 +51,27 @@ class AcademicYear
         $start = max($date->month >= 7 ? $date->year : $date->year - 1, self::startYear(self::FIRST));
 
         return $start.'/'.($start + 1);
+    }
+
+    /**
+     * Triwulan (1-4) yang memuat tanggal itu.
+     */
+    public static function termOf(Carbon $date): int
+    {
+        return intdiv(($date->month + 5) % 12, 3) + 1;
+    }
+
+    /**
+     * Hari pertama & terakhir satu triwulan pada tahun ajaran itu.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public static function termRange(string $year, int $term): array
+    {
+        $month = self::TERM_START_MONTHS[$term];
+        $start = Carbon::create(self::startYear($year) + ($month < 7 ? 1 : 0), $month, 1)->startOfDay();
+
+        return [$start, $start->copy()->addMonthsNoOverflow(2)->endOfMonth()->startOfDay()];
     }
 
     /**

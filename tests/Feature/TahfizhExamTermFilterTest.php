@@ -126,4 +126,50 @@ class TahfizhExamTermFilterTest extends TestCase
             ->assertStatus(200)
             ->assertSee("selectedStudent: '{$this->otherStudent->id}'", false);
     }
+
+    #[Test]
+    public function triwulan_filter_limits_the_exam_history(): void
+    {
+        Carbon::setTestNow('2026-11-10');
+        $this->exam($this->student, '2026-08-01'); // Triwulan 1
+        $this->exam($this->otherStudent, '2026-10-01'); // Triwulan 2, hari pertama
+
+        $term1 = $this->actingAs($this->admin)->get(route('tahfizh-exams.index', ['triwulan' => '2026-1']));
+        $term1->assertOk()->assertSee('Juli - September 2026');
+        $this->assertSame([$this->student->id], $term1->viewData('exams')->pluck('student_id')->all());
+
+        $term2 = $this->actingAs($this->admin)->get(route('tahfizh-exams.index', ['triwulan' => '2026-2']));
+        $this->assertSame([$this->otherStudent->id], $term2->viewData('exams')->pluck('student_id')->all());
+
+        // Tidak valid = semua riwayat.
+        $all = $this->actingAs($this->admin)->get(route('tahfizh-exams.index', ['triwulan' => '2025-9']));
+        $this->assertCount(2, $all->viewData('exams'));
+        $this->assertSame('', $all->viewData('selectedTriwulan'));
+    }
+
+    #[Test]
+    public function belum_filter_follows_the_chosen_triwulan(): void
+    {
+        Carbon::setTestNow('2026-11-10');
+        $this->exam($this->student, '2026-08-01'); // sudah ujian di Triwulan 1 saja
+
+        $term1 = $this->actingAs($this->admin)->get(route('tahfizh-exams.index', ['exam_status' => 'belum', 'triwulan' => '2026-1']));
+        $this->assertSame(['Murid Belum Ujian'], $term1->viewData('pendingStudents')->pluck('name')->all());
+
+        // Tanpa pilihan triwulan: triwulan berjalan (Okt - Des), keduanya belum ujian.
+        $current = $this->actingAs($this->admin)->get(route('tahfizh-exams.index', ['exam_status' => 'belum']));
+        $current->assertSee('Oktober - Desember 2026');
+        $this->assertSame('2026-2', $current->viewData('selectedTriwulan'));
+        $this->assertCount(2, $current->viewData('pendingStudents'));
+    }
+
+    #[Test]
+    public function triwulan_options_stop_at_the_current_triwulan(): void
+    {
+        Carbon::setTestNow('2026-11-10');
+
+        $options = $this->actingAs($this->admin)->get(route('tahfizh-exams.index'))->viewData('triwulanOptions');
+
+        $this->assertSame(['2026-2', '2026-1'], array_keys($options['2026/2027']));
+    }
 }
