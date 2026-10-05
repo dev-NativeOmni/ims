@@ -31,6 +31,7 @@ use App\Http\Controllers\SuperAdmin\UserManagementController;
 use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\TrialViewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WaliKelasController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,8 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::post('/role/switch', [RoleSwitchController::class, 'switch'])->name('role.switch');
+    // Akun trial: "Lihat sebagai" role lain, tetap lihat saja (ReadOnlyAccess).
+    Route::post('/trial/lihat-sebagai', [TrialViewController::class, 'switch'])->name('trial.view-as');
     Route::get('/role/switch/{role}', [RoleSwitchController::class, 'switch'])->name('role.switch.get');
 
     /*

@@ -46,7 +46,7 @@ class TrialRoleTest extends TestCase
     {
         $this->assertTrue($this->trial->isReadOnly());
         $this->assertTrue($this->trial->hasRole('headmaster'));
-        $this->assertSame('Trial (Lihat Saja)', $this->trial->currentRole()->display_name);
+        $this->assertStringStartsWith('Trial · ', $this->trial->currentRole()->display_name);
 
         foreach (['tahfizh-exams.index', 'hafalan-records.index', 'digital-reports.index', 'reports.periodic', 'adab.chart', 'student-points.chart'] as $route) {
             $this->actingAs($this->trial)->get(route($route))->assertOk();
@@ -122,6 +122,59 @@ class TrialRoleTest extends TestCase
     private function headmasterUser(): User
     {
         return User::factory()->create(['role_id' => Role::where('name', 'headmaster')->value('id'), 'status' => 'active']);
+    }
+
+    #[Test]
+    public function trial_can_view_as_a_leadership_role_without_using_another_account(): void
+    {
+        $this->actingAs($this->trial)->post(route('trial.view-as'), ['role' => 'admin'])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($this->trial);
+        $this->get(route('dashboard'))->assertRedirect(route('admin.dashboard'));
+        $this->get(route('students.index'))->assertOk();
+        $this->assertTrue($this->trial->fresh()->hasRole('admin'));
+
+        // Tetap lihat saja, dan halaman akun/sistem (daftar user memuat password) tertutup.
+        $this->post(route('students.store'), ['name' => 'X'])->assertForbidden();
+        $this->get(route('students.create'))->assertSessionHas('read_only_blocked', true);
+
+        $this->post(route('trial.view-as'), ['role' => 'super_admin']);
+        $this->get(route('settings.index'))->assertOk();
+        $this->get(route('users.index'))->assertSessionHas('read_only_blocked', true);
+        $this->get(route('audit-logs.index'))->assertSessionHas('read_only_blocked', true);
+    }
+
+    #[Test]
+    public function trial_views_account_scoped_roles_through_a_read_only_sample_account(): void
+    {
+        $this->actingAs($this->trial)->post(route('trial.view-as'), ['role' => 'teacher'])->assertRedirect(route('dashboard'));
+
+        // Masuk sebagai guru contoh (guru dengan murid bimbingan), tapi tetap lihat saja.
+        $this->assertAuthenticatedAs($this->teacherUser);
+        $this->get(route('dashboard'))->assertRedirect(route('teacher.dashboard'));
+        $this->get(route('teacher.dashboard'))->assertOk()->assertSee('Mode Trial')->assertSee('akun contoh');
+        $this->get(route('tahfizh-exams.index'))->assertOk();
+        $this->post(route('tahfizh-exams.store'), [])->assertForbidden();
+        $this->get(route('tahfizh-exams.create'))->assertSessionHas('read_only_blocked', true);
+        $this->get(route('profile.edit'))->assertSessionHas('read_only_blocked', true);
+        $this->post(route('role.switch'), ['role_id' => 1])->assertForbidden();
+
+        // Ganti ke orangtua contoh, lalu kembali ke role pimpinan = kembali ke akun trial.
+        $this->post(route('trial.view-as'), ['role' => 'parent']);
+        $this->assertAuthenticatedAs($this->parentUser);
+        $this->get(route('parent.dashboard'))->assertOk();
+
+        $this->post(route('trial.view-as'), ['role' => 'headmaster']);
+        $this->assertAuthenticatedAs($this->trial);
+        $this->get(route('dashboard'))->assertRedirect(route('headmaster.dashboard'));
+    }
+
+    #[Test]
+    public function only_trial_can_use_view_as(): void
+    {
+        $this->actingAs($this->admin)->post(route('trial.view-as'), ['role' => 'teacher'])->assertForbidden();
+        $this->assertAuthenticatedAs($this->admin);
+        $this->assertFalse(ReadOnlyAccess::applies($this->admin));
     }
 
     #[Test]

@@ -82,9 +82,10 @@ class User extends Authenticatable
      * If active_role_id session is set and valid, returns that role.
      * Otherwise returns the primary role.
      *
-     * Role trial (ReadOnlyAccess) dikembalikan sebagai role ReadOnlyAccess::VIEWS_AS dengan nama
-     * tampilan trial, jadi seluruh pengecekan role (menu, dashboard, cakupan data) memperlakukannya
-     * seperti Kepala Sekolah; batas "lihat saja" dijaga BlockReadOnlyWrites.
+     * Role trial (ReadOnlyAccess) dikembalikan sebagai role yang dipilih di "Lihat sebagai"
+     * (bawaan ReadOnlyAccess::VIEWS_AS) dengan nama tampilan "Trial · ...", jadi seluruh pengecekan
+     * role (menu, dashboard, cakupan data) memperlakukannya seperti role itu; batas "lihat saja"
+     * dijaga BlockReadOnlyWrites.
      */
     public function currentRole(): ?Role
     {
@@ -94,12 +95,19 @@ class User extends Authenticatable
             return $role;
         }
 
-        if (! $this->readOnlyViewRole) {
-            $viewAs = Role::query()->where('name', ReadOnlyAccess::VIEWS_AS)->first();
+        // Role yang dipilih di "Lihat sebagai" (TrialViewController); bawaan Kepala Sekolah.
+        $viewAsName = (string) session(ReadOnlyAccess::VIEW_ROLE_KEY, ReadOnlyAccess::VIEWS_AS);
+        if ($viewAsName === ReadOnlyAccess::ROLE || in_array($viewAsName, ReadOnlyAccess::ACCOUNT_SCOPED_ROLES, true)) {
+            $viewAsName = ReadOnlyAccess::VIEWS_AS;
+        }
+
+        if ($this->readOnlyViewRole?->name !== $viewAsName) {
+            $viewAs = Role::query()->where('name', $viewAsName)->first()
+                ?? Role::query()->where('name', ReadOnlyAccess::VIEWS_AS)->first();
             if (! $viewAs) {
                 return $role;
             }
-            $this->readOnlyViewRole = (clone $viewAs)->forceFill(['display_name' => $role->display_name]);
+            $this->readOnlyViewRole = (clone $viewAs)->forceFill(['display_name' => 'Trial · '.($viewAs->display_name ?: $viewAs->name)]);
         }
 
         return $this->readOnlyViewRole;

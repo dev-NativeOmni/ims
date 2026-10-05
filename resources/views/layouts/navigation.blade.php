@@ -131,7 +131,7 @@
                          Profil
                      </a>
                  @endif
-                 <form method="POST" action="{{ route('logout') }}" class="flex-1">
+                 <form method="POST" action="{{ route('logout') }}" data-read-only-allowed class="flex-1">
                      @csrf
                      <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-red-55/10 dark:hover:bg-red-500/10 border border-transparent hover:border-red-100 dark:hover:border-red-500/10 transition-all duration-150">
                          <svg class="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

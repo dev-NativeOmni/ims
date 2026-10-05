@@ -36,16 +36,6 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @if (auth()->user()?->isReadOnly())
-            {{-- Akun Trial (lihat saja): sembunyikan tombol aksi. Penjaga sebenarnya di server (BlockReadOnlyWrites). --}}
-            <style>
-                form[method="post" i]:not([action$="/logout"]):not([action*="/impersonate/stop"]),
-                a[href*="/create"], a[href$="/edit"], a[href*="/edit?"],
-                a[href*="export"], a[href*="download"], a[href*="print"],
-                a[href*="spreadsheet-input"], a[href*="fast-input"], a[href*="/profile"],
-                button[onclick*="print"] { display: none !important; }
-            </style>
-        @endif
     </head>
     @php
         $bgSetting = \App\Models\Setting::get('background');
@@ -72,7 +62,7 @@
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-200 animate-ping"></span>
                         <span class="inline-flex items-center gap-1.5"><x-heroicon-o-exclamation-triangle class="w-4 h-4 text-amber-100 shrink-0" /> <span><strong>Mode Impersonasi:</strong> Anda sedang meninjau sistem sebagai <strong>{{ auth()->user()?->name }}</strong> ({{ auth()->user()?->role?->display_name ?? auth()->user()?->role?->name }}).</span></span>
                     </div>
-                    <form method="POST" action="{{ route('impersonate.stop') }}" class="inline">
+                    <form method="POST" action="{{ route('impersonate.stop') }}" class="inline" data-read-only-allowed>
                         @csrf
                         <button type="submit" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md text-xs font-semibold backdrop-blur transition cursor-pointer">
                             Kembali ke Super Admin &rarr;
@@ -81,18 +71,8 @@
                 </div>
             @endif
 
-            @if (auth()->user()?->isReadOnly())
-                <div class="{{ session('read_only_blocked') ? 'bg-amber-600' : 'bg-sky-700' }} text-white px-4 py-2 text-xs sm:text-sm font-medium flex items-center gap-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
-                    <x-heroicon-o-eye class="w-4 h-4 shrink-0" />
-                    <span>
-                        @if (session('read_only_blocked'))
-                            <strong>Halaman tadi tidak dapat dibuka.</strong>
-                        @else
-                            <strong>Mode Trial:</strong>
-                        @endif
-                        akun ini hanya untuk melihat. Tambah, ubah, hapus, unggah, unduh, dan cetak tidak tersedia.
-                    </span>
-                </div>
+            @if (\App\Support\ReadOnlyAccess::applies(auth()->user()))
+                @include('layouts.partials.read-only-guard')
             @endif
 
             @include('layouts.navigation')
