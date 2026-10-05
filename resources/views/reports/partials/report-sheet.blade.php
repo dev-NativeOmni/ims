@@ -211,9 +211,9 @@
                             {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
                         @if ($isUmmi)
-                            {{-- "89 / Mumtaz": istilah Arab predikat (Pengaturan Adab); kurung dibuang untuk simpanan terkunci lama. --}}
+                            {{-- "87 / Jayyid Jiddan": predikat dari Pengaturan Penilaian Tahfizh; kurung dibuang untuk simpanan terkunci lama. --}}
                             <td class="p-1.5 align-middle font-black text-black text-sm">
-                                {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / {{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}@endif
+                                {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / <span class="whitespace-nowrap">{{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}</span>@endif
                             </td>
                         @endif
                     </tr>

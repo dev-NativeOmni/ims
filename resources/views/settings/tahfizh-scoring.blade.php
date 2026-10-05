@@ -11,7 +11,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <form method="POST" action="{{ route('settings.tahfizh-scoring.reset') }}" onsubmit="return confirm('Reset pengaturan penilaian tahfizh ke standar default (50/50, nilai belum tuntas 40)?');">
+                <form method="POST" action="{{ route('settings.tahfizh-scoring.reset') }}" onsubmit="return confirm('Reset pengaturan penilaian tahfizh ke standar default (50/50, nilai belum tuntas 40, predikat Mumtaz/Jayyid Jiddan/Jayyid/Maqbul)?');">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-750 transition cursor-pointer shadow-sm">
                         <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,6 +71,41 @@
                         <p class="text-xs text-zinc-500 dark:text-zinc-400">
                             Poin yang tetap didapat murid dari komponen target walaupun targetnya belum ditandai selesai.
                         </p>
+                    </div>
+                </div>
+
+                {{-- Predikat nilai Tahfizh di rapor (Setting::tahfizhPredicate()), mis. "87 / Jayyid Jiddan". --}}
+                @php $predicates = old('predicates', $config['predicates']); @endphp
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 space-y-4"
+                     x-data="{ mins: @js(collect($predicates)->pluck('min')->map(fn ($min) => (int) $min)->values()) }">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Predikat Nilai Tahfizh</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Tercetak di kolom Nilai rapor setelah angkanya, mis. <span class="font-semibold">87 / Jayyid Jiddan</span>. Isi nilai minimal tiap predikat dari yang tertinggi.</p>
+                    </div>
+                    <div class="divide-y divide-gray-100 dark:divide-zinc-800">
+                        @foreach ($predicates as $i => $predicate)
+                            @php
+                                $isLast = $loop->last;
+                                // Rentang nilai tiap predikat; x-text ikut berubah saat nilai minimal diketik.
+                                [$rangeText, $rangeExpression] = match (true) {
+                                    $isLast => ['di bawah '.$predicates[$i - 1]['min'], "'di bawah ' + mins[".($i - 1).']'],
+                                    $i === 0 => [$predicate['min'].' – 100', "mins[0] + ' – 100'"],
+                                    default => [$predicate['min'].' – '.((int) $predicates[$i - 1]['min'] - 1), "mins[{$i}] + ' – ' + (mins[".($i - 1).'] - 1)'],
+                                };
+                            @endphp
+                            <div class="grid grid-cols-[1fr_5.5rem] sm:grid-cols-[8rem_5.5rem_1fr] items-center gap-x-3 gap-y-2 py-2.5">
+                                <span class="text-sm font-bold text-zinc-700 dark:text-zinc-300 tabular-nums" x-text="{{ $rangeExpression }}">{{ $rangeText }}</span>
+                                @if ($isLast)
+                                    <span class="text-xs text-center text-zinc-400 dark:text-zinc-500">otomatis</span>
+                                @else
+                                    <input type="number" name="predicates[{{ $i }}][min]" min="1" max="100" required x-model.number="mins[{{ $i }}]"
+                                           value="{{ $predicate['min'] }}" aria-label="Nilai minimal predikat {{ $i + 1 }}"
+                                           class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-center" />
+                                @endif
+                                <input type="text" name="predicates[{{ $i }}][label]" maxlength="50" required value="{{ $predicate['label'] }}" aria-label="Nama predikat {{ $i + 1 }}"
+                                       class="col-span-2 sm:col-span-1 w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-[#09090b]/40 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" />
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 

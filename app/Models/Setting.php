@@ -455,6 +455,7 @@ class Setting extends Model
             'target_weight' => 50,
             'exam_weight' => 50,
             'target_incomplete_score' => 40,
+            'predicates' => self::TAHFIZH_DEFAULT_PREDICATES,
         ];
 
         $val = self::get('tahfizh_scoring_config');
@@ -463,8 +464,52 @@ class Setting extends Model
         }
 
         $decoded = is_string($val) ? json_decode($val, true) : $val;
+        if (! is_array($decoded)) {
+            return $default;
+        }
 
-        return is_array($decoded) ? array_replace_recursive($default, $decoded) : $default;
+        // Predikat diganti utuh (bukan digabung per indeks) supaya urutan tingkatannya tidak tercampur.
+        $config = array_replace($default, array_intersect_key($decoded, $default));
+        if (! self::validTahfizhPredicates($config['predicates'])) {
+            $config['predicates'] = self::TAHFIZH_DEFAULT_PREDICATES;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Predikat nilai Tahfizh rapor bawaan, dari nilai minimal tertinggi; tingkat terakhir (min 0) =
+     * semua nilai di bawahnya. Bisa diubah di Pengaturan Penilaian Tahfizh.
+     */
+    public const TAHFIZH_DEFAULT_PREDICATES = [
+        ['min' => 90, 'label' => 'Mumtaz'],
+        ['min' => 80, 'label' => 'Jayyid Jiddan'],
+        ['min' => 70, 'label' => 'Jayyid'],
+        ['min' => 0, 'label' => 'Maqbul'],
+    ];
+
+    private static function validTahfizhPredicates(mixed $predicates): bool
+    {
+        if (! is_array($predicates) || count($predicates) !== count(self::TAHFIZH_DEFAULT_PREDICATES)) {
+            return false;
+        }
+
+        return collect($predicates)->every(fn ($p) => is_array($p) && isset($p['min'], $p['label']) && is_numeric($p['min']));
+    }
+
+    /**
+     * Predikat nilai Tahfizh rapor (mis. 87 => "Jayyid Jiddan") menurut Pengaturan Penilaian Tahfizh.
+     */
+    public static function tahfizhPredicate(float $score): string
+    {
+        $predicates = self::getTahfizhScoringConfig()['predicates'];
+        foreach ($predicates as $predicate) {
+            if ($score >= (float) $predicate['min']) {
+                return (string) $predicate['label'];
+            }
+        }
+
+        return (string) end($predicates)['label'];
     }
 
     /**

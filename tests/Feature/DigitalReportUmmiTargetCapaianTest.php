@@ -126,19 +126,19 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
     }
 
     #[Test]
-    public function tahfizh_score_predicate_follows_the_adab_scale(): void
+    public function tahfizh_score_predicate_follows_the_tahfizh_scale(): void
     {
-        $cases = [95 => 'Mumtaz', 85 => 'Jayyid', 75 => 'Maqbul', 65 => "Dho'if", 50 => "Dho'if Jiddan"];
+        $cases = [95 => 'Mumtaz', 85 => 'Jayyid Jiddan', 75 => 'Jayyid', 65 => 'Maqbul'];
         foreach ($cases as $score => $predicate) {
-            $this->assertSame($predicate, Setting::adabGradeArabic(Setting::getAdabGrade($score)));
+            $this->assertSame($predicate, Setting::tahfizhPredicate($score));
         }
 
         $this->student->update(['tahfizh_level' => 'ummi']);
         $score = (float) Setting::calculateTahfizhScore($this->student->fresh())['final_score'];
 
-        $short = Setting::adabGradeArabic(Setting::getAdabGrade($score));
+        $short = Setting::tahfizhPredicate($score);
         $this->printTerm2()->assertOk()
-            ->assertSee(rtrim(rtrim(number_format($score, 1, '.', ''), '0'), '.').' / '.$short)
+            ->assertSee(rtrim(rtrim(number_format($score, 1, '.', ''), '0'), '.').' / <span class="whitespace-nowrap">'.$short.'</span>', false)
             ->assertDontSee('/ 100');
     }
 

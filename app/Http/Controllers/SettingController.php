@@ -528,7 +528,35 @@ class SettingController extends Controller
             'target_weight' => ['required', 'integer', 'min:0', 'max:100'],
             'exam_weight' => ['required', 'integer', 'min:0', 'max:100'],
             'target_incomplete_score' => ['required', 'integer', 'min:0'],
+            'predicates' => ['nullable', 'array', 'size:'.count(Setting::TAHFIZH_DEFAULT_PREDICATES)],
+            'predicates.*.min' => ['nullable', 'integer', 'between:1,100'],
+            'predicates.*.label' => ['required_with:predicates', 'string', 'max:50'],
+        ], [
+            'predicates.*.label.required_with' => 'Nama predikat tidak boleh kosong.',
+            'predicates.*.min.between' => 'Nilai minimal predikat harus antara 1 dan 100.',
         ]);
+
+        // Predikat: nilai minimal harus turun dari atas ke bawah; tingkat terakhir selalu mulai dari 0.
+        if (isset($validated['predicates'])) {
+            $predicates = collect(array_values($validated['predicates']))
+                ->map(fn ($p, $i) => [
+                    'min' => $i === count($validated['predicates']) - 1 ? 0 : (int) ($p['min'] ?? 0),
+                    'label' => trim($p['label']),
+                ])
+                ->all();
+            $mins = array_column($predicates, 'min');
+            for ($i = 1; $i < count($mins); $i++) {
+                if ($mins[$i] >= $mins[$i - 1]) {
+                    return redirect()
+                        ->route('settings.tahfizh-scoring')
+                        ->withErrors(['predicates' => 'Nilai minimal predikat harus makin kecil dari atas ke bawah.'])
+                        ->withInput();
+                }
+            }
+            $validated['predicates'] = $predicates;
+        } else {
+            $validated['predicates'] = Setting::getTahfizhScoringConfig()['predicates'];
+        }
 
         if ($validated['target_weight'] + $validated['exam_weight'] !== 100) {
             return redirect()

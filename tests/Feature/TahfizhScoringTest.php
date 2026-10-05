@@ -205,6 +205,59 @@ class TahfizhScoringTest extends TestCase
         $this->assertSame(50, Setting::getTahfizhScoringConfig()['target_weight']);
     }
 
+    #[Test]
+    public function tahfizh_predicates_default_to_mumtaz_jayyid_jiddan_jayyid(): void
+    {
+        $cases = [100 => 'Mumtaz', 90 => 'Mumtaz', 89 => 'Jayyid Jiddan', 80 => 'Jayyid Jiddan', 79.9 => 'Jayyid', 70 => 'Jayyid', 69 => 'Maqbul', 0 => 'Maqbul'];
+        foreach ($cases as $score => $predicate) {
+            $this->assertSame($predicate, Setting::tahfizhPredicate((float) $score), "Nilai {$score}");
+        }
+    }
+
+    #[Test]
+    public function admin_can_change_tahfizh_predicates(): void
+    {
+        $this->actingAs($this->admin)->post(route('settings.tahfizh-scoring.update'), [
+            'target_weight' => 50, 'exam_weight' => 50, 'target_incomplete_score' => 40,
+            'predicates' => [
+                ['min' => 95, 'label' => 'Mumtaz'],
+                ['min' => 85, 'label' => 'Jayyid Jiddan'],
+                ['min' => 75, 'label' => 'Jayyid'],
+                ['min' => 50, 'label' => 'Perlu Bimbingan'], // tingkat terakhir selalu mulai dari 0
+            ],
+        ])->assertSessionHas('success');
+
+        $this->assertSame('Jayyid Jiddan', Setting::tahfizhPredicate(94));
+        $this->assertSame('Perlu Bimbingan', Setting::tahfizhPredicate(10));
+        $this->assertSame(0, Setting::getTahfizhScoringConfig()['predicates'][3]['min']);
+
+        // Simpan tanpa field predikat (form lama) tidak menghapus predikat yang sudah diatur.
+        $this->actingAs($this->admin)->post(route('settings.tahfizh-scoring.update'), [
+            'target_weight' => 50, 'exam_weight' => 50, 'target_incomplete_score' => 40,
+        ])->assertSessionHas('success');
+        $this->assertSame('Jayyid', Setting::tahfizhPredicate(80));
+
+        $this->actingAs($this->admin)->post(route('settings.tahfizh-scoring.reset'));
+        $this->assertSame('Jayyid Jiddan', Setting::tahfizhPredicate(80));
+    }
+
+    #[Test]
+    public function tahfizh_predicate_minimums_must_descend(): void
+    {
+        $this->actingAs($this->admin)->post(route('settings.tahfizh-scoring.update'), [
+            'target_weight' => 50, 'exam_weight' => 50, 'target_incomplete_score' => 40,
+            'predicates' => [
+                ['min' => 80, 'label' => 'Mumtaz'],
+                ['min' => 90, 'label' => 'Jayyid Jiddan'],
+                ['min' => 70, 'label' => 'Jayyid'],
+                ['label' => 'Maqbul'],
+            ],
+        ])->assertSessionHasErrors('predicates');
+
+        $this->assertSame('Mumtaz', Setting::tahfizhPredicate(90), 'Pengaturan lama tetap dipakai.');
+        $this->actingAs($this->admin)->get(route('settings.tahfizh-scoring'))->assertOk()->assertSee('Predikat Nilai Tahfizh');
+    }
+
     // =========================================================================
     // Render halaman form (single-score / single-ayah field)
     // =========================================================================
