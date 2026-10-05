@@ -564,6 +564,36 @@ class StudentReportController extends Controller
         return collect(self::TAHFIZH_NOTES)->map(fn ($default, $key) => trim((string) ($saved[$key] ?? '')) ?: $default)->all();
     }
 
+    /**
+     * Pilihan font lembar rapor cetak (Pengaturan Rapor > Tampilan Cetak) => [label, CSS font-family].
+     * Font dipakai dari komputer yang mencetak; urutan cadangan menjaga tampilan bila font tidak terpasang.
+     */
+    public const REPORT_FONTS = [
+        'times' => ['Times New Roman', "'Times New Roman', 'Liberation Serif', Times, serif"],
+        'tahoma' => ['Tahoma', "Tahoma, Verdana, 'DejaVu Sans', sans-serif"],
+        'cambria' => ['Cambria', 'Cambria, Caladea, Georgia, serif'],
+    ];
+
+    /** Posisi logo sekolah di kop rapor cetak. */
+    public const LOGO_POSITIONS = ['left' => 'Kiri', 'center' => 'Tengah', 'right' => 'Kanan'];
+
+    /**
+     * Tampilan lembar rapor cetak: posisi logo & font. Sengaja dibaca dari pengaturan terkini (bukan
+     * dari simpanan rapor terkunci), jadi ikut berubah juga untuk rapor yang sudah dikunci.
+     *
+     * @return array{logo: string, font: string}
+     */
+    public static function printLayout(): array
+    {
+        $logo = (string) Setting::get('report_logo_position', 'center');
+        $font = (string) Setting::get('report_font', 'times');
+
+        return [
+            'logo' => isset(self::LOGO_POSITIONS[$logo]) ? $logo : 'center',
+            'font' => isset(self::REPORT_FONTS[$font]) ? $font : 'times',
+        ];
+    }
+
     public const TANSE_DEFAULT_A_MIN = 90;
 
     public const TANSE_DEFAULT_B_MIN = 80;
@@ -1095,6 +1125,7 @@ class StudentReportController extends Controller
         $blpDates = self::blpDates($academicYear);
         $tanseRules = self::tanseRules();
         $tahfizhNotes = self::tahfizhNotes();
+        $printLayout = self::printLayout();
 
         // Periode untuk cetak & kunci per kelas (bisa periode lama); bawaan = periode aktif.
         $printYear = AcademicYear::isValid($request->input('print_year')) ? $request->input('print_year') : $academicYear;
@@ -1116,7 +1147,7 @@ class StudentReportController extends Controller
         $canEditSignatures = $request->user()->hasRole('super_admin');
 
         return view('reports.digital-report-settings', compact(
-            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'reportPeriodUntil', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules', 'tahfizhNotes',
+            'classRooms', 'academicYear', 'semester', 'reportPeriod', 'reportPeriodUntil', 'showTahfizh', 'showAdab', 'showTanse', 'blpDates', 'tanseRules', 'tahfizhNotes', 'printLayout',
             'reportMainTitle', 'reportSchoolName', 'reportCity',
             'coordTahfizhName', 'coordTahfizhNik',
             'coordKeagamaanName', 'coordKeagamaanNik',
@@ -1142,6 +1173,8 @@ class StudentReportController extends Controller
             'tahfizh_notes' => 'nullable|array', 'tahfizh_notes.*' => 'nullable|string|max:1000',
             'signatures' => 'nullable|array', 'signatures.*' => Signatures::UPLOAD_RULES,
             'reset_signatures' => 'nullable|array', 'reset_signatures.*' => 'in:'.implode(',', array_keys(Signatures::OFFICIALS)),
+            'report_logo_position' => 'nullable|in:'.implode(',', array_keys(self::LOGO_POSITIONS)),
+            'report_font' => 'nullable|in:'.implode(',', array_keys(self::REPORT_FONTS)),
         ], ['tanse_b_min.lt' => 'Batas predikat B harus lebih kecil dari batas predikat A.']);
 
         // Tanda tangan pejabat: hanya Super Admin (unggahan dari Admin diabaikan).
@@ -1181,6 +1214,12 @@ class StudentReportController extends Controller
         Setting::set('report_main_title', $request->input('report_main_title', 'LAPORAN TAHFIZH, ADAB DAN TANSE'));
         Setting::set('report_school_name', $request->input('report_school_name', 'SMA ISLAM AL AZHAR 7 SUKOHARJO'));
         Setting::set('report_city', $request->input('report_city', 'Sukoharjo'));
+        if ($request->filled('report_logo_position')) {
+            Setting::set('report_logo_position', $request->input('report_logo_position'));
+        }
+        if ($request->filled('report_font')) {
+            Setting::set('report_font', $request->input('report_font'));
+        }
 
         Setting::set('report_coord_tahfizh_name', $request->input('report_coord_tahfizh_name', 'Zainal Arifin, S.Pd'));
         Setting::set('report_coord_tahfizh_nik', $request->input('report_coord_tahfizh_nik', '15.06.0393'));

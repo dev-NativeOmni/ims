@@ -6,10 +6,17 @@
     $signatureUris: path berkas tanda tangan => data URI.
     $pageBreak: true untuk lembar kedua dst. pada cetak per kelas.
     $live: true di pratinjau Pengaturan Rapor -- teks kop/periode/pejabat & tanda tangan diikat ke
-    state Alpine form (x-text), modul diikat ke centang Modul (x-show). Cetak: false.
+    state Alpine form (x-text), modul diikat ke centang Modul (x-show), posisi logo & font ke
+    pilihan Tampilan Cetak (logoPosition, reportFont). Cetak: false.
+    Posisi logo & font (StudentReportController::printLayout()) selalu dari pengaturan terkini.
 --}}
 @php
     $live = $live ?? false;
+    $layout = \App\Http\Controllers\StudentReportController::printLayout();
+    $fonts = \App\Http\Controllers\StudentReportController::REPORT_FONTS;
+    // Cetak: hanya logo di posisi terpilih. Pratinjau: ketiga posisi dirender, ditampilkan sesuai pilihan.
+    $logoAt = fn (string $position) => $live ? 'x-show="logoPosition === \''.$position.'\'"'.($layout['logo'] === $position ? '' : ' style="display: none"') : '';
+    $hasLogo = fn (string $position) => $live || $layout['logo'] === $position;
     $signature = fn ($key) => $signatureUris[$sheet['signatories'][$key]['signature'] ?? ''] ?? null;
     $adabCount = count($sheet['adab']['categories']);
     // Atribut pengikat Alpine untuk pratinjau (ekspresi ditulis tetap di sini, bukan dari input).
@@ -50,21 +57,59 @@
         .dark .print-container .text-gray-900, .dark .print-container .text-gray-800 { color: #1f2937 !important; }
         .dark .print-container .text-gray-600 { color: #4b5563 !important; }
         .dark .print-container .text-gray-500 { color: #6b7280 !important; }
+        .rapor-content { transform-origin: top left; }
     </style>
+    <script>
+        /* Rapor harus muat satu halaman F4. Bila isi lebih tinggi dari ruang di dalam bingkai (logo di tengah,
+           font lebar, catatan panjang), isi diperkecil seperlunya; lebar ikut dilebarkan supaya tetap penuh.
+           Ruang tanda tangan sengaja sama di layar & cetak, jadi ukuran di layar = ukuran cetak. */
+        window.fitRaporSheets = function () {
+            document.querySelectorAll('.print-container').forEach((sheet) => {
+                const content = sheet.querySelector('.rapor-content');
+                const style = getComputedStyle(sheet);
+                const available = sheet.querySelector('.rapor-border').offsetHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+                let scale = 1;
+                for (let i = 0; i < 4; i++) {
+                    content.style.width = `${100 / scale}%`;
+                    content.style.transform = scale < 1 ? `scale(${scale})` : '';
+                    const height = content.offsetHeight;
+                    content.style.marginBottom = `${height * scale - height}px`;
+                    if (height * scale <= available + 0.5) break;
+                    scale = available / height;
+                }
+            });
+        };
+        document.addEventListener('DOMContentLoaded', () => {
+            fitRaporSheets();
+            // Pratinjau Pengaturan Rapor: ukur ulang saat isian/pilihan form mengubah tinggi isi.
+            const observer = new ResizeObserver(() => requestAnimationFrame(fitRaporSheets));
+            document.querySelectorAll('.rapor-content').forEach((content) => observer.observe(content));
+        });
+        window.addEventListener('load', () => fitRaporSheets());
+        window.addEventListener('beforeprint', () => fitRaporSheets());
+    </script>
 @endonce
-<div class="print-container mx-auto bg-white shadow-sm {{ ($pageBreak ?? false) ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: 'Times New Roman', serif;">
+<div class="print-container mx-auto bg-white shadow-sm {{ ($pageBreak ?? false) ? 'page-break mt-8 print:mt-0' : '' }}" style="font-family: {{ $fonts[$layout['font']][1] }};"
+     @if ($live) :style="{ fontFamily: @js(collect($fonts)->map(fn ($font) => $font[1]))[reportFont] }" @endif>
     {{-- Bingkai hias F4 (vektor, dibuat dari contoh sekolah); isi lembar ada di dalam garis dalamnya. --}}
     <img src="{{ asset('images/rapor-border-f4.svg') }}" class="rapor-border" alt="" aria-hidden="true">
 
+    <div class="rapor-content">
+
     <!-- Kop Surat Terpadu -->
     <div class="grid grid-cols-[85px_1fr_85px] items-center border-b border-black pb-3 mb-4">
-        <!-- Left Logo: SMA Islam Al Azhar 7 -->
+        <!-- Logo SMA Islam Al Azhar 7: kiri / tengah (di atas basmalah) / kanan, menurut Pengaturan Rapor -->
         <div class="shrink-0 flex justify-start">
-            <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" />
+            @if ($hasLogo('left'))
+                <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" {!! $logoAt('left') !!} />
+            @endif
         </div>
 
         <!-- Title & Basmalah -->
         <div class="flex-1 flex flex-col items-center px-2">
+            @if ($hasLogo('center'))
+                <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-14 w-auto object-contain mb-1" alt="Logo SMA Islam Al Azhar 7" {!! $logoAt('center') !!} />
+            @endif
             <img src="{{ asset('images/image1.png') }}" class="h-6 object-contain mb-2" alt="Basmalah" />
             <h1 class="text-xs sm:text-sm font-black text-black uppercase tracking-wider text-center" {!! $bind('reportMainTitle') !!}>{{ $sheet['letterhead']['main_title'] }}</h1>
             <h2 class="text-[10px] sm:text-xs font-bold text-black uppercase text-center mt-0.5" {!! $bind('reportSchoolName') !!}>{{ $sheet['letterhead']['school_name'] }}</h2>
@@ -77,8 +122,12 @@
             <p class="text-[9px] font-bold text-black mt-1">Tahun Ajaran <span {!! $bind('academicYear') !!}>{{ $sheet['academic_year'] }}</span></p>
         </div>
 
-        <!-- Right Spacer for Header Balance -->
-        <div class="shrink-0 w-[85px]"></div>
+        <!-- Kolom kanan: logo bila posisi kanan, selain itu penyeimbang kop -->
+        <div class="shrink-0 flex justify-end">
+            @if ($hasLogo('right'))
+                <img src="{{ asset('images/logo_alazhar7.png') }}" class="h-20 w-auto object-contain" alt="Logo SMA Islam Al Azhar 7" {!! $logoAt('right') !!} />
+            @endif
+        </div>
     </div>
 
     <!-- Identitas Siswa: Nama & NIS di kiri, Kelas & Term di kanan (sebaris) -->
@@ -274,7 +323,7 @@
                         <p class="font-semibold" {!! $liveTitle ? $bind($liveTitle) : '' !!}>{{ $official['title'] }}</p>
                         @if ($live)
                             {{-- Pratinjau: tanda tangan tersimpan / yang baru dipilih di form (state Alpine `sig`). --}}
-                            <div class="h-16 flex items-center justify-center">
+                            <div class="h-12 flex items-center justify-center">
                                 <template x-if="sig['{{ $key }}']"><img :src="sig['{{ $key }}']" alt="Tanda tangan" class="max-h-full max-w-[160px] object-contain"></template>
                             </div>
                         @else
@@ -287,4 +336,5 @@
             </div>
         @endforeach
     </div>
+    </div>{{-- .rapor-content --}}
 </div>

@@ -47,6 +47,8 @@
         reportMainTitle: '{{ addslashes($reportMainTitle) }}',
         reportSchoolName: '{{ addslashes($reportSchoolName) }}',
         reportCity: '{{ addslashes($reportCity) }}',
+        logoPosition: @js($printLayout['logo']),
+        reportFont: @js($printLayout['font']),
         coordTahfizhName: '{{ addslashes($coordTahfizhName) }}',
         coordTahfizhNik: '{{ addslashes($coordTahfizhNik) }}',
         coordKeagamaanName: '{{ addslashes($coordKeagamaanName) }}',
@@ -226,6 +228,48 @@
                                 <div class="sm:col-span-3">
                                     <label for="report_school_name" class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Nama Sekolah / Subjudul Kop</label>
                                     <input type="text" name="report_school_name" id="report_school_name" x-model="reportSchoolName" required class="w-full rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 text-sm text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            {{-- Tampilan cetak: posisi logo & font (StudentReportController::printLayout()), berlaku juga untuk rapor terkunci. --}}
+                            <div class="border-t pt-4 mt-4 dark:border-zinc-800 space-y-4">
+                                <div class="space-y-2">
+                                    <span class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider">Posisi Logo</span>
+                                    <div class="inline-flex w-full sm:w-auto bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl">
+                                        @foreach (\App\Http\Controllers\StudentReportController::LOGO_POSITIONS as $position => $positionLabel)
+                                            <label class="flex-1 sm:flex-none cursor-pointer">
+                                                <input type="radio" name="report_logo_position" value="{{ $position }}" x-model="logoPosition" class="sr-only peer">
+                                                <span class="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-zinc-500 dark:text-zinc-400 transition peer-checked:bg-white dark:peer-checked:bg-zinc-700 peer-checked:shadow-sm peer-checked:text-teal-600 dark:peer-checked:text-teal-400 peer-focus-visible:ring-2 peer-focus-visible:ring-teal-500">
+                                                    @if ($position === 'left') <x-heroicon-o-bars-3-bottom-left class="w-4 h-4" />
+                                                    @elseif ($position === 'center') <x-heroicon-o-bars-3 class="w-4 h-4" />
+                                                    @else <x-heroicon-o-bars-3-bottom-right class="w-4 h-4" />
+                                                    @endif
+                                                    {{ $positionLabel }}
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <span class="block text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wider">Font Rapor</span>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                        @foreach (\App\Http\Controllers\StudentReportController::REPORT_FONTS as $fontKey => [$fontLabel, $fontStack])
+                                            <label class="flex items-center justify-between gap-2.5 p-2.5 rounded-xl border cursor-pointer transition"
+                                                   :class="reportFont === '{{ $fontKey }}' ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-300 dark:border-teal-800' : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'">
+                                                <input type="radio" name="report_font" value="{{ $fontKey }}" x-model="reportFont" class="sr-only peer">
+                                                <span class="text-sm text-zinc-800 dark:text-zinc-200" style="font-family: {{ $fontStack }}">{{ $fontLabel }}</span>
+                                                {{-- Toggle: hanya satu font yang aktif --}}
+                                                <span class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition peer-focus-visible:ring-2 peer-focus-visible:ring-teal-500"
+                                                      :class="reportFont === '{{ $fontKey }}' ? 'bg-teal-600' : 'bg-zinc-300 dark:bg-zinc-600'">
+                                                    {{-- Bukan .bg-white: kelas itu ditimpa mode gelap global (app.css). --}}
+                                                    <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-zinc-50 shadow transition-transform"
+                                                          :class="reportFont === '{{ $fontKey }}' ? 'translate-x-4' : ''"></span>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <p class="text-[11px] text-gray-500 dark:text-zinc-400">Font diambil dari komputer yang mencetak. Tahoma &amp; Cambria tersedia di Windows; bila tidak terpasang, dipakai font yang mirip.</p>
                                 </div>
                             </div>
                         </div>
