@@ -50,6 +50,19 @@ class AuthController extends Controller
             );
         }
 
+        // Akun trial (lihat saja) hanya untuk web: API/aplikasi mobile punya aksi tulis & token.
+        if ($user->isReadOnly()) {
+            return ApiResponse::error(
+                message: 'Akun Trial hanya dapat dipakai di website.',
+                errors: [
+                    'account' => [
+                        'Read-only trial account cannot use the API.',
+                    ],
+                ],
+                status: 403
+            );
+        }
+
         $deviceName = $validated['device_name'] ?? 'API Client';
 
         $tokenExpirationDays = max(

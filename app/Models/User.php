@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ReadOnlyAccess;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -73,12 +74,41 @@ class User extends Authenticatable
         return $roles;
     }
 
+    /** Role peminjaman tampilan akun trial (lihat currentRole()), di-cache per objek user. */
+    private ?Role $readOnlyViewRole = null;
+
     /**
      * Get the currently active role for the user's session.
      * If active_role_id session is set and valid, returns that role.
      * Otherwise returns the primary role.
+     *
+     * Role trial (ReadOnlyAccess) dikembalikan sebagai role ReadOnlyAccess::VIEWS_AS dengan nama
+     * tampilan trial, jadi seluruh pengecekan role (menu, dashboard, cakupan data) memperlakukannya
+     * seperti Kepala Sekolah; batas "lihat saja" dijaga BlockReadOnlyWrites.
      */
     public function currentRole(): ?Role
+    {
+        $role = $this->selectedRole();
+
+        if ($role?->name !== ReadOnlyAccess::ROLE) {
+            return $role;
+        }
+
+        if (! $this->readOnlyViewRole) {
+            $viewAs = Role::query()->where('name', ReadOnlyAccess::VIEWS_AS)->first();
+            if (! $viewAs) {
+                return $role;
+            }
+            $this->readOnlyViewRole = (clone $viewAs)->forceFill(['display_name' => $role->display_name]);
+        }
+
+        return $this->readOnlyViewRole;
+    }
+
+    /**
+     * Role yang sedang dipilih di sesi apa adanya (tanpa pemetaan trial).
+     */
+    private function selectedRole(): ?Role
     {
         $activeRoleId = (int) (session('active_role_id') ?: 0);
 
@@ -90,6 +120,15 @@ class User extends Authenticatable
         }
 
         return $this->role;
+    }
+
+    /**
+     * Akun "lihat saja" (role trial): tidak boleh menambah, mengubah, menghapus, mengunggah,
+     * mengunduh, atau mencetak (ReadOnlyAccess).
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->selectedRole()?->name === ReadOnlyAccess::ROLE;
     }
 
     public function teacherProfile(): HasOne

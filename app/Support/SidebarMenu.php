@@ -264,6 +264,11 @@ class SidebarMenu
 
     private static function canSee(User $user, array $item): bool
     {
+        // Akun trial: menu ke halaman tambah/input/ekspor/cetak disembunyikan (ReadOnlyAccess).
+        if (isset($item['route']) && ReadOnlyAccess::applies($user) && ReadOnlyAccess::blocksRoute($item['route'])) {
+            return false;
+        }
+
         if (isset($item['roles'])) {
             return $user->hasAnyRole($item['roles']);
         }

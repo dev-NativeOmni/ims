@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\BlockReadOnlyWrites;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\EnsureApiTokenIsNotExpired;
 use App\Support\ApiExceptionRenderer;
@@ -30,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         | Middleware Aliases
         |--------------------------------------------------------------------------
         */
+        // Akun trial (lihat saja): tolak semua aksi tulis/unduh di web & API (ReadOnlyAccess).
+        $middleware->appendToGroup('web', BlockReadOnlyWrites::class);
+        $middleware->appendToGroup('api', BlockReadOnlyWrites::class);
+
         $middleware->alias([
             'role' => CheckRole::class,
             'api.token.not_expired' => EnsureApiTokenIsNotExpired::class,

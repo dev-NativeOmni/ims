@@ -36,6 +36,16 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (auth()->user()?->isReadOnly())
+            {{-- Akun Trial (lihat saja): sembunyikan tombol aksi. Penjaga sebenarnya di server (BlockReadOnlyWrites). --}}
+            <style>
+                form[method="post" i]:not([action$="/logout"]):not([action*="/impersonate/stop"]),
+                a[href*="/create"], a[href$="/edit"], a[href*="/edit?"],
+                a[href*="export"], a[href*="download"], a[href*="print"],
+                a[href*="spreadsheet-input"], a[href*="fast-input"], a[href*="/profile"],
+                button[onclick*="print"] { display: none !important; }
+            </style>
+        @endif
     </head>
     @php
         $bgSetting = \App\Models\Setting::get('background');
@@ -68,6 +78,20 @@
                             Kembali ke Super Admin &rarr;
                         </button>
                     </form>
+                </div>
+            @endif
+
+            @if (auth()->user()?->isReadOnly())
+                <div class="{{ session('read_only_blocked') ? 'bg-amber-600' : 'bg-sky-700' }} text-white px-4 py-2 text-xs sm:text-sm font-medium flex items-center gap-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+                    <x-heroicon-o-eye class="w-4 h-4 shrink-0" />
+                    <span>
+                        @if (session('read_only_blocked'))
+                            <strong>Halaman tadi tidak dapat dibuka.</strong>
+                        @else
+                            <strong>Mode Trial:</strong>
+                        @endif
+                        akun ini hanya untuk melihat. Tambah, ubah, hapus, unggah, unduh, dan cetak tidak tersedia.
+                    </span>
                 </div>
             @endif
 
