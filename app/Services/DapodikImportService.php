@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Student;
+use App\Support\ProperCase;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ use Throwable;
  * mana pun; baris yang sama di beberapa sheet hanya dihitung sekali. NIK & kolom lain tidak dibaca.
  * Murid dicocokkan berurutan: NISN tersimpan, nomor induk aplikasi = NIPD/NISN, nama + tanggal lahir,
  * lalu nama saja (hanya bila unik). Yang diperbarui: dapodik_nis/nisn/rombel, birth_place, birth_date.
+ * Nama & tempat lahir yang huruf besar semua dirapikan jadi "Huruf Awal Besar" (ProperCase).
  */
 class DapodikImportService
 {
@@ -100,11 +102,12 @@ class DapodikImportService
             return null;
         }
 
+        // Nama & tempat lahir Dapodik sering huruf besar semua: dirapikan (ProperCase).
         return [
-            'name' => Str::squish($name),
+            'name' => ProperCase::apply($name),
             'nis' => $nis,
             'nisn' => $nisn,
-            'birth_place' => $text('birth_place') ? Str::squish($text('birth_place')) : null,
+            'birth_place' => ProperCase::apply($text('birth_place')),
             'birth_date' => $this->date($value('birth_date')),
             'rombel' => $text('rombel') ? Str::squish($text('rombel')) : null,
         ];

@@ -68,7 +68,7 @@ class DapodikImportTest extends TestCase
         $methods = collect($preview['matched'])->mapWithKeys(fn ($m) => [$m['student_id'] => $m['method']]);
         $this->assertSame('Nama & tgl lahir', $methods[$this->student->id]);
         $this->assertSame('NIPD', $methods[$this->byNumber->id]);
-        $this->assertSame(['ABYAN FATA DIARMA', 'MURID LAIN'], collect($preview['unmatched'])->pluck('name')->all(), 'Baris dari dua sheet dihitung sekali.');
+        $this->assertSame(['Abyan Fata Diarma', 'Murid Lain'], collect($preview['unmatched'])->pluck('name')->all(), 'Dihitung sekali & huruf besar semua dirapikan.');
         $this->assertSame('0108295063', $preview['unmatched'][0]['nisn'], 'NISN angka dilengkapi nol di depan.');
         $this->assertNull($this->student->fresh()->dapodik_nisn, 'Pratinjau belum menyimpan.');
     }
@@ -96,7 +96,7 @@ class DapodikImportTest extends TestCase
 
         $this->assertNull($this->byNumber->fresh()->dapodik_nisn, 'Baris yang centangnya dihilangkan tidak disimpan.');
         $manual = $this->manual->fresh();
-        $this->assertSame(['0108295063', 'JEPARA', '2010-09-21'], [$manual->dapodik_nisn, $manual->birth_place, $manual->birth_date->toDateString()]);
+        $this->assertSame(['0108295063', 'Jepara', '2010-09-21'], [$manual->dapodik_nisn, $manual->birth_place, $manual->birth_date->toDateString()]);
 
         // Web menampilkan NIS/NISN Dapodik, tapi tetap kelas pembelajaran (rombel hanya untuk rapor cetak).
         $this->actingAs($this->admin)->get(route('students.show', $student))
