@@ -44,7 +44,7 @@ class ReadOnlyAccess
         '*export*', '*download*', '*print*', '*.pdf', 'quran.pdf', '*ummi-card*',
         'reports.whatsapp', 'profile.*', 'password.*', 'role.switch*',
         // Akun & sistem (mis. daftar user memuat password): tidak untuk pengunjung walau melihat sebagai Super Admin.
-        'users.*', 'superadmin.*', 'database-backups.*', 'audit-logs.*', 'dev.*', 'impersonate.start',
+        'users.*', 'superadmin.*', 'database-backups.*', 'audit-logs.*', 'dev.*', 'impersonate.start', 'students.dapodik.*',
     ];
 
     public static function applies(?User $user): bool

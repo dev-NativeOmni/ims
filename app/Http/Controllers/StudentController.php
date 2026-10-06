@@ -183,6 +183,7 @@ class StudentController extends Controller
             'name',
             'student_number',
             'gender',
+            'birth_place',
             'birth_date',
             'status',
             'tahfizh_level',

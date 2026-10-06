@@ -817,7 +817,7 @@ class AdabController extends Controller
             return [
                 'student_id' => $student->id,
                 'student_name' => $student->name,
-                'student_number' => $student->student_number ?? '-',
+                'student_number' => $student->nisNisn() ?? '-',
                 'gender' => $student->gender,
                 'mentor_score' => $curr?->mentor_score !== null ? (int) $curr->mentor_score : '',
                 'notes' => $curr?->notes ?? '',
@@ -1027,7 +1027,7 @@ class AdabController extends Controller
             $studentRows[] = [
                 'student_id' => $student->id,
                 'student_name' => $student->name,
-                'student_number' => $student->student_number ?? '-',
+                'student_number' => $student->nisNisn() ?? '-',
                 'gender' => $student->gender,
                 'daily_status' => $dailyStatus,
                 'filled_count' => $filledEffectiveCount,

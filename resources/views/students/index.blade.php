@@ -24,6 +24,15 @@
                     </button>
                 @endif
 
+                @if (auth()->user()->hasAnyRole(['super_admin', 'admin']))
+                    <a
+                        href="{{ route('students.dapodik.index') }}"
+                        class="inline-flex items-center justify-center px-3.5 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-sm transition duration-150 min-h-[38px] flex-1 sm:flex-none"
+                    >
+                        <x-heroicon-o-identification class="w-4 h-4 mr-1.5 shrink-0" /> Impor Dapodik
+                    </a>
+                @endif
+
                 <a
                     href="{{ route('students.create') }}"
                     class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-sm transition duration-150 min-h-[38px] flex-1 sm:flex-none"
@@ -98,7 +107,7 @@
                                     {{ $student->name }}
                                 </h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    NIS: {{ $student->student_number ?: '-' }}
+                                    NIS/NISN: {{ $student->nisNisn() ?: '-' }}
                                 </p>
                             </div>
                             <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0
@@ -185,7 +194,7 @@
                                             {{ $student->name }}
                                         </div>
                                         <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                            {{ $student->student_number ?: 'Nomor belum diisi' }}
+                                            {{ $student->nisNisn() ?: 'Nomor belum diisi' }}
                                         </div>
                                     </td>
 

@@ -53,7 +53,7 @@
                             {{ $target->student?->name ?? '-' }}
                         </div>
                         <div class="mt-1 text-sm text-gray-500">
-                            {{ $target->student?->student_number ?? '-' }}
+                            {{ $target->student?->nisNisn() ?? '-' }}
                             · {{ $target->student?->classRoom?->program?->name ?? '-' }}
                             · {{ $target->student?->classRoom?->name ?? '-' }}
                         </div>

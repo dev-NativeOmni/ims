@@ -29,7 +29,7 @@
                     <span class="text-[10px] sm:text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider block mb-0.5 sm:mb-1">Rincian Perkembangan Adab & Karakter</span>
                     <h3 class="text-base sm:text-2xl font-bold text-zinc-900 dark:text-white">{{ $student->name }}</h3>
                     <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 sm:mt-1">
-                        Kelas: {{ $student->classRoom?->name ?: '-' }} | NIS: {{ $student->student_number ?: '-' }} | Guru: {{ $student->teacher?->user?->name ?: '-' }}
+                        Kelas: {{ $student->classRoom?->name ?: '-' }} | NIS/NISN: {{ $student->nisNisn() ?: '-' }} | Guru: {{ $student->teacher?->user?->name ?: '-' }}
                     </p>
                 </div>
                 <div class="flex gap-2 flex-wrap w-full sm:w-auto">

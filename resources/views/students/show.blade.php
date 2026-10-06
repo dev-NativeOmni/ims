@@ -36,8 +36,21 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Nomor Murid / NIS</p>
+                        <p class="text-sm text-gray-500">Nomor Murid (Aplikasi)</p>
                         <p class="font-semibold text-gray-900">{{ $student->student_number ?: '-' }}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">NIS / NISN (Dapodik)</p>
+                        <p class="font-semibold text-gray-900">{{ $student->dapodik_nis ?: '-' }} / {{ $student->dapodik_nisn ?: '-' }}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500">Rombel Dapodik (untuk rapor cetak)</p>
+                        <p class="font-semibold text-gray-900">{{ $student->dapodik_rombel ?: '-' }}</p>
+                        @if ($student->dapodik_synced_at)
+                            <p class="text-xs text-gray-400">Impor {{ $student->dapodik_synced_at->locale('id')->translatedFormat('d M Y') }}</p>
+                        @endif
                     </div>
 
                     <div>
@@ -48,9 +61,9 @@
                     </div>
 
                     <div>
-                        <p class="text-sm text-gray-500">Tanggal Lahir</p>
+                        <p class="text-sm text-gray-500">Tempat, Tanggal Lahir</p>
                         <p class="font-semibold text-gray-900">
-                            {{ $student->birth_date?->format('d M Y') ?: '-' }}
+                            {{ collect([$student->birth_place, $student->birth_date?->locale('id')->translatedFormat('d F Y')])->filter()->implode(', ') ?: '-' }}
                         </p>
                     </div>
 

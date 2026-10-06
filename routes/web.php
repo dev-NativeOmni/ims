@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\ClassRoomController;
+use App\Http\Controllers\DapodikImportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\HafalanRecordController;
@@ -236,6 +237,11 @@ Route::middleware(['auth'])->group(function () {
         // Students
         Route::get('students/export', [StudentController::class, 'export'])->name('students.export');
         Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
+        // Impor identitas Dapodik (NIS, NISN, rombel, tempat & tanggal lahir) dengan pratinjau.
+        Route::get('students/dapodik', [DapodikImportController::class, 'index'])->name('students.dapodik.index');
+        Route::post('students/dapodik/preview', [DapodikImportController::class, 'preview'])->name('students.dapodik.preview');
+        Route::post('students/dapodik/apply', [DapodikImportController::class, 'apply'])->name('students.dapodik.apply');
+        Route::post('students/dapodik/cancel', [DapodikImportController::class, 'cancel'])->name('students.dapodik.cancel');
         Route::resource('students', StudentController::class);
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])

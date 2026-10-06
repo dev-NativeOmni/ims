@@ -167,7 +167,7 @@ class ProgressController extends Controller
                     'student' => $s,
                     'student_id' => $s->id,
                     'student_name' => $s->name,
-                    'student_number' => $s->student_number ?? null,
+                    'student_number' => $s->nisNisn(),
                     'class_room_name' => $s->classRoom?->name,
                     'program_name' => $s->classRoom?->program?->name,
                     'progress_percent' => 0,

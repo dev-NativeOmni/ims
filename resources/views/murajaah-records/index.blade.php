@@ -99,7 +99,7 @@
                                     {{ $record->student?->name }}
                                 </h3>
                                 <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    <span>NIS: {{ $record->student?->student_number ?? '-' }}</span>
+                                    <span>NIS/NISN: {{ $record->student?->nisNisn() ?? '-' }}</span>
                                     <span>•</span>
                                     <span>{{ $record->reviewed_at?->format('d M Y') }}</span>
                                 </div>
@@ -199,7 +199,7 @@
                                             {{ $record->student?->name }}
                                         </div>
                                         <div class="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                            {{ $record->student?->student_number ?? '-' }}
+                                            {{ $record->student?->nisNisn() ?? '-' }}
                                         </div>
                                     </td>
 

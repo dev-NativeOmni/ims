@@ -56,6 +56,11 @@ class UpdateStudentRequest extends FormRequest
                 'nullable',
                 Rule::in(['male', 'female']),
             ],
+            'birth_place' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
             'birth_date' => [
                 'nullable',
                 'date',
@@ -102,6 +107,7 @@ class UpdateStudentRequest extends FormRequest
             'name' => 'nama murid',
             'student_number' => 'nomor murid',
             'gender' => 'gender',
+            'birth_place' => 'tempat lahir',
             'birth_date' => 'tanggal lahir',
             'status' => 'status',
             'parent_ids' => 'orangtua/wali',

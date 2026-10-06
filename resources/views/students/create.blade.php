@@ -119,6 +119,23 @@
                         </div>
 
                         <div>
+                            <label for="birth_place" class="block text-sm font-medium text-gray-700">
+                                Tempat Lahir
+                            </label>
+                            <input
+                                id="birth_place"
+                                name="birth_place"
+                                type="text"
+                                maxlength="100"
+                                value="{{ old('birth_place') }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                            @error('birth_place')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="birth_date" class="block text-sm font-medium text-gray-700">
                                 Tanggal Lahir
                             </label>

@@ -240,7 +240,7 @@
                                             {{ $st->name }}
                                         </div>
                                         <div class="text-[10px] text-gray-400 font-mono">
-                                            NIS: {{ $st->student_number ?? '-' }}
+                                            NIS/NISN: {{ $st->nisNisn() ?? '-' }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-700 dark:text-zinc-300">

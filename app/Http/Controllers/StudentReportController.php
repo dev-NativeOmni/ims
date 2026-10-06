@@ -394,8 +394,9 @@ class StudentReportController extends Controller
             'student' => [
                 'id' => $data['student']->id,
                 'name' => $data['student']->name,
-                'number' => $data['student']->student_number,
-                'class' => $data['student']->classRoom?->name,
+                // Rapor cetak memakai identitas Dapodik (NIS/NISN & rombel) bila sudah diimpor.
+                'number' => $data['student']->nisNisn(),
+                'class' => $data['student']->reportClassName(),
                 'program' => $data['student']->classRoom?->program?->name,
             ],
             // Satu baris triwulan rapor (lihat tahfizhTermRow()); nilai hanya ditampilkan untuk Kelas 10/Ummi.

@@ -422,7 +422,7 @@
                                                         <td class="px-4 py-3 text-left font-medium text-gray-500 w-12">{{ $index + 1 }}</td>
                                                         <td class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">
                                                             <div>{{ $row['student']->name }}</div>
-                                                            <div class="text-[10px] text-gray-400 font-normal mt-0.5">NIS: {{ $row['student']->student_number ?: '-' }}</div>
+                                                            <div class="text-[10px] text-gray-400 font-normal mt-0.5">NIS/NISN: {{ $row['student']->nisNisn() ?: '-' }}</div>
                                                         </td>
                                                         <td class="px-4 py-3 text-gray-500 dark:text-zinc-450">{{ $row['halaqah_label'] }}</td>
                                                         <td class="px-3 py-3 border-r border-zinc-150 dark:border-zinc-800 font-medium">{{ $row['target_surah'] }}</td>

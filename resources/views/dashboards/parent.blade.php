@@ -127,7 +127,7 @@
                                                 </span>
                                             </div>
                                             <p class="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
-                                                NIS: <strong class="text-zinc-700 dark:text-zinc-300">{{ data_get($row, 'student_number', '-') }}</strong> · 
+                                                NIS/NISN: <strong class="text-zinc-700 dark:text-zinc-300">{{ data_get($row, 'student_number', '-') }}</strong> · 
                                                 <span>{{ $isUmmi ? 'Metode Ummi' : 'Reguler Tahfizh' }}</span>
                                             </p>
                                         </div>

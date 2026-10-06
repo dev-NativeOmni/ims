@@ -81,7 +81,7 @@
                                         {{ $student->name }}
                                     </td>
                                     <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400">
-                                        {{ $student->student_number ?: '-' }}
+                                        {{ $student->nisNisn() ?: '-' }}
                                     </td>
                                     <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400">
                                         {{ $student->classRoom?->name ?: '-' }}

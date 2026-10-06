@@ -69,8 +69,8 @@
                                 @foreach ($filterStudents as $student)
                                     <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
                                         {{ $student->name }}
-                                        @if ($student->student_number)
-                                            — {{ $student->student_number }}
+                                        @if ($student->nisNisn())
+                                            — {{ $student->nisNisn() }}
                                         @endif
                                     </option>
                                 @endforeach

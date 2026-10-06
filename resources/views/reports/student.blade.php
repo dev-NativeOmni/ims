@@ -82,7 +82,7 @@
                 <dl class="mt-3 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
                     <div class="bg-zinc-50/50 dark:bg-zinc-800/40 rounded-xl p-2.5 sm:p-3 border border-zinc-100 dark:border-zinc-800">
                         <dt class="text-[10px] sm:text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Nomor Induk</dt>
-                        <dd class="mt-0.5 text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">{{ $student->student_number ?? '-' }}</dd>
+                        <dd class="mt-0.5 text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">{{ $student->nisNisn() ?? '-' }}</dd>
                     </div>
 
                     <div class="bg-zinc-50/50 dark:bg-zinc-800/40 rounded-xl p-2.5 sm:p-3 border border-zinc-100 dark:border-zinc-800">

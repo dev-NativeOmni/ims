@@ -100,7 +100,7 @@
                         <div class="flex items-center">
                             <span class="font-bold w-16">No. Induk</span>
                             <span class="mr-1">:</span>
-                            <span class="border-b border-dotted border-gray-400 flex-1 font-semibold">{{ $student->student_number ?? '-' }}</span>
+                            <span class="border-b border-dotted border-gray-400 flex-1 font-semibold">{{ $student->nisNisn() ?? '-' }}</span>
                         </div>
                     </div>
 

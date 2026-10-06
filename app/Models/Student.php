@@ -21,7 +21,12 @@ class Student extends Model
         'teacher_id',
         'name',
         'student_number',
+        'dapodik_nis',
+        'dapodik_nisn',
+        'dapodik_rombel',
+        'dapodik_synced_at',
         'gender',
+        'birth_place',
         'birth_date',
         'status',
         'tahfizh_level',
@@ -34,6 +39,7 @@ class Student extends Model
         return [
             'juz_orders' => 'array',
             'birth_date' => 'date',
+            'dapodik_synced_at' => 'datetime',
         ];
     }
 
@@ -147,6 +153,25 @@ class Student extends Model
      * rapor, dan Target -- dulu Laporan Triwulan & rapor hanya melihat level, sehingga murid kelas 10
      * berlevel "reguler" kehilangan data Ummi-nya.
      */
+    /**
+     * NIS/NISN untuk ditampilkan (web & rapor cetak): dari Dapodik ("NIS / NISN") bila sudah diimpor,
+     * selain itu nomor induk aplikasi.
+     */
+    public function nisNisn(): ?string
+    {
+        $dapodik = implode(' / ', array_filter([$this->dapodik_nis, $this->dapodik_nisn]));
+
+        return $dapodik !== '' ? $dapodik : $this->student_number;
+    }
+
+    /**
+     * Kelas di rapor cetak: rombel Dapodik bila sudah diimpor, selain itu kelas pembelajaran (aplikasi).
+     */
+    public function reportClassName(): ?string
+    {
+        return $this->dapodik_rombel ?: $this->classRoom?->name;
+    }
+
     public function usesUmmi(): bool
     {
         return $this->tahfizh_level === 'ummi' || ($this->classRoom?->isGradeTen() ?? false);

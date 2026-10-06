@@ -129,7 +129,7 @@
                             <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <h4 class="font-bold text-xs text-zinc-900 dark:text-white">{{ $student->name }}</h4>
-                                    <p class="text-[10px] text-zinc-400">Kelas: {{ $student->classRoom?->name ?: '-' }} · NIS: {{ $student->student_number ?: '-' }}</p>
+                                    <p class="text-[10px] text-zinc-400">Kelas: {{ $student->classRoom?->name ?: '-' }} · NIS/NISN: {{ $student->nisNisn() ?: '-' }}</p>
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     @if ($hasRecord)
@@ -187,7 +187,7 @@
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition duration-150">
                                     <td class="px-6 py-4">
                                         <div class="font-semibold text-zinc-900 dark:text-white">{{ $student->name }}</div>
-                                        <div class="text-xs text-zinc-400 dark:text-zinc-550 mt-0.5">NIS: {{ $student->student_number ?: '-' }}</div>
+                                        <div class="text-xs text-zinc-400 dark:text-zinc-550 mt-0.5">NIS/NISN: {{ $student->nisNisn() ?: '-' }}</div>
                                     </td>
                                     
                                     <td class="px-6 py-4 text-zinc-700 dark:text-zinc-300">

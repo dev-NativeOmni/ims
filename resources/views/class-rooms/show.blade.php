@@ -90,7 +90,7 @@
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">
-                                        {{ $student->student_number ?: '-' }}
+                                        {{ $student->nisNisn() ?: '-' }}
                                     </td>
 
                                     <td class="px-4 py-3 text-gray-700">

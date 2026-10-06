@@ -7,7 +7,7 @@
                 </h2>
 
                 <p class="mt-1 text-sm text-gray-600">
-                    {{ $student->student_number ?? '-' }}
+                    {{ $student->nisNisn() ?? '-' }}
 
                     @if ($student->classRoom)
                         · {{ $student->classRoom->name }}
@@ -76,7 +76,7 @@
                         <div class="flex justify-between py-1 border-b border-gray-100">
                             <dt class="text-gray-500">Nomor Murid</dt>
                             <dd class="font-semibold text-gray-900">
-                                {{ $student->student_number ?? '-' }}
+                                {{ $student->nisNisn() ?? '-' }}
                             </dd>
                         </div>
 

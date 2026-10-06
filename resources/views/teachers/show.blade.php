@@ -77,7 +77,7 @@
                                         {{ $student->name }}
                                     </div>
                                     <div class="text-sm text-gray-500">
-                                        {{ $student->student_number ?: '-' }}
+                                        {{ $student->nisNisn() ?: '-' }}
                                     </div>
                                 </td>
 

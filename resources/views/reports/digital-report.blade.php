@@ -59,7 +59,7 @@
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Murid yang Dipantau</span>
                         <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $student->name }}</h3>
-                        <p class="text-sm text-gray-500 mt-0.5">NIS: {{ $student->student_number ?: '-' }}</p>
+                        <p class="text-sm text-gray-500 mt-0.5">NIS/NISN: {{ $student->nisNisn() ?: '-' }}</p>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 text-sm">
                             <div>

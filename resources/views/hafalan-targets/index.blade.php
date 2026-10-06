@@ -119,7 +119,7 @@
                                                 <td class="px-4 py-3 text-gray-500 font-semibold">{{ $idx + 1 }}</td>
                                                 <td class="px-4 py-3">
                                                     <div class="font-bold text-gray-900">{{ $st->name }}</div>
-                                                    <div class="text-xs text-gray-500">{{ $st->student_number ?? '-' }}</div>
+                                                    <div class="text-xs text-gray-500">{{ $st->nisNisn() ?? '-' }}</div>
                                                     <input type="hidden" name="targets[{{ $idx }}][student_id]" value="{{ $st->id }}">
                                                 </td>
                                                 <td class="px-4 py-3">
@@ -383,7 +383,7 @@
                                     <td class="px-4 py-4">
                                         <div class="font-bold text-gray-900">{{ $target->student?->name ?? '-' }}</div>
                                         <div class="text-xs text-gray-500">
-                                            Kelas {{ $target->student?->classRoom?->name ?? '-' }} · NIS {{ $target->student?->student_number ?? '-' }}
+                                            Kelas {{ $target->student?->classRoom?->name ?? '-' }} · NIS/NISN {{ $target->student?->nisNisn() ?? '-' }}
                                         </div>
                                     </td>
 

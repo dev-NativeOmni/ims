@@ -639,7 +639,7 @@ class DashboardService
             'student' => $student,
             'student_id' => $student->id,
             'student_name' => $student->name,
-            'student_number' => $student->student_number,
+            'student_number' => $student->nisNisn(),
             'class_room_name' => $student->classRoom?->name,
             'program_name' => $student->classRoom?->program?->name,
 

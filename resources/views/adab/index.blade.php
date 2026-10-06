@@ -145,7 +145,7 @@
                                                 {{ $student->name }}
                                             </div>
                                             <div class="text-xs text-zinc-400 dark:text-zinc-550 mt-0.5">
-                                                NIS: {{ $student->student_number ?: '-' }} | {{ $student->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}
+                                                NIS/NISN: {{ $student->nisNisn() ?: '-' }} | {{ $student->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}
                                             </div>
                                         </td>
 
@@ -389,7 +389,7 @@
                                             <td class="px-4 py-3">
                                                 <div class="font-bold text-zinc-900 dark:text-white" x-text="row.student_name"></div>
                                                 <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-                                                    NIS: <span x-text="row.student_number || '-'"></span> · 
+                                                    NIS/NISN: <span x-text="row.student_number || '-'"></span> · 
                                                     <span x-text="row.gender === 'male' ? 'Laki-laki' : 'Perempuan'"></span>
                                                 </div>
                                             </td>
@@ -700,7 +700,7 @@
                                                             <span x-text="st.student_name"></span>
                                                         </a>
                                                         <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
-                                                            <span x-text="'NIS: ' + st.student_number"></span>
+                                                            <span x-text="'NIS/NISN: ' + st.student_number"></span>
                                                         </div>
                                                     </div>
                                                     <template x-if="st.has_missed">
@@ -895,7 +895,7 @@
                                                 <a :href="'{{ url('adab/student') }}/' + st.student_id" class="font-bold text-zinc-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline block">
                                                     <span x-text="st.student_name"></span>
                                                 </a>
-                                                <div class="text-[10px] text-zinc-400 mt-0.5">NIS: <span x-text="st.student_number"></span></div>
+                                                <div class="text-[10px] text-zinc-400 mt-0.5">NIS/NISN: <span x-text="st.student_number"></span></div>
                                             </td>
                                             <td class="px-3 py-2.5 text-center">
                                                 <div class="font-bold text-zinc-800 dark:text-zinc-200" x-text="st.attendance_rate + '%'"></div>

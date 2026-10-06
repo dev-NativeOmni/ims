@@ -36,7 +36,7 @@
 
                         <div>
                             <dt class="font-medium text-gray-500">Nomor Murid</dt>
-                            <dd class="mt-1 text-gray-900">{{ $murajaahRecord->student?->student_number ?? '-' }}</dd>
+                            <dd class="mt-1 text-gray-900">{{ $murajaahRecord->student?->nisNisn() ?? '-' }}</dd>
                         </div>
 
                         <div>
