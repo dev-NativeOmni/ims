@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdabRecord;
 use App\Models\ClassRoom;
 use App\Models\Role;
 use App\Models\Setting;
@@ -398,13 +399,13 @@ class AdabTest extends TestCase
         $secondEffectiveDate = $datesList[1] ?? '2026-09-02';
 
         // Student 1 fills both days
-        \App\Models\AdabRecord::create([
+        AdabRecord::create([
             'student_id' => $student1->id,
             'assessment_date' => $firstEffectiveDate,
             'student_score' => 100,
             'total_score' => 100,
         ]);
-        \App\Models\AdabRecord::create([
+        AdabRecord::create([
             'student_id' => $student1->id,
             'assessment_date' => $secondEffectiveDate,
             'student_score' => 90,
@@ -412,7 +413,7 @@ class AdabTest extends TestCase
         ]);
 
         // Student 2 fills only first day
-        \App\Models\AdabRecord::create([
+        AdabRecord::create([
             'student_id' => $student2->id,
             'assessment_date' => $firstEffectiveDate,
             'student_score' => 85,
@@ -509,7 +510,7 @@ class AdabTest extends TestCase
 
         $response->assertRedirect(route('adab.show', $student));
 
-        $record = \App\Models\AdabRecord::where('student_id', $student->id)
+        $record = AdabRecord::where('student_id', $student->id)
             ->whereDate('assessment_date', $pastDate)
             ->first();
 

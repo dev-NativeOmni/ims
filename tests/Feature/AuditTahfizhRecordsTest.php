@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\HafalanTarget;
 use App\Models\Role;
 use App\Models\Student;
-use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Database\Seeders\CoreDataSeeder;

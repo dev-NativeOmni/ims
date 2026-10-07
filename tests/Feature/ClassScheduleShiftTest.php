@@ -235,4 +235,3 @@ class ClassScheduleShiftTest extends TestCase
             ->assertStatus(403);
     }
 }
-

@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ClassRoom;
-use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
@@ -70,7 +68,7 @@ class AuditTahfizhRecordsCommand extends Command
 
         if ($studentsWithoutTarget->isNotEmpty()) {
             $this->warn("   ⚠️  Ditemukan {$studentsWithoutTarget->count()} santri aktif tanpa target di bulan {$today->translatedFormat('F Y')}:");
-            
+
             $tableData = $studentsWithoutTarget->take(20)->map(fn ($s) => [
                 'ID' => $s->id,
                 'NIS' => $s->student_number ?? '-',

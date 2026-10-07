@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\TeacherProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
@@ -90,7 +91,7 @@ class QuarterlyReportTeacherPreviewTest extends TestCase
         $response->assertOk();
         $tmpPath = tempnam(sys_get_temp_dir(), 'qrtp').'.xlsx';
         file_put_contents($tmpPath, $response->streamedContent());
-        $cells = collect(\PhpOffice\PhpSpreadsheet\IOFactory::load($tmpPath)->getAllSheets())
+        $cells = collect(IOFactory::load($tmpPath)->getAllSheets())
             ->flatMap(fn ($sheet) => collect($sheet->toArray())->flatten())
             ->filter()
             ->map(fn ($v) => (string) $v);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\HafalanRecordSurah;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
@@ -204,7 +205,7 @@ class UpdateHafalanRecordRequest extends FormRequest
                     $status = $statuses[$idx] ?? 'passed';
 
                     if ($surah && $status === 'passed') {
-                        $duplicateQuery = \App\Models\HafalanRecordSurah::query()
+                        $duplicateQuery = HafalanRecordSurah::query()
                             ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
                             ->whereNull('hafalan_records.deleted_at')
                             ->where('hafalan_records.student_id', $studentId)
