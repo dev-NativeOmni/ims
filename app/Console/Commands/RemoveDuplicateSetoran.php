@@ -41,14 +41,19 @@ class RemoveDuplicateSetoran extends Command
 
         $this->info("Setoran hafalan ganda identik: {$hafalanDupes->count()} baris");
         if ($hafalanDupes->isNotEmpty()) {
-            $this->table(['ID baris', 'Murid', 'Tanggal', 'Surah', 'Ayat', 'Status', 'Sama dengan ID'], $hafalanDupes->map(fn ($d) => [
+            // "Dibuat" & "Lewat": kapan baris ganda dibuat, dan halaman/akun yang membuat sesinya (Audit Log),
+            // untuk melacak penyebabnya.
+            $this->table(['ID baris', 'Murid', 'Kelas', 'Tanggal', 'Surah', 'Ayat', 'Status', 'Sama dengan ID', 'Dibuat', 'Lewat'], $hafalanDupes->map(fn ($d) => [
                 $d['line']->id,
                 $d['line']->hafalanRecord?->student?->name ?? '-',
+                $d['line']->hafalanRecord?->student?->classRoom?->name ?? '-',
                 $d['line']->hafalanRecord?->submitted_at?->toDateString(),
                 $d['line']->surah?->name_latin ?? '-',
                 "{$d['line']->ayah_start}-{$d['line']->ayah_end}",
                 $d['line']->status,
                 $d['keep']->id,
+                $d['line']->created_at?->format('d/m H:i'),
+                $this->createdVia($d['line']->hafalan_record_id),
             ])->all());
         }
 
@@ -148,6 +153,25 @@ class RemoveDuplicateSetoran extends Command
     }
 
     /** @return Collection<int, array{line: HafalanRecordSurah, keep: HafalanRecordSurah}> */
+    /**
+     * Halaman & akun yang membuat sesi setoran ini menurut Audit Log, mis. "spreadsheet-input/save · Guru A".
+     */
+    private function createdVia(?int $headerId): string
+    {
+        $log = $headerId ? AuditLog::query()->with('user:id,name')
+            ->where('auditable_type', (new HafalanRecord)->getMorphClass())
+            ->where('auditable_id', $headerId)
+            ->where('action', 'created')
+            ->first() : null;
+        if (! $log) {
+            return '-';
+        }
+
+        $path = trim((string) parse_url((string) $log->url, PHP_URL_PATH), '/') ?: 'konsol';
+
+        return $path.' · '.($log->user?->name ?? $log->user_name ?? '-');
+    }
+
     private function hafalanDuplicates(): Collection
     {
         // Diproses per murid supaya memori tetap kecil walau datanya banyak.
@@ -155,7 +179,7 @@ class RemoveDuplicateSetoran extends Command
         foreach (HafalanRecord::query()->distinct()->pluck('student_id') as $studentId) {
             HafalanRecordSurah::query()
                 ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $studentId))
-                ->with(['hafalanRecord.student:id,name', 'surah:id,name_latin'])
+                ->with(['hafalanRecord.student:id,name,class_room_id', 'hafalanRecord.student.classRoom:id,name', 'surah:id,name_latin'])
                 ->orderBy('id')
                 ->get()
                 ->groupBy(fn ($l) => implode('|', [

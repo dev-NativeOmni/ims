@@ -11,6 +11,7 @@ use App\Models\StudentClassHistory;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
+use App\Models\UmmiRecordSurah;
 use App\Services\SchoolCalendar;
 use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
@@ -609,12 +610,15 @@ class SpreadsheetInputController extends Controller
         }
 
         $duplicateHeaderIds = $existingHeaders->pluck('id')->reject(fn ($id) => $id === $header->id);
-        if ($duplicateHeaderIds->isNotEmpty()) {
-            HafalanRecord::whereIn('id', $duplicateHeaderIds)->delete();
-        }
 
-        $existingSurahIds = $header->surahs()->pluck('id')->all();
+        // Baris dari SEMUA sesi tanggal ini dianggap sudah ada: baris milik sesi ganda dipindah ke sesi
+        // yang dipertahankan (bukan disalin), lalu sesi gandanya dihapus.
+        $existingSurahIds = HafalanRecordSurah::query()
+            ->whereIn('hafalan_record_id', $existingHeaders->pluck('id')->push($header->id))
+            ->pluck('id')
+            ->all();
         $processedSurahIds = [];
+        $seenLines = [];
 
         foreach ($hafalansList as $sortOrder => $hafalanData) {
             $surah = Surah::find($hafalanData['surah_id']);
@@ -624,6 +628,14 @@ class SpreadsheetInputController extends Controller
 
             $ayahStart = filled($hafalanData['ayah_start'] ?? null) ? (int) $hafalanData['ayah_start'] : 1;
             $ayahEnd = filled($hafalanData['ayah_end'] ?? null) ? (int) $hafalanData['ayah_end'] : $ayahStart;
+            $status = filled($hafalanData['status'] ?? null) ? $hafalanData['status'] : 'passed';
+
+            // Baris kembar (surah, ayat & status sama) di satu pertemuan hanya disimpan sekali.
+            $lineKey = "{$surah->id}|{$ayahStart}|{$ayahEnd}|{$status}";
+            if (isset($seenLines[$lineKey])) {
+                continue;
+            }
+            $seenLines[$lineKey] = true;
 
             // Baris manual guru bila diisi; kosong = hitungan kalkulator baris.
             $baris = $this->manualInput($hafalanData['baris'] ?? null)
@@ -637,7 +649,7 @@ class SpreadsheetInputController extends Controller
                 'ayah_start' => $ayahStart,
                 'ayah_end' => $ayahEnd,
                 'score' => $score,
-                'status' => filled($hafalanData['status'] ?? null) ? $hafalanData['status'] : 'passed',
+                'status' => $status,
                 'submission_type' => filled($hafalanData['submission_type'] ?? null) ? $hafalanData['submission_type'] : 'new',
                 'baris' => $baris,
                 'sort_order' => $sortOrder,
@@ -645,8 +657,8 @@ class SpreadsheetInputController extends Controller
 
             $lineId = ! empty($hafalanData['id']) ? (int) $hafalanData['id'] : null;
 
-            if ($lineId && in_array($lineId, $existingSurahIds, true)) {
-                $header->surahs()->where('id', $lineId)->update($lineData);
+            if ($lineId && in_array($lineId, $existingSurahIds, true) && ! in_array($lineId, $processedSurahIds, true)) {
+                HafalanRecordSurah::query()->whereKey($lineId)->update($lineData + ['hafalan_record_id' => $header->id]);
                 $processedSurahIds[] = $lineId;
             } else {
                 $newLine = $header->surahs()->create($lineData);
@@ -656,7 +668,10 @@ class SpreadsheetInputController extends Controller
 
         $toDeleteSurahIds = array_diff($existingSurahIds, $processedSurahIds);
         if (! empty($toDeleteSurahIds)) {
-            $header->surahs()->whereIn('id', $toDeleteSurahIds)->delete();
+            HafalanRecordSurah::query()->whereIn('id', $toDeleteSurahIds)->delete();
+        }
+        if ($duplicateHeaderIds->isNotEmpty()) {
+            HafalanRecord::whereIn('id', $duplicateHeaderIds)->delete();
         }
     }
 
@@ -731,18 +746,26 @@ class SpreadsheetInputController extends Controller
         }
 
         $duplicateHeaderIds = $existingRecords->pluck('id')->reject(fn ($id) => $id === $header->id);
-        if ($duplicateHeaderIds->isNotEmpty()) {
-            UmmiRecord::whereIn('id', $duplicateHeaderIds)->delete();
-        }
 
-        $existingSurahIds = $header->surahs()->pluck('id')->all();
+        // Sama dengan hafalan: baris sesi ganda dipindah (bukan disalin) dan baris kembar disimpan sekali.
+        $existingSurahIds = UmmiRecordSurah::query()
+            ->whereIn('ummi_record_id', $existingRecords->pluck('id')->push($header->id))
+            ->pluck('id')
+            ->all();
         $processedSurahIds = [];
+        $seenLines = [];
 
         foreach ($hafalansList as $sortOrder => $hafalanData) {
             $surah = Surah::find($hafalanData['surah_id']);
             if (! $surah) {
                 continue;
             }
+
+            $lineKey = $surah->id.'|'.preg_replace('/\s+/', '', (string) ($hafalanData['ayah'] ?? ''));
+            if (isset($seenLines[$lineKey])) {
+                continue;
+            }
+            $seenLines[$lineKey] = true;
 
             // Baris manual guru bila diisi; kosong = hitungan kalkulator baris dari ayat.
             [$start, $end] = $this->ayahRange($hafalanData['ayah'] ?? null);
@@ -758,8 +781,8 @@ class SpreadsheetInputController extends Controller
 
             $lineId = ! empty($hafalanData['id']) ? (int) $hafalanData['id'] : null;
 
-            if ($lineId && in_array($lineId, $existingSurahIds, true)) {
-                $header->surahs()->where('id', $lineId)->update($lineData);
+            if ($lineId && in_array($lineId, $existingSurahIds, true) && ! in_array($lineId, $processedSurahIds, true)) {
+                UmmiRecordSurah::query()->whereKey($lineId)->update($lineData + ['ummi_record_id' => $header->id]);
                 $processedSurahIds[] = $lineId;
             } else {
                 $newLine = $header->surahs()->create($lineData);
@@ -769,7 +792,10 @@ class SpreadsheetInputController extends Controller
 
         $toDeleteSurahIds = array_diff($existingSurahIds, $processedSurahIds);
         if (! empty($toDeleteSurahIds)) {
-            $header->surahs()->whereIn('id', $toDeleteSurahIds)->delete();
+            UmmiRecordSurah::query()->whereIn('id', $toDeleteSurahIds)->delete();
+        }
+        if ($duplicateHeaderIds->isNotEmpty()) {
+            UmmiRecord::whereIn('id', $duplicateHeaderIds)->delete();
         }
     }
 

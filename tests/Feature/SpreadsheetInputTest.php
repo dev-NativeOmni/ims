@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Attendance;
 use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\TeacherProfile;
@@ -514,5 +515,63 @@ class SpreadsheetInputTest extends TestCase
         ])->assertSessionHas('error', fn ($msg) => str_contains($msg, 'melebihi jumlah ayat surah'));
 
         $this->assertDatabaseMissing('ummi_records', ['student_id' => $this->student->id]);
+    }
+
+    private function hafalanCell(array $lines): array
+    {
+        return ['attendance' => 'hadir', 'attendance_original' => 'hadir', 'hafalans' => $lines];
+    }
+
+    private function line(?int $id, int $start, int $end): array
+    {
+        return ['id' => $id, 'surah_id' => $this->surah->id, 'ayah_start' => $start, 'ayah_end' => $end, 'score' => '', 'status' => 'passed', 'submission_type' => 'new'];
+    }
+
+    #[Test]
+    public function identical_lines_in_one_meeting_are_saved_once(): void
+    {
+        $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $this->student->class_room_id, 'month' => '2026-08', 'type' => 'hafalan',
+            'records' => [$this->student->id => ['dates' => ['2026-08-03' => $this->hafalanCell([
+                $this->line(null, 1, 5), $this->line(null, 1, 5), $this->line(null, 6, 7),
+            ])]]],
+        ])->assertRedirect();
+
+        $lines = HafalanRecord::with('surahs')->where('student_id', $this->student->id)->get()->flatMap->surahs;
+        $this->assertSame(['1-5', '6-7'], $lines->map(fn ($l) => "{$l->ayah_start}-{$l->ayah_end}")->all());
+    }
+
+    #[Test]
+    public function saving_a_meeting_with_two_sessions_moves_lines_instead_of_copying_them(): void
+    {
+        // Dua sesi di tanggal sama (mis. satu dari spreadsheet, satu dari form Input Setoran).
+        $first = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-08-03']);
+        $a = $first->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 5, 'status' => 'passed', 'submission_type' => 'new']);
+        $second = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-08-03']);
+        $b = $second->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => 6, 'ayah_end' => 7, 'status' => 'passed', 'submission_type' => 'new']);
+
+        $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+            'class_room_id' => $this->student->class_room_id, 'month' => '2026-08', 'type' => 'hafalan',
+            'records' => [$this->student->id => ['dates' => ['2026-08-03' => $this->hafalanCell([
+                $this->line($a->id, 1, 5), $this->line($b->id, 6, 7),
+            ])]]],
+        ])->assertRedirect();
+
+        $headers = HafalanRecord::with('surahs')->where('student_id', $this->student->id)->get();
+        $this->assertCount(1, $headers, 'Sesi ganda digabung.');
+        $this->assertEqualsCanonicalizing([$a->id, $b->id], $headers->first()->surahs->pluck('id')->all(), 'Baris dipindah, bukan disalin.');
+        $this->assertSame(2, HafalanRecordSurah::count());
+    }
+
+    #[Test]
+    public function spreadsheet_only_submits_changed_cells(): void
+    {
+        $html = $this->actingAs($this->teacherUser)
+            ->get(route('spreadsheet-input.index', ['class_room_id' => $this->student->class_room_id, 'month' => '2026-08']))
+            ->assertOk()->getContent();
+
+        $payload = substr($html, strpos($html, 'buildRecordsPayload() {'), 900);
+        $this->assertStringContainsString("this.cellSignature(c) === this.originalCells[s.id + '|' + d]", $payload);
+        $this->assertStringContainsString('this.originalCells[s.id', $html);
     }
 }

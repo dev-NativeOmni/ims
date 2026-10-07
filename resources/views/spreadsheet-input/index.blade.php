@@ -35,6 +35,8 @@
                 lastHafalanMap: @json($lastHafalanMap),
                 savedOk: {{ session('success') ? 'true' : 'false' }},
                 gridData: {},
+                // Isi tiap sel saat halaman dibuka (cellSignature) -- hanya sel yang berbeda yang dikirim saat Simpan.
+                originalCells: {},
                 surahDetails: {},
                 lineMap: null,
                 isDirty: false,
@@ -121,6 +123,7 @@
                                 tatap_muka: uData ? uData.tatap_muka || 1 : 1,
                                 ummiHafalans: uHafalans
                             };
+                            this.originalCells[s.id + '|' + d] = this.cellSignature(this.gridData[s.id].dates[d]);
                         });
                     });
 
@@ -351,13 +354,26 @@
                         : 'Manual · perkiraan ' + estimate;
                 },
                 /**
-                 * Susun seluruh isian (semua tanggal, semua murid) jadi satu payload ringkas dari
+                 * Susun isian yang DIUBAH (semua tanggal, semua murid) jadi satu payload ringkas dari
                  * gridData -- bukan dari field form -- supaya (1) tidak kena batas max_input_vars PHP
                  * dan (2) tampilan HP, yang cuma merender satu tanggal, tetap ikut menyimpan tanggal
                  * lain. Aturan field sama dengan yang sebelumnya aktif di form: setoran hanya dikirim
                  * kalau kehadiran kosong/hadir, tab Ummi hanya untuk murid level Ummi yang hadir.
                  * Sel tanpa kehadiran & tanpa isian memang tidak diproses server, jadi dilewati.
                  */
+                /**
+                 * Isi satu sel dalam bentuk teks yang bisa dibandingkan (angka/teks dinormalkan), untuk
+                 * mendeteksi sel yang benar-benar diubah guru.
+                 */
+                cellSignature(c) {
+                    const v = (x) => (x === null || x === undefined) ? '' : String(x).trim();
+                    return JSON.stringify([
+                        v(c.attendance),
+                        (c.hafalans || []).map(h => [v(h.id), v(h.surah_id), v(h.ayah_start), v(h.ayah_end), v(h.baris), v(h.score), v(h.status), v(h.submission_type)]),
+                        v(c.ummi_jilid), v(c.ummi_halaman_awal), v(c.ummi_halaman_akhir), v(c.ummi_halaman), v(c.materi), v(c.nilai), v(c.tatap_muka),
+                        (c.ummiHafalans || []).map(h => [v(h.id), v(h.surah_id), v(h.ayah), v(h.baris)]),
+                    ]);
+                },
                 buildRecordsPayload() {
                     const out = {};
                     this.students.forEach(s => {
@@ -365,6 +381,9 @@
                         this.dates.forEach(d => {
                             const c = this.gridData[s.id] && this.gridData[s.id].dates[d];
                             if (!c) return;
+                            // Hanya sel yang diubah: sel lain tidak disentuh, jadi isian murid lain (atau
+                            // perubahan guru lain sejak halaman dibuka) tidak tertimpa/terduplikasi.
+                            if (this.cellSignature(c) === this.originalCells[s.id + '|' + d]) return;
                             const att = c.attendance || '';
                             const cell = { attendance: att };
                             if (c.attendance_original !== undefined) cell.attendance_original = c.attendance_original || '';
