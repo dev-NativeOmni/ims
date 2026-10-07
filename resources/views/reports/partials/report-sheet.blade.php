@@ -328,8 +328,8 @@
                         <p class="font-semibold" {!! $liveTitle ? $bind($liveTitle) : '' !!}>{{ $official['title'] }}</p>
                         @if ($live)
                             {{-- Pratinjau: tanda tangan tersimpan / yang baru dipilih di form (state Alpine `sig`). --}}
-                            <div class="h-12 flex items-center justify-center">
-                                <template x-if="sig['{{ $key }}']"><img :src="sig['{{ $key }}']" alt="Tanda tangan" class="max-h-full max-w-[160px] object-contain"></template>
+                            <div class="h-20 flex items-center justify-center">
+                                <template x-if="sig['{{ $key }}']"><img :src="sig['{{ $key }}']" alt="Tanda tangan" class="max-h-full max-w-[240px] object-contain"></template>
                             </div>
                         @else
                             @include('reports.partials.signature-slot', ['uri' => $signature($key)])
