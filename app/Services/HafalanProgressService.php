@@ -74,8 +74,11 @@ class HafalanProgressService
     }
 
     /**
-     * Urutan di dalam juz hasil deteksi setoran: juz => 'asc'|'desc'. Juz dengan kurang
-     * dari dua surah berbeda tidak dideteksi (memakai default / koreksi guru).
+     * Urutan di dalam juz hasil deteksi setoran: juz => 'asc'|'desc'.
+     * - Dua surah berbeda atau lebih: dari urutan surah yang disetor.
+     * - Baru satu surah: bila itu surah terakhir juz (mis. Al-Mursalat di Juz 29) berarti mulai dari
+     *   belakang; bila surah pertama juz (mis. Al-Mulk) berarti dari depan; surah tengah tidak dideteksi.
+     * Yang tidak terdeteksi memakai default / koreksi guru.
      *
      * @return array<int, string>
      */
@@ -94,6 +97,18 @@ class HafalanProgressService
         foreach ($surahsByJuz as $juz => $surahs) {
             if (count($surahs) >= 2) {
                 $orders[$juz] = end($surahs) < $surahs[0] ? HafalanOrder::DESC : HafalanOrder::ASC;
+
+                continue;
+            }
+
+            $juzSurahs = array_column(HafalanOrder::JUZ_RANGES[$juz] ?? [], 'surah');
+            if (count($juzSurahs) < 2) {
+                continue; // juz satu surah (mis. Juz 2 Al-Baqarah): tidak ada arah antarsurah
+            }
+            if ($surahs[0] === end($juzSurahs)) {
+                $orders[$juz] = HafalanOrder::DESC;
+            } elseif ($surahs[0] === $juzSurahs[0]) {
+                $orders[$juz] = HafalanOrder::ASC;
             }
         }
 
