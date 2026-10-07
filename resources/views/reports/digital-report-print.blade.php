@@ -74,6 +74,7 @@
                         <x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Terkunci {{ $lockedAt->locale('id')->translatedFormat('d F Y H:i') }} &mdash; data rapor dibekukan
                     </p>
                 @endif
+                @include('reports.partials.print-tip')
             </div>
         </div>
 

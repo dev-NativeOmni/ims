@@ -20,7 +20,7 @@
                     {{-- Isi sel berupa HTML tersimpan saat dikunci (nilai sudah di-escape saat dibuat). --}}
                     <td class="p-1.5 border-r border-black align-middle font-semibold">{!! $row['target'] !!}</td>
                     <td class="p-1.5 border-r border-black align-middle font-semibold">{!! $row['capaian'] !!}</td>
-                    <td class="p-1.5 border-r border-black text-center align-middle font-bold {{ $row['completed'] ? 'text-green-700' : 'text-amber-700' }}">
+                    <td class="p-1.5 border-r border-black text-center align-middle font-bold text-black">
                         {{ $row['completed'] ? 'Tuntas' : 'Dalam Proses' }}
                     </td>
                     <td class="p-1.5 align-middle text-gray-700">

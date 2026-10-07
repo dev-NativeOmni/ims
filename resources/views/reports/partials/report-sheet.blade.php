@@ -19,6 +19,8 @@
     $hasLogo = fn (string $position) => $live || $layout['logo'] === $position;
     $signature = fn ($key) => $signatureUris[$sheet['signatories'][$key]['signature'] ?? ''] ?? null;
     $adabCount = count($sheet['adab']['categories']);
+    // Kolom tabel Adab & Tanse: No | Komponen/Jenis | Nilai/Poin | Deskripsi -- sama persis supaya garisnya sejajar.
+    $ratingColumns = '<colgroup><col style="width: 2.5rem"><col style="width: 13rem"><col style="width: 6rem"><col></colgroup>';
     // Atribut pengikat Alpine untuk pratinjau (ekspresi ditulis tetap di sini, bukan dari input).
     $bind = fn (string $expression) => $live ? 'x-text="'.$expression.'"' : '';
     // Modul yang dicetak (Pengaturan Rapor > Modul); simpanan terkunci lama tanpa 'modules' = semua tampil.
@@ -207,7 +209,7 @@
                                 {{ $tahfizh['lines'] ? $tahfizh['lines']['achieved'].' / '.$tahfizh['lines']['target'] : '-' }}
                             </td>
                         @endunless
-                        <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi ? 'border-r border-black' : '' }} {{ $tahfizh['completed'] ? 'text-green-700' : 'text-rose-700' }}">
+                        <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi ? 'border-r border-black' : '' }} text-black">
                             {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
                         @if ($isUmmi)
@@ -219,7 +221,7 @@
                     </tr>
                     <tr class="border-b border-black">
                         {{-- No + 2x kolom posisi + Status + (Nilai untuk Ummi | Baris untuk 11/12) --}}
-                        <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-left text-gray-700 leading-relaxed">
+                        <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-justify text-gray-700 leading-relaxed">
                             <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
                         </td>
                     </tr>
@@ -235,12 +237,14 @@
     <div class="mb-4 space-y-2" {!! $moduleToggle('showAdab') !!}>
         <h3 class="text-xs font-black uppercase text-black">II. PENILAIAN ADAB</h3>
 
-        <table class="w-full border border-black text-xs text-left">
+        {{-- Lebar kolom sama dengan tabel Tanse ($ratingColumns) supaya garis kedua tabel sejajar. --}}
+        <table class="w-full table-fixed border border-black text-xs text-left">
+            {!! $ratingColumns !!}
             <thead>
                 <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                    <th class="p-1 border-r border-black w-10">No.</th>
-                    <th class="p-1 border-r border-black w-56">KOMPONEN ADAB</th>
-                    <th class="p-1 border-r border-black w-24">Nilai</th>
+                    <th class="p-1 border-r border-black">No.</th>
+                    <th class="p-1 border-r border-black">KOMPONEN ADAB</th>
+                    <th class="p-1 border-r border-black">Nilai</th>
                     <th class="p-1">Deskripsi</th>
                 </tr>
             </thead>
@@ -254,7 +258,7 @@
                                 <span class="text-base font-black">{{ $sheet['adab']['grade'] }}</span>
                                 <span class="text-[9px] font-bold text-gray-700 block mt-1 uppercase">{{ $sheet['adab']['score'] }}/100</span>
                             </td>
-                            <td rowspan="{{ $adabCount }}" class="p-3 text-gray-700 leading-relaxed align-middle">
+                            <td rowspan="{{ $adabCount }}" class="p-3 text-justify text-gray-700 leading-relaxed align-middle">
                                 <div class="font-bold text-black mb-1">{{ $sheet['adab']['grade_label'] }}</div>
                                 {{ $sheet['adab']['description'] }}
                             </td>
@@ -272,12 +276,13 @@
     <div class="mb-4 space-y-2" {!! $moduleToggle('showTanse') !!}>
         <h3 class="text-xs font-black uppercase text-black">III. LAPORAN TANSE</h3>
 
-        <table class="w-full border border-black text-xs text-left">
+        <table class="w-full table-fixed border border-black text-xs text-left">
+            {!! $ratingColumns !!}
             <thead>
                 <tr class="bg-gray-100 border-b border-black text-center font-bold">
-                    <th class="p-1 border-r border-black w-10">No.</th>
-                    <th class="p-1 border-r border-black w-48">JENIS PERILAKU</th>
-                    <th class="p-1 border-r border-black w-24">POIN</th>
+                    <th class="p-1 border-r border-black">No.</th>
+                    <th class="p-1 border-r border-black">JENIS PERILAKU</th>
+                    <th class="p-1 border-r border-black">POIN</th>
                     <th class="p-1">Deskripsi</th>
                 </tr>
             </thead>
@@ -285,17 +290,17 @@
                 <tr class="border-b border-black">
                     <td class="p-2 border-r border-black text-center">1</td>
                     <td class="p-2 border-r border-black font-bold">Penghargaan</td>
-                    <td class="p-2 border-r border-black text-center font-bold text-emerald-700">{{ $sheet['tanse']['reward_points'] }}</td>
+                    <td class="p-2 border-r border-black text-center font-bold text-black">{{ $sheet['tanse']['reward_points'] }}</td>
                     {{-- Satu deskripsi untuk seluruh Tanse, berdasarkan predikat triwulan. --}}
                     <td rowspan="2" class="p-2 text-gray-900 align-top">
                         <p class="font-black">Predikat {{ $sheet['tanse']['grade'] }}</p>
-                        <p class="mt-1 leading-relaxed">{{ $sheet['tanse']['notes'] }}</p>
+                        <p class="mt-1 leading-relaxed text-justify">{{ $sheet['tanse']['notes'] }}</p>
                     </td>
                 </tr>
                 <tr class="border-b border-black">
                     <td class="p-2 border-r border-black text-center">2</td>
                     <td class="p-2 border-r border-black font-bold">Pelanggaran</td>
-                    <td class="p-2 border-r border-black text-center font-bold text-rose-700">{{ $sheet['tanse']['violation_points'] }}</td>
+                    <td class="p-2 border-r border-black text-center font-bold text-black">{{ $sheet['tanse']['violation_points'] }}</td>
                 </tr>
             </tbody>
         </table>
