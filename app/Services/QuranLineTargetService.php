@@ -154,21 +154,21 @@ class QuranLineTargetService
      *
      * @param  Collection<int, mixed>  $records
      */
-    public function latestByPosition(Collection $records, ?string $direction = HafalanOrder::BACKWARD): mixed
+    public function latestByPosition(Collection $records, ?string $direction = HafalanOrder::BACKWARD, array $juzOrders = []): mixed
     {
         if ($records->isEmpty()) {
             return null;
         }
 
-        return $records->sort(function ($a, $b) use ($direction) {
+        return $records->sort(function ($a, $b) use ($direction, $juzOrders) {
             $dateA = $a->submitted_at ? Carbon::parse($a->submitted_at)->timestamp : 0;
             $dateB = $b->submitted_at ? Carbon::parse($b->submitted_at)->timestamp : 0;
             if ($dateA !== $dateB) {
                 return $dateB <=> $dateA;
             }
 
-            $rankA = HafalanOrder::rank((int) ($a->surah?->number ?? 114), (int) ($a->ayah_end ?? 0), $direction);
-            $rankB = HafalanOrder::rank((int) ($b->surah?->number ?? 114), (int) ($b->ayah_end ?? 0), $direction);
+            $rankA = HafalanOrder::rank((int) ($a->surah?->number ?? 114), (int) ($a->ayah_end ?? 0), $direction, $juzOrders);
+            $rankB = HafalanOrder::rank((int) ($b->surah?->number ?? 114), (int) ($b->ayah_end ?? 0), $direction, $juzOrders);
 
             return $rankB <=> $rankA;
         })->first();

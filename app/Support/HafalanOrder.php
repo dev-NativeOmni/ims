@@ -15,7 +15,8 @@ use Illuminate\Support\Collection;
  * Di dalam tiap juz urutan surahnya bisa dari awal ('asc', mis. Juz 29: Al-Mulk ->
  * Al-Mursalat) atau dari akhir ('desc', mis. Juz 27: Al-Hadid -> Adz-Dzariyat 31); ayat
  * dalam satu surah selalu maju. Default: Juz 30 'desc', juz lain 'asc'; arah sebenarnya
- * per murid dideteksi dari setoran (App\Services\HafalanProgressService).
+ * per murid dari HafalanProgressService::juzOrders(): koreksi guru, lalu aturan Kelas 11 & 12
+ * (Juz 30 'asc', dari An-Naba), lalu deteksi dari setoran.
  *
  * Semua juz fleksibel: ayat yang sudah lulus disetor (cakupan) dilewati, jadi target
  * hanya menghitung ayat yang belum dihafal.

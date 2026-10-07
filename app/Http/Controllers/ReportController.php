@@ -1095,7 +1095,7 @@ class ReportController extends Controller
             $studentMurajaah = $murajaahRecords->where('student_id', $student->id);
 
             // Latest surah during the period
-            $latestHafalan = app(QuranLineTargetService::class)->latestByPosition($studentHafalan, $student->hafalan_direction);
+            $latestHafalan = app(QuranLineTargetService::class)->latestByPosition($studentHafalan, $student->hafalan_direction, app(HafalanProgressService::class)->juzOrdersFor($student));
             $latestMurajaah = $studentMurajaah->sortByDesc('reviewed_at')->first();
 
             $latestProgressText = '-';

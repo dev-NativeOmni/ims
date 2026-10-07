@@ -797,7 +797,7 @@ class StudentReportController extends Controller
             ];
         }
 
-        $capaian = $this->positionCheck->latestByPosition($hafalanUntilEnd, $student->hafalan_direction);
+        $capaian = $this->positionCheck->latestByPosition($hafalanUntilEnd, $student->hafalan_direction, app(HafalanProgressService::class)->juzOrdersFor($student));
         $breakdown = TargetRules::linesForLevel($student->tahfizh_level) === null ? null : app(HafalanProgressService::class)->termBreakdown(
             $student,
             $termTargets->filter(fn ($t) => $t->surah),
@@ -967,7 +967,7 @@ class StudentReportController extends Controller
             }
 
             if (! $latestHafalan) {
-                $latestHafalan = $this->positionCheck->latestByPosition($studentHafalanAll, $student->hafalan_direction);
+                $latestHafalan = $this->positionCheck->latestByPosition($studentHafalanAll, $student->hafalan_direction, app(HafalanProgressService::class)->juzOrdersFor($student));
             }
 
             if ($latestHafalan) {

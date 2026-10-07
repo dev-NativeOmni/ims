@@ -101,7 +101,8 @@ class HafalanProgressService
     }
 
     /**
-     * Urutan di dalam juz yang dipakai: koreksi guru > deteksi setoran > default.
+     * Urutan di dalam juz yang dipakai: koreksi guru > aturan Kelas 11 & 12 (Juz 30 dari An-Naba) >
+     * deteksi setoran > default (HafalanOrder::defaultJuzOrder()).
      *
      * @return array<int, string>
      */
@@ -112,7 +113,27 @@ class HafalanProgressService
             ->mapWithKeys(fn ($order, $juz) => [(int) $juz => $order])
             ->all();
 
-        return $manual + $this->detectedJuzOrders($records);
+        // Kelas 11 & 12 (bukan Ummi): Juz 30 dihitung dari An-Naba ke An-Nas, apa pun urutan setoran
+        // lamanya -- target & capaian rapor mengikuti ini. Guru tetap bisa mengoreksi per murid.
+        $gradeRule = self::juz30FromNaba($student) ? [30 => HafalanOrder::ASC] : [];
+
+        return $manual + $gradeRule + $this->detectedJuzOrders($records);
+    }
+
+    /** Murid Kelas 11/12 non-Ummi: Juz 30 berurutan dari An-Naba (78) ke An-Nas (114). */
+    public static function juz30FromNaba(Student $student): bool
+    {
+        return (bool) $student->classRoom?->isGradeElevenOrTwelve() && ! $student->usesUmmi();
+    }
+
+    /**
+     * juzOrders() dengan setoran murid dibaca sendiri (untuk pemanggil yang belum memuat records()).
+     *
+     * @return array<int, string>
+     */
+    public function juzOrdersFor(Student $student): array
+    {
+        return $this->juzOrders($student, $this->records($student));
     }
 
     /**

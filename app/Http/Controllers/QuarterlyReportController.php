@@ -1084,7 +1084,7 @@ class QuarterlyReportController extends Controller
                 $totalCapaianLines = $cell['achieved_lines'];
                 $isTuntas = $cell['reached'];
             }
-            $studentHafalan = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()), $student->hafalan_direction);
+            $studentHafalan = app(QuranLineTargetService::class)->latestByPosition($latestHafalans->get($student->id, collect()), $student->hafalan_direction, app(HafalanProgressService::class)->juzOrdersFor($student));
 
             // Target: pakai Jilid/Halaman hanya kalau target guru memang dibuat lewat alur Ummi
             // (ummi_jilid terisi) -- murid Ummi bisa juga punya target Ziyadah Surah/Ayat biasa.

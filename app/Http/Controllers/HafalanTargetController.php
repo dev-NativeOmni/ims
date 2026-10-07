@@ -1104,7 +1104,9 @@ class HafalanTargetController extends Controller
         $effective = $progress->juzOrders($student, $records);
         $manual = array_map('intval', array_keys($student->juz_orders ?? []));
 
-        $juzRows = collect(HafalanOrder::juzSequence($student->hafalan_direction))->map(function (int $juz) use ($coverage, $detected, $effective, $manual, $records) {
+        $student->loadMissing('classRoom');
+        $gradeRule = HafalanProgressService::juz30FromNaba($student);
+        $juzRows = collect(HafalanOrder::juzSequence($student->hafalan_direction))->map(function (int $juz) use ($coverage, $detected, $effective, $manual, $records, $gradeRule) {
             $totalAyat = 0;
             $coveredAyat = 0;
             foreach (HafalanOrder::JUZ_RANGES[$juz] as $range) {
@@ -1121,7 +1123,12 @@ class HafalanTargetController extends Controller
                 'covered_percent' => $totalAyat > 0 ? (int) round($coveredAyat / $totalAyat * 100) : 0,
                 'setoran_count' => $records->where('status', 'passed')->filter(fn ($r) => in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
                 'order' => $effective[$juz] ?? HafalanOrder::defaultJuzOrder($juz),
-                'source' => in_array($juz, $manual, true) ? 'manual' : (isset($detected[$juz]) ? 'auto' : 'default'),
+                'source' => match (true) {
+                    in_array($juz, $manual, true) => 'manual',
+                    $juz === 30 && $gradeRule => 'grade',
+                    isset($detected[$juz]) => 'auto',
+                    default => 'default',
+                },
             ];
         });
 

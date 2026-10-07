@@ -66,7 +66,7 @@
                                         <input type="hidden" name="juz" value="{{ $row['juz'] }}">
                                         <select name="order" onchange="this.form.submit()" class="rounded-lg border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 text-xs py-1.5 pl-2 pr-8">
                                             <option value="auto" @selected($row['source'] !== 'manual')>
-                                                {{ $row['order'] === 'desc' ? 'Dari akhir juz' : 'Dari awal juz' }} ({{ $row['source'] === 'auto' ? 'otomatis dari setoran' : 'default' }})
+                                                {{ $row['order'] === 'desc' ? 'Dari akhir juz' : 'Dari awal juz' }} ({{ ['auto' => 'otomatis dari setoran', 'grade' => 'aturan Kelas 11 & 12'][$row['source']] ?? 'default' }})
                                             </option>
                                             <option value="asc" @selected($row['source'] === 'manual' && $row['order'] === 'asc')>Dari awal juz (diatur)</option>
                                             <option value="desc" @selected($row['source'] === 'manual' && $row['order'] === 'desc')>Dari akhir juz (diatur)</option>
