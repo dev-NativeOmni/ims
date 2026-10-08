@@ -47,6 +47,26 @@ class AuditLog extends Model
         return $this->morphTo();
     }
 
+    /**
+     * Halaman & akun yang membuat data ini (dari log "created"), mis. "spreadsheet-input · Fuad".
+     * Dipakai perintah diagnosis setoran (tad:hapus-setoran-ganda, tad:rincian-baris --diinput).
+     */
+    public static function createdVia(string $auditableType, ?int $auditableId): string
+    {
+        $log = $auditableId ? static::query()->with('user:id,name')
+            ->where('auditable_type', $auditableType)
+            ->where('auditable_id', $auditableId)
+            ->where('action', 'created')
+            ->first() : null;
+        if (! $log) {
+            return '-';
+        }
+
+        $path = trim((string) parse_url((string) $log->url, PHP_URL_PATH), '/') ?: 'konsol';
+
+        return $path.' · '.($log->user?->name ?? $log->user_name ?? '-');
+    }
+
     public function getActionLabelAttribute(): string
     {
         return match ($this->action) {

@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AuditLog;
+use App\Models\HafalanRecord;
+use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Services\AcademicCalendarService;
@@ -20,7 +23,8 @@ class RincianBarisCommand extends Command
     protected $signature = 'tad:rincian-baris
         {murid : Nama murid (sebagian juga boleh) atau ID}
         {--tahun= : Tahun ajaran, mis. 2026/2027 (bawaan: tahun ajaran berjalan)}
-        {--term= : Triwulan 1-4 (bawaan: triwulan berjalan)}';
+        {--term= : Triwulan 1-4 (bawaan: triwulan berjalan)}
+        {--diinput : Tampilkan juga kapan setoran diinput & lewat halaman/akun apa (untuk melacak salah tanggal/ayat)}';
 
     protected $description = 'Rincian capaian baris Tahfizh satu murid per triwulan (sama dengan rapor).';
 
@@ -66,13 +70,30 @@ class RincianBarisCommand extends Command
         $surahs = $progress->surahs();
         $details = $progress->passedLineDetails($records, $start, now()->min($end->copy()->endOfDay()));
 
-        $this->table(['Tanggal', 'Surah', 'Ayat', 'Baris setoran', 'Dihitung capaian', 'Keterangan'], array_map(fn ($d) => [
+        // --diinput: waktu baris setoran dibuat/diubah & halaman/akun pembuat sesinya (Audit Log).
+        $lines = $this->option('diinput')
+            ? HafalanRecordSurah::query()->whereIn('id', collect($details)->pluck('record.line_id')->filter())->get()->keyBy('id')
+            : collect();
+        $inputInfo = function ($record) use ($lines) {
+            $line = $lines->get((int) $record->line_id);
+            if (! $line) {
+                return ['-', '-'];
+            }
+            $edited = $line->updated_at && $line->created_at && $line->updated_at->gt($line->created_at->copy()->addMinute())
+                ? ' (ubah '.$line->updated_at->format('d/m H:i').')' : '';
+
+            return [$line->created_at?->format('d/m H:i').$edited, AuditLog::createdVia((new HafalanRecord)->getMorphClass(), $line->hafalan_record_id)];
+        };
+
+        $headers = ['Tanggal', 'Surah', 'Ayat', 'Baris setoran', 'Dihitung capaian', 'Keterangan'];
+        $this->table($this->option('diinput') ? [...$headers, 'Diinput', 'Lewat'] : $headers, array_map(fn ($d) => [
             Carbon::parse($d['record']->submitted_at)->format('d/m/Y'),
             $surahs->get((int) $d['record']->surah_number)?->name_latin ?? $d['record']->surah_number,
             "{$d['record']->ayah_start}-{$d['record']->ayah_end}",
             $fmt($d['baris']).(abs($d['baris'] - $d['calculated']) > 0.01 ? " (manual, kalkulator {$fmt($d['calculated'])})" : ''),
             $fmt($d['new_lines']),
             $labels[$d['kind']].($d['kind'] === 'partial' ? " ({$d['new_ayat']} ayat baru)" : '').$this->repeatSource($d, $records),
+            ...($this->option('diinput') ? $inputInfo($d['record']) : []),
         ], $details));
 
         $byKind = collect($details)->groupBy('kind');

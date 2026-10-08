@@ -46,6 +46,18 @@ class RincianBarisCommandTest extends TestCase
     }
 
     #[Test]
+    public function diinput_option_shows_when_each_setoran_was_entered(): void
+    {
+        $this->setUpHafizPlusData();
+        Carbon::setTestNow('2026-10-08 09:15');
+        $this->setor('2026-07-11', 4, 7, 4);
+
+        $this->artisan('tad:rincian-baris', ['murid' => $this->student->name, '--tahun' => '2026/2027', '--term' => 1, '--diinput' => true])
+            ->expectsOutputToContain('08/10 09:15')
+            ->assertSuccessful();
+    }
+
+    #[Test]
     public function rekap_lists_grade_11_and_12_students_with_new_versus_all_lines(): void
     {
         Carbon::setTestNow('2026-06-01'); // naik ke XII F3 sebelum Triwulan 1 (riwayat kelas)

@@ -55,7 +55,7 @@ class RemoveDuplicateSetoran extends Command
                 $d['line']->status,
                 $d['keep']->id,
                 $d['line']->created_at?->format('d/m H:i'),
-                $this->createdVia($d['line']->hafalan_record_id),
+                AuditLog::createdVia((new HafalanRecord)->getMorphClass(), $d['line']->hafalan_record_id),
             ])->all());
         }
 
@@ -155,25 +155,6 @@ class RemoveDuplicateSetoran extends Command
     }
 
     /** @return Collection<int, array{line: HafalanRecordSurah, keep: HafalanRecordSurah}> */
-    /**
-     * Halaman & akun yang membuat sesi setoran ini menurut Audit Log, mis. "spreadsheet-input/save · Guru A".
-     */
-    private function createdVia(?int $headerId): string
-    {
-        $log = $headerId ? AuditLog::query()->with('user:id,name')
-            ->where('auditable_type', (new HafalanRecord)->getMorphClass())
-            ->where('auditable_id', $headerId)
-            ->where('action', 'created')
-            ->first() : null;
-        if (! $log) {
-            return '-';
-        }
-
-        $path = trim((string) parse_url((string) $log->url, PHP_URL_PATH), '/') ?: 'konsol';
-
-        return $path.' · '.($log->user?->name ?? $log->user_name ?? '-');
-    }
-
     private function hafalanDuplicates(): Collection
     {
         // Diproses per murid supaya memori tetap kecil walau datanya banyak.
