@@ -1153,21 +1153,14 @@ class HafalanTargetController extends Controller
 
         $student->loadMissing('classRoom');
         $gradeRule = HafalanProgressService::juz30FromNaba($student);
-        $juzRows = collect(HafalanOrder::juzSequence($student->hafalan_direction))->map(function (int $juz) use ($coverage, $detected, $effective, $manual, $records, $gradeRule) {
-            $totalAyat = 0;
-            $coveredAyat = 0;
-            foreach (HafalanOrder::JUZ_RANGES[$juz] as $range) {
-                $totalAyat += $range['end'] - $range['start'] + 1;
-                foreach (AyahCoverage::covered($coverage[$range['surah']] ?? [], $range['start'], $range['end']) as [$a, $b]) {
-                    $coveredAyat += $b - $a + 1;
-                }
-            }
+        $percentages = $progress->juzPercentages($coverage);
+        $juzRows = collect(HafalanOrder::juzSequence($student->hafalan_direction))->map(function (int $juz) use ($percentages, $detected, $effective, $manual, $records, $gradeRule) {
             $surahsInJuz = collect(HafalanOrder::JUZ_RANGES[$juz])->pluck('surah')->all();
 
             return [
                 'juz' => $juz,
                 'surah_range' => [reset($surahsInJuz), end($surahsInJuz)],
-                'covered_percent' => $totalAyat > 0 ? (int) round($coveredAyat / $totalAyat * 100) : 0,
+                'covered_percent' => $percentages[$juz],
                 'setoran_count' => $records->where('status', 'passed')->reject(fn ($r) => $r->is_prior)->filter(fn ($r) => in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
                 'prior_count' => $records->filter(fn ($r) => $r->is_prior && in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
                 'order' => $effective[$juz] ?? HafalanOrder::defaultJuzOrder($juz),

@@ -8,6 +8,7 @@ use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
+use App\Support\AcademicYear;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
 use App\Support\TargetRules;
@@ -174,6 +175,47 @@ class HafalanProgressService
     public function juzOrdersFor(Student $student): array
     {
         return $this->juzOrders($student, $this->records($student));
+    }
+
+    /**
+     * Persen hafal tiap juz dari cakupan ayat (setoran lulus + hafalan sebelum aplikasi): juz => 0..100.
+     * Di bawah 100 dibulatkan ke bawah, jadi 100 berarti benar-benar seluruh ayat juz tercakup.
+     *
+     * @param  array<int, array<int, array{0: int, 1: int}>>  $coverage  hasil coverage()
+     * @return array<int, int>
+     */
+    public function juzPercentages(array $coverage): array
+    {
+        $percent = [];
+        foreach (HafalanOrder::JUZ_RANGES as $juz => $ranges) {
+            $total = 0;
+            $covered = 0;
+            foreach ($ranges as $range) {
+                $total += $range['end'] - $range['start'] + 1;
+                foreach (AyahCoverage::covered($coverage[$range['surah']] ?? [], $range['start'], $range['end']) as [$a, $b]) {
+                    $covered += $b - $a + 1;
+                }
+            }
+            $percent[$juz] = $covered >= $total ? 100 : (int) floor($covered / $total * 100);
+        }
+
+        return $percent;
+    }
+
+    /**
+     * Juz yang sedang dihafal: juz tempat ayat berikutnya yang belum hafal berada, mengikuti urutan
+     * hafalan murid dari titik awal triwulan berjalan (sama dengan arah target). Null bila semua hafal.
+     */
+    public function currentJuz(Student $student, ?Collection $records = null): ?int
+    {
+        $records ??= $this->records($student);
+        [$termStart, $termEnd] = AcademicYear::termRange(AcademicYear::forDate(now()), AcademicYear::termOf(now()));
+        $start = $this->startPoint($student, $records, $termStart, $termEnd);
+        $next = HafalanOrder::segments(
+            $start['surah'], $start['ayah'], $this->coverage($records), collect(), $student->hafalan_direction, $this->juzOrders($student, $records)
+        )->current();
+
+        return $next ? HafalanOrder::juzOf($next[0], $next[1]) : null;
     }
 
     /**

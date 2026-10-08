@@ -196,6 +196,7 @@ class SidebarMenu
                     // Pengaturan Rapor: khusus super_admin & admin (lihat catatan di routes/web.php).
                     ['label' => 'Pengaturan Rapor', 'route' => 'digital-reports.settings', 'icon' => 'cog', 'roles' => ['super_admin', 'admin'], 'active' => ['digital-reports.settings']],
                     ['label' => 'Badge', 'route' => 'badges.index', 'icon' => 'bookmark', 'roles' => ['super_admin'], 'active' => ['badges.*']],
+                    ['label' => 'Hafalan & Arah Juz', 'route' => 'juz-map.index', 'icon' => 'book', 'roles' => ['super_admin'], 'active' => ['juz-map.*']],
                     ['label' => 'Manajemen User', 'route' => 'users.index', 'icon' => 'users', 'roles' => ['super_admin'], 'active' => ['users.*']],
                     ['label' => 'Audit Log', 'route' => 'audit-logs.index', 'icon' => 'document', 'roles' => ['super_admin', 'admin'], 'active' => ['audit-logs.*']],
                     ['label' => 'Backup & Restore', 'route' => 'database-backups.index', 'icon' => 'cloud', 'roles' => ['super_admin', 'admin'], 'active' => ['database-backups.*']],

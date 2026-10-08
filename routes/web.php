@@ -12,6 +12,7 @@ use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\HafalanRecordController;
 use App\Http\Controllers\HafalanTargetController;
 use App\Http\Controllers\ImpersonateController;
+use App\Http\Controllers\JuzMapController;
 use App\Http\Controllers\MurajaahRecordController;
 use App\Http\Controllers\ParentController;
 use App\Http\Controllers\ProfileController;
@@ -282,6 +283,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['role:super_admin'])->group(function () {
+        // Hafalan & Arah Juz: tandai juz yang sudah hafal & arah di dalam juz per murid (JuzMapController).
+        Route::get('/hafalan-arah-juz', [JuzMapController::class, 'index'])->name('juz-map.index');
+        Route::post('/hafalan-arah-juz/{student}/juz', [JuzMapController::class, 'toggleJuz'])->name('juz-map.juz');
+        Route::post('/hafalan-arah-juz/{student}/arah', [JuzMapController::class, 'setDirection'])->name('juz-map.direction');
+
         Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::post('users/{user}/link-parents', [UserController::class, 'linkParents'])->name('users.link-parents');
         Route::post('users/{user}/link-students', [UserController::class, 'linkStudents'])->name('users.link-students');
