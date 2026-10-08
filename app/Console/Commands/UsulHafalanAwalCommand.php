@@ -32,6 +32,7 @@ class UsulHafalanAwalCommand extends Command
         {--kelas= : Hanya kelas ini, mis. "XI F1"}
         {--murid=* : Hanya murid ini (nama, boleh sebagian; bisa diulang)}
         {--juz-sebelumnya : Usulkan juga juz-juz sebelum juz awal (dalam urutan hafalan murid) sebagai hafal penuh}
+        {--berubah : Hanya murid yang capaian triwulannya berubah}
         {--simpan : Simpan usulan sebagai Hafalan Sebelum Aplikasi}
         {--force : Simpan tanpa pertanyaan konfirmasi}';
 
@@ -78,7 +79,21 @@ class UsulHafalanAwalCommand extends Command
                 $target = (int) $progress->termBreakdown($student, $this->termTargets($student, $start, $end), $months, $cutoff, $records)['evaluation']['target_lines'];
                 $before = $progress->passedLines($records, $start, $cutoff);
                 $after = $progress->passedLines($this->withPrior($records, $ranges), $start, $cutoff);
-                $proposals[$student->id] = $ranges;
+                if ($this->option('berubah') && abs($before - $after) < 0.05) {
+                    continue;
+                }
+
+                // Usulan memakai arah juz yang diatur guru / aturan / default. Bila setoran murid menunjukkan arah
+                // lain (mis. Juz 29 dari Al-Mursalat), usulan bisa salah bagian: tandai & jangan disimpan.
+                $juz = HafalanOrder::juzOf((int) $first->surah_number, (int) $first->ayah_start);
+                $assumed = $this->juzOrder($student, $juz);
+                $detected = $progress->detectedJuzOrders($records)[$juz] ?? null;
+                $manual = isset($student->juz_orders[$juz]) || isset($student->juz_orders[(string) $juz]);
+                $checkDirection = ! $manual && $detected !== null && $detected !== $assumed;
+                $label = fn (string $o) => $o === HafalanOrder::DESC ? 'dari akhir' : 'dari awal';
+                if (! $checkDirection) {
+                    $proposals[$student->id] = $ranges;
+                }
 
                 $status = fn (float $lines) => $target > 0 ? ($lines >= $target ? 'Tuntas' : 'Belum') : '-';
                 $rows[] = [
@@ -86,6 +101,7 @@ class UsulHafalanAwalCommand extends Command
                     $student->name,
                     ($surahs->get((int) $first->surah_number)?->name_latin ?? $first->surah_number).' '.$first->ayah_start,
                     $this->describe($ranges, $surahs),
+                    "Juz {$juz} ".$label($assumed).($manual ? ' (diatur)' : '').($checkDirection ? ' ! CEK ARAH: setoran '.$label($detected) : ''),
                     $this->fmt($before).' -> '.$this->fmt($after).' / '.$target,
                     $status($before) === $status($after) ? $status($after) : $status($before).' -> '.$status($after),
                 ];
@@ -98,8 +114,12 @@ class UsulHafalanAwalCommand extends Command
 
             return self::SUCCESS;
         }
-        $this->table(['Kelas', 'Murid', 'Setoran pertama', 'Usulan hafalan lama', 'Capaian (sekarang -> sesudah) / target', 'Status'], $rows);
+        $this->table(['Kelas', 'Murid', 'Setoran pertama', 'Usulan hafalan lama', 'Arah juz', 'Capaian (sekarang -> sesudah) / target', 'Status'], $rows);
+        $flagged = count($rows) - count($proposals);
         $this->line(count($rows).' murid. Konfirmasi ke guru halaqoh sebelum menyimpan; yang keliru bisa dihapus di halaman Urutan murid.');
+        if ($flagged > 0) {
+            $this->warn("{$flagged} murid bertanda CEK ARAH tidak akan disimpan: atur dulu arah juz-nya di halaman Urutan murid, lalu jalankan ulang.");
+        }
 
         if (! $this->option('simpan')) {
             $this->warn('Mode tampil saja: belum ada yang disimpan. Tambahkan --simpan untuk menyimpan (bisa dibatasi --kelas / --murid).');
@@ -133,9 +153,7 @@ class UsulHafalanAwalCommand extends Command
     private function proposalFor(Student $student, int $surah, int $ayah, array $covered): array
     {
         $juz = HafalanOrder::juzOf($surah, $ayah);
-        // Urutan juz: koreksi guru > aturan Kelas 11 & 12 > default (bukan deteksi setoran).
-        $order = fn (int $j) => ($student->juz_orders[$j] ?? $student->juz_orders[(string) $j] ?? null)
-            ?? ($j === 30 ? HafalanOrder::ASC : HafalanOrder::defaultJuzOrder($j));
+        $order = fn (int $j) => $this->juzOrder($student, $j);
 
         $pieces = [];
         foreach (HafalanOrder::juzPieces($juz, $order($juz)) as [$s, $from, $to]) {
@@ -163,6 +181,13 @@ class UsulHafalanAwalCommand extends Command
         }
 
         return $ranges;
+    }
+
+    /** Urutan juz untuk usulan: koreksi guru > aturan Kelas 11 & 12 (Juz 30 dari An-Naba) > default; bukan deteksi setoran. */
+    private function juzOrder(Student $student, int $juz): string
+    {
+        return ($student->juz_orders[$juz] ?? $student->juz_orders[(string) $juz] ?? null)
+            ?? ($juz === 30 ? HafalanOrder::ASC : HafalanOrder::defaultJuzOrder($juz));
     }
 
     private function withPrior(Collection $records, array $ranges): Collection
