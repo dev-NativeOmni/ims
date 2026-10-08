@@ -121,8 +121,8 @@ class DigitalReportUmmiTargetCapaianTest extends TestCase
         $response->assertSeeInOrder(['Jilid 2', '25', $this->surah->name_latin, 'Jilid 2', '25', 'An-Naba', '5', 'Tuntas']);
         $response->assertDontSee('1-5');
         $response->assertDontSee('Nilai Akhir Tahfizh');
-        // Deskripsi di baris sendiri di bawah baris nilai, bukan di kolom Nilai.
-        $response->assertSeeInOrder(['Tuntas', '/ ', 'Deskripsi:', 'Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah']);
+        // Kelas 10 Program Tahfizh: setoran mandiri di tabel B, nilai & deskripsi di tabel C (di bawah).
+        $response->assertSeeInOrder(['Tuntas', 'B. Hafalan Mandiri', 'An-Nas 1-6', 'C. Nilai Tahfizh', '/ ', 'Alhamdulillah, Ananda telah mencapai target hafalan yang telah ditentukan sekolah']);
     }
 
     #[Test]
