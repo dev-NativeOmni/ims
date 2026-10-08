@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ClassRoom;
 use App\Models\HafalanRecord;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,5 +42,26 @@ class RincianBarisCommandTest extends TestCase
             ->expectsOutputToContain('Total baris semua setoran lulus: 11 · dihitung capaian (ayat baru): 4 · ulangan: 3 · ganda: 4')
             ->expectsOutputToContain('Rapor: capaian 4 /')
             ->assertSuccessful();
+    }
+
+    #[Test]
+    public function rekap_lists_grade_11_and_12_students_with_new_versus_all_lines(): void
+    {
+        Carbon::setTestNow('2026-06-01'); // naik ke XII F3 sebelum Triwulan 1 (riwayat kelas)
+        $this->setUpHafizPlusData();
+        $class = ClassRoom::create(['program_id' => $this->student->classRoom->program_id, 'name' => 'XII F3', 'level' => '']);
+        $this->student->update(['class_room_id' => $class->id, 'tahfizh_level' => 'reguler']);
+        Carbon::setTestNow('2026-10-08');
+        $this->setor('2026-06-20', 1, 3, 3);
+        $this->setor('2026-07-10', 1, 3, 3); // ulang
+        $this->setor('2026-07-11', 4, 7, 4); // baru
+        $this->setor('2026-07-11', 4, 7, 4); // ganda
+
+        $this->artisan('tad:rekap-baris', ['--tahun' => '2026/2027', '--term' => 1])
+            ->expectsOutputToContain('| XII F3 | '.$this->student->name.' | reguler |')
+            ->expectsOutputToContain('Murid diperiksa: 1 · status berubah: 0 · ada ulangan: 1 · ada setoran ganda: 1')
+            ->assertSuccessful();
+
+        $this->artisan('tad:rekap-baris', ['--term' => 1, '--tahun' => '2026/2027', '--kelas' => 'XI Z9'])->assertFailed();
     }
 }
