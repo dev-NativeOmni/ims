@@ -75,8 +75,8 @@ class HafalanProgressService
             ->orderBy('hafalan_record_surahs.sort_order')
             ->orderBy('hafalan_record_surahs.id')
             ->get([
-                'surahs.number as surah_number', 'hafalan_record_surahs.ayah_start', 'hafalan_record_surahs.ayah_end',
-                'hafalan_record_surahs.status', 'hafalan_record_surahs.baris', 'hafalan_records.submitted_at',
+                'hafalan_record_surahs.id as line_id', 'surahs.number as surah_number', 'hafalan_record_surahs.ayah_start',
+                'hafalan_record_surahs.ayah_end', 'hafalan_record_surahs.status', 'hafalan_record_surahs.baris', 'hafalan_records.submitted_at',
             ]);
 
         return $prior->concat($setoran)->values();
@@ -260,6 +260,20 @@ class HafalanProgressService
      * diinput sebagai setoran, dan setoran ganda tidak menambah capaian. Setoran belum lulus tidak
      * dihitung. Rincian per setoran: passedLineDetails().
      */
+    /**
+     * Baris ayat baru & jenis tiap baris setoran (id HafalanRecordSurah) pada rentang -- untuk tampilan
+     * per setoran (mis. jurnal Laporan Triwulan) supaya sama dengan capaian baris bulan/triwulan.
+     *
+     * @return array<int, array{new_lines: float, kind: string}>
+     */
+    public function newLinesBySetoran(Student $student, Carbon $from, Carbon $until): array
+    {
+        return collect($this->passedLineDetails($this->records($student), $from, $until))
+            ->filter(fn ($d) => $d['record']->line_id !== null)
+            ->mapWithKeys(fn ($d) => [(int) $d['record']->line_id => ['new_lines' => round($d['new_lines'], 1), 'kind' => $d['kind']]])
+            ->all();
+    }
+
     public function passedLines(Collection $records, Carbon $from, Carbon $until): float
     {
         return round((float) collect($this->passedLineDetails($records, $from, $until))->sum('new_lines'), 1);

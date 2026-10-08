@@ -72,7 +72,7 @@ class RincianBarisCommand extends Command
             "{$d['record']->ayah_start}-{$d['record']->ayah_end}",
             $fmt($d['baris']).(abs($d['baris'] - $d['calculated']) > 0.01 ? " (manual, kalkulator {$fmt($d['calculated'])})" : ''),
             $fmt($d['new_lines']),
-            $labels[$d['kind']].($d['kind'] === 'partial' ? " ({$d['new_ayat']} ayat baru)" : ''),
+            $labels[$d['kind']].($d['kind'] === 'partial' ? " ({$d['new_ayat']} ayat baru)" : '').$this->repeatSource($d, $records),
         ], $details));
 
         $byKind = collect($details)->groupBy('kind');
@@ -82,5 +82,29 @@ class RincianBarisCommand extends Command
             .' · ganda: '.$fmt($byKind->get('duplicate', collect())->sum('baris')));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Asal ulangan: hafalan sebelum aplikasi, atau setoran lulus sebelumnya yang mencakup ayat yang sama.
+     */
+    private function repeatSource(array $detail, $records): string
+    {
+        if (! in_array($detail['kind'], ['repeat', 'partial'], true)) {
+            return '';
+        }
+        $line = $detail['record'];
+        $date = Carbon::parse($line->submitted_at)->toDateString();
+        $earlier = $records->first(fn ($r) => $r->status === 'passed'
+            && (int) $r->surah_number === (int) $line->surah_number
+            && (int) $r->ayah_start <= (int) $line->ayah_end && (int) $r->ayah_end >= (int) $line->ayah_start
+            && ($r->is_prior
+                || Carbon::parse($r->submitted_at)->toDateString() < $date
+                || (Carbon::parse($r->submitted_at)->toDateString() === $date && (int) $r->line_id < (int) $line->line_id)));
+
+        return match (true) {
+            $earlier === null => '',
+            (bool) $earlier->is_prior => ' - hafalan lama (sebelum aplikasi)',
+            default => ' - sudah disetor '.Carbon::parse($earlier->submitted_at)->format('d/m').' ('.$earlier->ayah_start.'-'.$earlier->ayah_end.')',
+        };
     }
 }

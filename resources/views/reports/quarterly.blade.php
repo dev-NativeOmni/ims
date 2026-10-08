@@ -399,6 +399,8 @@
 @endphp
 <div class="space-y-3 pb-4" x-data="{ pekanTab: {{ $activePekans->first() ?? 1 }} }">
     <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-600 dark:text-zinc-300 border-l-4 border-indigo-500 pl-2">{{ $month['label'] }}</h4>
+    {{-- Baris jurnal = ayat baru (HafalanProgressService::newLinesBySetoran), sama dengan Capaian Baris bulan. --}}
+    <p class="text-[10px] text-gray-500 dark:text-zinc-400">Brs = baris ayat baru. <span class="font-semibold">(ulang)</span> = ayat sudah pernah lulus / hafalan lama, tidak dihitung; <span class="font-semibold">(sebagian ulang)</span> = hanya ayat barunya yang dihitung.</p>
                         @if ($isTahfizhProgram)
                             <!-- TAHFIZH SETORAN: DAILY TABS (hari & tanggal pertemuan aktif; pekan/hari libur tidak ditampilkan) -->
                             <div class="flex items-center justify-between gap-3 bg-gray-50 dark:bg-zinc-950 p-2 sm:p-2.5 rounded-xl border dark:border-zinc-800">

@@ -382,6 +382,12 @@ class QuarterlyReportController extends Controller
             )])
             ->all();
 
+        // Baris tiap setoran di jurnal = baris AYAT BARU (sama dengan capaian bulan/triwulan); setoran ulangan
+        // ditandai. Hanya murid berbaris (Kelas 11 & 12); murid Ummi tetap baris setoran apa adanya.
+        $context['newLines'] = $positionCheck === null ? [] : $groupStudents
+            ->filter(fn ($student) => TargetRules::linesForLevel($student->tahfizh_level) !== null && ! $student->usesUmmi())
+            ->reduce(fn (array $carry, $student) => $carry + app(HafalanProgressService::class)->newLinesBySetoran($student, $termStartDay, $termEndDay), []);
+
         $monthly = [];
         foreach ($monthRanges as $mCode => $range) {
             $monthly[$mCode] = $this->buildMonthReport($range, $context);
@@ -684,6 +690,17 @@ class QuarterlyReportController extends Controller
         $latestHafalans = $context['latestHafalans'];
         $latestUmmiRecords = $context['latestUmmiRecords'] ?? collect();
 
+        $newLines = $context['newLines'] ?? [];
+        // Baris setoran lulus yang dihitung = ayat baru (HafalanProgressService::newLinesBySetoran); belum lulus = 0.
+        $setoranLines = fn ($r) => $r->status !== 'passed' ? 0.0 : (float) ($newLines[$r->id]['new_lines'] ?? $r->lines_count);
+        $setoranLabel = fn ($r) => $r->surah->name_latin.' '.self::ayahRangeLabel($r->ayah_start, $r->ayah_end)
+            .match ($newLines[$r->id]['kind'] ?? null) {
+                'repeat' => ' (ulang)',
+                'duplicate' => ' (ganda)',
+                'partial' => ' (sebagian ulang)',
+                default => '',
+            };
+
         $gAttendances = $context['gAttendances']->filter(fn ($a) => $this->inRange($a->tanggal, $range));
         $gHafalanRecords = $context['gHafalanRecords']->filter(fn ($h) => $this->inRange($h->submitted_at, $range));
         $gUmmiRecords = ($context['gUmmiRecords'] ?? collect())->filter(fn ($u) => $this->inRange($u->tanggal, $range));
@@ -964,10 +981,9 @@ class QuarterlyReportController extends Controller
                         if ($dayRecords->isNotEmpty() || $dayUmmi->isNotEmpty()) {
                             // Label lengkap sesuai input guru: sesi Ummi "Jilid 2 Hal. 12-14 · An-Naba 1-5",
                             // lalu setoran hafalan "Al-Mulk 1-10". Baris hafalan hanya dari setoran lulus.
-                            $lines = $dayRecords->where('status', 'passed')->sum('lines_count')
-                                + (float) $dayUmmi->sum(fn ($u) => $u->lines_count);
+                            $lines = round($dayRecords->sum($setoranLines) + (float) $dayUmmi->sum(fn ($u) => $u->lines_count), 1);
                             $label = $dayUmmi->toBase()->map(fn ($u) => self::ummiSessionLabel($u))
-                                ->merge($dayRecords->map(fn ($r) => $r->surah->name_latin.' '.self::ayahRangeLabel($r->ayah_start, $r->ayah_end)))
+                                ->merge($dayRecords->map($setoranLabel))
                                 ->filter()
                                 ->implode('; ');
                             $dailyLogs[$dayName] = [
@@ -1039,15 +1055,15 @@ class QuarterlyReportController extends Controller
                         ];
                         $totalCapaianLines += $lines;
                     } elseif ($weekRecords->isNotEmpty()) {
-                        // Baris hanya dari setoran lulus (sama dengan capaian baris bulan/term).
-                        $lines = $weekRecords->where('status', 'passed')->sum('lines_count');
+                        // Baris = ayat baru dari setoran lulus (sama dengan capaian baris bulan/term).
+                        $lines = round($weekRecords->sum($setoranLines), 1);
                         $avgScore = $weekRecords->whereNotNull('score')->avg('score');
                         // Rentang ayat lengkap sesuai input guru: "Al-Insan 1-31, Al-Mursalat 1-13".
                         $ayahRange = fn ($h) => self::ayahRangeLabel($h->ayah_start, $h->ayah_end);
                         $pekanRecords[$p] = [
                             'surah' => $weekRecords->map(fn ($h) => $h->surah->name_latin)->implode(', '),
                             'ayat' => $weekRecords->map($ayahRange)->implode(', '),
-                            'setoran' => $weekRecords->map(fn ($h) => $h->surah->name_latin.' '.$ayahRange($h))->implode(', '),
+                            'setoran' => $weekRecords->map($setoranLabel)->implode(', '),
                             'parts' => self::setoranParts(collect(), $weekRecords->values()),
                             'baris' => $lines,
                             'nilai' => self::mapScoreToGrade($avgScore),
