@@ -19,7 +19,6 @@ use App\Services\QuranLineTargetService;
 use App\Services\StudentProgressService;
 use App\Services\UmmiProgressService;
 use App\Support\AcademicYear;
-use App\Support\AyahCoverage;
 use App\Support\AyahLabel;
 use App\Support\Signatures;
 use App\Support\TargetRules;
@@ -795,8 +794,6 @@ class StudentReportController extends Controller
                 'lines' => null,
                 'completed' => $position['is_tuntas'],
                 'notes' => $notes,
-                // Kelas 10 Program Tahfizh (mis. X E1): setoran hafalan mandiri di luar buku Ummi.
-                'mandiri' => $student->classRoom?->isTahfizhProgram() ? $this->mandiriSummary($student, $raporTerm) : null,
             ];
         }
 
@@ -816,42 +813,6 @@ class StudentReportController extends Controller
             'lines' => $breakdown ? ['achieved' => $breakdown['evaluation']['achieved_lines'] + 0, 'target' => (int) $breakdown['evaluation']['target_lines']] : null,
             'completed' => (bool) ($breakdown['evaluation']['reached'] ?? false),
             'notes' => $notes,
-        ];
-    }
-
-    /**
-     * Hafalan mandiri (Ziyadah) murid Ummi Program Tahfizh per bulan triwulan rapor: surah & ayat yang
-     * disetor (rentang digabung per surah), jumlah setoran lulus, dan baris ayat baru (aturan sama dengan
-     * capaian Kelas 11/12: ulangan tidak dihitung, HafalanProgressService::passedLineDetails).
-     *
-     * @return array{months: array<int, array{label: string, setoran: string, count: int, lines: float}>, count: int, lines: float}
-     */
-    private function mandiriSummary(Student $student, array $raporTerm): array
-    {
-        $progress = app(HafalanProgressService::class);
-        $records = $progress->records($student);
-        $surahs = $progress->surahs();
-
-        $months = [];
-        foreach (app(AcademicCalendarService::class)->termMonths($raporTerm['start']) as $month) {
-            $details = collect($progress->passedLineDetails($records, $month['start'], $month['end']->copy()->min($raporTerm['end'])));
-            $setoran = $details->groupBy(fn ($d) => (int) $d['record']->surah_number)
-                ->map(fn ($items, $surah) => ($surahs->get($surah)?->name_latin ?? $surah).' '.collect(AyahCoverage::fromRanges(
-                    $items->map(fn ($d) => [$surah, (int) $d['record']->ayah_start, (int) $d['record']->ayah_end])
-                )[$surah] ?? [])->map(fn ($r) => $r[0] === $r[1] ? (string) $r[0] : "{$r[0]}-{$r[1]}")->implode(', '))
-                ->implode('; ');
-            $months[] = [
-                'label' => $month['start']->locale('id')->translatedFormat('F'),
-                'setoran' => $setoran ?: '-',
-                'count' => $details->where('kind', '!=', 'duplicate')->count(),
-                'lines' => round((float) $details->sum('new_lines'), 1),
-            ];
-        }
-
-        return [
-            'months' => $months,
-            'count' => array_sum(array_column($months, 'count')),
-            'lines' => round(array_sum(array_column($months, 'lines')), 1),
         ];
     }
 

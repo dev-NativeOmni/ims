@@ -167,17 +167,10 @@
             $positionCols = $isUmmi ? ['jilid' => 'Jilid', 'halaman' => 'Hal.', 'surah' => 'Surah', 'ayat' => 'Ayat'] : ['surah' => 'Surah', 'ayat' => 'Ayat'];
             // 'description' ada sejak deskripsi bawaan Tuntas/Tidak Tuntas; simpanan terkunci yang lebih lama belum punya.
             $tahfizhDescription = $tahfizh['description'] ?? (($tahfizh['notes'] ?? null) ?: ($tahfizh['completed'] ? 'Tercapai.' : 'Belum tercapai.'));
-            // Kelas 10 Program Tahfizh (mis. X E1): A. Ummi, B. Hafalan Mandiri, C. Nilai & Deskripsi -- nilai
-            // dipindah ke bawah supaya tiap tabel memuat satu hal. Simpanan terkunci lama tanpa 'mandiri' = susunan biasa.
-            $mandiri = $isUmmi ? ($tahfizh['mandiri'] ?? null) : null;
-            $formatLines = fn ($value) => rtrim(rtrim(number_format((float) $value, 1, ',', ''), '0'), ',');
         @endphp
         @if (isset($tahfizh['rows']))
             @include('reports.partials.report-sheet-tahfizh-legacy')
         @else
-            @if ($mandiri)
-                <p class="text-[11px] font-bold text-black">A. Metode Ummi</p>
-            @endif
             {{-- Satu baris untuk triwulan rapor, sama dengan Target Triwulan / Capaian Akhir di Laporan Triwulan.
                  Kelas 10/Ummi: Jilid|Hal.|Surah|Ayat + kolom Nilai; Kelas 11/12: Surah|Ayat + Baris, tanpa nilai.
                  Deskripsi di baris bawah selebar tabel (kolom sempit membuat lembar melewati bingkai). --}}
@@ -190,8 +183,8 @@
                         @unless ($isUmmi)
                             <th rowspan="2" class="p-1.5 border-r border-black">BARIS<br><span class="font-normal">Capaian / Target</span></th>
                         @endunless
-                        <th rowspan="2" class="p-1.5 w-20 {{ $isUmmi && ! $mandiri ? 'border-r border-black' : '' }}">STATUS</th>
-                        @if ($isUmmi && ! $mandiri)
+                        <th rowspan="2" class="p-1.5 w-20 {{ $isUmmi ? 'border-r border-black' : '' }}">STATUS</th>
+                        @if ($isUmmi)
                             <th rowspan="2" class="p-1.5 w-32">NILAI</th>
                         @endif
                     </tr>
@@ -216,79 +209,24 @@
                                 {{ $tahfizh['lines'] ? $tahfizh['lines']['achieved'].' / '.$tahfizh['lines']['target'] : '-' }}
                             </td>
                         @endunless
-                        <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi && ! $mandiri ? 'border-r border-black' : '' }} text-black">
+                        <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi ? 'border-r border-black' : '' }} text-black">
                             {{ $tahfizh['completed'] ? 'Tuntas' : 'Tidak Tuntas' }}
                         </td>
-                        @if ($isUmmi && ! $mandiri)
+                        @if ($isUmmi)
                             {{-- "87 / Jayyid Jiddan": predikat dari Pengaturan Penilaian Tahfizh; kurung dibuang untuk simpanan terkunci lama. --}}
                             <td class="p-1.5 align-middle font-black text-black text-sm">
                                 {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / <span class="whitespace-nowrap">{{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}</span>@endif
                             </td>
                         @endif
                     </tr>
-                    @unless ($mandiri)
-                        <tr class="border-b border-black">
-                            {{-- No + 2x kolom posisi + Status + (Nilai untuk Ummi | Baris untuk 11/12) --}}
-                            <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-justify text-gray-700 leading-relaxed">
-                                <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
-                            </td>
-                        </tr>
-                    @endunless
+                    <tr class="border-b border-black">
+                        {{-- No + 2x kolom posisi + Status + (Nilai untuk Ummi | Baris untuk 11/12) --}}
+                        <td colspan="{{ 3 + 2 * count($positionCols) }}" class="p-2 text-justify text-gray-700 leading-relaxed">
+                            <span class="font-bold text-black">Deskripsi:</span> {{ $tahfizhDescription }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
-
-            @if ($mandiri)
-                {{-- B. Hafalan Mandiri (Ziyadah): per bulan triwulan; baris = ayat baru (ulangan tidak dihitung). --}}
-                <p class="text-[11px] font-bold text-black pt-1">B. Hafalan Mandiri (Ziyadah)</p>
-                <table class="w-full border border-black text-xs text-center">
-                    <colgroup><col style="width: 2rem"><col style="width: 6rem"><col><col style="width: 5.5rem"><col style="width: 5rem"></colgroup>
-                    <thead>
-                        <tr class="bg-gray-100 border-b border-black font-bold">
-                            <th class="p-1.5 border-r border-black">No.</th>
-                            <th class="p-1.5 border-r border-black">BULAN</th>
-                            <th class="p-1.5 border-r border-black">SURAH &amp; AYAT YANG DISETOR</th>
-                            <th class="p-1.5 border-r border-black">SETORAN</th>
-                            <th class="p-1.5">BARIS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($mandiri['months'] as $i => $month)
-                            <tr class="border-b border-black">
-                                <td class="p-1.5 border-r border-black">{{ $i + 1 }}</td>
-                                <td class="p-1.5 border-r border-black font-semibold">{{ $month['label'] }}</td>
-                                <td class="p-1.5 border-r border-black text-left">{{ $month['setoran'] }}</td>
-                                <td class="p-1.5 border-r border-black">{{ $month['count'] ? $month['count'].' kali' : '-' }}</td>
-                                <td class="p-1.5 font-semibold">{{ $month['count'] ? $formatLines($month['lines']) : '-' }}</td>
-                            </tr>
-                        @endforeach
-                        <tr class="border-b border-black bg-gray-100 font-bold">
-                            <td colspan="3" class="p-1.5 border-r border-black text-right">Jumlah</td>
-                            <td class="p-1.5 border-r border-black">{{ $mandiri['count'] }} kali</td>
-                            <td class="p-1.5">{{ $formatLines($mandiri['lines']) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                {{-- C. Nilai Tahfizh & deskripsi (dipindah dari tabel Ummi). --}}
-                <p class="text-[11px] font-bold text-black pt-1">C. Nilai Tahfizh</p>
-                <table class="w-full border border-black text-xs">
-                    <colgroup><col style="width: 9rem"><col></colgroup>
-                    <thead>
-                        <tr class="bg-gray-100 border-b border-black font-bold text-center">
-                            <th class="p-1.5 border-r border-black">NILAI</th>
-                            <th class="p-1.5">DESKRIPSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-black">
-                            <td class="p-2 border-r border-black text-center align-middle font-black text-black text-sm">
-                                {{ $tahfizh['final_score'] }}@if (! empty($tahfizh['final_predicate'])) / <span class="whitespace-nowrap">{{ preg_replace('/\s*\(.*\)$/', '', $tahfizh['final_predicate']) }}</span>@endif
-                            </td>
-                            <td class="p-2 text-justify text-gray-700 leading-relaxed align-middle">{{ $tahfizhDescription }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            @endif
         @endif
     </div>
 
