@@ -8,6 +8,8 @@ use App\Models\Student;
 use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Support\AcademicYear;
+use App\Support\HafalanOrder;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 /**
@@ -22,7 +24,8 @@ class RekapBarisCommand extends Command
         {--term= : Triwulan 1-4 (bawaan: triwulan berjalan)}
         {--kelas= : Hanya kelas ini (nama kelas, mis. "XI F1")}
         {--berubah : Hanya murid yang statusnya berubah atau punya ulangan/ganda}
-        {--belum : Hanya murid yang belum tuntas (capaian ayat baru < target)}';
+        {--belum : Hanya murid yang belum tuntas (capaian ayat baru < target)}
+        {--posisi : Hanya murid yang Capaian Akhir (surah:ayat) sudah sama/melewati target guru tapi baris belum tuntas}';
 
     protected $description = 'Rekap capaian baris Tahfizh Kelas 11 & 12 per triwulan (ayat baru vs semua setoran).';
 
@@ -46,6 +49,7 @@ class RekapBarisCommand extends Command
         $this->info("Rekap capaian baris Triwulan {$term} {$year} ({$start->format('d/m/Y')} - {$end->format('d/m/Y')})");
         $fmt = fn ($v) => rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
         $rows = [];
+        $positionRows = [];
         $count = ['murid' => 0, 'berubah' => 0, 'ulang' => 0, 'ganda' => 0, 'belum' => 0];
 
         foreach ($classes as $class) {
@@ -60,7 +64,8 @@ class RekapBarisCommand extends Command
                 $targets = HafalanTarget::with('surah')->where('student_id', $student->id)
                     ->whereBetween('target_date', [$start->toDateString(), $end->copy()->endOfDay()])
                     ->get()->filter(fn ($t) => $t->surah);
-                $target = (int) $progress->termBreakdown($student, $targets, $months, $cutoff, $records)['evaluation']['target_lines'];
+                $breakdown = $progress->termBreakdown($student, $targets, $months, $cutoff, $records);
+                $target = (int) $breakdown['evaluation']['target_lines'];
 
                 $details = collect($progress->passedLineDetails($records, $start, $cutoff));
                 $all = (float) $details->sum('baris');
@@ -84,6 +89,25 @@ class RekapBarisCommand extends Command
                 if ($this->option('belum') && ($target === 0 || $isTuntas)) {
                     continue;
                 }
+                if ($this->option('posisi')) {
+                    $position = $this->positionRow($progress, $student, $records, $breakdown, $end);
+                    if ($target === 0 || $isTuntas || ! $position || ! $position['reached']) {
+                        continue;
+                    }
+                    $positionRows[] = [
+                        $class->name,
+                        $student->name,
+                        $student->tahfizh_level ?? '-',
+                        $position['target'],
+                        $position['capaian'],
+                        $position['path'] ? 'ya' : 'belum',
+                        $fmt($new).' / '.$target,
+                        $fmt($target - $new),
+                        $fmt($repeat),
+                    ];
+
+                    continue;
+                }
 
                 $status = fn (bool $t) => $target === 0 ? '-' : ($t ? 'Tuntas' : 'Belum');
                 $rows[] = [
@@ -100,9 +124,55 @@ class RekapBarisCommand extends Command
             }
         }
 
+        if ($this->option('posisi')) {
+            $this->table(['Kelas', 'Murid', 'Level', 'Target surah', 'Capaian akhir', 'Jalur lengkap', 'Baris (ayat baru / target)', 'Kurang', 'Ulangan'], $positionRows);
+            $this->line(count($positionRows).' murid: Capaian Akhir sudah sama/melewati target surah:ayat guru, tapi baris ayat baru belum mencapai target baris.');
+            $this->line('"Jalur lengkap" = semua ayat dari titik awal triwulan sampai target sudah lulus disetor.');
+
+            return self::SUCCESS;
+        }
+
         $this->table(['Kelas', 'Murid', 'Level', 'Target', 'Semua setoran', 'Ayat baru (rapor)', 'Ulangan', 'Ganda', 'Status'], $rows);
         $this->line("Murid diperiksa: {$count['murid']} · belum tuntas: {$count['belum']} · status berubah: {$count['berubah']} · ada ulangan: {$count['ulang']} · ada setoran ganda: {$count['ganda']}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Target surah:ayat guru di triwulan vs Capaian Akhir (setoran terakhir sampai akhir triwulan, sama
+     * dengan rapor), dan apakah seluruh jalur dari titik awal sampai target sudah lulus disetor.
+     *
+     * @return array{target: string, capaian: string, reached: bool, path: bool}|null
+     */
+    private function positionRow(HafalanProgressService $progress, Student $student, $records, array $breakdown, $end): ?array
+    {
+        $target = $breakdown['target'];
+        if (! $target?->surah) {
+            return null;
+        }
+        $orders = $progress->juzOrders($student, $records);
+        $rank = fn (int $surah, int $ayah) => HafalanOrder::rank($surah, $ayah, $student->hafalan_direction, $orders);
+
+        $capaian = $records->reject(fn ($r) => $r->is_prior)
+            ->filter(fn ($r) => Carbon::parse($r->submitted_at)->lte($end->copy()->endOfDay()))
+            ->sort(function ($a, $b) use ($rank) {
+                $byDate = Carbon::parse($b->submitted_at)->timestamp <=> Carbon::parse($a->submitted_at)->timestamp;
+
+                return $byDate !== 0 ? $byDate : $rank((int) $b->surah_number, (int) $b->ayah_end) <=> $rank((int) $a->surah_number, (int) $a->ayah_end);
+            })
+            ->first();
+        if (! $capaian) {
+            return null;
+        }
+
+        $surahs = $progress->surahs();
+        $targetSurah = (int) $target->surah->number;
+
+        return [
+            'target' => ($target->surah->name_latin ?? $targetSurah).' '.$target->ayah,
+            'capaian' => ($surahs->get((int) $capaian->surah_number)?->name_latin ?? $capaian->surah_number).' '.$capaian->ayah_end,
+            'reached' => $rank((int) $capaian->surah_number, (int) $capaian->ayah_end) >= $rank($targetSurah, (int) $target->ayah),
+            'path' => (bool) ($breakdown['position']['position_reached'] ?? false),
+        ];
     }
 }
