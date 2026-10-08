@@ -410,4 +410,40 @@ class TargetTriwulanTest extends TestCase
 
         $this->assertSame(round($this->lines(78, 1, 20) + $this->lines(78, 21, 30), 1), $plan['achieved_lines']);
     }
+
+    #[Test]
+    public function target_bulanan_shows_one_month_like_target_triwulan(): void
+    {
+        $this->saveTerm(['2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 10]]);
+
+        $response = $this->actingAs($this->teacherUser)->get(route('hafalan-targets.index', [
+            'program' => 'reguler', 'month' => '2026-08', 'class_room_id' => $this->classRoom->id,
+        ]))->assertOk();
+
+        $grid = $response->viewData('grid');
+        $this->assertSame('2026-08', $grid['month']);
+        $this->assertSame(['2026-08'], array_keys($grid['visibleMonths']), 'Hanya kolom Agustus.');
+        $this->assertSame('2026-07-01', $grid['period']);
+        $response->assertSee('name="month" value="2026-08"', false);
+        $response->assertSee('targets['.$this->student->id.'][2026-08][surah_id]', false);
+        $response->assertDontSee('targets['.$this->student->id.'][2026-07][surah_id]', false);
+    }
+
+    #[Test]
+    public function saving_one_month_from_target_bulanan_leaves_other_months_untouched(): void
+    {
+        $this->saveTerm([
+            '2026-07' => ['surah_id' => $this->surahId(78), 'ayah' => 10],
+            '2026-09' => ['surah_id' => $this->surahId(78), 'ayah' => 40],
+        ]);
+
+        // Form bulanan hanya mengirim Agustus.
+        $this->actingAs($this->teacherUser)->post(route('hafalan-targets.term.store'), [
+            'period' => '2026-07-01', 'month' => '2026-08', 'class_room_id' => $this->classRoom->id,
+            'targets' => [$this->student->id => ['2026-08' => ['surah_id' => $this->surahId(78), 'ayah' => 25]]],
+        ])->assertRedirect();
+
+        $byMonth = HafalanTarget::where('student_id', $this->student->id)->get()->mapWithKeys(fn ($t) => [$t->target_date->format('Y-m') => $t->ayah])->all();
+        $this->assertSame(['2026-07' => 10, '2026-08' => 25, '2026-09' => 40], collect($byMonth)->sortKeys()->all());
+    }
 }

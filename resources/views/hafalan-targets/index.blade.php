@@ -57,111 +57,18 @@
             </div>
 
             @if ($activeProgram === 'reguler')
-                {{-- ═══════════════ PROGRAM REGULER SPREADSHEET INPUT ═══════════════ --}}
-                <div class="rounded-2xl bg-white p-6 shadow-sm border border-gray-200 space-y-5">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-                        <div>
-                            <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                                <x-heroicon-o-table-cells class="w-5 h-5 text-indigo-600" />
-                                <span>Input Target Reguler Spreadsheet Per-Kelas</span>
-                            </h3>
-                            <p class="text-xs text-gray-500">Pilih kelas 11 atau 12 untuk mengisi Surah, Ayat, dan Tanggal Target seluruh murid di kelas tersebut sekaligus. Deadline otomatis menjadi hari aktif terakhir di bulan tanggal yang dipilih.</p>
-                        </div>
-
-                        <form method="GET" action="{{ route('hafalan-targets.index') }}" class="flex flex-wrap items-center gap-2">
-                            <input type="hidden" name="program" value="reguler">
-
-                            <select name="teacher_id" onchange="this.form.submit()" @disabled($teachers->count() <= 1 && $isTeacherOnly) class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500">
-                                @if (! $isTeacherOnly)
-                                    <option value="">Semua Guru / Halaqah</option>
-                                @endif
-                                @foreach ($teachers as $t)
-                                    <option value="{{ $t->id }}" @selected((string) request('teacher_id') === (string) $t->id)>
-                                        Halaqah {{ $t->user?->name ?? 'Musyrif #'.$t->id }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @if ($isTeacherOnly && $currentTeacherId)
-                                <input type="hidden" name="teacher_id" value="{{ $currentTeacherId }}">
-                            @endif
-
-                            <select name="class_room_id" onchange="this.form.submit()" class="rounded-xl border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">-- Pilih Kelas --</option>
-                                @foreach ($classRooms as $class)
-                                    <option value="{{ $class->id }}" @selected((string) request('class_room_id') === (string) $class->id)>
-                                        {{ $class->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
+                {{-- Kelas 11 & 12: isian target per bulan, tabel yang sama dengan Target Triwulan (satu kolom bulan). --}}
+                @if ($errors->any())
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-sm">
+                        <p class="font-bold">Target belum disimpan:</p>
+                        <ul class="mt-1 list-disc pl-5 space-y-0.5">
+                            @foreach ($errors->all() as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-
-                    @if (request()->filled('class_room_id') && $students->isNotEmpty())
-                        <form method="POST" action="{{ route('hafalan-targets.store-bulk-reguler') }}" class="space-y-4">
-                            @csrf
-                            <input type="hidden" name="class_room_id" value="{{ request('class_room_id') }}">
-
-                            <div class="overflow-x-auto rounded-xl border border-gray-200">
-                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead class="bg-indigo-50/60">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 w-12">#</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Nama Murid</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[200px]">Surah Target</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 w-24">Ayat</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[160px]">Deadline Target</th>
-                                            <th class="px-4 py-3 text-left font-bold text-indigo-900 min-w-[180px]">Catatan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100 bg-white">
-                                        @foreach ($students as $idx => $st)
-                                            <tr class="hover:bg-gray-50/60 transition">
-                                                <td class="px-4 py-3 text-gray-500 font-semibold">{{ $idx + 1 }}</td>
-                                                <td class="px-4 py-3">
-                                                    <div class="font-bold text-gray-900">{{ $st->name }}</div>
-                                                    <div class="text-xs text-gray-500">{{ $st->nisNisn() ?? '-' }}</div>
-                                                    <input type="hidden" name="targets[{{ $idx }}][student_id]" value="{{ $st->id }}">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <select name="targets[{{ $idx }}][surah_id]" class="w-full rounded-lg border-gray-300 text-xs font-semibold focus:ring-indigo-500">
-                                                        <option value="">-- Pilih Surah --</option>
-                                                        @foreach ($surahs as $surah)
-                                                            <option value="{{ $surah->id }}">
-                                                                {{ $surah->option_label }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <input type="number" min="1" name="targets[{{ $idx }}][ayah]" placeholder="40" class="w-full rounded-lg border-gray-300 text-xs font-semibold text-center focus:ring-indigo-500">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <input type="date" name="targets[{{ $idx }}][target_date]" value="{{ now()->addWeeks(2)->toDateString() }}" class="w-full rounded-lg border-gray-300 text-xs font-semibold focus:ring-indigo-500">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <input type="text" name="targets[{{ $idx }}][notes]" placeholder="Catatan opsional..." class="w-full rounded-lg border-gray-300 text-xs focus:ring-indigo-500">
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="flex justify-end pt-2">
-                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition cursor-pointer">
-                                    <x-heroicon-o-check class="w-4 h-4" />
-                                    <span>Simpan Semua Target Reguler Kelas Ini</span>
-                                </button>
-                            </div>
-                        </form>
-                    @elseif (request()->filled('class_room_id'))
-                        <div class="p-6 text-center text-sm text-gray-500">Tidak ada data murid di kelas ini.</div>
-                    @else
-                        <div class="p-8 text-center text-sm text-gray-500 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                            Silakan pilih kelas di atas untuk mulai mengisi target hafalan reguler murid.
-                        </div>
-                    @endif
-                </div>
+                @endif
+                @include('hafalan-targets.partials.target-grid', ['grid' => $grid])
 
             @else
                 {{-- Target Ummi diisi lewat tabel per murid (isi serentak + penyesuaian per murid). --}}

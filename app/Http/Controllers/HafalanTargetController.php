@@ -35,10 +35,13 @@ use Throwable;
 
 class HafalanTargetController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, AutoHafalanTargetService $autoTargets, AcademicCalendarService $calendar): View
     {
         $visibleStudentIds = $this->visibleStudentIds($request->user());
         $activeProgram = $request->input('program', 'reguler');
+        // Program Reguler (Kelas 11 & 12): isian per bulan memakai tabel yang sama dengan Target Triwulan.
+        $gridMonth = preg_match('/^\d{4}-\d{2}$/', (string) $request->input('month')) ? $request->input('month') : now()->format('Y-m');
+        $grid = $activeProgram === 'reguler' ? $this->targetGrid($request, $autoTargets, $calendar, $gridMonth) : null;
 
         $query = HafalanTarget::query()
             ->with([
@@ -223,6 +226,7 @@ class HafalanTargetController extends Controller
             ->all();
 
         return view('hafalan-targets.index', compact(
+            'grid',
             'targets',
             'students',
             'classRooms',
@@ -765,9 +769,24 @@ class HafalanTargetController extends Controller
      */
     public function term(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar): View
     {
+        $grid = $this->targetGrid($request, $targets, $calendar);
+
+        return view('hafalan-targets.term', $grid + ['grid' => $grid]);
+    }
+
+    /**
+     * Data tabel isian target per kelas (Target Triwulan, dan Target Bulanan untuk Kelas 11 & 12).
+     * $month ("Y-m") = mode bulanan: hanya kolom bulan itu yang tampil & disimpan; ringkasan &
+     * kolom capaian tetap dihitung per triwulan bulan tersebut.
+     */
+    private function targetGrid(Request $request, AutoHafalanTargetService $targets, AcademicCalendarService $calendar, ?string $month = null): array
+    {
         $user = $request->user();
         $visibleStudentIds = $this->visibleStudentIds($user);
-        [$periods, $period] = $this->termPeriods($request->input('period'), $calendar);
+        [$periods, $period] = $this->termPeriods(
+            $month ? $calendar->termStartDate(Carbon::createFromFormat('Y-m-d', $month.'-01'))->toDateString() : $request->input('period'),
+            $calendar
+        );
 
         $gradeElevenTwelveStudents = Student::query()
             ->with(['classRoom.program', 'teacher.user'])
@@ -794,6 +813,7 @@ class HafalanTargetController extends Controller
         $selectedClass = $classRooms->firstWhere('id', (int) $request->input('class_room_id')) ?? $classRooms->first();
 
         $months = $selectedClass ? $targets->termMonths($selectedClass, Carbon::parse($period)) : [];
+        $visibleMonths = $month && isset($months[$month]) ? [$month => $months[$month]] : $months;
         $rows = collect();
         if ($selectedClass) {
             $rows = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId, $classDate)
@@ -803,30 +823,52 @@ class HafalanTargetController extends Controller
                 ]);
         }
 
-        $summary = [
-            'students' => $rows->count(),
-            'with_target' => $rows->filter(fn ($row) => $row['plan']['target'] !== null)->count(),
-            'reached' => $rows->where('plan.reached', true)->count(),
-            'avg_progress' => $rows->isEmpty() ? 0 : (int) round($rows->avg('plan.progress')),
-        ];
+        if ($month && isset($months[$month])) {
+            // Ringkasan bulan itu saja.
+            $cells = $rows->map(fn ($row) => $row['plan']['months'][$month] ?? []);
+            $summary = [
+                'students' => $rows->count(),
+                'with_target' => $cells->filter(fn ($cell) => ($cell['target'] ?? null) !== null)->count(),
+                'reached' => $cells->filter(fn ($cell) => ($cell['target_lines'] ?? 0) > 0 && ($cell['reached'] ?? false))->count(),
+                'avg_progress' => $cells->isEmpty() ? 0 : (int) round($cells->avg(fn ($cell) => ($cell['target_lines'] ?? 0) > 0
+                    ? min(100, ($cell['achieved_lines'] ?? 0) / $cell['target_lines'] * 100) : 0)),
+            ];
+        } else {
+            $summary = [
+                'students' => $rows->count(),
+                'with_target' => $rows->filter(fn ($row) => $row['plan']['target'] !== null)->count(),
+                'reached' => $rows->where('plan.reached', true)->count(),
+                'avg_progress' => $rows->isEmpty() ? 0 : (int) round($rows->avg('plan.progress')),
+            ];
+        }
 
-        return view('hafalan-targets.term', [
+        // Pilihan bulan (mode bulanan): semua bulan dari triwulan yang tersedia, terbaru dulu.
+        $monthChoices = collect($periods->keys())
+            ->flatMap(fn ($start) => collect(range(0, 2))->map(fn ($i) => Carbon::parse($start)->addMonthsNoOverflow($i)))
+            ->unique(fn ($date) => $date->format('Y-m'))
+            ->sortByDesc(fn ($date) => $date->format('Y-m'))
+            ->mapWithKeys(fn ($date) => [$date->format('Y-m') => $date->locale('id')->translatedFormat('F Y')]);
+
+        return [
             'locks' => $selectedClass ? TargetLock::forMonths($selectedClass->id, array_keys($months)) : collect(),
             'canLock' => TargetLock::canLock($request->user()),
             'canUnlock' => TargetLock::canUnlock($request->user()),
             'periods' => $periods,
             'period' => $period,
+            'month' => $month && isset($months[$month]) ? $month : null,
+            'monthChoices' => $monthChoices,
             'teachers' => $isTeacherOnly && $currentTeacherId ? $teachers->where('id', $currentTeacherId)->values() : $teachers,
             'currentTeacherId' => $currentTeacherId,
             'isTeacherOnly' => $isTeacherOnly,
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'months' => $months,
+            'visibleMonths' => $visibleMonths,
             'rows' => $rows,
             'summary' => $summary,
             'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin', 'total_ayah']),
             'canEdit' => $request->user()->can('create', HafalanTarget::class),
-        ]);
+        ];
     }
 
     /**
@@ -856,6 +898,10 @@ class HafalanTargetController extends Controller
         $termStart = reset($months)['start'];
         $termEnd = end($months)['end'];
         $months = array_diff_key($months, $lockedMonths->all());
+        // Dari Target Bulanan: hanya bulan itu yang disimpan; bulan lain di triwulan tidak disentuh.
+        if ($request->filled('month')) {
+            $months = array_intersect_key($months, [(string) $request->input('month') => true]);
+        }
         $students = $this->termStudents($selectedClass, $visibleStudentIds, $currentTeacherId, $classDate)->keyBy('id');
         $surahs = Surah::query()->get(['id', 'name_latin', 'total_ayah'])->keyBy('id');
         $input = $request->input('targets', []);
