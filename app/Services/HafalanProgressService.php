@@ -187,24 +187,80 @@ class HafalanProgressService
     }
 
     /**
-     * Baris setoran lulus pada rentang tanggal (inklusif) -- sama dengan kolom baris di tab
-     * Capaian Hafalan: baris yang tersimpan di setoran (bila diisi), selain itu dihitung dari
-     * ayat. Mengulang ayat lama ikut dihitung; setoran belum lulus tidak.
+     * Capaian baris pada rentang tanggal (inklusif): hanya ayat yang BARU pertama kali lulus.
+     * Setor ulang ayat yang sudah pernah lulus (sebelum maupun di dalam rentang), muraja'ah yang
+     * diinput sebagai setoran, dan setoran ganda tidak menambah capaian. Setoran belum lulus tidak
+     * dihitung. Rincian per setoran: passedLineDetails().
      */
     public function passedLines(Collection $records, Carbon $from, Carbon $until): float
     {
+        return round((float) collect($this->passedLineDetails($records, $from, $until))->sum('new_lines'), 1);
+    }
+
+    /**
+     * Rincian setoran lulus pada rentang tanggal, urut waktu: baris setoran (manual guru bila diisi,
+     * selain itu kalkulator), baris yang dihitung sebagai capaian (ayat baru saja), dan jenisnya:
+     * 'new' (semua ayat baru), 'partial' (sebagian ayat sudah pernah lulus), 'repeat' (semua ayat
+     * sudah pernah lulus), 'duplicate' (sama persis dengan setoran lain di tanggal yang sama).
+     *
+     * @return array<int, array{record: mixed, baris: float, calculated: float, new_lines: float, new_ayat: int, kind: string}>
+     */
+    public function passedLineDetails(Collection $records, Carbon $from, Carbon $until): array
+    {
         if ($until->lt($from)) {
-            return 0.0;
+            return [];
         }
 
-        $lines = $records
-            ->filter(fn ($r) => $r->status === 'passed'
-                && Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay()))
-            ->sum(fn ($r) => $r->baris !== null
-                ? (float) $r->baris
-                : ReportController::calculateLines((int) $r->surah_number, (int) $r->ayah_start, (int) $r->ayah_end, (int) ($this->surahs()->get((int) $r->surah_number)?->total_ayah ?? 0)));
+        $passed = $records->filter(fn ($r) => $r->status === 'passed')
+            ->sortBy(fn ($r) => Carbon::parse($r->submitted_at)->toDateString())
+            ->values();
+        $covered = $this->coverage($passed, $from);
+        $calc = fn (int $surah, int $a, int $b) => ReportController::calculateLines($surah, $a, $b, (int) ($this->surahs()->get($surah)?->total_ayah ?? 0));
 
-        return round((float) $lines, 1);
+        $details = [];
+        $seen = [];
+        foreach ($passed as $r) {
+            if (! Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay())) {
+                continue;
+            }
+
+            $surah = (int) $r->surah_number;
+            $start = (int) $r->ayah_start;
+            $end = max($start, (int) $r->ayah_end);
+            $calculated = $calc($surah, $start, $end);
+            $baris = $r->baris !== null ? (float) $r->baris : $calculated;
+
+            $key = Carbon::parse($r->submitted_at)->toDateString()."|{$surah}|{$start}|{$end}";
+            if (isset($seen[$key])) {
+                $details[] = ['record' => $r, 'baris' => $baris, 'calculated' => $calculated, 'new_lines' => 0.0, 'new_ayat' => 0, 'kind' => 'duplicate'];
+
+                continue;
+            }
+            $seen[$key] = true;
+
+            $uncovered = AyahCoverage::uncovered($covered[$surah] ?? [], $start, $end);
+            $newAyat = array_sum(array_map(fn ($range) => $range[1] - $range[0] + 1, $uncovered));
+            $allAyat = $end - $start + 1;
+
+            if ($newAyat === $allAyat) {
+                [$kind, $newLines] = ['new', $baris];
+            } elseif ($newAyat === 0) {
+                [$kind, $newLines] = ['repeat', 0.0];
+            } else {
+                // Sebagian baru: baris manual guru dibagi sebanding jumlah ayat baru; selain itu kalkulator
+                // menghitung baris tiap potongan ayat yang baru.
+                $isManual = abs($baris - $calculated) > 0.01;
+                $newLines = $isManual
+                    ? $baris * $newAyat / $allAyat
+                    : array_sum(array_map(fn ($range) => $calc($surah, $range[0], $range[1]), $uncovered));
+                $kind = 'partial';
+            }
+
+            $covered[$surah] = AyahCoverage::merge(array_merge($covered[$surah] ?? [], [[$start, $end]]));
+            $details[] = ['record' => $r, 'baris' => $baris, 'calculated' => $calculated, 'new_lines' => (float) $newLines, 'new_ayat' => $newAyat, 'kind' => $kind];
+        }
+
+        return $details;
     }
 
     /**

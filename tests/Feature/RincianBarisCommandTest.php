@@ -38,7 +38,8 @@ class RincianBarisCommandTest extends TestCase
         $this->artisan('tad:rincian-baris', ['murid' => $this->student->name, '--tahun' => '2026/2027', '--term' => 1])
             ->expectsOutputToContain('ULANG (ayat sudah pernah lulus)')
             ->expectsOutputToContain('GANDA (sama persis di tanggal ini)')
-            ->expectsOutputToContain('Asal baris triwulan ini: ayat baru 4 · ulangan 3 · ganda 4')
+            ->expectsOutputToContain('Total baris semua setoran lulus: 11 · dihitung capaian (ayat baru): 4 · ulangan: 3 · ganda: 4')
+            ->expectsOutputToContain('Rapor: capaian 4 /')
             ->assertSuccessful();
     }
 }

@@ -2,20 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\ReportController;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Services\AcademicCalendarService;
 use App\Services\HafalanProgressService;
 use App\Support\AcademicYear;
-use App\Support\AyahCoverage;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 /**
  * Rincian capaian baris satu murid dalam satu triwulan -- angka yang sama dengan kolom
- * "BARIS Capaian / Target" rapor (HafalanProgressService::termBreakdown), dipecah per setoran:
- * ayat baru, ulangan ayat yang sudah pernah lulus, dan setoran ganda identik. Hanya membaca.
+ * "BARIS Capaian / Target" rapor (HafalanProgressService::passedLineDetails), dipecah per setoran:
+ * ayat baru (dihitung), ulangan ayat yang sudah pernah lulus & setoran ganda (tidak dihitung). Hanya membaca.
  */
 class RincianBarisCommand extends Command
 {
@@ -58,60 +56,30 @@ class RincianBarisCommand extends Command
         $this->info("Triwulan {$term} {$year} ({$start->format('d/m/Y')} - {$end->format('d/m/Y')})");
         $this->line('Rapor: capaian '.$breakdown['evaluation']['achieved_lines'].' / target '.$breakdown['evaluation']['target_lines'].' baris');
 
-        // Cakupan ayat lulus sebelum triwulan; diperbarui per setoran untuk menandai ulangan.
-        $covered = $progress->coverage($records, $start);
+        $fmt = fn ($v) => rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
+        $labels = [
+            'new' => 'baru',
+            'partial' => 'sebagian ulang',
+            'repeat' => 'ULANG (ayat sudah pernah lulus)',
+            'duplicate' => 'GANDA (sama persis di tanggal ini)',
+        ];
         $surahs = $progress->surahs();
-        $seen = [];
-        $rows = [];
-        $sum = ['baru' => 0.0, 'ulang' => 0.0, 'ganda' => 0.0];
+        $details = $progress->passedLineDetails($records, $start, now()->min($end->copy()->endOfDay()));
 
-        $termRecords = $records->filter(fn ($r) => $r->status === 'passed'
-            && Carbon::parse($r->submitted_at)->betweenIncluded($start->copy()->startOfDay(), $end->copy()->endOfDay()));
-        foreach ($termRecords as $r) {
-            $surahNumber = (int) $r->surah_number;
-            $from = (int) $r->ayah_start;
-            $to = (int) $r->ayah_end;
-            $totalAyah = (int) ($surahs->get($surahNumber)?->total_ayah ?? 0);
-            $calc = ReportController::calculateLines($surahNumber, $from, $to, $totalAyah);
-            $baris = $r->baris !== null ? (float) $r->baris : $calc;
+        $this->table(['Tanggal', 'Surah', 'Ayat', 'Baris setoran', 'Dihitung capaian', 'Keterangan'], array_map(fn ($d) => [
+            Carbon::parse($d['record']->submitted_at)->format('d/m/Y'),
+            $surahs->get((int) $d['record']->surah_number)?->name_latin ?? $d['record']->surah_number,
+            "{$d['record']->ayah_start}-{$d['record']->ayah_end}",
+            $fmt($d['baris']).(abs($d['baris'] - $d['calculated']) > 0.01 ? " (manual, kalkulator {$fmt($d['calculated'])})" : ''),
+            $fmt($d['new_lines']),
+            $labels[$d['kind']].($d['kind'] === 'partial' ? " ({$d['new_ayat']} ayat baru)" : ''),
+        ], $details));
 
-            $key = Carbon::parse($r->submitted_at)->toDateString()."|{$surahNumber}|{$from}|{$to}";
-            if (isset($seen[$key])) {
-                $kind = 'GANDA (sama persis di tanggal ini)';
-                $sum['ganda'] += $baris;
-            } else {
-                $seen[$key] = true;
-                $newAyat = 0;
-                foreach (AyahCoverage::uncovered($covered[$surahNumber] ?? [], $from, $to) as [$a, $b]) {
-                    $newAyat += $b - $a + 1;
-                }
-                $allAyat = $to - $from + 1;
-                if ($newAyat === $allAyat) {
-                    $kind = 'baru';
-                    $sum['baru'] += $baris;
-                } elseif ($newAyat === 0) {
-                    $kind = 'ULANG (ayat sudah pernah lulus)';
-                    $sum['ulang'] += $baris;
-                } else {
-                    $kind = "sebagian ulang ({$newAyat} dari {$allAyat} ayat baru)";
-                    $sum['baru'] += $baris * $newAyat / $allAyat;
-                    $sum['ulang'] += $baris * ($allAyat - $newAyat) / $allAyat;
-                }
-                $covered[$surahNumber] = AyahCoverage::merge(array_merge($covered[$surahNumber] ?? [], [[$from, $to]]));
-            }
-
-            $rows[] = [
-                Carbon::parse($r->submitted_at)->format('d/m/Y'),
-                $surahs->get($surahNumber)?->name_latin ?? $surahNumber,
-                "{$from}-{$to}",
-                rtrim(rtrim(number_format($baris, 1), '0'), '.').(abs($baris - $calc) > 0.01 ? ' (manual, kalkulator '.rtrim(rtrim(number_format($calc, 1), '0'), '.').')' : ''),
-                $kind,
-            ];
-        }
-
-        $this->table(['Tanggal', 'Surah', 'Ayat', 'Baris', 'Keterangan'], $rows);
-        $fmt = fn ($v) => rtrim(rtrim(number_format($v, 1), '0'), '.');
-        $this->line("Asal baris triwulan ini: ayat baru {$fmt($sum['baru'])} · ulangan {$fmt($sum['ulang'])} · ganda {$fmt($sum['ganda'])}");
+        $byKind = collect($details)->groupBy('kind');
+        $this->line('Total baris semua setoran lulus: '.$fmt(collect($details)->sum('baris'))
+            .' · dihitung capaian (ayat baru): '.$fmt(collect($details)->sum('new_lines'))
+            .' · ulangan: '.$fmt($byKind->get('repeat', collect())->sum('baris') + $byKind->get('partial', collect())->sum(fn ($d) => $d['baris'] - $d['new_lines']))
+            .' · ganda: '.$fmt($byKind->get('duplicate', collect())->sum('baris')));
 
         return self::SUCCESS;
     }

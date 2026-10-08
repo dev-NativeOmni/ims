@@ -288,11 +288,11 @@ class TargetTriwulanTest extends TestCase
     }
 
     #[Test]
-    public function capaian_is_the_sum_of_baris_of_passed_setoran_like_the_setoran_tab(): void
+    public function capaian_counts_only_newly_passed_ayat(): void
     {
         $this->finishJuz30ExceptAnNaba();
         $this->setoran('2026-06-20', 78, 1, 20);
-        $this->setoran('2026-07-08', 78, 1, 20); // mengulang ayat lama: ikut dihitung
+        $this->setoran('2026-07-08', 78, 1, 20); // mengulang ayat lama: tidak menambah capaian
         $withBaris = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-09']);
         $withBaris->surahs()->create(['surah_id' => $this->surahId(78), 'ayah_start' => 21, 'ayah_end' => 25, 'submission_type' => 'new', 'status' => 'passed', 'baris' => 4]);
         $failed = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-15']);
@@ -301,8 +301,8 @@ class TargetTriwulanTest extends TestCase
 
         $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
 
-        // Baris tersimpan (4) dipakai apa adanya; setoran "ulang" tidak dihitung.
-        $this->assertSame(round($this->lines(78, 1, 20) + 4, 1), $plan['achieved_lines']);
+        // Hanya ayat baru: baris tersimpan (4) dipakai apa adanya; setoran ulangan & berstatus "ulang" tidak dihitung.
+        $this->assertSame(4.0, $plan['achieved_lines']);
     }
 
     #[Test]
@@ -394,5 +394,20 @@ class TargetTriwulanTest extends TestCase
         $response->assertViewHas('teachers');
         $response->assertViewHas('currentTeacherId', $this->teacherProfile->id);
         $this->assertCount(1, $response->viewData('rows'));
+    }
+
+    #[Test]
+    public function repeated_partly_new_and_duplicate_setoran_in_the_term_only_count_new_ayat(): void
+    {
+        $this->finishJuz30ExceptAnNaba();
+        $this->setoran('2026-07-08', 78, 1, 20);
+        $this->setoran('2026-07-08', 78, 1, 20);  // ganda di tanggal sama
+        $this->setoran('2026-07-09', 78, 1, 20);  // ulang di triwulan yang sama
+        $this->setoran('2026-07-10', 78, 15, 30); // sebagian baru: 21-30
+        $this->target('2026-09-30', 78, 40);
+
+        $plan = app(AutoHafalanTargetService::class)->termPlan($this->student->fresh(), Carbon::parse('2026-07-01'));
+
+        $this->assertSame(round($this->lines(78, 1, 20) + $this->lines(78, 21, 30), 1), $plan['achieved_lines']);
     }
 }
