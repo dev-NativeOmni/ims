@@ -212,6 +212,20 @@
             });
         },
         isDirty: false,
+        // Peringatan setoran ulangan (resources/js/repeat-check.js): riwayat ayat lulus murid terpilih.
+        repeatHistory: [],
+        loadRepeatHistory() {
+            const studentId = this.selectedStudent;
+            this.repeatHistory = [];
+            if (!studentId) return;
+            fetch(`{{ url('/hafalan-records/repeat-history') }}/${studentId}`, { headers: { 'Accept': 'application/json' } })
+                .then(res => res.ok ? res.json() : [])
+                .then(data => { if (this.selectedStudent === studentId) this.repeatHistory = data; })
+                .catch(() => {});
+        },
+        repeatWarningFor(item) {
+            return window.repeatCheck ? window.repeatCheck.repeatMessage(window.repeatCheck.findRepeat(this.repeatHistory, item, this.selectedDate)) : '';
+        },
         isSaving: false,
         submitCurrentForm() {
             if (this.isSaving) return;
@@ -266,6 +280,8 @@
             }
         }
         this.refreshTatapMuka();
+        this.loadRepeatHistory();
+        $watch('selectedStudent', () => this.loadRepeatHistory());
 
         $watch('selectedStudent', (val) => {
             if (val) {
@@ -665,6 +681,7 @@
                                         <span>Taksiran Capaian:</span>
                                         <span class="px-2 py-0.5 rounded bg-zinc-150 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-extrabold" x-text="calculateLines(item.surah_id, item.ayah_start, item.ayah_end) + ' Baris'"></span>
                                     </div>
+                                    <p x-show="repeatWarningFor(item)" x-text="repeatWarningFor(item)" class="mt-2 text-xs leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-md px-2.5 py-1.5"></p>
                                 </div>
                             </template>
                         </div>

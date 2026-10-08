@@ -30,12 +30,32 @@
                     get filteredStudents() {
                         if (!this.selectedClass) return this.allStudents;
                         return this.allStudents.filter(s => s.classId == this.selectedClass);
+                    },
+                    // Peringatan setoran ulangan (resources/js/repeat-check.js); setoran lain di tanggal yang sama tidak dihitung.
+                    selectedDate: '{{ old('submitted_at', $hafalanRecord->submitted_at?->format('Y-m-d')) }}',
+                    repeatHistory: [],
+                    // Baris setoran yang sedang diedit tidak dibandingkan dengan dirinya sendiri (mis. tanggal diubah).
+                    ownLines: @js($hafalanRecord->surahs->pluck('id')->all()),
+                    loadRepeatHistory() {
+                        const studentId = this.selectedStudent;
+                        this.repeatHistory = [];
+                        if (!studentId) return;
+                        fetch(`{{ url('/hafalan-records/repeat-history') }}/${studentId}`, { headers: { 'Accept': 'application/json' } })
+                            .then(res => res.ok ? res.json() : [])
+                            .then(data => { if (this.selectedStudent === studentId) this.repeatHistory = data; })
+                            .catch(() => {});
+                    },
+                    repeatWarningFor(item) {
+                        const history = this.repeatHistory.filter(entry => !this.ownLines.includes(entry[4]));
+                        return window.repeatCheck ? window.repeatCheck.repeatMessage(window.repeatCheck.findRepeat(history, item, this.selectedDate)) : '';
                     }
                 }" x-init="
                     if (selectedStudent) {
                         let s = allStudents.find(x => x.id == selectedStudent);
                         if (s) selectedClass = s.classId;
                     }
+                    loadRepeatHistory();
+                    $watch('selectedStudent', () => loadRepeatHistory());
                 }">
                     @csrf
                     @method('PUT')
@@ -89,7 +109,7 @@
                                 id="submitted_at"
                                 name="submitted_at"
                                 type="date"
-                                value="{{ old('submitted_at', $hafalanRecord->submitted_at?->format('Y-m-d')) }}"
+                                x-model="selectedDate"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                                 required
                             >
@@ -182,6 +202,7 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <p x-show="repeatWarningFor(item)" x-text="repeatWarningFor(item)" class="mt-2 text-xs leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-md px-2.5 py-1.5"></p>
                                 </div>
                             </template>
                         </div>

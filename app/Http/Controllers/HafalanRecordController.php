@@ -12,6 +12,7 @@ use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\User;
 use App\Observers\HafalanTargetStatusObserver;
+use App\Services\HafalanProgressService;
 use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
 use App\Services\UmmiTatapMukaService;
@@ -739,6 +740,17 @@ class HafalanRecordController extends Controller
         return response()->json([
             'tatap_muka' => app(UmmiTatapMukaService::class)->numberFor($studentIds, Carbon::parse($validated['date'])),
         ]);
+    }
+
+    /**
+     * Riwayat ayat lulus satu murid untuk peringatan setoran ulangan di form Input Setoran
+     * (HafalanProgressService::passedHistory, resources/js/repeat-check.js).
+     */
+    public function repeatHistory(Request $request, Student $student): JsonResponse
+    {
+        abort_unless(app(StudentProgressService::class)->visibleStudentQuery($request->user())->whereKey($student->id)->exists(), 403);
+
+        return response()->json(app(HafalanProgressService::class)->passedHistory([$student->id])[$student->id] ?? []);
     }
 
     public function ummiCard(Request $request, Student $student): View

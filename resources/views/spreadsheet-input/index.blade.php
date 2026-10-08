@@ -33,6 +33,7 @@
                 hafalanRecordsMap: @json($hafalanRecordsMap),
                 ummiRecordsMap: @json($ummiRecordsMap),
                 lastHafalanMap: @json($lastHafalanMap),
+                repeatHistory: @json($repeatHistory),
                 savedOk: {{ session('success') ? 'true' : 'false' }},
                 gridData: {},
                 // Isi tiap sel saat halaman dibuka (cellSignature) -- hanya sel yang berbeda yang dikirim saat Simpan.
@@ -337,6 +338,22 @@
                     let lines = capacity(a.page) - a.start + 1 + b.end;
                     for (let p = a.page + 1; p < b.page; p++) lines += capacity(p);
                     return Math.max(0, lines);
+                },
+                // Peringatan setoran ulangan (resources/js/repeat-check.js): riwayat tersimpan sebelum bulan ini +
+                // isian kolom lain di layar (termasuk yang belum disimpan).
+                repeatWarning(studentId, date, h) {
+                    if (!window.repeatCheck || !h || !h.surah_id) return '';
+                    const live = [];
+                    Object.entries(this.gridData[studentId]?.dates || {}).forEach(([day, c]) => {
+                        if (day >= date) return;
+                        (c.hafalans || []).forEach((x) => {
+                            if (x.surah_id && x.ayah_start && x.ayah_end && (x.status || 'passed') === 'passed') {
+                                live.push([parseInt(x.surah_id, 10), parseInt(x.ayah_start, 10), parseInt(x.ayah_end, 10), day, x.id || null]);
+                            }
+                        });
+                    });
+                    const history = (this.repeatHistory[studentId] || []).concat(live);
+                    return window.repeatCheck.repeatMessage(window.repeatCheck.findRepeat(history, h, date));
                 },
                 hafalanEstimate(h) {
                     return this.estimateLines(h.surah_id, h.ayah_start, h.ayah_end);
@@ -771,6 +788,7 @@
                                                                         </select>
                                                                     </div>
                                                                     <!-- Hidden tracking fields -->
+                                                                    <p x-show="repeatWarning(student.id, date, h)" x-text="repeatWarning(student.id, date, h)" class="text-[10px] leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded px-1.5 py-1"></p>
                                                                     <input type="hidden" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="isMobileView || tab !== 'hafalan'">
                                                                     <input type="hidden" :name="isMobileView ? '' : 'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="isMobileView || tab !== 'hafalan'">
                                                                     <!-- Remove button -->
@@ -887,6 +905,7 @@
                                                                                     <option value="needs_improvement" class="dark:bg-zinc-900">Revisi</option>
                                                                                 </select>
                                                                             </div>
+                                                                            <p x-show="repeatWarning(student.id, date, h)" x-text="repeatWarning(student.id, date, h)" class="text-[10px] leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded px-1.5 py-1"></p>
                                                                             <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
                                                                             <input type="hidden" :name="'records[' + student.id + '][dates][' + date + '][hafalans][' + hIndex + '][submission_type]'" :value="h.submission_type" :disabled="tab !== 'hafalan'">
                                                                             <!-- Remove button -->
@@ -993,6 +1012,7 @@
                                                         </div>
                                                     </div>
                                                     <!-- Hidden variables -->
+                                                    <p x-show="repeatWarning(student.id, selectedMobileDate, h)" x-text="repeatWarning(student.id, selectedMobileDate, h)" class="text-xs leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded px-1.5 py-1"></p>
                                                     <input type="hidden" :name="!isMobileView ? '' : 'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="!isMobileView || tab !== 'hafalan'">
                                                     <!-- Delete button -->
                                                     <template x-if="cell.hafalans.length > 1">
@@ -1131,6 +1151,7 @@
                                                                     </select>
                                                                 </div>
                                                             </div>
+                                                            <p x-show="repeatWarning(student.id, selectedMobileDate, h)" x-text="repeatWarning(student.id, selectedMobileDate, h)" class="text-xs leading-snug font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded px-1.5 py-1"></p>
                                                             <input type="hidden" :name="'records[' + student.id + '][dates][' + selectedMobileDate + '][hafalans][' + hIndex + '][id]'" :value="h.id" :disabled="tab !== 'hafalan'">
                                                             <!-- Delete button -->
                                                             <template x-if="cell.hafalans.length > 1">

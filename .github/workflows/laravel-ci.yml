@@ -64,5 +64,8 @@ jobs:
     - name: Check Code Style (Laravel Pint)
       run: ./vendor/bin/pint --test
 
+    - name: Run JS Tests
+      run: npm run test:js
+
     - name: Run Application Tests
       run: php artisan test

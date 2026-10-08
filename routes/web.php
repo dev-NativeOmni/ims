@@ -329,6 +329,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:super_admin,admin,teacher,headmaster,coordinator_tahfizh'])->group(function () {
         Route::resource('hafalan-records', HafalanRecordController::class);
+        Route::get('/hafalan-records/repeat-history/{student}', [HafalanRecordController::class, 'repeatHistory'])
+            ->name('hafalan-records.repeat-history');
 
         Route::get('murajaah-records/fast-input', [MurajaahRecordController::class, 'fastInput'])
             ->name('murajaah-records.fast-input');

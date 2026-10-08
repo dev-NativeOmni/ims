@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanRecordSurah;
 use App\Models\HafalanTarget;
 use App\Models\Student;
+use App\Models\StudentPriorHafalan;
 use App\Models\Surah;
 use App\Support\AcademicYear;
 use App\Support\AyahCoverage;
@@ -80,6 +81,48 @@ class HafalanProgressService
             ]);
 
         return $prior->concat($setoran)->values();
+    }
+
+    /**
+     * Riwayat ayat lulus untuk peringatan "setoran ulangan" di form input & spreadsheet
+     * (resources/js/repeat-check.js), aturan sama dengan capaian (ayat yang sudah lulus / hafalan
+     * sebelum aplikasi tidak dihitung lagi): [student_id => [[surah_id, ayat awal, ayat akhir,
+     * 'Y-m-d' atau null = hafalan sebelum aplikasi, line_id atau null], ...]].
+     *
+     * @param  iterable<int>  $studentIds
+     * @return array<int, array<int, array{0: int, 1: int, 2: int, 3: ?string, 4: ?int}>>
+     */
+    public function passedHistory(iterable $studentIds): array
+    {
+        $ids = collect($studentIds)->map(fn ($id) => (int) $id)->unique()->values();
+        $history = $ids->mapWithKeys(fn ($id) => [$id => []])->all();
+        if ($ids->isEmpty()) {
+            return $history;
+        }
+
+        StudentPriorHafalan::query()->whereIn('student_id', $ids)->orderBy('id')
+            ->get(['student_id', 'surah_id', 'ayah_start', 'ayah_end'])
+            ->each(function ($p) use (&$history) {
+                $history[(int) $p->student_id][] = [(int) $p->surah_id, (int) $p->ayah_start, (int) $p->ayah_end, null, null];
+            });
+
+        HafalanRecordSurah::query()
+            ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
+            ->whereNull('hafalan_records.deleted_at')
+            ->whereIn('hafalan_records.student_id', $ids)
+            ->where('hafalan_record_surahs.status', 'passed')
+            ->whereNotNull('hafalan_record_surahs.surah_id')
+            ->orderBy('hafalan_records.submitted_at')->orderBy('hafalan_record_surahs.id')
+            ->get(['hafalan_records.student_id', 'hafalan_record_surahs.id', 'hafalan_record_surahs.surah_id',
+                'hafalan_record_surahs.ayah_start', 'hafalan_record_surahs.ayah_end', 'hafalan_records.submitted_at'])
+            ->each(function ($line) use (&$history) {
+                $history[(int) $line->student_id][] = [
+                    (int) $line->surah_id, (int) $line->ayah_start, (int) max($line->ayah_start, $line->ayah_end),
+                    Carbon::parse($line->submitted_at)->toDateString(), (int) $line->id,
+                ];
+            });
+
+        return $history;
     }
 
     /**

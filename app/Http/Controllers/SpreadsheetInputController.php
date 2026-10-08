@@ -12,6 +12,7 @@ use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\UmmiRecordSurah;
+use App\Services\HafalanProgressService;
 use App\Services\SchoolCalendar;
 use App\Services\UmmiTatapMukaService;
 use App\Services\UserAccessService;
@@ -185,6 +186,7 @@ class SpreadsheetInputController extends Controller
         $attendancesMap = [];
         $hafalanRecordsMap = [];
         $ummiRecordsMap = [];
+        $repeatHistory = [];
 
         if ($selectedClassId) {
             $students = Student::query()
@@ -200,6 +202,16 @@ class SpreadsheetInputController extends Controller
             $studentIds = $students->pluck('id')->toArray();
             $startDate = $selectedMonth.'-01';
             $endDate = date('Y-m-t', strtotime($startDate));
+
+            // Peringatan setoran ulangan (resources/js/repeat-check.js): riwayat ayat lulus sebelum bulan ini
+            // (+ hafalan sebelum aplikasi, + setoran bulan ini di tanggal yang tidak tampil sebagai kolom).
+            // Setoran di kolom yang tampil diambil dari isian layar supaya perubahan yang belum disimpan ikut.
+            $shownDates = $isWeekly ? null : array_flip($dates);
+            $repeatHistory = array_map(
+                fn (array $entries) => array_values(array_filter($entries, fn ($e) => $e[3] === null || $e[3] < $startDate
+                    || ($shownDates !== null && $e[3] <= $endDate && ! isset($shownDates[$e[3]])))),
+                app(HafalanProgressService::class)->passedHistory($studentIds)
+            );
 
             // Load Attendances -- hanya presensi yang benar-benar tersimpan (mis. dari form Input Ummi).
             // "Hadir otomatis" untuk sel yang sudah ada setorannya ditentukan di tampilan.
@@ -354,6 +366,7 @@ class SpreadsheetInputController extends Controller
             'hafalanRecordsMap' => $hafalanRecordsMap,
             'ummiRecordsMap' => $ummiRecordsMap,
             'lastHafalanMap' => $lastHafalanMap,
+            'repeatHistory' => $repeatHistory,
         ]);
     }
 
