@@ -6,6 +6,7 @@ use App\Models\HafalanRecord;
 use App\Models\StudentPriorHafalan;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
@@ -50,6 +51,12 @@ class CekHafalanLamaCommandTest extends TestCase
         $this->assertNull(StudentPriorHafalan::find($prior->id));
         $this->assertSame([[1, 5], [9, 10]], StudentPriorHafalan::orderBy('ayah_start')->get()
             ->map(fn ($p) => [$p->ayah_start, $p->ayah_end])->all());
+
+        // Cadangan otomatis bisa dipulihkan.
+        $backup = collect(File::files(storage_path('app/backups/hafalan-lama')))->last()->getFilename();
+        $this->artisan('tad:cek-hafalan-lama', ['--pulihkan' => $backup, '--force' => true])->assertSuccessful();
+        $this->assertSame([[$prior->id, 1, 10]], StudentPriorHafalan::all()->map(fn ($p) => [$p->id, $p->ayah_start, $p->ayah_end])->all());
+        File::delete(storage_path('app/backups/hafalan-lama/'.$backup));
     }
 
     #[Test]

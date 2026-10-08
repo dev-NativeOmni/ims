@@ -10,13 +10,15 @@ use App\Support\AyahCoverage;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 /**
  * Setoran yang tertimpa "Hafalan Sebelum Aplikasi" (StudentPriorHafalan): ayatnya ikut ditandai hafalan
  * lama sehingga dianggap ulangan (0 baris). Yang mencurigakan = setoran yang diinput/diubah SESUDAH tanda
  * hafalan lama dibuat -- biasanya guru baru melengkapi/membetulkan setoran awal triwulan, padahal tanda
  * hafalan lama dibuat dari data lama (mis. tad:usul-hafalan-awal). --perbaiki memotong tanda hafalan lama
- * pada ayat setoran itu sehingga setoran kembali dihitung ayat baru. Bawaan hanya menampilkan.
+ * pada ayat setoran itu sehingga setoran kembali dihitung ayat baru (tabel dicadangkan dulu ke
+ * storage/app/backups/hafalan-lama; batalkan dengan --pulihkan). Bawaan hanya menampilkan.
  */
 class CekHafalanLamaCommand extends Command
 {
@@ -25,12 +27,17 @@ class CekHafalanLamaCommand extends Command
         {--murid=* : Hanya murid ini (nama, boleh sebagian; bisa diulang)}
         {--semua : Tampilkan juga setoran yang diinput sebelum tanda hafalan lama dibuat (ulangan hafalan lama yang wajar)}
         {--perbaiki : Potong tanda hafalan lama pada ayat setoran yang mencurigakan}
-        {--force : Perbaiki tanpa pertanyaan konfirmasi}';
+        {--force : Perbaiki/pulihkan tanpa pertanyaan konfirmasi}
+        {--pulihkan= : Kembalikan tabel hafalan lama dari file cadangan (nama file dari --perbaiki)}';
 
     protected $description = 'Cari setoran yang tertimpa tanda hafalan sebelum aplikasi (dihitung ulangan).';
 
     public function handle(HafalanProgressService $progress): int
     {
+        if ($this->option('pulihkan')) {
+            return $this->restore((string) $this->option('pulihkan'));
+        }
+
         $names = array_filter(array_map('trim', (array) $this->option('murid')));
         $students = Student::query()->with('classRoom')->where('status', 'active')
             ->whereHas('priorHafalans')->orderBy('name')->get()
@@ -99,6 +106,11 @@ class CekHafalanLamaCommand extends Command
             return self::SUCCESS;
         }
 
+        // Cadangan seluruh tabel hafalan lama sebelum diubah (tanpa mysqldump), untuk --pulihkan.
+        $backup = $this->backupDirectory().'/hafalan_lama_'.now()->format('Y-m-d_His').'.json';
+        File::put($backup, StudentPriorHafalan::query()->orderBy('id')->get()->map->getAttributes()->toJson(JSON_PRETTY_PRINT));
+        $this->info('Cadangan: '.$backup.' ('.StudentPriorHafalan::count().' rentang)');
+
         DB::transaction(function () use ($trim) {
             foreach (StudentPriorHafalan::query()->whereIn('id', array_keys($trim))->get() as $prior) {
                 $keep = AyahCoverage::uncovered(AyahCoverage::merge($trim[$prior->id]), (int) $prior->ayah_start, (int) $prior->ayah_end);
@@ -112,6 +124,43 @@ class CekHafalanLamaCommand extends Command
             }
         });
         $this->info('Tanda hafalan lama diperbaiki untuk '.count($trim).' rentang.');
+        $this->line('Untuk membatalkan: php artisan tad:cek-hafalan-lama --pulihkan='.basename($backup));
+
+        return self::SUCCESS;
+    }
+
+    private function backupDirectory(): string
+    {
+        $directory = storage_path('app/backups/hafalan-lama');
+        File::ensureDirectoryExists($directory);
+
+        return $directory;
+    }
+
+    /** Ganti seluruh isi tabel hafalan lama dengan isi file cadangan. */
+    private function restore(string $filename): int
+    {
+        $path = $this->backupDirectory().'/'.basename($filename);
+        $rows = File::exists($path) ? json_decode(File::get($path), true) : null;
+        if (! is_array($rows)) {
+            $this->error('File cadangan tidak ditemukan/rusak: '.$path);
+            $this->line('Cadangan yang ada: '.(collect(File::files($this->backupDirectory()))->map->getFilename()->implode(', ') ?: '-'));
+
+            return self::FAILURE;
+        }
+        if (! $this->option('force') && ! $this->confirm('Ganti isi hafalan sebelum aplikasi ('.StudentPriorHafalan::count().' rentang) dengan cadangan ini ('.count($rows).' rentang)?')) {
+            $this->line('Dibatalkan.');
+
+            return self::SUCCESS;
+        }
+
+        DB::transaction(function () use ($rows) {
+            StudentPriorHafalan::query()->delete();
+            foreach (array_chunk($rows, 500) as $chunk) {
+                StudentPriorHafalan::query()->insert($chunk);
+            }
+        });
+        $this->info('Dipulihkan: '.count($rows).' rentang hafalan sebelum aplikasi.');
 
         return self::SUCCESS;
     }
