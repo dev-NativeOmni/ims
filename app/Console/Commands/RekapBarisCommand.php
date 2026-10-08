@@ -21,7 +21,8 @@ class RekapBarisCommand extends Command
         {--tahun= : Tahun ajaran, mis. 2026/2027 (bawaan: tahun ajaran berjalan)}
         {--term= : Triwulan 1-4 (bawaan: triwulan berjalan)}
         {--kelas= : Hanya kelas ini (nama kelas, mis. "XI F1")}
-        {--berubah : Hanya murid yang statusnya berubah atau punya ulangan/ganda}';
+        {--berubah : Hanya murid yang statusnya berubah atau punya ulangan/ganda}
+        {--belum : Hanya murid yang belum tuntas (capaian ayat baru < target)}';
 
     protected $description = 'Rekap capaian baris Tahfizh Kelas 11 & 12 per triwulan (ayat baru vs semua setoran).';
 
@@ -45,7 +46,7 @@ class RekapBarisCommand extends Command
         $this->info("Rekap capaian baris Triwulan {$term} {$year} ({$start->format('d/m/Y')} - {$end->format('d/m/Y')})");
         $fmt = fn ($v) => rtrim(rtrim(number_format((float) $v, 1), '0'), '.');
         $rows = [];
-        $count = ['murid' => 0, 'berubah' => 0, 'ulang' => 0, 'ganda' => 0];
+        $count = ['murid' => 0, 'berubah' => 0, 'ulang' => 0, 'ganda' => 0, 'belum' => 0];
 
         foreach ($classes as $class) {
             $students = Student::query()->inClassOn($class->id, $cutoff)->where('status', 'active')->orderBy('name')->get()
@@ -72,11 +73,15 @@ class RekapBarisCommand extends Command
                 $changed = $wasTuntas !== $isTuntas;
 
                 $count['murid']++;
+                $count['belum'] += $target > 0 && ! $isTuntas ? 1 : 0;
                 $count['berubah'] += $changed ? 1 : 0;
                 $count['ulang'] += $repeat > 0.05 ? 1 : 0;
                 $count['ganda'] += $duplicate > 0.05 ? 1 : 0;
 
                 if ($this->option('berubah') && ! $changed && $repeat <= 0.05 && $duplicate <= 0.05) {
+                    continue;
+                }
+                if ($this->option('belum') && ($target === 0 || $isTuntas)) {
                     continue;
                 }
 
@@ -96,7 +101,7 @@ class RekapBarisCommand extends Command
         }
 
         $this->table(['Kelas', 'Murid', 'Level', 'Target', 'Semua setoran', 'Ayat baru (rapor)', 'Ulangan', 'Ganda', 'Status'], $rows);
-        $this->line("Murid diperiksa: {$count['murid']} · status berubah: {$count['berubah']} · ada ulangan: {$count['ulang']} · ada setoran ganda: {$count['ganda']}");
+        $this->line("Murid diperiksa: {$count['murid']} · belum tuntas: {$count['belum']} · status berubah: {$count['berubah']} · ada ulangan: {$count['ulang']} · ada setoran ganda: {$count['ganda']}");
 
         return self::SUCCESS;
     }

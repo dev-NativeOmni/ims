@@ -59,7 +59,11 @@ class RincianBarisCommandTest extends TestCase
 
         $this->artisan('tad:rekap-baris', ['--tahun' => '2026/2027', '--term' => 1])
             ->expectsOutputToContain('| XII F3 | '.$this->student->name.' | reguler |')
-            ->expectsOutputToContain('Murid diperiksa: 1 · status berubah: 0 · ada ulangan: 1 · ada setoran ganda: 1')
+            ->expectsOutputToContain('Murid diperiksa: 1 · belum tuntas: 1 · status berubah: 0 · ada ulangan: 1 · ada setoran ganda: 1')
+            ->assertSuccessful();
+
+        $this->artisan('tad:rekap-baris', ['--tahun' => '2026/2027', '--term' => 1, '--belum' => true])
+            ->expectsOutputToContain('| XII F3 | '.$this->student->name.' | reguler |')
             ->assertSuccessful();
 
         $this->artisan('tad:rekap-baris', ['--term' => 1, '--tahun' => '2026/2027', '--kelas' => 'XI Z9'])->assertFailed();
