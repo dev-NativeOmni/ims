@@ -97,25 +97,30 @@ class Juz30OrderGrade11And12Test extends TestCase
     }
 
     #[Test]
-    public function juz_29_started_from_al_mursalat_is_detected_from_the_first_setoran(): void
+    public function grade_11_and_12_memorise_every_juz_from_its_start_unless_the_teacher_says_otherwise(): void
     {
         $this->moveToClass('XI F2');
-        $this->setor(77, 1, 10, '2026-09-01');
-        $this->assertSame(HafalanOrder::DESC, $this->progress->juzOrdersFor($this->student)[29], 'Mulai dari surah terakhir juz = dari belakang.');
-
-        $this->setor(77, 11, 50, '2026-09-02');
+        // Setoran Juz 29 dari belakang (Al-Mursalat lalu Nuh): tetap dihitung dari awal juz (aturan sekolah).
+        $this->setor(77, 1, 50, '2026-09-01');
         $this->setor(71, 1, 28, '2026-09-03');
-        $this->assertSame(HafalanOrder::DESC, $this->progress->juzOrdersFor($this->student)[29]);
+        $this->assertSame(HafalanOrder::DESC, $this->progress->detectedJuzOrders($this->progress->records($this->student))[29]);
+        $this->assertSame(HafalanOrder::ASC, $this->progress->juzOrdersFor($this->student)[29]);
+
+        // Pengecualian per murid (mis. Vano): diatur guru di halaman Urutan.
+        $this->student->update(['juz_orders' => [29 => HafalanOrder::DESC]]);
+        $this->assertSame(HafalanOrder::DESC, $this->progress->juzOrdersFor($this->student->refresh()->load('classRoom'))[29]);
     }
 
     #[Test]
-    public function a_single_middle_surah_is_not_guessed(): void
+    public function other_classes_still_detect_the_juz_direction_from_setoran(): void
     {
-        $this->moveToClass('XI F3');
+        $this->moveToClass('Kelas Tahfizh Sore');
+        $this->setor(77, 1, 10, '2026-09-01');
+        $this->assertSame(HafalanOrder::DESC, $this->progress->juzOrdersFor($this->student)[29], 'Mulai dari surah terakhir juz = dari belakang.');
+
+        $this->moveToClass('Kelas Tahfizh Pagi');
+        HafalanRecord::query()->delete();
         $this->setor(71, 1, 10, '2026-09-01');
         $this->assertArrayNotHasKey(29, $this->progress->juzOrdersFor($this->student), 'Surah tengah: pakai default / koreksi guru.');
-
-        $this->setor(67, 1, 30, '2026-09-02'); // surah kedua: arah dari urutan surah yang disetor
-        $this->assertSame(HafalanOrder::DESC, $this->progress->juzOrdersFor($this->student)[29], 'Nuh lalu Al-Mulk = mundur.');
     }
 }

@@ -89,7 +89,10 @@ class UsulHafalanAwalCommand extends Command
                 $assumed = $this->juzOrder($student, $juz);
                 $detected = $progress->detectedJuzOrders($records)[$juz] ?? null;
                 $manual = isset($student->juz_orders[$juz]) || isset($student->juz_orders[(string) $juz]);
-                $checkDirection = ! $manual && $detected !== null && $detected !== $assumed;
+                // Arah dari guru atau aturan sekolah (Kelas 11 & 12: dari awal juz) sudah pasti; selain itu
+                // tandai bila setoran menunjukkan arah lain.
+                $ruled = $manual || HafalanProgressService::juz30FromNaba($student);
+                $checkDirection = ! $ruled && $detected !== null && $detected !== $assumed;
                 $label = fn (string $o) => $o === HafalanOrder::DESC ? 'dari akhir' : 'dari awal';
                 if (! $checkDirection) {
                     $proposals[$student->id] = $ranges;
@@ -101,7 +104,7 @@ class UsulHafalanAwalCommand extends Command
                     $student->name,
                     ($surahs->get((int) $first->surah_number)?->name_latin ?? $first->surah_number).' '.$first->ayah_start,
                     $this->describe($ranges, $surahs),
-                    "Juz {$juz} ".$label($assumed).($manual ? ' (diatur)' : '').($checkDirection ? ' ! CEK ARAH: setoran '.$label($detected) : ''),
+                    "Juz {$juz} ".$label($assumed).($manual ? ' (diatur guru)' : ($ruled ? ' (aturan kelas)' : '')).($checkDirection ? ' ! CEK ARAH: setoran '.$label($detected) : ''),
                     $this->fmt($before).' -> '.$this->fmt($after).' / '.$target,
                     $status($before) === $status($after) ? $status($after) : $status($before).' -> '.$status($after),
                 ];
@@ -183,7 +186,7 @@ class UsulHafalanAwalCommand extends Command
         return $ranges;
     }
 
-    /** Urutan juz untuk usulan: koreksi guru > aturan Kelas 11 & 12 (Juz 30 dari An-Naba) > default; bukan deteksi setoran. */
+    /** Urutan juz untuk usulan: koreksi guru > aturan Kelas 11 & 12 (semua juz dari awal) > default; bukan deteksi setoran. */
     private function juzOrder(Student $student, int $juz): string
     {
         return ($student->juz_orders[$juz] ?? $student->juz_orders[(string) $juz] ?? null)

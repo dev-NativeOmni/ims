@@ -1127,7 +1127,7 @@ class HafalanTargetController extends Controller
                 'order' => $effective[$juz] ?? HafalanOrder::defaultJuzOrder($juz),
                 'source' => match (true) {
                     in_array($juz, $manual, true) => 'manual',
-                    $juz === 30 && $gradeRule => 'grade',
+                    $gradeRule => 'grade',
                     isset($detected[$juz]) => 'auto',
                     default => 'default',
                 },

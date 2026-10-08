@@ -41,7 +41,8 @@ class JuzOrderAndCoverageTest extends TestCase
         }
 
         $program = Program::create(['name' => 'Program Reguler', 'status' => 'active']);
-        $this->classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'XII F1', 'level' => 'XII', 'tahfizh_days' => [3]]);
+        // Bukan kelas 11/12: di sana semua juz dari awal juz (aturan sekolah), di sini arah dideteksi dari setoran.
+        $this->classRoom = ClassRoom::create(['program_id' => $program->id, 'name' => 'Kelas Tahfizh A', 'level' => '', 'tahfizh_days' => [3]]);
         $this->student->update(['class_room_id' => $this->classRoom->id, 'teacher_id' => $this->teacherProfile->id, 'tahfizh_level' => 'reguler']);
     }
 

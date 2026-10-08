@@ -45,19 +45,13 @@ class UsulHafalanAwalCommandTest extends TestCase
         $this->setor(15, 1, 99, '2026-08-13'); // kemungkinan muraja'ah hafalan lama
         $this->setor(16, 1, 24, '2026-08-21');
 
-        // Pola ini sama dengan menghafal Juz 14 dari belakang (An-Nahl dulu): tanpa arah dari guru, ditandai & tidak disimpan.
+        // Kelas 11 & 12: Juz 14 dihafal dari awal (Al-Hijr dulu) menurut aturan sekolah -> langsung bisa disimpan.
         $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--berubah' => true])
-            ->expectsOutputToContain('Al-Hijr 1-99; An-Nahl 1-24 | Juz 14 dari awal ! CEK ARAH: setoran dari akhir')
+            ->expectsOutputToContain('Al-Hijr 1-99; An-Nahl 1-24 | Juz 14 dari awal (aturan kelas)')
             ->assertSuccessful();
-        $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--simpan' => true, '--force' => true])
-            ->expectsOutputToContain('1 murid bertanda CEK ARAH tidak akan disimpan')
-            ->assertSuccessful();
-        $this->assertSame(0, StudentPriorHafalan::count());
+        $this->assertSame(0, StudentPriorHafalan::count(), 'Tampil saja: belum disimpan.');
 
-        // Guru memastikan Juz 14 dihafal dari awal (Al-Hijr dulu) -> usulan disimpan.
-        $this->student->update(['juz_orders' => [14 => 'asc']]);
         $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--murid' => ['Santri'], '--simpan' => true, '--force' => true])
-            ->expectsOutputToContain('Juz 14 dari awal (diatur)')
             ->assertSuccessful();
         $this->assertSame(2, StudentPriorHafalan::count());
 
@@ -68,5 +62,25 @@ class UsulHafalanAwalCommandTest extends TestCase
         $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027'])
             ->expectsOutputToContain('Tidak ada murid yang mulai di tengah juz')
             ->assertSuccessful();
+    }
+
+    #[Test]
+    public function teacher_exception_from_the_end_of_the_juz_changes_the_proposal(): void
+    {
+        Carbon::setTestNow('2026-06-01');
+        $this->setUpHafizPlusData();
+        foreach ([15 => ['Al-Hijr', 99], 16 => ['An-Nahl', 128]] as $n => [$name, $ayahs]) {
+            Surah::firstOrCreate(['number' => $n], ['name_ar' => $name, 'name_latin' => $name, 'total_ayah' => $ayahs, 'juz_start' => 14, 'juz_end' => 14]);
+        }
+        $class = ClassRoom::create(['program_id' => $this->student->classRoom->program_id, 'name' => 'XI F2', 'level' => '']);
+        $this->student->update(['class_room_id' => $class->id, 'tahfizh_level' => 'reguler', 'juz_orders' => [14 => 'desc']]);
+        Carbon::setTestNow('2026-10-08');
+        $this->setor(16, 25, 40, '2026-07-14');
+
+        // Dari akhir juz: An-Nahl dulu, jadi yang sebelum An-Nahl 25 hanya An-Nahl 1-24 (Al-Hijr belum).
+        $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--simpan' => true, '--force' => true])
+            ->expectsOutputToContain('Juz 14 dari akhir (diatur guru)')
+            ->assertSuccessful();
+        $this->assertSame([[16, 1, 24]], StudentPriorHafalan::with('surah')->get()->map(fn ($p) => [$p->surah->number, $p->ayah_start, $p->ayah_end])->all());
     }
 }
