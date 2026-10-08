@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\AuditLog;
 use App\Models\HafalanRecord;
 use App\Models\HafalanRecordSurah;
+use App\Models\Student;
 use App\Models\UmmiRecord;
 use App\Services\UmmiTatapMukaService;
 use Illuminate\Console\Command;
@@ -15,7 +16,8 @@ use Illuminate\Support\Facades\DB;
  * Hapus setoran ganda yang IDENTIK (mis. akibat tombol Simpan terklik dua kali). Yang disimpan
  * selalu data paling awal; setiap yang dihapus dicatat di Audit Log beserta isinya.
  *
- * - Hafalan: baris dengan murid, tanggal, surah, ayat awal-akhir & status sama persis.
+ * - Hafalan: baris dengan murid, tanggal, surah, ayat awal-akhir & status sama persis (program "seminggu
+ *   sekali": pekan yang sama, karena satu pertemuan per pekan).
  * - Ummi: sesi murid di tanggal yang sama dengan Jilid, Halaman, Materi, Nilai & surah-ayat sama
  *   persis; juga baris surah identik di dalam satu sesi. Sesi ganda yang isinya BERBEDA tidak
  *   dihapus -- hanya ditampilkan untuk dicek manual.
@@ -177,13 +179,16 @@ class RemoveDuplicateSetoran extends Command
         // Diproses per murid supaya memori tetap kecil walau datanya banyak.
         $result = collect();
         foreach (HafalanRecord::query()->distinct()->pluck('student_id') as $studentId) {
+            // Program "seminggu sekali": satu pertemuan per pekan, jadi setoran identik di pekan yang sama
+            // (tanggal berbeda) juga ganda -- mis. salinan dari spreadsheet per pekan.
+            $weekly = Student::query()->with('classRoom.program')->find($studentId)?->classRoom?->program?->meeting_frequency === 'seminggu sekali';
             HafalanRecordSurah::query()
                 ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $studentId))
                 ->with(['hafalanRecord.student:id,name,class_room_id', 'hafalanRecord.student.classRoom:id,name', 'surah:id,name_latin'])
                 ->orderBy('id')
                 ->get()
                 ->groupBy(fn ($l) => implode('|', [
-                    $l->hafalanRecord->submitted_at?->toDateString(),
+                    $weekly ? $l->hafalanRecord->submitted_at?->format('o-\\WW') : $l->hafalanRecord->submitted_at?->toDateString(),
                     $l->surah_id,
                     $l->ayah_start,
                     $l->ayah_end,

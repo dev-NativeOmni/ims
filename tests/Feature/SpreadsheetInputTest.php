@@ -574,4 +574,44 @@ class SpreadsheetInputTest extends TestCase
         $this->assertStringContainsString("this.cellSignature(c) === this.originalCells[s.id + '|' + d]", $payload);
         $this->assertStringContainsString('this.originalCells[s.id', $html);
     }
+
+    #[Test]
+    public function weekly_class_moves_setoran_from_another_day_of_the_week_instead_of_copying_it(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Pekanan', 'status' => 'active', 'meeting_frequency' => 'seminggu sekali']);
+        $class = ClassRoom::create(['program_id' => $program->id, 'name' => 'XII F2', 'level' => 'XII', 'tahfizh_days' => [2]]);
+        $this->student->update(['class_room_id' => $class->id]);
+
+        // Setoran Rabu 15/07 (mis. dari form), tampil di kolom Pekan dengan tanggal wakil Selasa 14/07.
+        $header = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => '2026-07-15']);
+        $line = $header->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 3, 'status' => 'passed', 'submission_type' => 'new']);
+
+        foreach ([1, 2] as $attempt) {
+            $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
+                'class_room_id' => $class->id, 'month' => '2026-07', 'type' => 'hafalan',
+                'records' => [$this->student->id => ['dates' => ['2026-07-14' => $this->hafalanCell([$this->line($line->id, 1, 3)])]]],
+            ])->assertRedirect();
+        }
+
+        $this->assertSame(1, HafalanRecordSurah::whereHas('hafalanRecord')->count(), 'Tidak ada salinan walau disimpan berulang.');
+        $this->assertSame($line->id, HafalanRecordSurah::whereHas('hafalanRecord')->value('id'), 'Baris dipindah ke kolom pekannya.');
+    }
+
+    #[Test]
+    public function cleanup_command_removes_copies_within_the_same_week_for_weekly_programs(): void
+    {
+        $program = Program::create(['name' => 'Program Reguler Pekanan', 'status' => 'active', 'meeting_frequency' => 'seminggu sekali']);
+        $class = ClassRoom::create(['program_id' => $program->id, 'name' => 'XII F2', 'level' => 'XII', 'tahfizh_days' => [2]]);
+        $this->student->update(['class_room_id' => $class->id]);
+        foreach (['2026-07-14', '2026-07-15', '2026-07-21'] as $date) {
+            $header = HafalanRecord::create(['student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'submitted_at' => $date]);
+            $header->surahs()->create(['surah_id' => $this->surah->id, 'ayah_start' => 1, 'ayah_end' => 3, 'status' => 'passed', 'submission_type' => 'new']);
+        }
+
+        $this->artisan('tad:hapus-setoran-ganda', ['--force' => true])->assertSuccessful();
+
+        // 14/07 & 15/07 satu pekan -> salinan 15/07 dihapus; 21/07 pekan berikutnya (ulangan) tetap.
+        $dates = HafalanRecord::with('surahs')->get()->filter(fn ($h) => $h->surahs->isNotEmpty())->map(fn ($h) => $h->submitted_at->toDateString())->sort()->values()->all();
+        $this->assertSame(['2026-07-14', '2026-07-21'], $dates);
+    }
 }

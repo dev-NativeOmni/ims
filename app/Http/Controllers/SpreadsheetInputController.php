@@ -391,9 +391,13 @@ class SpreadsheetInputController extends Controller
                 $weekNum = date('W', $time);
                 $weeks[$weekNum][] = $dateStr;
             }
+            // Setiap tanggal dipetakan ke semua tanggal pekannya: kolom Pekan di halaman memakai hari
+            // pertemuan pertama (mis. Selasa), bukan hari pertama kalender, dan setoran dari hari lain di
+            // pekan itu tampil di kolom yang sama -- semuanya harus dianggap sudah ada (dipindah, bukan disalin).
             foreach ($weeks as $wDates) {
-                $repDate = $wDates[0];
-                $weekDatesMap[$repDate] = $wDates;
+                foreach ($wDates as $weekDate) {
+                    $weekDatesMap[$weekDate] = $wDates;
+                }
             }
         }
 
