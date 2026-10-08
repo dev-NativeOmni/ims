@@ -172,6 +172,12 @@ class Student extends Model
         return $this->dapodik_rombel ?: $this->classRoom?->name;
     }
 
+    /** Hafalan dari sebelum aplikasi dipakai (lihat StudentPriorHafalan). */
+    public function priorHafalans(): HasMany
+    {
+        return $this->hasMany(StudentPriorHafalan::class);
+    }
+
     public function usesUmmi(): bool
     {
         return $this->tahfizh_level === 'ummi' || ($this->classRoom?->isGradeTen() ?? false);

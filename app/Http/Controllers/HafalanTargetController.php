@@ -6,6 +6,7 @@ use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\StudentClassHistory;
+use App\Models\StudentPriorHafalan;
 use App\Models\Surah;
 use App\Models\TargetLock;
 use App\Models\TeacherProfile;
@@ -1121,7 +1122,8 @@ class HafalanTargetController extends Controller
                 'juz' => $juz,
                 'surah_range' => [reset($surahsInJuz), end($surahsInJuz)],
                 'covered_percent' => $totalAyat > 0 ? (int) round($coveredAyat / $totalAyat * 100) : 0,
-                'setoran_count' => $records->where('status', 'passed')->filter(fn ($r) => in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
+                'setoran_count' => $records->where('status', 'passed')->reject(fn ($r) => $r->is_prior)->filter(fn ($r) => in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
+                'prior_count' => $records->filter(fn ($r) => $r->is_prior && in_array((int) $r->surah_number, $surahsInJuz, true))->count(),
                 'order' => $effective[$juz] ?? HafalanOrder::defaultJuzOrder($juz),
                 'source' => match (true) {
                     in_array($juz, $manual, true) => 'manual',
@@ -1136,7 +1138,94 @@ class HafalanTargetController extends Controller
             'student' => $student->load('classRoom'),
             'juzRows' => $juzRows,
             'surahNames' => $progress->surahs()->map->name_latin,
+            'surahs' => $progress->surahs()->sortBy('number')->values(),
+            'priorGroups' => $this->priorHafalanGroups($student),
+            'canEditPrior' => self::canEditPriorHafalan($request->user()),
         ]);
+    }
+
+    /**
+     * Hafalan sebelum aplikasi per juz untuk ditampilkan: juz yang tercakup penuh jadi satu baris
+     * ("Juz 30 (penuh)"), selain itu daftar rentangnya.
+     *
+     * @return array<int, array{juz: int, full: bool, entries: Collection}>
+     */
+    private function priorHafalanGroups(Student $student): array
+    {
+        $groups = [];
+        $entries = $student->priorHafalans()->with('surah')->get()
+            ->sortBy(fn ($p) => $p->surah->number * 1000 + $p->ayah_start)
+            ->groupBy(fn ($p) => HafalanOrder::juzOf((int) $p->surah->number, (int) $p->ayah_start));
+        foreach ($entries as $juz => $items) {
+            $covered = AyahCoverage::fromRanges($items->map(fn ($p) => [(int) $p->surah->number, (int) $p->ayah_start, (int) $p->ayah_end]));
+            $full = collect(HafalanOrder::JUZ_RANGES[$juz])->every(fn ($r) => AyahCoverage::uncovered($covered[$r['surah']] ?? [], $r['start'], $r['end']) === []);
+            $groups[] = ['juz' => (int) $juz, 'full' => $full, 'entries' => $items->values()];
+        }
+
+        return collect($groups)->sortBy('juz', descending: true)->values()->all();
+    }
+
+    /** Pengisi hafalan sebelum aplikasi: guru halaqoh (murid bimbingannya), Koordinator Tahfizh, Admin. */
+    private static function canEditPriorHafalan($user): bool
+    {
+        return (bool) $user?->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh', 'teacher']);
+    }
+
+    /**
+     * Catat hafalan sebelum aplikasi: satu juz penuh ('juz') atau satu rentang surah:ayat.
+     */
+    public function storePriorHafalan(Request $request, Student $student): RedirectResponse
+    {
+        abort_unless($this->visibleStudentIds($request->user())->contains($student->id) && self::canEditPriorHafalan($request->user()), 403);
+
+        if ($request->filled('juz')) {
+            $juz = (int) $request->validate(['juz' => ['required', 'integer', 'between:1,30']])['juz'];
+            $surahIds = Surah::query()->pluck('id', 'number');
+            foreach (HafalanOrder::JUZ_RANGES[$juz] as $range) {
+                StudentPriorHafalan::firstOrCreate(
+                    ['student_id' => $student->id, 'surah_id' => $surahIds[$range['surah']], 'ayah_start' => $range['start'], 'ayah_end' => $range['end']],
+                    ['created_by' => $request->user()->id]
+                );
+            }
+
+            return back()->with('success', "Juz {$juz} dicatat sebagai hafalan sebelum aplikasi untuk {$student->name}.");
+        }
+
+        $validated = $request->validate([
+            'surah_id' => ['required', 'integer', 'exists:surahs,id'],
+            'ayah_start' => ['required', 'integer', 'min:1'],
+            'ayah_end' => ['required', 'integer', 'gte:ayah_start'],
+        ], ['ayah_end.gte' => 'Ayat akhir harus sama atau setelah ayat awal.']);
+        $surah = Surah::findOrFail($validated['surah_id']);
+        if ($validated['ayah_end'] > $surah->total_ayah) {
+            return back()->withErrors(['ayah_end' => "Surah {$surah->name_latin} hanya {$surah->total_ayah} ayat."])->withInput();
+        }
+
+        StudentPriorHafalan::firstOrCreate(
+            ['student_id' => $student->id, 'surah_id' => $surah->id, 'ayah_start' => $validated['ayah_start'], 'ayah_end' => $validated['ayah_end']],
+            ['created_by' => $request->user()->id]
+        );
+
+        return back()->with('success', "{$surah->name_latin} {$validated['ayah_start']}-{$validated['ayah_end']} dicatat sebagai hafalan sebelum aplikasi.");
+    }
+
+    /**
+     * Hapus hafalan sebelum aplikasi: satu rentang ('id') atau semua rentang di satu juz ('juz').
+     */
+    public function destroyPriorHafalan(Request $request, Student $student): RedirectResponse
+    {
+        abort_unless($this->visibleStudentIds($request->user())->contains($student->id) && self::canEditPriorHafalan($request->user()), 403);
+
+        $entries = $student->priorHafalans()->with('surah')->get();
+        if ($request->filled('juz')) {
+            $juz = $request->integer('juz');
+            $entries = $entries->filter(fn ($p) => HafalanOrder::juzOf((int) $p->surah->number, (int) $p->ayah_start) === $juz);
+        } else {
+            $entries = $entries->where('id', $request->integer('id'));
+        }
+        $entries->each->delete();
+
+        return back()->with('success', 'Hafalan sebelum aplikasi dihapus.');
     }
 
     /**

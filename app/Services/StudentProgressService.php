@@ -576,12 +576,14 @@ class StudentProgressService
             }
         }
 
+        // Setoran lulus + hafalan sebelum aplikasi (StudentPriorHafalan) sama-sama dihitung sudah hafal.
         $passedRecords = HafalanRecordSurah::query()
             ->whereHas('hafalanRecord', fn ($q) => $q->where('student_id', $student->id))
             ->where('status', 'passed')
             ->whereNotNull('ayah_start')
             ->whereNotNull('ayah_end')
-            ->get(['surah_id', 'ayah_start', 'ayah_end']);
+            ->get(['surah_id', 'ayah_start', 'ayah_end'])
+            ->concat($student->priorHafalans()->get(['surah_id', 'ayah_start', 'ayah_end']));
 
         $ummiRecords = UmmiRecordSurah::query()
             ->whereHas('ummiRecord', fn ($q) => $q->where('student_id', $student->id))
@@ -680,7 +682,8 @@ class StudentProgressService
             ->where('status', 'passed')
             ->whereNotNull('ayah_start')
             ->whereNotNull('ayah_end')
-            ->get(['surah_id', 'ayah_start', 'ayah_end']);
+            ->get(['surah_id', 'ayah_start', 'ayah_end'])
+            ->concat($student->priorHafalans()->get(['surah_id', 'ayah_start', 'ayah_end']));
 
         $ummiRecords = UmmiRecordSurah::query()
             ->whereHas('ummiRecord', fn ($q) => $q->where('student_id', $student->id))

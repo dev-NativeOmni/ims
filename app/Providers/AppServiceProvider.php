@@ -12,6 +12,7 @@ use App\Models\MurajaahRecord;
 use App\Models\ParentProfile;
 use App\Models\Program;
 use App\Models\Student;
+use App\Models\StudentPriorHafalan;
 use App\Models\TeacherProfile;
 use App\Models\UmmiRecord;
 use App\Models\UmmiRecordSurah;
@@ -77,6 +78,7 @@ class AppServiceProvider extends ServiceProvider
         Student::observe(ModelAuditObserver::class);
         MurajaahRecord::observe(ModelAuditObserver::class);
         HafalanTarget::observe(ModelAuditObserver::class);
+        StudentPriorHafalan::observe(ModelAuditObserver::class);
         CalendarMonthLock::observe(ModelAuditObserver::class);
         ClassWeekSchedule::observe(ModelAuditObserver::class);
 

@@ -359,6 +359,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('hafalan-targets.juz-order');
         Route::get('/hafalan-targets/urutan/{student}', [HafalanTargetController::class, 'juzOrders'])
             ->name('hafalan-targets.juz-orders');
+        // Hafalan sebelum aplikasi (StudentPriorHafalan); hak mengubah dicek di controller.
+        Route::post('/hafalan-targets/urutan/{student}/hafalan-awal', [HafalanTargetController::class, 'storePriorHafalan'])
+            ->name('hafalan-targets.prior.store');
+        Route::delete('/hafalan-targets/urutan/{student}/hafalan-awal', [HafalanTargetController::class, 'destroyPriorHafalan'])
+            ->name('hafalan-targets.prior.destroy');
         // Kunci target per kelas per bulan (hak akses dicek di controller, lihat App\Models\TargetLock).
         Route::post('/hafalan-targets/kunci', [HafalanTargetController::class, 'lockMonth'])
             ->name('hafalan-targets.lock');

@@ -38,11 +38,33 @@ class HafalanProgressService
     }
 
     /**
+     * Tanggal pengganti untuk hafalan sebelum aplikasi (StudentPriorHafalan): jauh sebelum setoran mana
+     * pun, jadi selalu masuk cakupan "sudah hafal" tapi tidak pernah jatuh di triwulan mana pun.
+     */
+    public const PRIOR_DATE = '2000-01-01';
+
+    /**
      * Semua setoran murid (semua status), urut waktu: surah_number, ayah_start, ayah_end, status, submitted_at.
+     * Diawali hafalan sebelum aplikasi (is_prior = true, status lulus, tanggal PRIOR_DATE) supaya cakupan,
+     * target & capaian ayat baru menganggapnya sudah hafal.
      */
     public function records(Student $student): Collection
     {
-        return HafalanRecordSurah::query()
+        $prior = $student->priorHafalans()
+            ->join('surahs', 'surahs.id', '=', 'student_prior_hafalans.surah_id')
+            ->orderBy('surahs.number')->orderBy('student_prior_hafalans.ayah_start')
+            ->get(['surahs.number as surah_number', 'student_prior_hafalans.ayah_start', 'student_prior_hafalans.ayah_end'])
+            ->map(fn ($p) => (new HafalanRecordSurah)->forceFill([
+                'surah_number' => (int) $p->surah_number,
+                'ayah_start' => (int) $p->ayah_start,
+                'ayah_end' => (int) $p->ayah_end,
+                'status' => 'passed',
+                'baris' => null,
+                'submitted_at' => self::PRIOR_DATE,
+                'is_prior' => true,
+            ]));
+
+        $setoran = HafalanRecordSurah::query()
             ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
             ->join('surahs', 'surahs.id', '=', 'hafalan_record_surahs.surah_id')
             ->whereNull('hafalan_records.deleted_at')
@@ -55,6 +77,8 @@ class HafalanProgressService
                 'surahs.number as surah_number', 'hafalan_record_surahs.ayah_start', 'hafalan_record_surahs.ayah_end',
                 'hafalan_record_surahs.status', 'hafalan_record_surahs.baris', 'hafalan_records.submitted_at',
             ]);
+
+        return $prior->concat($setoran)->values();
     }
 
     /**
@@ -85,7 +109,7 @@ class HafalanProgressService
     public function detectedJuzOrders(Collection $records): array
     {
         $surahsByJuz = [];
-        foreach ($records->where('status', 'passed') as $record) {
+        foreach ($records->where('status', 'passed')->reject(fn ($r) => $r->is_prior) as $record) {
             $juz = HafalanOrder::juzOf((int) $record->surah_number, (int) $record->ayah_start);
             $surahsByJuz[$juz] ??= [];
             if (! in_array((int) $record->surah_number, $surahsByJuz[$juz], true)) {
@@ -173,8 +197,9 @@ class HafalanProgressService
             return ['surah' => (int) $first->surah_number, 'ayah' => (int) $first->ayah_start, 'source' => 'first_setoran', 'date' => Carbon::parse($first->submitted_at)->toDateString()];
         }
 
+        // Hafalan sebelum aplikasi bukan titik awal: target lalu mulai dari awal urutan & melewati yang sudah hafal.
         $before = $records
-            ->filter(fn ($r) => $r->status === 'passed' && Carbon::parse($r->submitted_at)->lt($termStart->copy()->startOfDay()))
+            ->filter(fn ($r) => $r->status === 'passed' && ! $r->is_prior && Carbon::parse($r->submitted_at)->lt($termStart->copy()->startOfDay()))
             ->last();
         if ($before) {
             return ['surah' => (int) $before->surah_number, 'ayah' => (int) $before->ayah_end, 'source' => 'history', 'date' => Carbon::parse($before->submitted_at)->toDateString()];
