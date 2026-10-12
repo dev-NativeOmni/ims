@@ -6,6 +6,7 @@ use App\Models\AdabRecord;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Concerns\SetsUpHafizPlusData;
@@ -22,7 +23,15 @@ class PendampingAdabDashboardTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Hari sekolah biasa (Kamis) supaya "hari ini" selalu hari efektif adab, kapan pun tes dijalankan.
+        Carbon::setTestNow('2026-10-08 09:00');
         $this->setUpHafizPlusData();
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     private function pendamping(): User

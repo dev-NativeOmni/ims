@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\User;
+use Carbon\Carbon;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,6 +17,12 @@ use Tests\TestCase;
 class AcademicCalendarTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     private User $adminUser;
 
@@ -121,7 +128,8 @@ class AcademicCalendarTest extends TestCase
     public function test_admin_can_see_and_edit_the_weekly_class_schedule_from_the_calendar_page(): void
     {
         // Oktober 2026 (bulan depan, belum ada pekan yang otomatis terkunci): pekan 5-11 diubah
-        // jadi Senin & Rabu saja (khusus); pekan lain tetap default.
+        // jadi Senin & Rabu saja (khusus); pekan lain tetap default. "Hari ini" dipatok September.
+        Carbon::setTestNow('2026-09-15 09:00');
         $this->actingAs($this->adminUser)->post(route('class-schedules.week.update'), [
             'week' => '2026-10-05',
             'schedules' => [$this->classRoom->id => [1, 3]],

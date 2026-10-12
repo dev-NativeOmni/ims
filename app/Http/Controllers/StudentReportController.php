@@ -136,18 +136,38 @@ class StudentReportController extends Controller
             ->exists();
         abort_unless($canView, 403);
 
-        [$academicYear, $semester, $term] = $this->requestedPeriod($request);
-
-        $locked = StudentReport::where(['student_id' => $student->id, 'academic_year' => $academicYear, 'term' => $term])
-            ->whereNotNull('locked_at')
-            ->first();
-        $sheet = $locked?->snapshot ?? $this->buildSheet($this->getReportData($student, $academicYear, $semester, null, $term));
+        [$academicYear, , $term] = $this->requestedPeriod($request);
+        ['sheet' => $sheet, 'locked_at' => $lockedAt] = $this->sheetFor($student, $academicYear, $term);
 
         return view('reports.digital-report-print', [
             'sheet' => $sheet,
-            'lockedAt' => $locked?->locked_at,
+            'lockedAt' => $lockedAt,
             'signatureUris' => self::signatureUris([$sheet]),
         ]);
+    }
+
+    /**
+     * Isi rapor satu santri untuk satu periode: simpanan terkunci bila periode itu sudah dikunci,
+     * selain itu dihitung langsung. Dipakai cetak rapor & tad:rapor-tuntas.
+     *
+     * @return array{sheet: array, locked_at: mixed}
+     */
+    public function sheetFor(Student $student, string $academicYear, int $term): array
+    {
+        $locked = StudentReport::where(['student_id' => $student->id, 'academic_year' => $academicYear, 'term' => $term])
+            ->whereNotNull('locked_at')
+            ->first();
+
+        return [
+            'sheet' => $locked?->snapshot ?? $this->buildSheet($this->getReportData($student, $academicYear, self::semesterOfPeriod($term), null, $term)),
+            'locked_at' => $locked?->locked_at,
+        ];
+    }
+
+    /** Tanggal acuan kelas santri untuk periode rapor (publik untuk perintah konsol). */
+    public static function classDateFor(string $academicYear, int $term): Carbon
+    {
+        return self::classReferenceDate($academicYear, self::semesterOfPeriod($term), $term);
     }
 
     public function printClass(ClassRoom $classRoom, Request $request)
