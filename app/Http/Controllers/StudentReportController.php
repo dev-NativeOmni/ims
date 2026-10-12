@@ -20,6 +20,7 @@ use App\Services\StudentProgressService;
 use App\Services\UmmiProgressService;
 use App\Support\AcademicYear;
 use App\Support\AyahLabel;
+use App\Support\HafalanOrder;
 use App\Support\Signatures;
 use App\Support\TargetRules;
 use Carbon\Carbon;
@@ -817,7 +818,8 @@ class StudentReportController extends Controller
             ];
         }
 
-        $capaian = $this->positionCheck->latestByPosition($hafalanUntilEnd, $student->hafalan_direction, app(HafalanProgressService::class)->juzOrdersFor($student));
+        $juzOrders = app(HafalanProgressService::class)->juzOrdersFor($student);
+        $capaian = $this->positionCheck->latestByPosition($hafalanUntilEnd, $student->hafalan_direction, $juzOrders);
         $breakdown = TargetRules::linesForLevel($student->tahfizh_level) === null ? null : app(HafalanProgressService::class)->termBreakdown(
             $student,
             $termTargets->filter(fn ($t) => $t->surah),
@@ -832,6 +834,10 @@ class StudentReportController extends Controller
             'capaian' => ['surah' => $capaian?->surah?->name_latin ?? '-', 'ayat' => $capaian ? AyahLabel::end($capaian->ayah_end) : '-'],
             'lines' => $breakdown ? ['achieved' => $breakdown['evaluation']['achieved_lines'] + 0, 'target' => (int) $breakdown['evaluation']['target_lines']] : null,
             'completed' => (bool) ($breakdown['evaluation']['reached'] ?? false),
+            // Capaian akhir sudah sampai/melewati target surah:ayat guru (urutan hafalan murid); dipakai tad:penyesuaian-baris.
+            'target_reached' => $target?->surah && $capaian?->surah
+                && HafalanOrder::rank((int) $capaian->surah->number, (int) $capaian->ayah_end, $student->hafalan_direction, $juzOrders)
+                    >= HafalanOrder::rank((int) $target->surah->number, (int) $target->ayah, $student->hafalan_direction, $juzOrders),
             'notes' => $notes,
         ];
     }
