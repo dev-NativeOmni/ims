@@ -1253,6 +1253,8 @@ class QuarterlyReportController extends Controller
                 'total_lines' => $totalLines,
                 'target_lines' => $targetLines,
                 'is_tuntas' => $isTuntas,
+                // Tabungan baris (LineSavingsService), sama dengan rapor.
+                'savings' => $ummiPosition === null ? ($breakdown['evaluation']['savings'] ?? null) : null,
                 'alpa' => $studentAtt->where('status', 'alpa')->count(),
                 'izin' => $studentAtt->where('status', 'izin')->count(),
                 'sakit' => $studentAtt->where('status', 'sakit')->count(),

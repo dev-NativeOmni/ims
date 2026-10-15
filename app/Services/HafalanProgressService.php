@@ -540,7 +540,7 @@ class HafalanProgressService
      * @param  array<string, array{start: Carbon, end: Carbon}>  $months
      * @return array{months: array<string, array>, target: ?HafalanTarget, evaluation: array, position: ?array, start: array}
      */
-    public function termBreakdown(Student $student, Collection $targets, array $months, Carbon $cutoff, ?Collection $records = null): array
+    public function termBreakdown(Student $student, Collection $targets, array $months, Carbon $cutoff, ?Collection $records = null, bool $withSavings = true): array
     {
         $records ??= $this->records($student);
         $termStart = reset($months)['start']->copy()->startOfDay();
@@ -584,6 +584,13 @@ class HafalanProgressService
             'reached' => $achieved >= $cumTarget,
             'progress' => $cumTarget > 0 ? (int) min(100, round($achieved / $cumTarget * 100)) : 100,
         ];
+        // Tabungan baris (LineSavingsService): kekurangan ditutup saldo triwulan-triwulan sebelumnya bila cukup.
+        // Murid Ummi tidak dinilai dengan baris, jadi tanpa tabungan.
+        if ($withSavings && ! $student->usesUmmi()) {
+            $savings = app(LineSavingsService::class)->forTerm($student, $termStart, (float) $achieved, (float) $cumTarget, $records);
+            $result['evaluation']['savings'] = $savings;
+            $result['evaluation']['reached'] = $result['evaluation']['reached'] || $savings['used'] > 0;
+        }
         if ($result['target']) {
             $result['position'] = $this->evaluate($student, (int) $result['target']->surah->number, (int) $result['target']->ayah, $termStart, $termEnd, $cutoff->copy()->min($termEnd), $records);
         }

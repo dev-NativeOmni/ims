@@ -757,6 +757,14 @@
                                             @unless ($hasUmmi)
                                                 <td class="px-4 py-3 border-r dark:border-zinc-700 font-extrabold text-teal-650 whitespace-nowrap">
                                                     {{ $row['total_lines'] + 0 }} <span class="font-semibold text-gray-400">/ {{ $row['target_lines'] + 0 }}</span> Baris
+                                                    @php $savings = $row['savings'] ?? null; @endphp
+                                                    @if ($savings && $savings['used'] > 0)
+                                                        <span class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400">+{{ $savings['used'] + 0 }} dari tabungan · sisa {{ $savings['after'] + 0 }}</span>
+                                                    @elseif ($savings && $savings['deposit'] > 0)
+                                                        <span class="block text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">+{{ $savings['deposit'] + 0 }} ditabung · saldo {{ $savings['after'] + 0 }}</span>
+                                                    @elseif ($savings && $savings['after'] > 0)
+                                                        <span class="block text-[10px] font-semibold text-gray-400">saldo tabungan {{ $savings['after'] + 0 }}</span>
+                                                    @endif
                                                 </td>
                                             @endunless
                                             <td class="px-4 py-3 border-r dark:border-zinc-700">

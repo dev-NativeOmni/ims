@@ -833,6 +833,8 @@ class StudentReportController extends Controller
             'target' => ['surah' => $target?->surah?->name_latin ?? '-', 'ayat' => $target ? AyahLabel::end($target->ayah) : '-'],
             'capaian' => ['surah' => $capaian?->surah?->name_latin ?? '-', 'ayat' => $capaian ? AyahLabel::end($capaian->ayah_end) : '-'],
             'lines' => $breakdown ? ['achieved' => $breakdown['evaluation']['achieved_lines'] + 0, 'target' => (int) $breakdown['evaluation']['target_lines']] : null,
+            // Tabungan baris (LineSavingsService): saldo sebelum, dipakai, ditabung, saldo sesudah.
+            'savings' => $breakdown['evaluation']['savings'] ?? null,
             'completed' => (bool) ($breakdown['evaluation']['reached'] ?? false),
             // Capaian akhir sudah sampai/melewati target surah:ayat guru (urutan hafalan murid); dipakai tad:penyesuaian-baris.
             'target_reached' => $target?->surah && $capaian?->surah
