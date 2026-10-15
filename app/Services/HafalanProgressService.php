@@ -84,6 +84,48 @@ class HafalanProgressService
     }
 
     /**
+     * Baris yang DIHITUNG capaian per sesi setoran (riwayat setoran): ayat baru saja, sama dengan rapor
+     * & Laporan Triwulan (passedLineDetails). Baris belum lulus, ulangan & ganda = 0, sebagian ulang =
+     * bagian ayat barunya. $headers: HafalanRecord dengan relasi surahs & student.
+     *
+     * @return array<int, array{counted: float, raw: float, kinds: array<int, string>}> header id => rincian
+     */
+    public function countedLinesForHeaders(Collection $headers): array
+    {
+        $result = [];
+        foreach ($headers->groupBy('student_id') as $items) {
+            $student = $items->first()->student;
+            $dates = $items->pluck('submitted_at')->filter()->map(fn ($d) => Carbon::parse($d));
+            if (! $student || $dates->isEmpty()) {
+                continue;
+            }
+            $details = collect($this->passedLineDetails($this->records($student), $dates->min()->copy()->startOfDay(), $dates->max()->copy()->endOfDay()))
+                ->keyBy(fn ($d) => (int) $d['record']->line_id);
+
+            foreach ($items as $header) {
+                $counted = 0.0;
+                $kinds = [];
+                foreach ($header->surahs as $line) {
+                    $detail = $details->get($line->id);
+                    if ($line->status !== 'passed') {
+                        $kinds[] = 'not_passed';
+                    } elseif ($detail) {
+                        $counted += $detail['new_lines'];
+                        if ($detail['kind'] !== 'new') {
+                            $kinds[] = $detail['kind'];
+                        }
+                    } else {
+                        $counted += $line->lines_count;
+                    }
+                }
+                $result[$header->id] = ['counted' => round($counted, 1), 'raw' => round($header->lines_count, 1), 'kinds' => array_values(array_unique($kinds))];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Riwayat ayat lulus untuk peringatan "setoran ulangan" di form input & spreadsheet
      * (resources/js/repeat-check.js), aturan sama dengan capaian (ayat yang sudah lulus / hafalan
      * sebelum aplikasi tidak dihitung lagi): [student_id => [[surah_id, ayat awal, ayat akhir,

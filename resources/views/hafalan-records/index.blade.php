@@ -439,8 +439,8 @@
                                             <span>{{ $record->submitted_at?->format('d M Y') }}</span>
                                         </div>
                                     </div>
-                                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400">
-                                        {{ $record->lines_count }} Baris
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-right">
+                                        @include('hafalan-records.partials.baris-cell', ['counted' => $countedLines[$record->id] ?? null, 'suffix' => ' Baris'])
                                     </span>
                                 </div>
 
@@ -842,7 +842,7 @@
                                     <th class="px-3 py-3">Murid</th>
                                     <th class="px-3 py-3">Surah</th>
                                     <th class="px-3 py-3">Ayat</th>
-                                    <th class="px-3 py-3 text-center">Baris</th>
+                                    <th class="px-3 py-3 text-center" title="Baris ayat baru yang dihitung capaian; setoran ulangan tidak dihitung">Baris</th>
                                     <th class="px-3 py-3">Jenis</th>
                                     <th class="px-3 py-3">Nilai</th>
                                     <th class="px-3 py-3">Status</th>
@@ -891,7 +891,7 @@
                                         </td>
 
                                         <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 text-center font-bold">
-                                            {{ $record->lines_count }}
+                                            @include('hafalan-records.partials.baris-cell', ['counted' => $countedLines[$record->id] ?? null])
                                         </td>
 
                                         <td class="px-3 py-3.5 text-xs text-zinc-700 dark:text-zinc-300">

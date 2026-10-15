@@ -162,6 +162,8 @@ class HafalanRecordController extends Controller
             [
                 'hafalanRecords' => $hafalanRecords,
                 'teacherOptions' => $teacherOptions,
+                // Kolom Baris tab Reguler: baris yang dihitung capaian (ayat baru), sama dengan rapor.
+                'countedLines' => $category === 'ummi' ? [] : app(HafalanProgressService::class)->countedLinesForHeaders($hafalanRecords->getCollection()),
             ],
             $formData
         ));
