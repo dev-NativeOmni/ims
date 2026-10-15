@@ -26,6 +26,9 @@
                 $assignedRoleIds = array_map('strval', is_array($rawAssignedRoleIds) ? $rawAssignedRoleIds : []);
                 $primaryRoleId = (string) old('role_id', $user->role_id);
                 $hasPendampingInitially = in_array($pendampingRoleId, $assignedRoleIds, true) || $primaryRoleId === $pendampingRoleId;
+                $waliRoleId = (string) ($roles->firstWhere('name', 'wali_kelas')?->id ?? '');
+                $hasWaliInitially = $waliRoleId !== '' && (in_array($waliRoleId, $assignedRoleIds, true) || $primaryRoleId === $waliRoleId);
+                $waliClassId = (string) old('wali_kelas_class_id', $allClassRooms->firstWhere('wali_kelas_user_id', $user->id)?->id ?? '');
             @endphp
 
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-6">
@@ -38,6 +41,10 @@
                           pendampingRoleId: '{{ $pendampingRoleId }}',
                           get isPendampingAdab() {
                               return this.primaryRole === this.pendampingRoleId || this.additionalRoles.includes(this.pendampingRoleId);
+                          },
+                          waliRoleId: '{{ $waliRoleId }}',
+                          get isWaliKelas() {
+                              return this.waliRoleId !== '' && (this.primaryRole === this.waliRoleId || this.additionalRoles.includes(this.waliRoleId));
                           }
                       }">
                     @csrf
@@ -171,6 +178,32 @@
                                 @endforeach
                             </div>
                         @endif
+                    </div>
+
+                    <!-- Kelas Wali Kelas (muncul bila peran Wali Kelas dipilih sebagai peran utama/rangkap) -->
+                    <div x-show="isWaliKelas"
+                         x-cloak
+                         class="rounded-xl border border-sky-200 dark:border-sky-900/60 p-4 bg-sky-50/30 dark:bg-sky-950/20 space-y-3"
+                         style="{{ $hasWaliInitially ? '' : 'display: none;' }}">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <label for="wali_kelas_class_id" class="block text-sm font-bold text-sky-900 dark:text-sky-200">Kelas Wali Kelas</label>
+                                <p class="text-[11px] text-sky-700 dark:text-sky-400 mt-0.5">Kelas yang menjadi tanggung jawab user ini saat berperan sebagai Wali Kelas (satu kelas). Bila kelas itu sudah punya wali, walinya diganti ke user ini.</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300 shrink-0">Wali Kelas</span>
+                        </div>
+                        <select name="wali_kelas_class_id" id="wali_kelas_class_id"
+                                class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-sky-500 focus:border-sky-500 dark:text-white">
+                            <option value="" class="dark:bg-zinc-900">— Belum ditetapkan —</option>
+                            @foreach ($allClassRooms as $class)
+                                <option value="{{ $class->id }}" @selected($waliClassId === (string) $class->id) class="dark:bg-zinc-900">
+                                    {{ $class->name }} · {{ $class->program?->name ?: 'Reguler' }}{{ $class->waliKelas && $class->wali_kelas_user_id !== $user->id ? ' (wali sekarang: '.$class->waliKelas->name.')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('wali_kelas_class_id')
+                            <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Status -->

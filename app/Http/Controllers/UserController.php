@@ -143,7 +143,7 @@ class UserController extends Controller
         $this->authorizeSuperAdmin();
 
         $roles = Role::orderBy('display_name')->get();
-        $allClassRooms = ClassRoom::with('program')->orderBy('name')->get();
+        $allClassRooms = ClassRoom::with(['program', 'waliKelas'])->orderBy('name')->get();
         $user->loadMissing(['roles', 'pendampingClasses']);
 
         return view('users.edit', compact('user', 'roles', 'allClassRooms'));
@@ -161,6 +161,7 @@ class UserController extends Controller
             'additional_role_ids.*' => 'exists:roles,id',
             'pendamping_class_ids' => 'nullable|array',
             'pendamping_class_ids.*' => 'exists:class_rooms,id',
+            'wali_kelas_class_id' => 'nullable|integer|exists:class_rooms,id',
             'password' => 'nullable|string|min:6',
             'status' => 'required|in:active,inactive',
         ], [
@@ -215,6 +216,16 @@ class UserController extends Controller
                 $user->pendampingClasses()->sync($classIds);
             } else {
                 $user->pendampingClasses()->detach();
+            }
+
+            // Wali kelas (peran utama atau rangkap): satu kelas per wali (class_rooms.wali_kelas_user_id).
+            // Kelas yang dipilih berpindah wali ke user ini; kelas lamanya dilepas. Peran dicabut = semua dilepas.
+            $waliClassId = in_array('wali_kelas', $assignedRoleNames, true) ? ($validated['wali_kelas_class_id'] ?? null) : null;
+            ClassRoom::query()->where('wali_kelas_user_id', $user->id)
+                ->when($waliClassId, fn ($q) => $q->whereKeyNot($waliClassId))
+                ->get()->each(fn (ClassRoom $class) => $class->update(['wali_kelas_user_id' => null]));
+            if ($waliClassId) {
+                ClassRoom::query()->find($waliClassId)?->update(['wali_kelas_user_id' => $user->id]);
             }
         });
 
