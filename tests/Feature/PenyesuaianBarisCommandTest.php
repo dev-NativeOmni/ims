@@ -88,4 +88,22 @@ class PenyesuaianBarisCommandTest extends TestCase
             ->assertSuccessful();
         $this->assertSame(5.0, (float) HafalanRecordSurah::find($july)->baris);
     }
+
+    #[Test]
+    public function tabungan_lists_students_above_the_line_target_whose_position_equals_the_target(): void
+    {
+        $this->target(20);
+        $this->setor('2026-07-14', 1, 20, 500);
+
+        $this->artisan('tad:rapor-tuntas', ['--tahun' => '2026/2027', '--term' => 1, '--tabungan' => true])
+            ->expectsOutputToContain('Al-Baqarah 20')
+            ->expectsOutputToContain('1 murid.')
+            ->assertSuccessful();
+
+        HafalanTarget::query()->update(['ayah' => 10]); // posisi melewati target: hanya tampil dengan --semua
+        $this->artisan('tad:rapor-tuntas', ['--tahun' => '2026/2027', '--term' => 1, '--tabungan' => true])
+            ->expectsOutputToContain('Tidak ada murid.')->assertSuccessful();
+        $this->artisan('tad:rapor-tuntas', ['--tahun' => '2026/2027', '--term' => 1, '--tabungan' => true, '--semua' => true])
+            ->expectsOutputToContain('melewati')->assertSuccessful();
+    }
 }
