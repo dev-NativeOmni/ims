@@ -207,15 +207,6 @@
                         @unless ($isUmmi)
                             <td class="p-1.5 border-r border-black align-middle font-semibold whitespace-nowrap">
                                 {{ $tahfizh['lines'] ? $tahfizh['lines']['achieved'].' / '.$tahfizh['lines']['target'] : '-' }}
-                                {{-- Tabungan baris: dipakai menutup kekurangan / kelebihan yang ditabung (simpanan lama tanpa 'savings' = tidak tampil). --}}
-                                @php $savings = $tahfizh['savings'] ?? null; $num = fn ($v) => rtrim(rtrim(number_format((float) $v, 1, ',', ''), '0'), ','); @endphp
-                                @if ($savings && $savings['used'] > 0)
-                                    <span class="block text-[9px] font-normal">+{{ $num($savings['used']) }} dari tabungan · sisa {{ $num($savings['after']) }}</span>
-                                @elseif ($savings && $savings['deposit'] > 0)
-                                    <span class="block text-[9px] font-normal">+{{ $num($savings['deposit']) }} ditabung · saldo {{ $num($savings['after']) }}</span>
-                                @elseif ($savings && $savings['after'] > 0)
-                                    <span class="block text-[9px] font-normal">saldo tabungan {{ $num($savings['after']) }}</span>
-                                @endif
                             </td>
                         @endunless
                         <td class="p-1.5 align-middle font-bold whitespace-nowrap {{ $isUmmi ? 'border-r border-black' : '' }} text-black">

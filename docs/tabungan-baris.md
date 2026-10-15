@@ -21,8 +21,8 @@ Keputusan sekolah, Oktober 2026. Kode: `app/Services/LineSavingsService.php`.
 
 ## Tampilan
 
-- Rapor cetak, kolom BARIS: `38 / 40` + `+2 dari tabungan · sisa 13`, atau `+15 ditabung · saldo 15`.
-- Laporan Triwulan, tabel Term: keterangan yang sama di bawah baris.
+- Rapor cetak: **tidak ada keterangan tabungan** (permintaan sekolah); hanya status Tuntas yang ikut tabungan.
+- Laporan Triwulan, tabel Term: di bawah baris tampil `+2 dari tabungan · sisa 13` / `+15 ditabung · saldo 15`.
 
 ## Mengubah aturan
 

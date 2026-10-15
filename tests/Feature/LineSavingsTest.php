@@ -56,6 +56,13 @@ class LineSavingsTest extends TestCase
         return (float) app(HafalanProgressService::class)->termBreakdown($student, collect(), app(AcademicCalendarService::class)->termMonths($start), $end->copy()->endOfDay(), null, false)['evaluation']['target_lines'];
     }
 
+    private function savingsTerm2(): array
+    {
+        [$start, $end] = AcademicYear::termRange('2026/2027', 2);
+
+        return app(HafalanProgressService::class)->termBreakdown($this->student->fresh('classRoom.program'), collect(), app(AcademicCalendarService::class)->termMonths($start), now()->min($end->copy()->endOfDay()))['evaluation']['savings'];
+    }
+
     private function printTerm2()
     {
         return $this->actingAs($this->admin)->get(route('digital-reports.print', [$this->student, 'academic_year' => '2026/2027', 'term' => 2]))->assertOk();
@@ -79,7 +86,9 @@ class LineSavingsTest extends TestCase
         $this->setor('2026-07-14', 1, 50, $target1 + 10);   // Triwulan 1: lebih 10
         $this->setor('2026-10-14', 51, 60, $target2 - 5);   // Triwulan 2: kurang 5
 
-        $this->printTerm2()->assertSee('+5 dari tabungan · sisa 5')->assertSee('Tuntas')->assertDontSee('Tidak Tuntas');
+        // Rapor hanya menampilkan status (tanpa keterangan tabungan); Laporan Triwulan menampilkan keterangannya.
+        $this->printTerm2()->assertSee('Tuntas')->assertDontSee('Tidak Tuntas')->assertDontSee('tabungan');
+        $this->assertSame(['before' => 10.0, 'used' => 5.0, 'deposit' => 0.0, 'after' => 5.0], $this->savingsTerm2());
     }
 
     #[Test]
@@ -90,6 +99,7 @@ class LineSavingsTest extends TestCase
         $this->setor('2026-07-14', 1, 50, $target1 + 2);    // lebih 2
         $this->setor('2026-10-14', 51, 60, $target2 - 5);   // kurang 5
 
-        $this->printTerm2()->assertSee('saldo tabungan 2')->assertSee('Tidak Tuntas');
+        $this->printTerm2()->assertSee('Tidak Tuntas')->assertDontSee('tabungan');
+        $this->assertSame(2.0, $this->savingsTerm2()['after']);
     }
 }
