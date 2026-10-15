@@ -13,6 +13,7 @@ use App\Http\Controllers\HafalanRecordController;
 use App\Http\Controllers\HafalanTargetController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\JuzMapController;
+use App\Http\Controllers\LineSavingsController;
 use App\Http\Controllers\MurajaahRecordController;
 use App\Http\Controllers\ParentController;
 use App\Http\Controllers\ProfileController;
@@ -303,6 +304,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsIndex'])->name('settings.hafalan-targets');
         Route::post('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsUpdate'])->name('settings.hafalan-targets.update');
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
+    });
+
+    // Tabungan & Hutang Baris (Kelas 11 & 12): guru hanya melihat murid halaqohnya (visibleStudentQuery).
+    Route::middleware(['role:super_admin,admin,coordinator_tahfizh,headmaster,teacher'])->group(function () {
+        Route::get('/tabungan-hutang-baris', [LineSavingsController::class, 'index'])->name('line-savings.index');
     });
 
     Route::middleware(['role:super_admin,admin,coordinator_tahfizh'])->group(function () {

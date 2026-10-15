@@ -145,6 +145,7 @@ class SidebarMenu
                         'active' => ['digital-reports.index', 'digital-reports.show'],
                     ],
                     ['label' => 'Laporan Triwulan', 'route' => 'reports.quarterly', 'icon' => 'document-chart', 'roles' => ['super_admin', 'admin', 'teacher'], 'active' => ['reports.quarterly']],
+                    ['label' => 'Tabungan & Hutang Baris', 'route' => 'line-savings.index', 'icon' => 'trending-up', 'roles' => ['super_admin', 'admin', 'coordinator_tahfizh', 'headmaster', 'teacher'], 'active' => ['line-savings.*']],
                     // reports.whatsapp tidak mengizinkan tanse di middleware route-nya.
                     ['label' => 'Laporan WA Harian', 'route' => 'reports.whatsapp', 'icon' => 'chat', 'roles' => ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh'], 'active' => ['reports.whatsapp']],
                     [
