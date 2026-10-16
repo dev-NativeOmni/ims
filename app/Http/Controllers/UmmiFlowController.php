@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassRoom;
 use App\Models\Setting;
+use App\Models\TeacherProfile;
 use App\Services\StudentProgressService;
 use App\Services\UmmiProsemService;
 use Carbon\Carbon;
@@ -54,13 +55,25 @@ class UmmiFlowController extends Controller
         $class = $classes->firstWhere('id', $request->integer('class_room_id')) ?? $classes->first();
         $today = Carbon::today();
 
+        // Halaqoh di kelas itu (yang terlihat oleh user); bawaan = halaqoh guru yang login.
+        $teachers = $class
+            ? TeacherProfile::query()->with('user')
+                ->whereIn('id', $this->access->visibleStudentQuery($request->user())->where('class_room_id', $class->id)->where('status', 'active')->select('teacher_id'))
+                ->get()->sortBy(fn ($t) => $t->user?->name)->values()
+            : collect();
+        $teacher = $teachers->firstWhere('id', $request->integer('teacher_id'))
+            ?? $teachers->firstWhere('user_id', $request->user()->id)
+            ?? $teachers->first();
+
         return view('ummi-flow.index', [
             'classes' => $classes,
             'class' => $class,
+            'teachers' => $teachers,
+            'teacher' => $teacher,
             'today' => $today,
-            'meeting' => $class ? $this->prosem->meetingFor($class, $today) : null,
+            'meeting' => $class ? $this->prosem->meetingFor($class, $today, $teacher?->id) : null,
             'sessions' => self::sessions(),
-            'storageKey' => 'ummiFlow:'.$request->user()->id.':'.($class?->id ?? 0).':'.$today->toDateString(),
+            'storageKey' => 'ummiFlow:'.$request->user()->id.':'.($class?->id ?? 0).':'.($teacher?->id ?? 0).':'.$today->toDateString(),
             'canConfigure' => self::canConfigure($request->user()),
         ]);
     }

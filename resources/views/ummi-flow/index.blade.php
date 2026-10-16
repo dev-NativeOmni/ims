@@ -19,7 +19,7 @@
             'pembukaan' => "Salam, doa pembuka, presensi.",
             'murojaah' => $entry ? 'Drill: '.\App\Services\UmmiProsemService::rangeLabel($entry['drill']) : null,
             'ziyadah' => $entry ? 'Hafalan baru: '.\App\Services\UmmiProsemService::rangeLabel($entry['hafalan']) : null,
-            'klasikal' => $entry && $entry['jilid'] ? $entry['jilid'].' · peraga hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['peraga']).' · buku hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['buku']) : ($entry ? 'Pengulangan / evaluasi' : null),
+            'klasikal' => $entry && $entry['jilid'] ? $entry['jilid'].' · peraga hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['peraga']).' · buku hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['buku']) : ($entry ? ($entry['row']->notes ?: 'Pengulangan / evaluasi') : null),
             'penutup' => 'Evaluasi singkat, doa penutup.',
         ];
         $months = \App\Http\Controllers\UmmiProsemController::MONTH_LABELS;
@@ -41,6 +41,15 @@
                         @endforelse
                     </select>
                 </label>
+                @if ($teachers->count() > 1)
+                    <label class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Halaqoh
+                        <select name="teacher_id" onchange="this.form.submit()" class="mt-1 block rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm">
+                            @foreach ($teachers as $option)
+                                <option value="{{ $option->id }}" @selected($teacher?->id === $option->id)>{{ $option->user?->name ?? 'Guru #'.$option->id }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 pb-2">{{ $today->locale('id')->translatedFormat('l, d F Y') }} · total {{ $total }} menit</p>
             </form>
 
@@ -48,8 +57,8 @@
             <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
                 @if ($entry)
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
-                        <h3 class="font-bold text-zinc-900 dark:text-white">Target pertemuan hari ini · TM {{ $entry['no'] }}</h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $months[$entry['month']] }} pekan {{ $entry['week'] }}{{ ($meeting['nth'] ?? 0) === 0 ? ' · hari ini bukan jadwal Ummi kelas ini' : '' }}</p>
+                        <h3 class="font-bold text-zinc-900 dark:text-white">Target pertemuan hari ini · TM {{ $entry['no'] }}{{ ! empty($entry['no_end']) && $entry['no_end'] !== $entry['no'] ? '–'.$entry['no_end'] : '' }}</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $months[$entry['month']] }} pekan {{ $entry['week'] }}{{ ! empty($meeting['weekly']) ? ' · kelas pekanan: target sepekan' : '' }}{{ ($meeting['nth'] ?? 0) === 0 && empty($meeting['weekly']) ? ' · hari ini bukan jadwal Ummi kelas ini' : '' }}</p>
                     </div>
                     <dl class="mt-3 grid sm:grid-cols-3 gap-3 text-sm">
                         <div class="rounded-xl bg-zinc-50 dark:bg-zinc-800/60 p-3">

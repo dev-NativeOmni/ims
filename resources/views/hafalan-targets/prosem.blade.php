@@ -53,18 +53,47 @@
                         <option value="2" @selected($semester === 2)>Semester 2 (Januari–Juni)</option>
                     </select>
                 </label>
+                <label class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Kelas
+                    <select name="class_room_id" onchange="this.form.teacher_id.value = ''; this.form.submit()" class="mt-1 block rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm">
+                        <option value="">Umum (semua kelas 10)</option>
+                        @foreach ($classes as $option)
+                            <option value="{{ $option->id }}" @selected($class?->id === $option->id)>{{ $option->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Halaqoh (Musyrif)
+                    <select name="teacher_id" onchange="this.form.submit()" class="mt-1 block rounded-xl border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-sm" @disabled(! $class)>
+                        <option value="">Semua halaqoh{{ $class ? ' di '.$class->name : '' }}</option>
+                        @foreach ($teachers as $option)
+                            <option value="{{ $option->id }}" @selected($teacher?->id === $option->id)>{{ $option->user?->name ?? 'Guru #'.$option->id }}</option>
+                        @endforeach
+                    </select>
+                </label>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ count($plan) }} tatap muka · {{ $rows->count() }} baris</p>
             </form>
 
+            {{-- Prosem yang sudah ada. Pemakaian: kelas+halaqoh, lalu kelas (semua halaqoh), lalu umum. --}}
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="font-semibold text-zinc-500 dark:text-zinc-400">Prosem terisi:</span>
+                @forelse ($existing as $scope)
+                    @php $active = $scope['class_room_id'] === $class?->id && $scope['teacher_id'] === $teacher?->id; @endphp
+                    <a href="{{ route('prosem-ummi.index', array_filter(['academic_year' => $year, 'semester' => $semester, 'class_room_id' => $scope['class_room_id'], 'teacher_id' => $scope['teacher_id']])) }}"
+                       class="rounded-full px-3 py-1 font-semibold border {{ $active ? 'bg-teal-600 border-teal-600 text-white' : 'border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-500' }}">{{ $scope['label'] }}</a>
+                @empty
+                    <span class="text-zinc-400">belum ada</span>
+                @endforelse
+            </div>
+            <p class="-mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">Murid memakai Prosem halaqohnya; bila belum ada, Prosem kelasnya (semua halaqoh), lalu Prosem umum. Murid tanpa Prosem tidak diberi target otomatis.</p>
+
             {{-- 1. Tabel Prosem --}}
-            <form method="POST" action="{{ route('prosem-ummi.update', ['academic_year' => $year, 'semester' => $semester]) }}"
+            <form method="POST" action="{{ route('prosem-ummi.update', array_filter(['academic_year' => $year, 'semester' => $semester, 'class_room_id' => $class?->id, 'teacher_id' => $teacher?->id])) }}"
                   x-data="{ rows: @js($initialRows), empty: @js(['jilid' => '', 'peraga_start' => null, 'peraga_end' => null, 'buku_start' => null, 'buku_end' => null, 'hafalan_start_surah_id' => null, 'hafalan_end_surah_id' => null, 'drill_start_surah_id' => null, 'drill_end_surah_id' => null, 'weeks' => $emptyWeeks, 'notes' => '']),
                             tm(row) { return Object.values(row.weeks).flatMap(w => Object.values(w)).reduce((a, v) => a + (parseInt(v) || 0), 0); } }"
                   class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                 @csrf
                 <div class="flex items-center justify-between gap-3 p-4 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
-                        <h3 class="font-bold text-zinc-900 dark:text-white">Tabel Prosem</h3>
+                        <h3 class="font-bold text-zinc-900 dark:text-white">Tabel Prosem · {{ $class ? $class->name.' · '.($teacher?->user?->name ?? 'semua halaqoh') : 'Umum' }}</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400">Isi kolom pekan dengan jumlah tatap muka (TM) baris itu di pekan tersebut. Baris tanpa materi = TM pengulangan/evaluasi.</p>
                     </div>
                     @if ($canEdit)
@@ -101,7 +130,11 @@
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                             <template x-for="(row, i) in rows" :key="i">
                                 <tr class="align-top">
-                                    <td class="px-2 py-2 font-bold text-zinc-500" x-text="i + 1"></td>
+                                    <td class="px-2 py-2 font-bold text-zinc-500">
+                                        <span x-text="i + 1"></span>
+                                        <input type="hidden" :name="`rows[${i}][notes]`" :value="row.notes">
+                                        <span class="block text-[9px] font-semibold text-amber-600 dark:text-amber-400" x-show="row.notes" x-text="row.notes"></span>
+                                    </td>
                                     <td class="px-1 py-1.5">
                                         <select :name="`rows[${i}][jilid]`" x-model="row.jilid" class="{{ $input }}" @disabled(! $canEdit)>
                                             <option value="">—</option>
@@ -186,7 +219,7 @@
                                             @if ($entry['jilid'])
                                                 <span class="font-semibold">{{ $entry['jilid'] }}</span> · hlm {{ \App\Services\UmmiProsemService::pagesLabel($entry['buku']) }} · peraga {{ \App\Services\UmmiProsemService::pagesLabel($entry['peraga']) }}
                                             @else
-                                                <span class="text-amber-600 dark:text-amber-400 font-semibold">Pengulangan / evaluasi</span>
+                                                <span class="text-amber-600 dark:text-amber-400 font-semibold">{{ $entry['row']->notes ?: 'Pengulangan / evaluasi' }}</span>
                                             @endif
                                         </td>
                                         <td class="px-3 py-1.5">{{ \App\Services\UmmiProsemService::rangeLabel($entry['hafalan']) }}</td>

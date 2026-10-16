@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassRoom;
+use App\Models\Student;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
 use App\Models\UmmiProsemRow;
 use App\Services\UmmiProsemService;
 use App\Support\AcademicYear;
@@ -10,6 +13,7 @@ use App\Support\UmmiBook;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -33,18 +37,28 @@ class UmmiProsemController extends Controller
     public function index(Request $request): View
     {
         [$year, $semester] = $this->period($request);
-        $rows = $this->prosem->rows($year, $semester);
-        $plan = $this->prosem->plan($year, $semester);
+        [$classes, $class, $teachers, $teacher] = $this->scope($request);
+        $rows = $this->prosem->rows($year, $semester, $class?->id, $teacher?->id);
+        $plan = $this->prosem->planFromRows($rows, $semester);
+        $scopeLabel = fn (?int $classId, ?int $teacherId) => ($classId ? (ClassRoom::find($classId)?->name ?? '?') : 'Umum')
+            .($teacherId ? ' · '.(TeacherProfile::with('user')->find($teacherId)?->user?->name ?? '?') : ($classId ? ' · semua halaqoh' : ''));
 
         return view('hafalan-targets.prosem', [
             'year' => $year,
             'semester' => $semester,
             'years' => AcademicYear::options($year),
+            'classes' => $classes,
+            'class' => $class,
+            'teachers' => $teachers,
+            'teacher' => $teacher,
+            'existing' => $this->prosem->scopes($year, $semester)
+                ->map(fn ($s) => ['class_room_id' => $s[0], 'teacher_id' => $s[1], 'label' => $scopeLabel($s[0], $s[1])])
+                ->sortBy('label')->values(),
             'months' => collect(UmmiProsemService::SEMESTER_MONTHS[$semester])->mapWithKeys(fn ($m) => [$m => self::MONTH_LABELS[$m]])->all(),
             'rows' => $rows,
             'plan' => $plan,
             'monthTargets' => collect(UmmiProsemService::SEMESTER_MONTHS[$semester])
-                ->mapWithKeys(fn ($m) => [$m => $this->prosem->monthTarget($year, $semester, $m)])->all(),
+                ->mapWithKeys(fn ($m) => [$m => $this->monthTargetFromPlan($plan, $semester, $m)])->all(),
             'surahs' => Surah::query()->orderBy('number')->get(['id', 'number', 'name_latin']),
             'books' => UmmiBook::BOOKS,
             'canEdit' => self::canEdit($request->user()),
@@ -55,6 +69,7 @@ class UmmiProsemController extends Controller
     {
         abort_unless(self::canEdit($request->user()), 403);
         [$year, $semester] = $this->period($request);
+        [, $class, , $teacher] = $this->scope($request);
         $months = UmmiProsemService::SEMESTER_MONTHS[$semester];
 
         $validated = $request->validate([
@@ -85,7 +100,7 @@ class UmmiProsemController extends Controller
                 }
             }
             $rows[] = [
-                'academic_year' => $year, 'semester' => $semester, 'position' => $i + 1,
+                'academic_year' => $year, 'semester' => $semester, 'class_room_id' => $class?->id, 'teacher_id' => $teacher?->id, 'position' => $i + 1,
                 'jilid' => $row['jilid'] ?? null,
                 'peraga_start' => $row['peraga_start'] ?? null, 'peraga_end' => $row['peraga_end'] ?? ($row['peraga_start'] ?? null),
                 'buku_start' => $row['buku_start'] ?? null, 'buku_end' => $row['buku_end'] ?? ($row['buku_start'] ?? null),
@@ -98,8 +113,9 @@ class UmmiProsemController extends Controller
             ];
         }
 
-        DB::transaction(function () use ($rows, $year, $semester) {
-            UmmiProsemRow::query()->where('academic_year', $year)->where('semester', $semester)->delete();
+        DB::transaction(function () use ($rows, $year, $semester, $class, $teacher) {
+            UmmiProsemRow::query()->where('academic_year', $year)->where('semester', $semester)
+                ->where('class_room_id', $class?->id)->where('teacher_id', $teacher?->id)->delete();
             foreach ($rows as $row) {
                 UmmiProsemRow::create($row);
             }
@@ -107,8 +123,42 @@ class UmmiProsemController extends Controller
         $this->prosem->forgetPlans();
         $synced = $this->prosem->syncTargets($year, $semester);
 
-        return redirect()->route('prosem-ummi.index', ['academic_year' => $year, 'semester' => $semester])
+        return redirect()->route('prosem-ummi.index', array_filter(['academic_year' => $year, 'semester' => $semester, 'class_room_id' => $class?->id, 'teacher_id' => $teacher?->id]))
             ->with('success', 'Prosem disimpan ('.count($rows)." baris). Target Ummi otomatis diperbarui: {$synced}.");
+    }
+
+    /**
+     * Cakupan yang dipilih: kelas 10 (kosong = umum) & halaqoh di kelas itu (kosong = semua halaqoh).
+     *
+     * @return array{0: Collection, 1: ?ClassRoom, 2: Collection, 3: ?TeacherProfile}
+     */
+    private function scope(Request $request): array
+    {
+        $classes = ClassRoom::query()->with('program')->orderBy('name')->get()->filter(fn (ClassRoom $c) => $c->isGradeTen())->values();
+        $class = $classes->firstWhere('id', $request->integer('class_room_id'));
+        $teachers = $class
+            ? TeacherProfile::query()->with('user')
+                ->whereIn('id', Student::query()->where('class_room_id', $class->id)->where('status', 'active')->select('teacher_id'))
+                ->get()->sortBy(fn ($t) => $t->user?->name)->values()
+            : collect();
+        $teacher = $teachers->firstWhere('id', $request->integer('teacher_id'));
+
+        return [$classes, $class, $teachers, $teacher];
+    }
+
+    /** Target bulanan dari urutan TM yang sedang ditampilkan (sama dengan UmmiProsemService::monthTarget). */
+    private function monthTargetFromPlan(array $plan, int $semester, int $month): ?array
+    {
+        $order = array_flip(UmmiProsemService::SEMESTER_MONTHS[$semester]);
+        $upTo = collect($plan)->filter(fn ($e) => $order[$e['month']] <= $order[$month]);
+        $book = $upTo->reverse()->first(fn ($e) => $e['jilid'] && $e['buku']);
+        $hafalan = $upTo->reverse()->first(fn ($e) => $e['hafalan']);
+
+        return $book ? [
+            'ummi_jilid' => $book['jilid'],
+            'halaman_buku' => (string) max($book['buku']),
+            'surah_id' => $hafalan ? UmmiProsemService::furthest($hafalan['hafalan'])->id : null,
+        ] : null;
     }
 
     /** @return array{0: string, 1: int} */

@@ -6,8 +6,11 @@ use App\Http\Controllers\UmmiFlowController;
 use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Program;
+use App\Models\Student;
 use App\Models\Surah;
+use App\Models\TeacherProfile;
 use App\Models\UmmiProsemRow;
+use App\Models\User;
 use App\Services\UmmiProsemService;
 use Carbon\Carbon;
 use Database\Seeders\QuranDataSeeder;
@@ -111,5 +114,32 @@ class UmmiProsemTest extends TestCase
         $minutes = ['pembukaan' => 5, 'murojaah' => 15, 'ziyadah' => 10, 'klasikal' => 35, 'penutup' => 5];
         $this->actingAs($this->admin)->post(route('ummi-flow.settings'), ['minutes' => $minutes])->assertSessionHas('success');
         $this->assertSame(15, collect(UmmiFlowController::sessions())->firstWhere('key', 'murojaah')['minutes']);
+    }
+
+    #[Test]
+    public function each_halaqoh_uses_its_own_prosem_and_weekly_classes_get_the_whole_week(): void
+    {
+        $this->class->program->update(['meeting_frequency' => 'seminggu sekali']);
+        $otherUser = User::factory()->create(['role_id' => $this->teacherUser->role_id, 'name' => 'Ust Aiji', 'status' => 'active']);
+        $other = TeacherProfile::create(['user_id' => $otherUser->id, 'employee_number' => 'TEST-GURU-077']);
+        $otherStudent = Student::create(['class_room_id' => $this->class->id, 'teacher_id' => $other->id, 'name' => 'Murid Halaqoh Aiji',
+            'student_number' => 'TEST-SNT-077', 'gender' => 'male', 'birth_date' => '2010-01-01', 'status' => 'active', 'tahfizh_level' => 'ummi']);
+
+        // Prosem kelas (semua halaqoh) + Prosem khusus halaqoh Ust Aiji.
+        $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-sem1.csv'), '--tahun' => '2026/2027', '--kelas' => 'X E2', '--simpan' => true])->assertSuccessful();
+        $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-e2-pekanan.csv'), '--tahun' => '2026/2027', '--kelas' => 'X E2', '--musyrif' => 'Aiji', '--simpan' => true])
+            ->expectsOutputToContain('halaqoh Ust Aiji')->assertSuccessful();
+
+        $august = fn ($student) => HafalanTarget::where('student_id', $student->id)->whereMonth('target_date', 8)->first();
+        $this->assertSame('Jilid 2', $august($this->student)->ummi_jilid, 'Halaqoh lain memakai Prosem kelas.');
+        $this->assertSame('Jilid 1', $august($otherStudent)->ummi_jilid, 'Halaqoh Ust Aiji memakai Prosem-nya sendiri.');
+
+        // Kelas pekanan: target hari ini = semua TM pekan itu (Prosem Ust Aiji: 2 TM/pekan).
+        $meeting = app(UmmiProsemService::class)->meetingFor($this->class->fresh('program'), Carbon::today(), $other->id);
+        $this->assertTrue($meeting['weekly']);
+        $this->assertSame([1, 2, [1, 4]], [$meeting['entry']['no'], $meeting['entry']['no_end'], $meeting['entry']['buku']]);
+
+        $this->actingAs($this->admin)->get(route('prosem-ummi.index', ['class_room_id' => $this->class->id, 'teacher_id' => $other->id]))
+            ->assertOk()->assertSee('X E2 · Ust Aiji')->assertSee('Ujian');
     }
 }

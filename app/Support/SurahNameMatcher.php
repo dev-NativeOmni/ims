@@ -27,7 +27,8 @@ class SurahNameMatcher
             return null;
         }
 
-        return $this->index()[$key] ?? null;
+        // Kerangka persis dulu ("Al Lail" = ll, bukan Al-A'la = l); huruf kembar disamakan hanya sebagai cadangan.
+        return $this->index()[$key] ?? $this->index()['~'.self::squeeze($key)] ?? null;
     }
 
     public static function skeleton(string $name): string
@@ -38,9 +39,40 @@ class SurahNameMatcher
             array_shift($tokens);
         }
         $word = preg_replace('/[^a-z]/', '', implode('', $tokens));
-        $word = strtr($word, ['sy' => 's', 'sh' => 's', 'ts' => 's', 'th' => 't', 'dz' => 'z', 'dh' => 'z', 'gh' => 'g', 'kh' => 'k', 'q' => 'k']);
+        $word = strtr($word, ['sy' => 's', 'sh' => 's', 'ts' => 's', 'th' => 't', 'dz' => 'z', 'dh' => 'd', 'gh' => 'g', 'kh' => 'k', 'q' => 'k']);
 
         return (string) preg_replace('/[aeiou]/', '', $word);
+    }
+
+    /** Huruf kembar disamakan ("Muthofifin" mtffn = "Mutaffifin" mtfffn). */
+    public static function squeeze(string $skeleton): string
+    {
+        return (string) preg_replace('/(.)\1+/', '$1', $skeleton);
+    }
+
+    /**
+     * Rentang surah tulisan bebas ("An Nas-Al Ikhlas", "Al-Fil- Al Asr", "As -Sarh-Al Fajr"): dicoba setiap
+     * tanda "-"/"–" sebagai pemisah sampai kedua sisi dikenali; bila tidak ada, seluruh teks satu surah.
+     *
+     * @return array{0: int, 1: int}|null [nomor awal, nomor akhir]
+     */
+    public function matchRange(?string $text): ?array
+    {
+        $text = trim((string) $text);
+        if ($text === '') {
+            return null;
+        }
+        preg_match_all('/[-–]/u', $text, $dashes, PREG_OFFSET_CAPTURE);
+        foreach ($dashes[0] as [$dash, $offset]) {
+            $from = $this->match(substr($text, 0, $offset));
+            $to = $this->match(substr($text, $offset + strlen($dash)));
+            if ($from && $to) {
+                return [$from, $to];
+            }
+        }
+        $single = $this->match($text);
+
+        return $single ? [$single, $single] : null;
     }
 
     /** @return array<string, int> */
@@ -53,7 +85,9 @@ class SurahNameMatcher
             ->sortBy(fn ($s) => ((int) $s->number === 1 || (int) $s->number >= 78) ? 0 : 1);
         $index = [];
         foreach ($surahs as $surah) {
-            $index[self::skeleton((string) $surah->name_latin)] ??= (int) $surah->number;
+            $skeleton = self::skeleton((string) $surah->name_latin);
+            $index[$skeleton] ??= (int) $surah->number;
+            $index['~'.self::squeeze($skeleton)] ??= (int) $surah->number;
         }
 
         return $this->index = $index;
