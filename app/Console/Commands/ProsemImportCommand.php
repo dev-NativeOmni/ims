@@ -183,9 +183,12 @@ class ProsemImportCommand extends Command
     {
         $class = null;
         if ($name = trim((string) $this->option('kelas'))) {
-            $class = ClassRoom::query()->get()->first(fn ($c) => strcasecmp(trim($c->name), $name) === 0);
+            // "X E1" = "X.E1" = "XE1" (spasi/titik/strip diabaikan).
+            $key = fn (string $v) => strtolower((string) preg_replace('/[\s.\-_]+/', '', $v));
+            $class = ClassRoom::query()->get()->first(fn ($c) => $key((string) $c->name) === $key($name));
             if (! $class) {
-                $this->error("Kelas \"{$name}\" tidak ditemukan.");
+                $this->error("Kelas \"{$name}\" tidak ditemukan. Kelas 10 yang ada: "
+                    .ClassRoom::query()->get()->filter->isGradeTen()->pluck('name')->implode(', '));
 
                 return null;
             }
