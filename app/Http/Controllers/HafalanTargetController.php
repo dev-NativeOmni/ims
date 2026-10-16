@@ -18,6 +18,7 @@ use App\Services\HafalanTargetAutoCompletionService;
 use App\Services\StudentProgressService;
 use App\Services\TargetDeadlineService;
 use App\Services\UmmiProgressService;
+use App\Services\UmmiProsemService;
 use App\Support\AcademicYear;
 use App\Support\AyahCoverage;
 use App\Support\HafalanOrder;
@@ -1281,6 +1282,10 @@ class HafalanTargetController extends Controller
     {
         [$periods, $period] = $this->termPeriods($this->ummiRequestedPeriod($request, $calendar), $calendar);
         [, , $teachers, $currentTeacherId, $classRooms, $students] = $this->ummiContext($request);
+
+        // Target bulanan otomatis dari Prosem Ummi untuk murid di halaman ini (target guru tidak disentuh).
+        [$prosemYear, $prosemSemester] = UmmiProsemService::semesterOf(Carbon::parse($period));
+        app(UmmiProsemService::class)->syncTargets($prosemYear, $prosemSemester, $students);
 
         $targets = $this->ummiTermTargets($students->pluck('id'), $period, $calendar);
         $months = $this->ummiMonths($period, $calendar, $targets->flatten());

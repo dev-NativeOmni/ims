@@ -35,6 +35,8 @@ use App\Http\Controllers\SystemNotificationController;
 use App\Http\Controllers\TahfizhExamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TrialViewController;
+use App\Http\Controllers\UmmiFlowController;
+use App\Http\Controllers\UmmiProsemController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WaliKelasController;
 use Illuminate\Support\Facades\Route;
@@ -304,6 +306,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsIndex'])->name('settings.hafalan-targets');
         Route::post('/hafalan-target-settings', [SettingController::class, 'hafalanTargetsUpdate'])->name('settings.hafalan-targets.update');
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
+    });
+
+    // Ummi Kelas 10: Prosem (lihat semua staf; ubah koordinator/admin) & Alur Pembelajaran (timer sesi).
+    Route::middleware(['role:super_admin,admin,coordinator_tahfizh,headmaster,teacher,supervisor'])->group(function () {
+        Route::get('/prosem-ummi', [UmmiProsemController::class, 'index'])->name('prosem-ummi.index');
+        Route::post('/prosem-ummi', [UmmiProsemController::class, 'update'])->name('prosem-ummi.update');
+        Route::get('/alur-pembelajaran', [UmmiFlowController::class, 'index'])->name('ummi-flow.index');
+        Route::post('/alur-pembelajaran/durasi', [UmmiFlowController::class, 'updateSettings'])->name('ummi-flow.settings');
     });
 
     // Tabungan & Hutang Baris (Kelas 11 & 12): guru hanya melihat murid halaqohnya (visibleStudentQuery).
