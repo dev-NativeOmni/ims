@@ -127,9 +127,9 @@ class UmmiProsemTest extends TestCase
 
         // Prosem kelas (semua halaqoh) + Prosem khusus halaqoh Ust Aiji.
         $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-sem1.csv'), '--tahun' => '2026/2027', '--kelas' => 'X E2', '--simpan' => true])->assertSuccessful();
-        $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-e2-pekanan.csv'), '--tahun' => '2026/2027', '--kelas' => 'X E2', '--musyrif' => 'Aiji', '--simpan' => true])
+        $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-e2-pekanan.csv'), '--tahun' => '2026/2027', '--kelas' => 'X E2', '--musyrif' => "A'iji", '--simpan' => true])
             ->assertSuccessful();
-        $this->assertSame(16, UmmiProsemRow::where('teacher_id', $other->id)->count(), '--musyrif=Aiji cocok dengan "Ust A\'iji" (tanda baca diabaikan).');
+        $this->assertSame(16, UmmiProsemRow::where('teacher_id', $other->id)->count(), '--musyrif=A\'iji cocok dengan "Ust Aiji" (tanda baca diabaikan).');
 
         $august = fn ($student) => HafalanTarget::where('student_id', $student->id)->whereMonth('target_date', 8)->first();
         $this->assertSame('Jilid 2', $august($this->student)->ummi_jilid, 'Halaqoh lain memakai Prosem kelas.');
@@ -141,6 +141,6 @@ class UmmiProsemTest extends TestCase
         $this->assertSame([1, 2, [1, 4]], [$meeting['entry']['no'], $meeting['entry']['no_end'], $meeting['entry']['buku']]);
 
         $this->actingAs($this->admin)->get(route('prosem-ummi.index', ['class_room_id' => $this->class->id, 'teacher_id' => $other->id]))
-            ->assertOk()->assertSee("X E2 · Ust A'iji", false)->assertSee('Ujian');
+            ->assertOk()->assertSee('X E2 · Ust Aiji')->assertSee('Ujian');
     }
 }
