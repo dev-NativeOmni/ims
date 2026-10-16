@@ -195,7 +195,9 @@ class ProsemImportCommand extends Command
         }
         $teacher = null;
         if ($name = trim((string) $this->option('musyrif'))) {
-            $matches = TeacherProfile::query()->with('user')->get()->filter(fn ($t) => stripos((string) $t->user?->name, $name) !== false);
+            // Tanda baca & spasi diabaikan: "Rofiah" = "Rofi'ah".
+            $plain = fn (string $v) => strtolower((string) preg_replace('/[^\pL\pN]+/u', '', $v));
+            $matches = TeacherProfile::query()->with('user')->get()->filter(fn ($t) => str_contains($plain((string) $t->user?->name), $plain($name)));
             if ($class) {
                 $inClass = $matches->filter(fn ($t) => Student::query()->where('class_room_id', $class->id)->where('teacher_id', $t->id)->exists());
                 $matches = $inClass->isNotEmpty() ? $inClass : $matches;
