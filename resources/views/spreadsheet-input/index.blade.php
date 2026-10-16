@@ -263,12 +263,50 @@
                         hafalan.ayah = '1-' + details.totalAyah;
                     }
                 },
+                // Ada isian setoran di sel ini (tab aktif): Hafalan = surah terisi; Ummi = jilid/halaman/materi/surah.
+                hasSetoran(cell) {
+                    if (!cell) return false;
+                    return this.tab === 'ummi'
+                        ? !!(cell.ummi_jilid || cell.ummi_halaman_awal || cell.ummi_halaman_akhir || cell.materi || (cell.ummiHafalans || []).some(h => h.surah_id))
+                        : (cell.hafalans || []).some(h => h.surah_id);
+                },
+                // Hadir tanpa setoran: tombol H kuning.
+                isHadirTanpaSetoran(cell) {
+                    return !!cell && cell.attendance === 'hadir' && !this.hasSetoran(cell);
+                },
+                clearSetoran(cell, which = 'all') {
+                    if (which !== 'ummi') {
+                        cell.hafalans.forEach(h => { h.surah_id = ''; h.ayah_start = ''; h.ayah_end = ''; h.score = ''; h.baris = ''; });
+                    }
+                    if (which !== 'hafalan') {
+                        cell.ummi_jilid = '';
+                        cell.ummi_halaman_awal = '';
+                        cell.ummi_halaman_akhir = '';
+                        cell.materi = '';
+                        cell.nilai = '';
+                        cell.ummiHafalans.forEach(uh => { uh.surah_id = ''; uh.ayah = ''; });
+                    }
+                },
+                /**
+                 * Tombol presensi. H pertama = hadir + surah/ayat lanjutan setoran terakhir (hijau); H diklik lagi =
+                 * hadir TANPA setoran, isian setoran dikosongkan (kuning); diklik lagi = isi lanjutan lagi.
+                 * S/I/A = tidak hadir, isian setoran dikosongkan.
+                 */
                 handleAttendanceChange(studentId, date, value) {
                     this.isDirty = true;
                     let cell = this.gridData[studentId].dates[date];
+                    delete this.missingAttendance[studentId + '|' + date];
+
+                    if (value === 'hadir' && cell.attendance === 'hadir' && this.hasSetoran(cell)) {
+                        const saved = this.tab === 'ummi' ? false : (cell.hafalans || []).some(h => h.id && h.surah_id);
+                        if (saved && !confirm('Tandai hadir TANPA setoran? Setoran yang sudah tersimpan di tanggal ini akan dihapus saat Simpan.')) return;
+                        this.clearSetoran(cell, this.tab === 'ummi' ? 'ummi' : 'hafalan');
+                        return;
+                    }
+
                     cell.attendance = value;
                     if (value === 'hadir') {
-                        if (cell.hafalans.length === 1 && !cell.hafalans[0].surah_id) {
+                        if (this.tab !== 'ummi' && cell.hafalans.length === 1 && !cell.hafalans[0].surah_id) {
                             let autoNext = this.getNextHafalan(studentId, []);
                             if (autoNext.surah_id) {
                                 cell.hafalans[0].surah_id = autoNext.surah_id;
@@ -277,23 +315,25 @@
                             }
                         }
                     } else {
-                        // Clear fields if absent
-                        cell.hafalans.forEach(h => {
-                            h.surah_id = '';
-                            h.ayah_start = '';
-                            h.ayah_end = '';
-                            h.score = '';
-                        });
-                        cell.ummi_jilid = '';
-                        cell.ummi_halaman_awal = '';
-                        cell.ummi_halaman_akhir = '';
-                        cell.materi = '';
-                        cell.nilai = '';
-                        cell.ummiHafalans.forEach(uh => {
-                            uh.surah_id = '';
-                            uh.ayah = '';
-                        });
+                        this.clearSetoran(cell);
                     }
+                },
+                // Presensi wajib: di setiap pertemuan (tanggal s.d. hari ini yang sudah ada presensi/setoran murid
+                // mana pun) semua murid harus punya H/S/I/A. Murid Ummi Program Tahfizh di lembar Setoran
+                // mengikuti presensi form Input Ummi, jadi tidak diwajibkan di sini.
+                missingAttendance: {},
+                findMissingAttendance() {
+                    const missing = {};
+                    this.dates.filter(d => d <= this.todayDate).forEach(d => {
+                        const cells = this.students.map(s => [s, this.gridData[s.id]?.dates[d]]).filter(([, c]) => c);
+                        const held = cells.some(([, c]) => c.attendance || this.hasSetoran(c));
+                        if (!held) return;
+                        cells.forEach(([s, c]) => {
+                            const followsUmmiForm = this.tab === 'hafalan' && this.isTahfizhProgram && s.tahfizh_level === 'ummi';
+                            if (!c.attendance && !followsUmmiForm) missing[s.id + '|' + d] = s.name + ' (' + this.formatDateIndo(d) + ')';
+                        });
+                    });
+                    return missing;
                 },
                 jumpToToday() {
                     if (this.dates.includes(this.todayDate)) {
@@ -435,6 +475,13 @@
                 },
                 submitForm() {
                     if (this.isSaving) return;
+                    this.missingAttendance = this.findMissingAttendance();
+                    const missing = Object.values(this.missingAttendance);
+                    if (missing.length) {
+                        alert('Presensi wajib diisi di setiap pertemuan. Tandai H/S/I/A untuk:\n\n- ' + missing.slice(0, 15).join('\n- ')
+                            + (missing.length > 15 ? '\n... dan ' + (missing.length - 15) + ' lainnya' : '') + '\n\nSel yang belum diisi ditandai merah.');
+                        return;
+                    }
                     this.isSaving = true;
                     this.isDirty = false;
                     window._hasUnsavedDraft = false;
@@ -637,6 +684,13 @@
                 </div>
             </div>
 
+            <!-- Petunjuk presensi -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+                <span class="inline-flex items-center gap-1.5"><span class="inline-flex w-5 h-4 items-center justify-center rounded border text-[9px] font-extrabold bg-emerald-600 text-white border-emerald-600">H</span> hadir + setoran (klik H: terisi surah lanjutan)</span>
+                <span class="inline-flex items-center gap-1.5"><span class="inline-flex w-5 h-4 items-center justify-center rounded border text-[9px] font-extrabold bg-yellow-400 text-zinc-900 border-yellow-400">H</span> hadir tanpa setoran (klik H sekali lagi)</span>
+                <span class="font-semibold text-zinc-600 dark:text-zinc-300">Presensi wajib: setiap pertemuan, semua murid harus diberi H/S/I/A sebelum disimpan.</span>
+            </div>
+
             <!-- TABS & SAVE ACTION -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-3 sm:p-4 rounded-2xl shadow-sm">
                 <!-- Worksheet Tabs -->
@@ -739,9 +793,9 @@
                                             >
                                                 <div class="space-y-2" x-data="{ cell: gridData[student.id].dates[date] }">
                                                     <!-- PRESENSI PILLS (ATAS) -->
-                                                    <div class="flex items-center justify-between border-b dark:border-zinc-800 pb-2">
+                                                    <div class="flex items-center justify-between border-b dark:border-zinc-800 pb-2 rounded" :class="missingAttendance[student.id + '|' + date] ? 'ring-2 ring-rose-500 bg-rose-50 dark:bg-rose-500/10' : ''">
                                                         <div class="flex items-center gap-1 w-full justify-between">
-                                                            <button type="button" @click="handleAttendanceChange(student.id, date, 'hadir')" :class="cell.attendance === 'hadir' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">H</button>
+                                                            <button type="button" @click="handleAttendanceChange(student.id, date, 'hadir')" :class="isHadirTanpaSetoran(cell) ? 'bg-yellow-400 text-zinc-900 border-yellow-400' : (cell.attendance === 'hadir' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700')" :title="cell.attendance === 'hadir' ? (isHadirTanpaSetoran(cell) ? 'Hadir tanpa setoran (klik untuk isi setoran lanjutan)' : 'Hadir + setoran (klik lagi: hadir tanpa setoran)') : 'Hadir'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">H</button>
                                                             <button type="button" @click="handleAttendanceChange(student.id, date, 'sakit')" :class="cell.attendance === 'sakit' ? 'bg-amber-500 text-white border-amber-500' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">S</button>
                                                             <button type="button" @click="handleAttendanceChange(student.id, date, 'izin')" :class="cell.attendance === 'izin' ? 'bg-blue-500 text-white border-blue-500' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">I</button>
                                                             <button type="button" @click="handleAttendanceChange(student.id, date, 'alpa')" :class="cell.attendance === 'alpa' ? 'bg-rose-600 text-white border-rose-600' : 'bg-transparent text-gray-400 border-gray-300 dark:border-zinc-700'" class="px-1.5 py-0.5 text-[10px] font-extrabold border rounded cursor-pointer transition-colors w-8 text-center">A</button>
@@ -952,8 +1006,8 @@
                                     <!-- Attendance Selection -->
                                     <div class="space-y-1.5">
                                         <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status Kehadiran</span>
-                                        <div class="grid grid-cols-4 gap-2">
-                                            <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'hadir')" :class="cell.attendance === 'hadir' ? 'bg-emerald-600 text-white border-emerald-600 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Hadir</button>
+                                        <div class="grid grid-cols-4 gap-2 rounded-lg" :class="missingAttendance[student.id + '|' + selectedMobileDate] ? 'ring-2 ring-rose-500 p-1' : ''">
+                                            <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'hadir')" :class="isHadirTanpaSetoran(cell) ? 'bg-yellow-400 text-zinc-900 border-yellow-400 font-extrabold' : (cell.attendance === 'hadir' ? 'bg-emerald-600 text-white border-emerald-600 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700')" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition" x-text="isHadirTanpaSetoran(cell) ? 'Hadir · tanpa setoran' : 'Hadir'">Hadir</button>
                                             <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'sakit')" :class="cell.attendance === 'sakit' ? 'bg-amber-500 text-white border-amber-500 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Sakit</button>
                                             <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'izin')" :class="cell.attendance === 'izin' ? 'bg-blue-500 text-white border-blue-500 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Izin</button>
                                             <button type="button" @click="handleAttendanceChange(student.id, selectedMobileDate, 'alpa')" :class="cell.attendance === 'alpa' ? 'bg-rose-600 text-white border-rose-600 font-extrabold' : 'bg-transparent text-gray-500 border-gray-300 dark:border-zinc-700'" class="py-2 text-xs border rounded-lg cursor-pointer text-center transition">Alpa</button>

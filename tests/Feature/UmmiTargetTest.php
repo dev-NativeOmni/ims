@@ -122,10 +122,14 @@ class UmmiTargetTest extends TestCase
         // Setoran Ummi lewat spreadsheet: buku sudah J2 h.12, hafalan baru An-Nas.
         $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
             'class_room_id' => $this->classRoom->id, 'month' => '2026-09', 'type' => 'ummi',
-            'records' => [$this->student->id => ['dates' => ['2026-09-09' => [
-                'attendance' => 'hadir', 'ummi_jilid' => 'Jilid 2', 'ummi_halaman' => '12',
-                'hafalans' => [['id' => null, 'surah_id' => $this->surahId(114), 'ayah' => '1-6']],
-            ]]]],
+            'records' => [
+                $this->student->id => ['dates' => ['2026-09-09' => [
+                    'attendance' => 'hadir', 'ummi_jilid' => 'Jilid 2', 'ummi_halaman' => '12',
+                    'hafalans' => [['id' => null, 'surah_id' => $this->surahId(114), 'ayah' => '1-6']],
+                ]]],
+                // Presensi wajib untuk semua murid di pertemuan itu.
+                $this->other->id => ['dates' => ['2026-09-09' => ['attendance' => 'izin']]],
+            ],
         ])->assertSessionHas('success');
 
         $target->refresh();

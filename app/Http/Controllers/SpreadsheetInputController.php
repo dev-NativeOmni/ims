@@ -433,6 +433,18 @@ class SpreadsheetInputController extends Controller
             $records = [];
         }
 
+        // Presensi wajib di setiap pertemuan (sama dengan pemeriksaan di halaman sebelum Simpan).
+        $missing = $classRoom ? $this->missingAttendance($request, $classRoom, $type, $records, $visibleStudentIds, $isWeekly, $weekDatesMap) : [];
+        if ($missing !== []) {
+            $message = 'Presensi wajib diisi di setiap pertemuan. Belum ada presensi untuk: '
+                .implode(', ', array_slice($missing, 0, 10)).(count($missing) > 10 ? ', dan '.(count($missing) - 10).' lainnya' : '').'.';
+            if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
         try {
             DB::transaction(function () use ($request, $classRoomId, $type, $visibleStudentIds, $isWeekly, $weekDatesMap, $records) {
                 foreach ($records as $studentId => $studentData) {
@@ -573,6 +585,59 @@ class SpreadsheetInputController extends Controller
                 'teacher_id' => $request->integer('teacher_id') ?: null,
             ])
             ->with('success', 'Perubahan data kelas berhasil disimpan.');
+    }
+
+    /**
+     * Murid yang belum punya presensi di pertemuan yang disimpan: tanggal (s.d. hari ini) yang di kiriman ini
+     * berisi presensi/setoran murid mana pun dianggap ada pertemuan, jadi semua murid kelas itu (yang
+     * terlihat oleh guru, sesuai filter halaqoh) harus punya H/S/I/A -- dari kiriman ini, presensi
+     * tersimpan, atau setoran/sesi Ummi tersimpan di tanggal (pekan) itu. Murid Ummi Program Tahfizh di
+     * lembar Setoran mengikuti presensi form Input Ummi, jadi tidak diwajibkan di sini.
+     *
+     * @return array<int, string> "Nama (dd/mm/yyyy)"
+     */
+    private function missingAttendance(Request $request, ClassRoom $classRoom, string $type, array $records, $visibleStudentIds, bool $isWeekly, array $weekDatesMap): array
+    {
+        $held = [];
+        foreach ($records as $studentData) {
+            foreach ($studentData['dates'] ?? [] as $date => $cell) {
+                $hasSetoran = collect($cell['hafalans'] ?? [])->contains(fn ($h) => ! empty($h['surah_id']))
+                    || filled($cell['ummi_jilid'] ?? null) || filled($cell['materi'] ?? null);
+                if ((filled($cell['attendance'] ?? null) || $hasSetoran) && $date <= today()->toDateString()) {
+                    $held[$date] = true;
+                }
+            }
+        }
+
+        $missing = [];
+        $teacherId = $request->integer('teacher_id') ?: null;
+        $skipUmmi = $type === 'hafalan' && self::isTahfizhProgram($classRoom);
+        foreach (array_keys($held) as $date) {
+            $dates = ($isWeekly && ! empty($weekDatesMap[$date])) ? $weekDatesMap[$date] : [$date];
+            $students = Student::query()->inClassOn($classRoom->id, Carbon::parse($date))->where('status', 'active')
+                ->whereIn('id', $visibleStudentIds)
+                ->when($teacherId, fn ($q) => $q->where('teacher_id', $teacherId))
+                ->orderBy('name')->get();
+
+            foreach ($students as $student) {
+                if ($skipUmmi && $student->tahfizh_level === 'ummi') {
+                    continue;
+                }
+                $cell = $records[$student->id]['dates'][$date] ?? $records[(string) $student->id]['dates'][$date] ?? null;
+                $sent = $cell && (filled($cell['attendance'] ?? null)
+                    || collect($cell['hafalans'] ?? [])->contains(fn ($h) => ! empty($h['surah_id']))
+                    || filled($cell['ummi_jilid'] ?? null));
+                if ($sent
+                    || Attendance::query()->where('student_id', $student->id)->where(fn ($q) => self::whereDates($q, 'tanggal', $dates))->exists()
+                    || HafalanRecord::query()->where('student_id', $student->id)->where(fn ($q) => self::whereDates($q, 'submitted_at', $dates))->exists()
+                    || UmmiRecord::query()->where('student_id', $student->id)->where(fn ($q) => self::whereDates($q, 'tanggal', $dates))->exists()) {
+                    continue;
+                }
+                $missing[] = $student->name.' ('.Carbon::parse($date)->format('d/m/Y').')';
+            }
+        }
+
+        return $missing;
     }
 
     /**
