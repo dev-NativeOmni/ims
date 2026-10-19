@@ -222,6 +222,7 @@
 
                 @php
                     $names = [];
+                    $khatams = [];
                     $capaians = [];
                     $targets = [];
                     foreach ($studentReports as $rep) {
@@ -229,6 +230,7 @@
                         $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
                         $names[] = $shortName;
                         $capaians[] = (int) $rep['capaian_baris'];
+                        $khatams[] = ! empty($rep['khatam']); // khatam 30 juz: batang emas
                         $targets[] = (int) $rep['target_baris'];
                     }
                     $monthName = $monthsList[$selectedMonth] ?? '';
@@ -265,7 +267,7 @@
                                     Laporan Capaian Tahfizh — Pembelajaran UMMI {{ $selectedClass?->name }}
                                 </h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.
+                                    {{ ! empty($showMandiri) ? 'Kartu UMMI: Jilid, Halaman & Capaian Hafalan UMMI. Ziyadah Mandiri ada di kartu tersendiri di bawah.' : 'Tampilan khusus Kelas 10 menyajikan Jilid, Halaman, Capaian Hafalan UMMI, dan Ziyadah.' }}
                                 </p>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
@@ -285,6 +287,27 @@
                         </div>
 
                         @include('reports.partials.ummi-grade10-card')
+
+                        {{-- Kelas 10 E1: Ziyadah Mandiri (setoran hafalan di luar buku Ummi) di kartu sendiri. --}}
+                        @if (! empty($showMandiri))
+                            <div class="flex justify-between items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-wrap gap-3">
+                                <div>
+                                    <h3 class="text-base font-bold text-zinc-900 dark:text-white">Laporan Ziyadah Mandiri {{ $selectedClass?->name }}</h3>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Capaian surah/ayat terjauh, jumlah setoran & jumlah baris ayat baru di periode ini.</p>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <button type="button" onclick="downloadUmmiCard('ziyadahMandiriReportCard', 'Laporan_Ziyadah_Mandiri')" class="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                                        <span>Unduh PNG</span>
+                                    </button>
+                                    <button type="button" onclick="printUmmiCard('portrait')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow transition cursor-pointer">
+                                        <x-heroicon-o-printer class="w-4 h-4" />
+                                        <span>Cetak (bersama kartu UMMI)</span>
+                                    </button>
+                                </div>
+                            </div>
+                            @include('reports.partials.mandiri-grade10-card')
+                        @endif
                     </div>
                 @else
                     <!-- Standard Grade 11 & 12 Charts Grid -->
@@ -301,6 +324,9 @@
                                             {{ $isTermChart
                                                 ? 'Capaian tiap bulan ditumpuk menjadi capaian term; garis = target baris term (kumulatif).'
                                                 : 'Capaian & target baris bulan ini saja.' }}
+                                            @if (in_array(true, $khatams, true))
+                                                <span class="text-amber-600 dark:text-amber-400 font-semibold">Batang emas = khatam 30 juz.</span>
+                                            @endif
                                         </p>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -418,10 +444,15 @@
                                             </thead>
                                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-center text-gray-700 dark:text-zinc-300">
                                                 @foreach ($reports as $index => $row)
-                                                    <tr class="hover:bg-zinc-550/[0.01] dark:hover:bg-white/[0.01]">
+                                                    <tr class="{{ ! empty($row['khatam']) ? 'bg-amber-50 dark:bg-amber-500/10' : 'hover:bg-zinc-550/[0.01] dark:hover:bg-white/[0.01]' }}">
                                                         <td class="px-4 py-3 text-left font-medium text-gray-500 w-12">{{ $index + 1 }}</td>
                                                         <td class="px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">
-                                                            <div>{{ $row['student']->name }}</div>
+                                                            <div>
+                                                                {{ $row['student']->name }}
+                                                                @if (! empty($row['khatam']))
+                                                                    <span class="ml-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-black uppercase bg-amber-500 text-white">Khatam 30 Juz</span>
+                                                                @endif
+                                                            </div>
                                                             <div class="text-[10px] text-gray-400 font-normal mt-0.5">NIS/NISN: {{ $row['student']->nisNisn() ?: '-' }}</div>
                                                         </td>
                                                         <td class="px-4 py-3 text-gray-500 dark:text-zinc-450">{{ $row['halaqah_label'] }}</td>
@@ -500,14 +531,14 @@
         </script>
         <script>
             // Unduh PNG kartu laporan: F4 portrait tetap, isi utuh (resources/js/f4-export.js).
-            function downloadUmmiCard() {
-                const cardEl = document.getElementById('ummiGrade10ReportCard');
+            function downloadUmmiCard(elementId = 'ummiGrade10ReportCard', prefix = 'Laporan_Capaian_Ummi') {
+                const cardEl = document.getElementById(elementId);
                 if (!cardEl) {
                     alert('Elemen laporan tidak ditemukan.');
                     return;
                 }
                 window.f4Export.elementToF4Png(cardEl, {
-                    fileName: @js('Laporan_Capaian_Ummi_'.($selectedClass?->name ?? '').'_'.($monthName ?? '')),
+                    fileName: prefix + @js('_'.($selectedClass?->name ?? '').'_'.($monthName ?? '')),
                     orientation: 'portrait',
                 }).catch(err => {
                     console.error('Gagal mengunduh gambar:', err);
@@ -621,6 +652,7 @@
 
                 // --- CAPAIAN vs TARGET CHART (MODERN SAAS GLASSMORPHIC STYLE) ---
                 const capaianCanvas = document.getElementById('capaianChart');
+                const khatams = @json($khatams);
                 if (capaianCanvas) {
                     const capaianCtx = capaianCanvas.getContext('2d');
 
@@ -643,7 +675,8 @@
                                     label: set.label,
                                     type: 'bar',
                                     data: set.data,
-                                    backgroundColor: set.color,
+                                    // Murid khatam 30 juz: batang emas.
+                                    backgroundColor: set.data.map((_, idx) => khatams[idx] ? ['#f59e0b', '#d97706', '#fbbf24'][i % 3] : set.color),
                                     borderWidth: 0,
                                     borderRadius: i === all.length - 1 ? { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 } : 0,
                                     borderSkipped: false,
@@ -666,7 +699,7 @@
                                     label: 'CAPAIAN BARIS',
                                     type: 'bar',
                                     data: @json($capaians),
-                                    backgroundColor: barGradient,
+                                    backgroundColor: khatams.map(k => k ? '#f59e0b' : barGradient),
                                     hoverBackgroundColor: '#38bdf8',
                                     borderWidth: 0,
                                     borderRadius: {

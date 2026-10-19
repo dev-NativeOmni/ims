@@ -86,6 +86,10 @@
     <!-- Printable Sheet -->
     <div class="max-w-5xl mx-auto">
         @include('reports.partials.ummi-grade10-card')
+        @if (! empty($showMandiri))
+            <div style="break-before: page; page-break-before: always;"></div>
+            @include('reports.partials.mandiri-grade10-card')
+        @endif
     </div>
 </body>
 </html>
@@ -301,12 +305,14 @@
         $printNames = [];
         $printTargets = [];
         $printCompleted = [];
+        $printKhatam = [];
         foreach ($studentReports as $rep) {
             $parts = explode(' ', $rep['student']->name);
             $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
             $printNames[] = $shortName;
             $printTargets[] = (int) $rep['target_baris'];
             $printCompleted[] = (int) $rep['capaian_baris'];
+            $printKhatam[] = ! empty($rep['khatam']);
         }
     @endphp
     <script>
@@ -336,7 +342,7 @@
                             {
                                 label: 'Terealisasi',
                                 data: completed,
-                                backgroundColor: '#0284c7', // Cyan Ocean
+                                backgroundColor: @json($printKhatam).map(k => k ? '#f59e0b' : '#0284c7'), // emas = khatam 30 juz
                                 borderRadius: {
                                     topLeft: 6,
                                     topRight: 6,

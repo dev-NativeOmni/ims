@@ -84,6 +84,14 @@ class HafalanProgressService
     }
 
     /**
+     * Jumlah juz yang sudah hafal penuh (setoran lulus + hafalan sebelum aplikasi) sampai $until. 30 = khatam.
+     */
+    public function completedJuz(Collection $records, ?Carbon $until = null): int
+    {
+        return collect($this->juzPercentages($this->coverage($records, null, $until)))->filter(fn ($p) => $p >= 100)->count();
+    }
+
+    /**
      * Baris yang DIHITUNG capaian per sesi setoran (riwayat setoran): ayat baru saja, sama dengan rapor
      * & Laporan Triwulan (passedLineDetails). Baris belum lulus, ulangan & ganda = 0, sebagian ulang =
      * bagian ayat barunya. $headers: HafalanRecord dengan relasi surahs & student.

@@ -11,7 +11,9 @@
         : asset('images/logo-gemilang-banner.png');
 
     $className = $selectedClass?->name ?? '';
-    $hideZiyadah = (bool) preg_match('/(E2|E3|X\.?E2|X\.?E3|E-2|E-3)/i', $className);
+    // Kelas 10 E1 di Grafik Tahfizh: Ziyadah Mandiri punya kartu sendiri (mandiri-grade10-card).
+    $hideZiyadah = (bool) preg_match('/(E2|E3|X\.?E2|X\.?E3|E-2|E-3)/i', $className) || ! empty($showMandiri);
+    $hasKhatam = collect($studentReports)->contains(fn ($row) => ! empty($row['khatam']));
     // Kolom Target (Jilid | Hal. | Hafalan) hanya bila halaman pemanggil menyediakan 'ummi_target'
     // (Grafik Tahfizh: target guru di rentang filter); halaman Progres tidak.
     $showTarget = collect($studentReports)->contains(fn ($row) => array_key_exists('ummi_target', $row));
@@ -87,12 +89,16 @@
             </thead>
             <tbody class="divide-y divide-zinc-200" style="color: #0f172a !important;">
                 @forelse ($studentReports as $idx => $row)
-                    <tr style="background-color: {{ $idx % 2 === 0 ? '#ffffff' : '#f0fdf4' }} !important; color: #0f172a !important;">
+                    {{-- Murid khatam 30 juz: baris emas. --}}
+                    <tr style="background-color: {{ ! empty($row['khatam']) ? '#fef3c7' : ($idx % 2 === 0 ? '#ffffff' : '#f0fdf4') }} !important; color: #0f172a !important;">
                         <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-bold" style="color: #334155 !important;">
                             {{ $idx + 1 }}
                         </td>
                         <td class="py-1.5 px-3 border-r border-zinc-200 font-bold" style="color: #0f172a !important;">
                             {{ is_object($row['student'] ?? null) ? $row['student']->name : ($row['student']['name'] ?? ($row['student_name'] ?? '-')) }}
+                            @if (! empty($row['khatam']))
+                                <span class="ml-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-black uppercase" style="background-color: #d97706 !important; color: #ffffff !important;">Khatam 30 Juz</span>
+                            @endif
                         </td>
                         @if ($showTarget)
                             <td class="py-1.5 px-2 text-center border-r border-zinc-200 font-bold" style="color: #92400e !important;">{{ $row['ummi_target']['jilid'] ?? '-' }}</td>
@@ -134,6 +140,10 @@
             </tbody>
         </table>
     </div>
+
+    @if ($hasKhatam)
+        <p class="mt-2 text-[10px] font-semibold" style="color: #92400e !important;">Baris emas = murid yang sudah khatam 30 juz.</p>
+    @endif
 
     <!-- Footer Hadits Emblem & Social Info -->
     <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t-2 border-amber-300">

@@ -163,8 +163,10 @@
                 },
             };
 
-            const bar = (label, data, color, stack) => ({
-                label, data, backgroundColor: color, stack, xAxisID: kinds[stack].axis,
+            // Murid khatam 30 juz: batang emas (rows[i].khatam dari ReportController::withKhatam).
+            const gold = ['#f59e0b', '#d97706', '#fbbf24'];
+            const bar = (label, data, color, stack, shade = 0) => ({
+                label, data, backgroundColor: rows.map(r => r.khatam ? gold[shade % 3] : color), stack, xAxisID: kinds[stack].axis,
                 barPercentage: 0.92, categoryPercentage: 0.78, borderRadius: 3,
             });
             const datasets = [];
@@ -173,7 +175,7 @@
                 const prefix = stack === 'buku' ? 'BUKU' : 'HAFALAN';
                 if (isTerm) {
                     datasets.push(bar(prefix + ': AWAL TERM', rows.map(r => stack === 'buku' ? r.book_base : r.hafalan_base), baseColor, stack));
-                    monthNames.forEach((m, i) => datasets.push(bar(prefix + ' ' + m.toUpperCase(), rows.map(r => (stack === 'buku' ? r.book_months : r.hafalan_months)[i] || 0), k.colors[i % 3], stack)));
+                    monthNames.forEach((m, i) => datasets.push(bar(prefix + ' ' + m.toUpperCase(), rows.map(r => (stack === 'buku' ? r.book_months : r.hafalan_months)[i] || 0), k.colors[i % 3], stack, i)));
                 } else {
                     datasets.push(bar(stack === 'buku' ? 'BUKU UMMI' : 'HAFALAN SURAH', rows.map(k.value), k.color, stack));
                 }

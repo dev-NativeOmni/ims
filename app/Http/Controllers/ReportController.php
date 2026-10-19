@@ -1007,6 +1007,9 @@ class ReportController extends Controller
             || preg_match('/\b10\b/i', $selectedClassLevel)
         ) && ! preg_match('/\b(XI|XII|11|12)\b/i', $selectedClassName);
 
+        // Kelas 10 E1 (bukan E2/E3, sama dengan kartu Ummi): kartu Ummi & Ziyadah Mandiri terpisah.
+        $showMandiri = $isGrade10 && ! preg_match('/(E2|E3|X\.?E2|X\.?E3|E-2|E-3)/i', $selectedClassName);
+
         // Bulan-bulan dalam periode (Y-m => nama bulan) dan label periode untuk judul grafik.
         $monthNames = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
         $periodMonths = [];
@@ -1210,6 +1213,15 @@ class ReportController extends Controller
                 $ziyadahText = $latestHafalanPassed->surah->name_latin.($latestHafalanPassed->ayah_end ? ' ('.$latestHafalanPassed->ayah_end.')' : '');
             }
 
+            // Khatam 30 juz (setoran + hafalan sebelum aplikasi s.d. akhir periode): diberi warna khusus di grafik.
+            // Kelas 10 E1: ziyadah mandiri = setoran hafalan di luar buku Ummi; baris = ayat baru saja (aturan
+            // sama dengan capaian Kelas 11/12, HafalanProgressService::passedLineDetails).
+            $progressRecords = app(HafalanProgressService::class)->records($student);
+            $khatam = app(HafalanProgressService::class)->completedJuz($progressRecords, Carbon::parse($endDate)) >= 30;
+            $mandiriDetails = $showMandiri
+                ? collect(app(HafalanProgressService::class)->passedLineDetails($progressRecords, Carbon::parse($startDate), Carbon::parse($endDate)))
+                : collect();
+
             // Violations count during the period
             $violationsCount = $allViolations->get($student->id, collect())->count();
 
@@ -1248,6 +1260,9 @@ class ReportController extends Controller
                 'ummi_halaman' => $ummiHalaman,
                 'ummi_capaian' => $ummiCapaian,
                 'ziyadah' => $ziyadahText,
+                'mandiri_baris' => round((float) $mandiriDetails->sum('new_lines'), 1),
+                'mandiri_setoran' => $mandiriDetails->where('kind', '!=', 'duplicate')->count(),
+                'khatam' => $khatam,
                 'ummi_target' => $ummiTarget,
                 'violations_count' => $violationsCount,
                 'sakit' => $sakit,
@@ -1287,9 +1302,11 @@ class ReportController extends Controller
             'periodMonths' => $periodMonths,
             'periodLabel' => $periodLabel,
             // Kelas 10 (Ummi): grafik posisi Buku Ummi & hafalan surah per murid + target guru.
-            'ummiChart' => $isGrade10
-                ? app(UmmiProgressService::class)->classChart($students, Carbon::parse($startDate), Carbon::parse($endDate), $periodType !== 'monthly', $periodMonths)
-                : null,
+            'ummiChart' => $isGrade10 ? $this->withKhatam(
+                app(UmmiProgressService::class)->classChart($students, Carbon::parse($startDate), Carbon::parse($endDate), $periodType !== 'monthly', $periodMonths),
+                $studentReports
+            ) : null,
+            'showMandiri' => $showMandiri,
             'monthsList' => [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -1578,6 +1595,16 @@ class ReportController extends Controller
             'classUmmiHafalanSurah' => $classUmmiHafalanSurah,
             'musyrifName' => $musyrifName,
         ]);
+    }
+
+    /** Tandai baris grafik Ummi murid yang khatam 30 juz (urutan baris = urutan murid laporan). */
+    private function withKhatam(array $chart, array $studentReports): array
+    {
+        foreach ($chart['rows'] as $i => $row) {
+            $chart['rows'][$i]['khatam'] = (bool) ($studentReports[$i]['khatam'] ?? false);
+        }
+
+        return $chart;
     }
 
     private function getFurthestHafalanRecord(Collection $records, bool $isGrade10Ummi = false): mixed
