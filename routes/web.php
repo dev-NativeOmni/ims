@@ -308,10 +308,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/hafalan-target-settings/reset', [SettingController::class, 'hafalanTargetsReset'])->name('settings.hafalan-targets.reset');
     });
 
-    // Ummi Kelas 10: Prosem (lihat semua staf; ubah koordinator/admin) & Alur Pembelajaran (timer sesi).
+    // Ummi Kelas 10: Prosem (lihat semua staf; ubah koordinator/admin).
     Route::middleware(['role:super_admin,admin,coordinator_tahfizh,headmaster,teacher,supervisor'])->group(function () {
         Route::get('/prosem-ummi', [UmmiProsemController::class, 'index'])->name('prosem-ummi.index');
         Route::post('/prosem-ummi', [UmmiProsemController::class, 'update'])->name('prosem-ummi.update');
+    });
+
+    // Alur Pembelajaran Ummi (timer sesi): tanpa supervisor; kepala sekolah hanya melihat (UmmiFlowController::canAlign).
+    Route::middleware(['role:super_admin,admin,coordinator_tahfizh,headmaster,teacher'])->group(function () {
         Route::get('/alur-pembelajaran', [UmmiFlowController::class, 'index'])->name('ummi-flow.index');
         Route::post('/alur-pembelajaran/durasi', [UmmiFlowController::class, 'updateSettings'])->name('ummi-flow.settings');
         Route::post('/alur-pembelajaran/samakan', [UmmiFlowController::class, 'align'])->name('ummi-flow.align');

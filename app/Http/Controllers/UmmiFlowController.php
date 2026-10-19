@@ -45,6 +45,12 @@ class UmmiFlowController extends Controller
         return array_map(fn ($s) => ['minutes' => max(1, (int) ($saved[$s['key']] ?? $s['minutes']))] + $s, self::SESSIONS);
     }
 
+    /** Tombol "Samakan" (mengubah target murid): musyrif & pengelola; kepala sekolah hanya melihat. */
+    public static function canAlign($user): bool
+    {
+        return (bool) $user?->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh', 'teacher']);
+    }
+
     public static function canConfigure($user): bool
     {
         return (bool) $user?->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh']);
@@ -106,6 +112,7 @@ class UmmiFlowController extends Controller
             'sessions' => self::sessions(),
             'storageKey' => 'ummiFlow:'.$request->user()->id.':'.($class?->id ?? 0).':'.($teacher?->id ?? 0).':'.$today->toDateString(),
             'canConfigure' => self::canConfigure($request->user()),
+            'canAlign' => self::canAlign($request->user()),
         ]);
     }
 
@@ -115,6 +122,7 @@ class UmmiFlowController extends Controller
      */
     public function align(Request $request): RedirectResponse
     {
+        abort_unless(self::canAlign($request->user()), 403);
         $validated = $request->validate([
             'tm_no' => ['required', 'integer', 'min:1'],
             'student_ids' => ['required', 'array', 'min:1'],

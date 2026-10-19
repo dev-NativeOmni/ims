@@ -99,7 +99,7 @@
                             <h3 class="font-bold text-zinc-900 dark:text-white">Target per murid</h3>
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">Dari jurnal Ummi masing-masing: target tidak maju sebelum terpenuhi; capaian di atas target = surplus.</p>
                         </div>
-                        @if ($behind->isNotEmpty() && $majorityNo)
+                        @if ($canAlign && $behind->isNotEmpty() && $majorityNo)
                             <form method="POST" action="{{ route('ummi-flow.align') }}" onsubmit="return confirm('Samakan {{ $behind->count() }} murid yang tertinggal ke TM {{ $majorityNo }}?')">
                                 @csrf
                                 <input type="hidden" name="tm_no" value="{{ $majorityNo }}">
@@ -123,12 +123,14 @@
                                 @if ($row['gap'] < 0)
                                     <div class="flex items-center gap-2">
                                         <span class="rounded-full bg-rose-100 dark:bg-rose-500/15 px-2.5 py-0.5 text-xs font-bold text-rose-700 dark:text-rose-300">Tertinggal {{ -$row['gap'] }} TM</span>
+                                        @if ($canAlign)
                                         <form method="POST" action="{{ route('ummi-flow.align') }}">
                                             @csrf
                                             <input type="hidden" name="tm_no" value="{{ $majorityNo }}">
                                             <input type="hidden" name="student_ids[]" value="{{ $row['id'] }}">
                                             <button type="submit" class="rounded-lg border border-amber-400 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10">Samakan ke TM {{ $majorityNo }}</button>
                                         </form>
+                                        @endif
                                     </div>
                                 @elseif ($row['gap'] > 0)
                                     <span class="rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">Surplus {{ $row['gap'] }} TM</span>

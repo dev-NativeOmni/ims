@@ -6,6 +6,7 @@ use App\Http\Controllers\UmmiFlowController;
 use App\Models\ClassRoom;
 use App\Models\HafalanTarget;
 use App\Models\Program;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
@@ -201,5 +202,23 @@ class UmmiProsemTest extends TestCase
         $this->assertSame('Peraga 3 hlm 18-19', UmmiProsemService::peragaLabel('Jilid 2', $row3[0]['peraga']));
         $this->assertSame('Peraga 3 hlm 20 · Peraga 4 hlm 1', UmmiProsemService::peragaLabel('Jilid 2', $row3[1]['peraga']));
         $this->assertSame('Peraga 4 hlm 4', UmmiProsemService::peragaLabel('Jilid 2', $row3[3]['peraga'])); // 7 hlm: 2, 2, 2, 1
+    }
+
+    #[Test]
+    public function headmaster_only_views_the_flow_and_supervisor_cannot_open_it(): void
+    {
+        $this->import();
+        $headmaster = User::factory()->create(['role_id' => Role::firstOrCreate(['name' => 'headmaster'], ['display_name' => 'Kepala Sekolah'])->id, 'status' => 'active']);
+        $supervisor = User::factory()->create(['role_id' => Role::firstOrCreate(['name' => 'supervisor'], ['display_name' => 'Koordinator Adab'])->id, 'status' => 'active']);
+        $behind = Student::create(['class_room_id' => $this->class->id, 'teacher_id' => $this->teacherProfile->id, 'name' => 'Murid Tertinggal',
+            'student_number' => 'TEST-SNT-091', 'gender' => 'male', 'birth_date' => '2010-01-01', 'status' => 'active', 'tahfizh_level' => 'ummi']);
+        $this->journal($this->student, '2026-07-20', 'Jilid 2', '4');
+
+        $this->actingAs($headmaster)->get(route('ummi-flow.index'))->assertOk()
+            ->assertSee('Tertinggal')->assertDontSee('Samakan ke TM');
+        $this->actingAs($headmaster)->post(route('ummi-flow.align'), ['tm_no' => 3, 'student_ids' => [$behind->id]])->assertForbidden();
+
+        $this->actingAs($supervisor)->get(route('ummi-flow.index'))->assertForbidden();
+        $this->actingAs($supervisor)->get(route('dashboard'))->assertDontSee('Alur Pembelajaran Ummi');
     }
 }
