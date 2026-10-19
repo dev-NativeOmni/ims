@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassRoom;
 use App\Models\Setting;
+use App\Models\Student;
 use App\Models\TeacherProfile;
+use App\Models\UmmiProsemOverride;
 use App\Services\StudentProgressService;
+use App\Services\UmmiProgressService;
 use App\Services\UmmiProsemService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -65,17 +68,70 @@ class UmmiFlowController extends Controller
             ?? $teachers->firstWhere('user_id', $request->user()->id)
             ?? $teachers->first();
 
+        // Target per murid dari jurnal Ummi (UmmiProsemService::studentProgress); sesi hari ini memakai
+        // target mayoritas murid halaqoh, murid lain ditandai tertinggal / surplus.
+        [$year, $semester] = UmmiProsemService::semesterOf($today);
+        $students = $class
+            ? $this->access->visibleStudentQuery($request->user())->where('class_room_id', $class->id)->where('status', 'active')
+                ->when($teacher, fn ($q) => $q->where('teacher_id', $teacher->id))->orderBy('name')->get()
+                ->each(fn (Student $s) => $s->setRelation('classRoom', $class))
+                ->filter(fn (Student $s) => $s->usesUmmi())->values()
+            : collect();
+        $progress = $students->map(fn (Student $s) => ['student' => $s] + $this->prosem->studentProgress($s, $year, $semester));
+        $plan = $progress->first()['plan'] ?? [];
+        $majorityNo = $progress->pluck('next.no')->filter()->countBy()->sortKeys()->sortDesc()->keys()->first();
+        $majority = collect($plan)->firstWhere('no', $majorityNo);
+        $weekly = $class?->program?->meeting_frequency === 'seminggu sekali';
+
         return view('ummi-flow.index', [
             'classes' => $classes,
             'class' => $class,
             'teachers' => $teachers,
             'teacher' => $teacher,
             'today' => $today,
-            'meeting' => $class ? $this->prosem->meetingFor($class, $today, $teacher?->id) : null,
+            'hasPlan' => $plan !== [],
+            'target' => $majority ? UmmiProsemService::sessionTarget($plan, $majority, $weekly) : null,
+            'majorityNo' => $majorityNo,
+            'weekly' => $weekly,
+            'students' => $progress->map(fn ($p) => [
+                'id' => $p['student']->id,
+                'name' => $p['student']->name,
+                'position' => UmmiProgressService::pageLabel($p['position']),
+                'next' => $p['next'],
+                'gap' => ($p['next']['no'] ?? null) && $majorityNo ? $p['next']['no'] - $majorityNo : 0,
+                'override' => $p['override'],
+                'last_session' => $p['last_session'],
+            ])->all(),
+            'schedule' => $class ? $this->prosem->meetingFor($class, $today, $teacher?->id) : null,
             'sessions' => self::sessions(),
             'storageKey' => 'ummiFlow:'.$request->user()->id.':'.($class?->id ?? 0).':'.($teacher?->id ?? 0).':'.$today->toDateString(),
             'canConfigure' => self::canConfigure($request->user()),
         ]);
+    }
+
+    /**
+     * "Samakan": target murid yang tertinggal dimajukan ke TM mayoritas halaqoh (semua murid tertinggal
+     * bila student_id kosong). Target tetap maju bila jurnal murid sudah melewatinya.
+     */
+    public function align(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tm_no' => ['required', 'integer', 'min:1'],
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer'],
+        ]);
+        [$year, $semester] = UmmiProsemService::semesterOf(Carbon::today());
+        $students = $this->access->visibleStudentQuery($request->user())->whereIn('id', $validated['student_ids'])->get();
+        abort_if($students->isEmpty(), 403);
+
+        foreach ($students as $student) {
+            UmmiProsemOverride::updateOrCreate(
+                ['student_id' => $student->id, 'academic_year' => $year, 'semester' => $semester],
+                ['tm_no' => $validated['tm_no'], 'created_by' => $request->user()->id]
+            );
+        }
+
+        return back()->with('success', $students->count().' murid disamakan ke TM '.$validated['tm_no'].'.');
     }
 
     public function updateSettings(Request $request): RedirectResponse

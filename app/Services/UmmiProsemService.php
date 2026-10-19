@@ -7,7 +7,9 @@ use App\Models\HafalanTarget;
 use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TargetLock;
+use App\Models\UmmiProsemOverride;
 use App\Models\UmmiProsemRow;
+use App\Models\UmmiRecord;
 use App\Support\AcademicYear;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -133,6 +135,7 @@ class UmmiProsemService
     {
         $used = [];
         $plan = [];
+        $peraga = self::peragaRanges($rows);
         foreach (self::SEMESTER_MONTHS[$semester] as $month) {
             foreach (range(1, 5) as $week) {
                 foreach ($rows as $row) {
@@ -146,7 +149,8 @@ class UmmiProsemService
                             'row' => $row,
                             'row_tm' => $index,
                             'jilid' => $row->jilid,
-                            'peraga' => self::share($row->peraga_start, $row->peraga_end, $row->tm, $index),
+                            // Peraga sebagai halaman berurutan 1-40 dalam jilid (Peraga ganjil 1-20, genap 21-40).
+                            'peraga' => isset($peraga[$row->id]) ? self::share($peraga[$row->id][0], $peraga[$row->id][1], $row->tm, $index) : null,
                             'buku' => self::share($row->buku_start, $row->buku_end, $row->tm, $index),
                             'hafalan' => $row->hafalanStart ? [$row->hafalanStart, $row->hafalanEnd ?? $row->hafalanStart] : null,
                             'drill' => $row->drillStart ? [$row->drillStart, $row->drillEnd ?? $row->drillStart] : null,
@@ -157,6 +161,63 @@ class UmmiProsemService
         }
 
         return $plan;
+    }
+
+    /**
+     * Halaman peraga tiap baris sebagai urutan 1-40 dalam jilid. Satu jilid memakai dua peraga 20 halaman
+     * (Jilid 1 = Peraga 1 & 2, Jilid 2 = Peraga 3 & 4, ...): "18-4" = Peraga pertama hlm 18-20 lalu Peraga
+     * kedua hlm 1-4 (= 18-24); baris berikutnya yang mulai dari halaman lebih kecil = sudah di peraga kedua.
+     *
+     * @param  Collection<int, UmmiProsemRow>  $rows
+     * @return array<int, array{0: int, 1: int}> row id => [awal, akhir]
+     */
+    public static function peragaRanges(Collection $rows): array
+    {
+        $ranges = [];
+        $state = []; // jilid => [bagian peraga (1|2), halaman akhir terakhir]
+        foreach ($rows->sortBy('position') as $row) {
+            if (! $row->jilid || ! $row->peraga_start || ! $row->peraga_end) {
+                continue;
+            }
+            [$part, $last] = $state[$row->jilid] ?? [1, 0];
+            if ($row->peraga_start < $last) {
+                $part++; // penomoran mulai lagi = peraga kedua
+            }
+            $start = ($part - 1) * 20 + $row->peraga_start;
+            if ($row->peraga_end < $row->peraga_start) {
+                $part++; // melewati akhir peraga pertama
+            }
+            $end = ($part - 1) * 20 + $row->peraga_end;
+            $ranges[$row->id] = [min($start, 40), min(max($end, $start), 40)];
+            $state[$row->jilid] = [$part, $row->peraga_end];
+        }
+
+        return $ranges;
+    }
+
+    /**
+     * Label halaman peraga dari urutan 1-40 dalam jilid: "Peraga 1 hlm 18-20 · Peraga 2 hlm 1-4".
+     */
+    public static function peragaLabel(?string $jilid, ?array $pages): string
+    {
+        if (! $pages) {
+            return '-';
+        }
+        $base = preg_match('/(\d+)/', (string) $jilid, $m) ? ((int) $m[1] - 1) * 2 : null;
+        $parts = [];
+        foreach ([[1, 20], [21, 40]] as $i => [$from, $to]) {
+            $a = max($pages[0], $from);
+            $b = min($pages[1], $to);
+            if ($a > $b) {
+                continue;
+            }
+            $label = $base === null ? 'Peraga' : 'Peraga '.($base + $i + 1);
+            $a -= $i * 20;
+            $b -= $i * 20;
+            $parts[] = $label.' hlm '.($a === $b ? $a : "{$a}-{$b}");
+        }
+
+        return implode(' · ', $parts);
     }
 
     /**
@@ -223,6 +284,91 @@ class UmmiProsemService
         return ['entry' => $entry, 'week_count' => count($inWeek), 'nth' => $nth, 'next' => $next, 'weekly' => $weekly];
     }
 
+    /**
+     * Target TM berikutnya seorang murid menurut jurnal Ummi-nya (tidak mengikuti kalender: target tetap
+     * sampai terpenuhi). TM bermateri terpenuhi bila posisi buku jurnal (Jilid + halaman) sudah sampai
+     * halaman akhir TM itu; TM Drill/Ujian (tanpa halaman) terpenuhi setelah sejumlah sesi jurnal tercatat
+     * sesudah materi terakhir yang terpenuhi. "Samakan" musyrif (UmmiProsemOverride) memajukan target.
+     *
+     * @return array{plan: array, done: int, next: ?array, position: ?int, override: ?int, last_session: ?string}
+     */
+    public function studentProgress(Student $student, string $academicYear, int $semester): array
+    {
+        $plan = $this->plan($academicYear, $semester, $student->class_room_id, $student->teacher_id);
+        $records = UmmiRecord::query()->where('student_id', $student->id)->orderBy('tanggal')->orderBy('id')
+            ->get(['tanggal', 'ummi_jilid', 'ummi_halaman']);
+
+        // Posisi tertinggi berjalan & tanggal pertama tiap posisi tercapai.
+        $timeline = [];
+        $max = 0;
+        foreach ($records as $record) {
+            $value = UmmiProgressService::pageValue($record->ummi_jilid, $record->ummi_halaman) ?? 0;
+            if ($value > $max) {
+                $max = $value;
+                $timeline[] = [$value, Carbon::parse($record->tanggal)->toDateString()];
+            }
+        }
+        $reachedOn = function (int $required) use ($timeline): ?string {
+            foreach ($timeline as [$value, $date]) {
+                if ($value >= $required) {
+                    return $date;
+                }
+            }
+
+            return null;
+        };
+
+        $done = 0;
+        $anchor = null;
+        foreach ($plan as $i => $entry) {
+            if ($entry['jilid'] && $entry['buku']) {
+                $date = $reachedOn((int) UmmiProgressService::pageValue($entry['jilid'], (string) max($entry['buku'])));
+                if ($date !== null) {
+                    $done = $i + 1;
+                    $anchor = $date;
+                }
+            }
+        }
+        // TM Drill/Ujian sesudah materi terakhir yang terpenuhi: dihitung dari jumlah sesi jurnal sesudahnya.
+        // Kelas pekanan: satu sesi = semua TM pekan Prosem itu.
+        $weekly = $student->classRoom?->loadMissing('program')->program?->meeting_frequency === 'seminggu sekali';
+        $isMaterial = fn (array $e) => $e['jilid'] && $e['buku'];
+        $sessions = $records->filter(fn ($r) => $anchor === null || Carbon::parse($r->tanggal)->toDateString() > $anchor)->count();
+        while ($sessions > 0 && isset($plan[$done]) && ! $isMaterial($plan[$done])) {
+            $slot = [$plan[$done]['month'], $plan[$done]['week']];
+            do {
+                $done++;
+            } while ($weekly && isset($plan[$done]) && ! $isMaterial($plan[$done]) && [$plan[$done]['month'], $plan[$done]['week']] === $slot);
+            $sessions--;
+        }
+
+        $override = UmmiProsemOverride::query()->where('student_id', $student->id)
+            ->where('academic_year', $academicYear)->where('semester', $semester)->value('tm_no');
+        $nextIndex = max($done, $override ? $override - 1 : 0);
+
+        return [
+            'plan' => $plan,
+            'done' => $done,
+            'next' => $plan[$nextIndex] ?? null,
+            'position' => $max ?: null,
+            'override' => $override ? (int) $override : null,
+            'last_session' => $records->last()?->tanggal ? Carbon::parse($records->last()->tanggal)->toDateString() : null,
+        ];
+    }
+
+    /**
+     * Target satu sesi mulai TM $entry: kelas pekanan = TM itu + TM sesudahnya di pekan Prosem yang sama.
+     */
+    public static function sessionTarget(array $plan, array $entry, bool $weekly): array
+    {
+        if (! $weekly) {
+            return $entry;
+        }
+        $same = array_values(array_filter($plan, fn ($e) => $e['no'] >= $entry['no'] && $e['month'] === $entry['month'] && $e['week'] === $entry['week']));
+
+        return count($same) > 1 ? self::merge($same) : $entry;
+    }
+
     /** Gabungan beberapa TM (satu pekan kelas pekanan): halaman dari awal TM pertama s.d. akhir TM terakhir. */
     public static function merge(array $entries): array
     {
@@ -279,7 +425,7 @@ class UmmiProsemService
         return [
             'ummi_jilid' => $book['jilid'],
             'halaman_buku' => (string) max($book['buku']),
-            'halaman_peraga' => $book['peraga'] ? (string) max($book['peraga']) : null,
+            'halaman_peraga' => $book['peraga'] ? self::peragaLabel($book['jilid'], [max($book['peraga']), max($book['peraga'])]) : null,
             'surah_id' => $hafalan ? self::furthest($hafalan['hafalan'])->id : null,
             'ayah' => null,
         ];

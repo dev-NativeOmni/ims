@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Surah;
 use App\Models\TeacherProfile;
 use App\Models\UmmiProsemRow;
+use App\Models\UmmiRecord;
 use App\Models\User;
 use App\Services\UmmiProsemService;
 use Carbon\Carbon;
@@ -50,7 +51,7 @@ class UmmiProsemTest extends TestCase
     {
         $this->artisan('tad:prosem-import', ['sumber' => base_path('tests/Fixtures/prosem-sem1.csv'), '--tahun' => '2026/2027', '--simpan' => true])
             ->expectsOutputToContain('16 baris, 62 TM')
-            ->expectsOutputToContain('Baris 9: Hlm. Buku 9-1 (akhir < awal)')
+            ->expectsOutputToContain('Baris 9: Hlm. Buku 9-1 terbalik, dibaca 1-9')
             ->assertSuccessful();
     }
 
@@ -107,7 +108,7 @@ class UmmiProsemTest extends TestCase
     {
         $this->import();
         $this->actingAs($this->teacherUser)->get(route('ummi-flow.index'))->assertOk()
-            ->assertSee('Alur Pembelajaran Ummi')->assertSee('Target pertemuan hari ini')
+            ->assertSee('Alur Pembelajaran Ummi')->assertSee('Target sesi ini')
             ->assertSee('Klasikal peraga &amp; baca simak', false)->assertDontSee('Atur durasi sesi');
         $this->actingAs($this->teacherUser)->post(route('ummi-flow.settings'), [])->assertForbidden();
 
@@ -142,5 +143,63 @@ class UmmiProsemTest extends TestCase
 
         $this->actingAs($this->admin)->get(route('prosem-ummi.index', ['class_room_id' => $this->class->id, 'teacher_id' => $other->id]))
             ->assertOk()->assertSee('X E2 · Ust Aiji')->assertSee('Ujian');
+    }
+
+    private function journal(Student $student, string $date, string $jilid, string $page): void
+    {
+        UmmiRecord::create(['student_id' => $student->id, 'teacher_id' => $this->teacherProfile->id, 'tanggal' => $date, 'tatap_muka' => 1, 'ummi_jilid' => $jilid, 'ummi_halaman' => $page]);
+    }
+
+    #[Test]
+    public function student_target_follows_the_journal_not_the_calendar(): void
+    {
+        $this->import();
+        $prosem = app(UmmiProsemService::class);
+
+        // Belum ada jurnal: target tetap TM 1 walau kalender sudah lewat.
+        Carbon::setTestNow('2026-08-20 08:00');
+        $this->assertSame(1, $prosem->studentProgress($this->student, '2026/2027', 1)['next']['no']);
+
+        // Jurnal Jilid 2 hlm 4 = TM 1 (1-2) & TM 2 (3-4) terpenuhi; capaian lebih dari target tetap dihitung.
+        $this->journal($this->student, '2026-07-21', 'Jilid 2', '3-4');
+        $this->assertSame(3, $prosem->studentProgress($this->student, '2026/2027', 1)['next']['no']);
+
+        // Hlm 40 (TM 20) lalu 2 sesi jurnal = 2 TM Drill terpenuhi -> target TM 23.
+        $this->journal($this->student, '2026-08-17', 'Jilid 2', '40');
+        $this->journal($this->student, '2026-08-18', 'Jilid 2', '40');
+        $this->journal($this->student, '2026-08-19', 'Jilid 2', '40');
+        $progress = $prosem->studentProgress($this->student, '2026/2027', 1);
+        $this->assertSame([22, 23], [$progress['done'], $progress['next']['no']]);
+    }
+
+    #[Test]
+    public function majority_target_is_shown_and_a_lagging_student_can_be_aligned(): void
+    {
+        $this->import();
+        $behind = Student::create(['class_room_id' => $this->class->id, 'teacher_id' => $this->teacherProfile->id, 'name' => 'Murid Tertinggal',
+            'student_number' => 'TEST-SNT-088', 'gender' => 'male', 'birth_date' => '2010-01-01', 'status' => 'active', 'tahfizh_level' => 'ummi']);
+        $ahead = Student::create(['class_room_id' => $this->class->id, 'teacher_id' => $this->teacherProfile->id, 'name' => 'Murid Ketiga',
+            'student_number' => 'TEST-SNT-089', 'gender' => 'male', 'birth_date' => '2010-01-01', 'status' => 'active', 'tahfizh_level' => 'ummi']);
+        $this->journal($this->student, '2026-07-20', 'Jilid 2', '4');
+        $this->journal($ahead, '2026-07-20', 'Jilid 2', '4');
+
+        $response = $this->actingAs($this->teacherUser)->get(route('ummi-flow.index'))->assertOk();
+        $this->assertSame(3, $response->viewData('majorityNo'));
+        $response->assertSee('Target sesi ini · TM 3')->assertSee('Tertinggal 2 TM')->assertSee('Samakan ke TM 3');
+
+        $this->actingAs($this->teacherUser)->post(route('ummi-flow.align'), ['tm_no' => 3, 'student_ids' => [$behind->id]])->assertSessionHas('success');
+        $this->assertSame(3, app(UmmiProsemService::class)->studentProgress($behind->fresh(), '2026/2027', 1)['next']['no']);
+    }
+
+    #[Test]
+    public function peraga_continues_into_the_second_peraga_of_the_jilid(): void
+    {
+        $this->import();
+        $plan = app(UmmiProsemService::class)->plan('2026/2027', 1);
+        // Baris 3: Jilid 2 peraga "18-4" = Peraga 3 hlm 18-20 lalu Peraga 4 hlm 1-4 (7 halaman, 4 TM).
+        $row3 = array_values(array_filter($plan, fn ($e) => $e['row']->position === 3));
+        $this->assertSame('Peraga 3 hlm 18-19', UmmiProsemService::peragaLabel('Jilid 2', $row3[0]['peraga']));
+        $this->assertSame('Peraga 3 hlm 20 · Peraga 4 hlm 1', UmmiProsemService::peragaLabel('Jilid 2', $row3[1]['peraga']));
+        $this->assertSame('Peraga 4 hlm 4', UmmiProsemService::peragaLabel('Jilid 2', $row3[3]['peraga'])); // 7 hlm: 2, 2, 2, 1
     }
 }

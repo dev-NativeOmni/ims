@@ -314,6 +314,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/prosem-ummi', [UmmiProsemController::class, 'update'])->name('prosem-ummi.update');
         Route::get('/alur-pembelajaran', [UmmiFlowController::class, 'index'])->name('ummi-flow.index');
         Route::post('/alur-pembelajaran/durasi', [UmmiFlowController::class, 'updateSettings'])->name('ummi-flow.settings');
+        Route::post('/alur-pembelajaran/samakan', [UmmiFlowController::class, 'align'])->name('ummi-flow.align');
     });
 
     // Tabungan & Hutang Baris (Kelas 11 & 12): guru hanya melihat murid halaqohnya (visibleStudentQuery).

@@ -217,7 +217,7 @@
                                         <td class="px-3 py-1.5 whitespace-nowrap">{{ \App\Http\Controllers\UmmiProsemController::MONTH_LABELS[$entry['month']] }} pekan {{ $entry['week'] }}</td>
                                         <td class="px-3 py-1.5">
                                             @if ($entry['jilid'])
-                                                <span class="font-semibold">{{ $entry['jilid'] }}</span> · hlm {{ \App\Services\UmmiProsemService::pagesLabel($entry['buku']) }} · peraga {{ \App\Services\UmmiProsemService::pagesLabel($entry['peraga']) }}
+                                                <span class="font-semibold">{{ $entry['jilid'] }}</span> · buku hlm {{ \App\Services\UmmiProsemService::pagesLabel($entry['buku']) }} · {{ \App\Services\UmmiProsemService::peragaLabel($entry['jilid'], $entry['peraga']) }}
                                             @else
                                                 <span class="text-amber-600 dark:text-amber-400 font-semibold">{{ $entry['row']->notes ?: 'Pengulangan / evaluasi' }}</span>
                                             @endif

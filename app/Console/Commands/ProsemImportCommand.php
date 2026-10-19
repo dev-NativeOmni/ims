@@ -87,10 +87,10 @@ class ProsemImportCommand extends Command
             };
             [$hafalanStart, $hafalanEnd] = $surahRange((string) ($line[4] ?? ''), 'Hafalan');
             [$drillStart, $drillEnd] = $surahRange((string) ($line[5] ?? ''), 'Drill');
-            foreach (['Peraga' => [$peragaStart, $peragaEnd], 'Buku' => [$bukuStart, $bukuEnd]] as $label => [$a, $b]) {
-                if ($a && $b && $b < $a) {
-                    $warnings[] = "Baris {$no}: Hlm. {$label} {$a}-{$b} (akhir < awal), tidak dibagi per TM; mohon cek.";
-                }
+            // Peraga "18-4" wajar (lanjut ke peraga kedua jilid itu); buku tidak melompat, jadi "9-1" = 1-9.
+            if ($bukuStart && $bukuEnd && $bukuEnd < $bukuStart) {
+                $warnings[] = "Baris {$no}: Hlm. Buku {$bukuStart}-{$bukuEnd} terbalik, dibaca {$bukuEnd}-{$bukuStart}; mohon cek sheet.";
+                [$bukuStart, $bukuEnd] = [$bukuEnd, $bukuStart];
             }
             $tm = (int) collect($weeks)->flatten()->sum();
             if ((int) ($line[6] ?? 0) !== $tm) {

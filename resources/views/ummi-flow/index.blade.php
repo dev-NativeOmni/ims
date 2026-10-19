@@ -12,14 +12,15 @@
     </x-slot>
 
     @php
-        $entry = $meeting['entry'] ?? null;
+        $entry = $target;
+        $schedule = $schedule['entry'] ?? null;
         $total = array_sum(array_column($sessions, 'minutes'));
         // Isi tiap sesi dari target pertemuan hari ini.
         $hints = [
             'pembukaan' => "Salam, doa pembuka, presensi.",
             'murojaah' => $entry ? 'Drill: '.\App\Services\UmmiProsemService::rangeLabel($entry['drill']) : null,
             'ziyadah' => $entry ? 'Hafalan baru: '.\App\Services\UmmiProsemService::rangeLabel($entry['hafalan']) : null,
-            'klasikal' => $entry && $entry['jilid'] ? $entry['jilid'].' · peraga hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['peraga']).' · buku hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['buku']) : ($entry ? ($entry['row']->notes ?: 'Pengulangan / evaluasi') : null),
+            'klasikal' => $entry && $entry['jilid'] ? $entry['jilid'].' buku hlm '.\App\Services\UmmiProsemService::pagesLabel($entry['buku']).' · '.\App\Services\UmmiProsemService::peragaLabel($entry['jilid'], $entry['peraga']) : ($entry ? ($entry['row']->notes ?: 'Pengulangan / evaluasi') : null),
             'penutup' => 'Evaluasi singkat, doa penutup.',
         ];
         $months = \App\Http\Controllers\UmmiProsemController::MONTH_LABELS;
@@ -53,12 +54,17 @@
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 pb-2">{{ $today->locale('id')->translatedFormat('l, d F Y') }} · total {{ $total }} menit</p>
             </form>
 
-            {{-- Target pertemuan hari ini (Prosem) --}}
+            {{-- Target sesi hari ini: TM mayoritas murid halaqoh menurut jurnal Ummi (tidak bergeser sebelum terpenuhi). --}}
             <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
                 @if ($entry)
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
-                        <h3 class="font-bold text-zinc-900 dark:text-white">Target pertemuan hari ini · TM {{ $entry['no'] }}{{ ! empty($entry['no_end']) && $entry['no_end'] !== $entry['no'] ? '–'.$entry['no_end'] : '' }}</h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $months[$entry['month']] }} pekan {{ $entry['week'] }}{{ ! empty($meeting['weekly']) ? ' · kelas pekanan: target sepekan' : '' }}{{ ($meeting['nth'] ?? 0) === 0 && empty($meeting['weekly']) ? ' · hari ini bukan jadwal Ummi kelas ini' : '' }}</p>
+                        <h3 class="font-bold text-zinc-900 dark:text-white">Target sesi ini · TM {{ $entry['no'] }}{{ ! empty($entry['no_end']) && $entry['no_end'] !== $entry['no'] ? '–'.$entry['no_end'] : '' }}</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                            Target mayoritas murid (dari jurnal Ummi){{ $weekly ? ' · kelas pekanan: target sepekan' : '' }}
+                            @if ($schedule)
+                                · jadwal Prosem pekan ini: TM {{ $schedule['no'] }}{{ ! empty($schedule['no_end']) && $schedule['no_end'] !== $schedule['no'] ? '–'.$schedule['no_end'] : '' }}
+                            @endif
+                        </p>
                     </div>
                     <dl class="mt-3 grid sm:grid-cols-3 gap-3 text-sm">
                         <div class="rounded-xl bg-zinc-50 dark:bg-zinc-800/60 p-3">
@@ -74,16 +80,68 @@
                             <dd class="font-semibold text-zinc-900 dark:text-white">{{ \App\Services\UmmiProsemService::rangeLabel($entry['drill']) }}</dd>
                         </div>
                     </dl>
+                @elseif ($hasPlan)
+                    <p class="text-sm text-zinc-600 dark:text-zinc-300">Semua TM Prosem semester ini sudah terpenuhi oleh murid halaqoh ini.</p>
                 @else
                     <p class="text-sm text-zinc-600 dark:text-zinc-300">
-                        Tidak ada tatap muka Prosem terjadwal pekan ini.
-                        @if (! empty($meeting['next']))
-                            Berikutnya: TM {{ $meeting['next']['no'] }} ({{ $months[$meeting['next']['month']] }} pekan {{ $meeting['next']['week'] }}).
-                        @endif
+                        Prosem untuk kelas/halaqoh ini belum diisi, jadi target per pertemuan belum ada. Timer tetap bisa dipakai.
                         <a href="{{ route('prosem-ummi.index') }}" class="font-semibold text-teal-700 dark:text-teal-400 hover:underline">Lihat Prosem</a>
                     </p>
                 @endif
             </div>
+
+            {{-- Target per murid: tertinggal dari mayoritas bisa disamakan musyrif; di depan = surplus. --}}
+            @if ($hasPlan && $students !== [])
+                @php $behind = collect($students)->where('gap', '<', 0); @endphp
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-zinc-200 dark:border-zinc-800">
+                        <div>
+                            <h3 class="font-bold text-zinc-900 dark:text-white">Target per murid</h3>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Dari jurnal Ummi masing-masing: target tidak maju sebelum terpenuhi; capaian di atas target = surplus.</p>
+                        </div>
+                        @if ($behind->isNotEmpty() && $majorityNo)
+                            <form method="POST" action="{{ route('ummi-flow.align') }}" onsubmit="return confirm('Samakan {{ $behind->count() }} murid yang tertinggal ke TM {{ $majorityNo }}?')">
+                                @csrf
+                                <input type="hidden" name="tm_no" value="{{ $majorityNo }}">
+                                @foreach ($behind as $row)
+                                    <input type="hidden" name="student_ids[]" value="{{ $row['id'] }}">
+                                @endforeach
+                                <button type="submit" class="rounded-xl bg-amber-500 hover:bg-amber-600 px-3 py-2 text-xs font-bold text-white">Samakan semua yang tertinggal ({{ $behind->count() }})</button>
+                            </form>
+                        @endif
+                    </div>
+                    <ul class="divide-y divide-zinc-100 dark:divide-zinc-800 text-sm">
+                        @foreach ($students as $row)
+                            <li class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <p class="font-semibold text-zinc-900 dark:text-white">{{ $row['name'] }}</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                        Jurnal: {{ $row['position'] }}{{ $row['last_session'] ? ' · terakhir '.\Carbon\Carbon::parse($row['last_session'])->format('d/m') : ' · belum ada jurnal' }}
+                                        · target TM {{ $row['next']['no'] ?? '-' }}{{ $row['override'] ? ' (disamakan)' : '' }}
+                                    </p>
+                                </div>
+                                @if ($row['gap'] < 0)
+                                    <div class="flex items-center gap-2">
+                                        <span class="rounded-full bg-rose-100 dark:bg-rose-500/15 px-2.5 py-0.5 text-xs font-bold text-rose-700 dark:text-rose-300">Tertinggal {{ -$row['gap'] }} TM</span>
+                                        <form method="POST" action="{{ route('ummi-flow.align') }}">
+                                            @csrf
+                                            <input type="hidden" name="tm_no" value="{{ $majorityNo }}">
+                                            <input type="hidden" name="student_ids[]" value="{{ $row['id'] }}">
+                                            <button type="submit" class="rounded-lg border border-amber-400 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10">Samakan ke TM {{ $majorityNo }}</button>
+                                        </form>
+                                    </div>
+                                @elseif ($row['gap'] > 0)
+                                    <span class="rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">Surplus {{ $row['gap'] }} TM</span>
+                                @elseif ($row['next'])
+                                    <span class="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-bold text-zinc-600 dark:text-zinc-300">Sesuai</span>
+                                @else
+                                    <span class="rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">Selesai semester</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             {{-- Timer --}}
             <div x-data="ummiFlowTimer(@js($sessions), @js($storageKey))" class="grid lg:grid-cols-5 gap-5">

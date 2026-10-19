@@ -30,13 +30,23 @@ Permintaan sekolah, Oktober 2026. Kode utama: `app/Services/UmmiProsemService.ph
 ## Target per pertemuan
 
 - `plan()` menyusun urutan TM semester: bulan → pekan 1-5 → urutan baris.
-- Halaman peraga dan buku sebuah baris **dibagi rata** ke TM-nya. Sisa halaman diberikan ke TM awal. Contoh: hlm 1-8 dalam 4 TM menjadi 1-2, 3-4, 5-6, 7-8.
-- Hafalan dan drill berlaku di semua TM baris itu.
-- Rentang halaman terbalik tidak dibagi.
-- Baris tanpa materi berarti TM pengulangan atau evaluasi.
-- Pekan ke-n dalam bulan memakai pekan Senin-Minggu. Pekan 1 adalah pekan yang memuat tanggal 1.
-- `meetingFor(kelas, tanggal, musyrif)` menentukan TM hari itu: pekan Prosem tanggal itu, ditambah urutan hari pertemuan Ummi kelas itu di pekan tersebut (Senin-Kamis, kalender akademik).
-- **Kelas pekanan** (program "seminggu sekali"): semua TM di pekan itu digabung menjadi satu target. Contoh: TM 1-2, buku hlm 1-4.
+- Halaman buku sebuah baris **dibagi rata** ke TM-nya. Sisa halaman diberikan ke TM awal. Contoh: hlm 1-8 dalam 4 TM menjadi 1-2, 3-4, 5-6, 7-8.
+- **Peraga:** satu jilid (40 halaman buku) memakai dua peraga, masing-masing 20 halaman.
+  - Jilid 1 memakai Peraga 1 & 2, Jilid 2 memakai Peraga 3 & 4, Jilid 3 memakai Peraga 5 & 6.
+  - "18-4" berarti peraga pertama hlm 18-20, lalu peraga kedua hlm 1-4.
+  - Baris berikutnya yang mulai dari halaman lebih kecil sudah berada di peraga kedua.
+  - Peraga dihitung sebagai urutan 1-40 di dalam jilid (`peragaRanges()`, `peragaLabel()`), lalu dibagi rata per TM.
+- Buku tidak mungkin melompat, jadi "9-1" di sheet dibaca sebagai 1-9 (dengan peringatan saat impor).
+- Hafalan dan drill berlaku di semua TM baris itu. Baris "Dril"/"Ujian" adalah TM tanpa halaman.
+- **Target per murid mengikuti jurnal Ummi, bukan kalender** (`studentProgress()`):
+  - TM bermateri terpenuhi bila posisi buku di jurnal (Jilid + halaman, `UmmiProgressService::pageValue`) sudah sampai halaman akhir TM itu.
+  - TM Drill/Ujian terpenuhi setelah sejumlah sesi jurnal tercatat sesudah materi terakhir yang terpenuhi. Untuk kelas pekanan, satu sesi menghabiskan semua TM pekan itu.
+  - Target tidak bergeser sebelum terpenuhi. Capaian yang melewati target langsung memajukan target, dan dihitung sebagai surplus.
+- **Alur Pembelajaran** memakai TM **mayoritas** murid halaqoh sebagai target sesi.
+  - Murid di belakang mayoritas ditandai "Tertinggal n TM", dan musyrif bisa menekan **Samakan**. Data disimpan di `ummi_prosem_overrides`, dan target murid itu dimajukan ke TM mayoritas.
+  - Murid di depan mayoritas ditandai "Surplus".
+  - Kelas pekanan: target sesi = TM itu ditambah TM lain di pekan Prosem yang sama (`sessionTarget()`).
+- `meetingFor()` (jadwal menurut kalender) hanya ditampilkan sebagai keterangan "jadwal Prosem pekan ini". Pekan ke-n dalam bulan memakai pekan Senin-Minggu, dengan pekan 1 memuat tanggal 1.
 
 ## Target Ummi bulanan otomatis
 
