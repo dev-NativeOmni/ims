@@ -60,10 +60,12 @@ class AdabMaterialTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authorized_users_can_access_adab_materials_index_while_student_and_parent_cannot()
+    public function test_all_logged_in_users_can_access_adab_materials_index()
     {
-        $this->actingAs($this->student)->get(route('adab-materials.index'))->assertStatus(403);
-        $this->actingAs($this->parent)->get(route('adab-materials.index'))->assertStatus(403);
+        $this->actingAs($this->student)->get(route('adab-materials.index'))
+            ->assertStatus(200)
+            ->assertDontSee(route('adab-materials.create'));
+        $this->actingAs($this->parent)->get(route('adab-materials.index'))->assertStatus(200);
 
         $this->actingAs($this->teacher)->get(route('adab-materials.index'))->assertStatus(200);
         $this->actingAs($this->admin)->get(route('adab-materials.index'))->assertStatus(200);

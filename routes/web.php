@@ -602,11 +602,10 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     | Materi Adab
     |--------------------------------------------------------------------------
-    |
+    | Daftar materi terbuka untuk semua pengguna yang login (termasuk santri &
+    | orang tua) demi transparansi; kelola materi tetap dibatasi role di bawah.
     */
-    Route::middleware(['role:super_admin,admin,teacher,supervisor,headmaster,tanse,coordinator_tahfizh,pendamping_adab'])->group(function () {
-        Route::get('/materi-adab', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
-    });
+    Route::get('/materi-adab', [AdabMaterialController::class, 'index'])->name('adab-materials.index');
 
     Route::middleware(['role:super_admin,admin,teacher,supervisor,coordinator_tahfizh,pendamping_adab,headmaster'])->group(function () {
         Route::get('/materi-adab/create', [AdabMaterialController::class, 'create'])->name('adab-materials.create');

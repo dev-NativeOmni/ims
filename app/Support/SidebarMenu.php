@@ -115,11 +115,8 @@ class SidebarMenu
                     ],
                     // Koordinator Keagamaan/Adab: kalender untuk mengatur & mengunci libur Adab (Admin lewat Data Master).
                     ['label' => 'Kalender Adab', 'route' => 'academic-calendar.index', 'icon' => 'calendar', 'roles' => ['supervisor'], 'active' => ['academic-calendar.*']],
-                    [
-                        'label' => 'Materi Adab', 'route' => 'adab-materials.index', 'icon' => 'book',
-                        'except' => ['parent', 'student', 'headmaster'],
-                        'active' => ['adab-materials.*'],
-                    ],
+                    // Terbuka untuk semua role (transparansi materi).
+                    ['label' => 'Materi Adab', 'route' => 'adab-materials.index', 'icon' => 'book', 'active' => ['adab-materials.*']],
                 ],
             ],
             [
