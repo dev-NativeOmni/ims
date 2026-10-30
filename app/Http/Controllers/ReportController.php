@@ -1194,7 +1194,8 @@ class ReportController extends Controller
             // dengan UmmiProgressService::termPosition() di Laporan Triwulan & rapor.
             $lastUmmiWithSurah = $allUmmiRecords->get($student->id, collect())
                 ->first(fn ($record) => $record->surahs->contains(fn ($entry) => $entry->surah_id !== null));
-            $ummiCapaian = $lastUmmiWithSurah?->surahs_end_label ?: '-';
+            // Cukup surah terjauh + ayatnya, bukan semua surah di catatan itu.
+            $ummiCapaian = app(UmmiProgressService::class)->furthestSurahLabel($lastUmmiWithSurah);
 
             $ummiTarget = null;
             if ($isGrade10) {

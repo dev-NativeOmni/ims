@@ -309,17 +309,43 @@ class UmmiProgressService
     {
         return $this->recordsUntil($records, $until)
             ->flatMap(fn ($r) => $r->surahs)
-            ->map(function ($entry) {
-                if (! $entry->surah || ! preg_match_all('/\d+/', (string) $entry->hafalan_ayah, $m)) {
-                    return $entry->surah ? $this->hafalanValue((int) $entry->surah->number, (int) $entry->surah->total_ayah) : null;
-                }
-
-                // Ayat melebihi panjang surah (salah input, mis. Al-Bayyinah "1-10") = akhir surah,
-                // supaya catatan itu tetap terbaca dan tidak mundur ke catatan sebelumnya.
-                return $this->hafalanValue((int) $entry->surah->number, min((int) max($m[0]), (int) $entry->surah->total_ayah));
-            })
+            ->map(fn ($entry) => $this->entryValue($entry))
             ->filter()
             ->last();
+    }
+
+    /**
+     * Kolom Capaian Hafalan kartu Ummi Kelas 10: hanya surah terjauh (urutan hafalan Ummi) dari satu
+     * catatan beserta ayat akhirnya, mis. "At-Tin (8), Ash-Sharh (8), Ad-Duha (11)" -> "Ad-Duha (11)".
+     */
+    public function furthestSurahLabel(?UmmiRecord $record): string
+    {
+        // sortBy stabil: bila posisi tidak terbaca, entri yang diinput terakhir yang dipakai.
+        $entry = $record?->surahs
+            ->filter(fn ($entry) => $entry->surah)
+            ->sortBy(fn ($entry) => $this->entryValue($entry) ?? 0)
+            ->last();
+
+        if (! $entry) {
+            return '-';
+        }
+
+        // Ayat melebihi panjang surah (salah input) = akhir surah (App\Support\UmmiAyah).
+        $ayah = UmmiAyah::clamp((string) $entry->hafalan_ayah, (int) $entry->surah->total_ayah);
+
+        return $entry->hafalan_ayah ? $entry->surah->name_latin.' ('.AyahLabel::end($ayah).')' : $entry->surah->name_latin;
+    }
+
+    /** Posisi satu entri surah catatan Ummi; ayat kosong = akhir surah. */
+    private function entryValue($entry): ?int
+    {
+        if (! $entry->surah || ! preg_match_all('/\d+/', (string) $entry->hafalan_ayah, $m)) {
+            return $entry->surah ? $this->hafalanValue((int) $entry->surah->number, (int) $entry->surah->total_ayah) : null;
+        }
+
+        // Ayat melebihi panjang surah (salah input, mis. Al-Bayyinah "1-10") = akhir surah,
+        // supaya catatan itu tetap terbaca dan tidak mundur ke catatan sebelumnya.
+        return $this->hafalanValue((int) $entry->surah->number, min((int) max($m[0]), (int) $entry->surah->total_ayah));
     }
 
     private function recordsUntil(Collection $records, Carbon $until): Collection

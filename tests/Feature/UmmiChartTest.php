@@ -210,6 +210,25 @@ class UmmiChartTest extends TestCase
     }
 
     #[Test]
+    public function ummi_card_capaian_hafalan_shows_only_the_furthest_surah_of_the_session(): void
+    {
+        $record = UmmiRecord::create([
+            'student_id' => $this->student->id, 'teacher_id' => $this->teacherProfile->id, 'tanggal' => '2026-08-10',
+            'ummi_jilid' => 'Jilid 1', 'ummi_halaman' => '35', 'tatap_muka' => 1,
+        ]);
+        // Urutan input diacak: yang terjauh di urutan Ummi (Juz 30 mundur) tetap Surah 93.
+        foreach ([[94, '1-8'], [93, '1-11'], [95, '1-8']] as [$surah, $ayat]) {
+            $record->surahs()->create(['surah_id' => Surah::where('number', $surah)->value('id'), 'hafalan_ayah' => $ayat]);
+        }
+
+        $response = $this->actingAs($this->admin)->get(route('reports.periodic', [
+            'class_room_id' => $this->classRoom->id, 'period_type' => 'monthly', 'month' => 8, 'year' => 2026,
+        ]));
+
+        $this->assertSame('Surah 93 (11)', $response->assertOk()->viewData('studentReports')[0]['ummi_capaian']);
+    }
+
+    #[Test]
     public function ayah_beyond_surah_length_counts_as_end_of_surah_and_can_be_fixed(): void
     {
         // Surah 98 (8 ayat di data uji): catatan terakhir "1-10" (salah input) tetap terbaca sebagai ayat 8.

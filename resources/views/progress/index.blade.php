@@ -213,8 +213,9 @@
                                     'student' => $st,
                                     'ummi_jilid' => $r['ummi_jilid_num'] ?? '-',
                                     'ummi_halaman' => $r['ummi_halaman'] ?? '-',
-                                    // Hafalan dari catatan Ummi terakhir yang berisi surah, bukan materi pertemuan.
-                                    'ummi_capaian' => ($r['ummi_surah_record'] ?? null)?->surahs_label ?: '-',
+                                    // Hafalan dari catatan Ummi terakhir yang berisi surah, bukan materi pertemuan;
+                                    // cukup surah terjauh + ayatnya.
+                                    'ummi_capaian' => app(\App\Services\UmmiProgressService::class)->furthestSurahLabel($r['ummi_surah_record'] ?? null),
                                     'ziyadah' => $ziyadahName,
                                 ];
                             });
