@@ -7,6 +7,7 @@ use App\Models\HafalanRecord;
 use App\Models\Program;
 use App\Models\StudentPriorHafalan;
 use App\Models\Surah;
+use App\Services\HafalanProgressService;
 use App\Support\HafalanOrder;
 use Carbon\Carbon;
 use Database\Seeders\QuranDataSeeder;
@@ -89,5 +90,39 @@ class PeriodicMandiriKhatamTest extends TestCase
         $response = $this->periodic($class)->assertSee('Khatam 30 Juz');
         $this->assertTrue(collect($response->viewData('studentReports'))->first()['khatam']);
         $this->assertTrue($response->viewData('ummiChart')['rows'][0]['khatam']);
+    }
+
+    #[Test]
+    public function setoran_of_students_who_completed_30_juz_still_count_their_lines(): void
+    {
+        $this->inClass('X E1');
+        $ids = Surah::query()->pluck('id', 'number');
+        foreach (range(1, 30) as $juz) {
+            foreach (HafalanOrder::JUZ_RANGES[$juz] as $range) {
+                StudentPriorHafalan::create(['student_id' => $this->student->id, 'surah_id' => $ids[$range['surah']], 'ayah_start' => $range['start'], 'ayah_end' => $range['end']]);
+            }
+        }
+        $this->setor('2026-07-14', 67, 1, 10, 12);
+        $this->setor('2026-08-04', 67, 6, 15, 12);
+
+        $progress = app(HafalanProgressService::class);
+        $details = collect($progress->passedLineDetails($progress->records($this->student), Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30')));
+
+        $this->assertSame(['khatam', 'khatam'], $details->pluck('kind')->all());
+        $this->assertEquals(24.0, $details->sum('new_lines'), 'Ayat sudah hafal semua, baris tetap dihitung penuh.');
+        $this->assertSame([], $progress->passedHistory([$this->student->id])[$this->student->id], 'Tanpa peringatan "setoran ulangan".');
+    }
+
+    #[Test]
+    public function repeated_ayat_of_students_not_yet_khatam_still_count_zero(): void
+    {
+        $this->inClass('X E1');
+        $this->setor('2026-07-14', 67, 1, 10, 12);
+        $this->setor('2026-08-04', 67, 1, 10, 12);
+
+        $progress = app(HafalanProgressService::class);
+        $details = collect($progress->passedLineDetails($progress->records($this->student), Carbon::parse('2026-07-01'), Carbon::parse('2026-09-30')));
+
+        $this->assertSame(['new', 'repeat'], $details->pluck('kind')->all());
     }
 }

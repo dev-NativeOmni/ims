@@ -172,6 +172,15 @@ class HafalanProgressService
                 ];
             });
 
+        // Murid khatam 30 juz: setorannya tetap dihitung penuh (passedLineDetails), jadi tanpa peringatan.
+        $numbers = $this->surahs()->pluck('number', 'id');
+        foreach ($history as $studentId => $entries) {
+            $coverage = AyahCoverage::fromRanges(array_map(fn ($e) => [(int) ($numbers[$e[0]] ?? 0), $e[1], $e[2]], $entries));
+            if (! in_array(false, array_map(fn ($p) => $p >= 100, $this->juzPercentages($coverage)), true)) {
+                $history[$studentId] = [];
+            }
+        }
+
         return $history;
     }
 
@@ -350,8 +359,8 @@ class HafalanProgressService
     /**
      * Capaian baris pada rentang tanggal (inklusif): hanya ayat yang BARU pertama kali lulus.
      * Setor ulang ayat yang sudah pernah lulus (sebelum maupun di dalam rentang), muraja'ah yang
-     * diinput sebagai setoran, dan setoran ganda tidak menambah capaian. Setoran belum lulus tidak
-     * dihitung. Rincian per setoran: passedLineDetails().
+     * diinput sebagai setoran, dan setoran ganda tidak menambah capaian -- kecuali murid yang sudah
+     * khatam 30 juz: setorannya dihitung penuh. Setoran belum lulus tidak dihitung. Rincian per setoran: passedLineDetails().
      */
     /**
      * Baris ayat baru & jenis tiap baris setoran (id HafalanRecordSurah) pada rentang -- untuk tampilan
@@ -376,7 +385,8 @@ class HafalanProgressService
      * Rincian setoran lulus pada rentang tanggal, urut waktu: baris setoran (manual guru bila diisi,
      * selain itu kalkulator), baris yang dihitung sebagai capaian (ayat baru saja), dan jenisnya:
      * 'new' (semua ayat baru), 'partial' (sebagian ayat sudah pernah lulus), 'repeat' (semua ayat
-     * sudah pernah lulus), 'duplicate' (sama persis dengan setoran lain di tanggal yang sama).
+     * sudah pernah lulus), 'duplicate' (sama persis dengan setoran lain di tanggal yang sama), 'khatam'
+     * (murid sudah hafal 30 juz sebelum setoran ini: baris dihitung penuh walau ayatnya ulangan).
      *
      * @return array<int, array{record: mixed, baris: float, calculated: float, new_lines: float, new_ayat: int, kind: string}>
      */
@@ -394,6 +404,7 @@ class HafalanProgressService
 
         $details = [];
         $seen = [];
+        $khatam = false;
         foreach ($passed as $r) {
             if (! Carbon::parse($r->submitted_at)->betweenIncluded($from->copy()->startOfDay(), $until->copy()->endOfDay())) {
                 continue;
@@ -417,7 +428,15 @@ class HafalanProgressService
             $newAyat = array_sum(array_map(fn ($range) => $range[1] - $range[0] + 1, $uncovered));
             $allAyat = $end - $start + 1;
 
-            if ($newAyat === $allAyat) {
+            // Sudah khatam 30 juz sebelum setoran ini: tidak ada lagi ayat baru, jadi setoran tetap dihitung
+            // penuh (grafik menandainya emas). Dicek hanya saat ada ayat ulangan; khatam tidak bisa batal.
+            if ($newAyat < $allAyat && ! $khatam) {
+                $khatam = ! in_array(false, array_map(fn ($p) => $p >= 100, $this->juzPercentages($covered)), true);
+            }
+
+            if ($khatam) {
+                [$kind, $newLines] = ['khatam', $baris];
+            } elseif ($newAyat === $allAyat) {
                 [$kind, $newLines] = ['new', $baris];
             } elseif ($newAyat === 0) {
                 [$kind, $newLines] = ['repeat', 0.0];

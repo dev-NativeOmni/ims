@@ -6,7 +6,7 @@
 --}}
 @php
     $fmt = fn ($v) => rtrim(rtrim(number_format((float) $v, 1, ',', ''), '0'), ',');
-    $labels = ['partial' => 'sebagian ulang', 'repeat' => 'ulang', 'duplicate' => 'ganda', 'not_passed' => 'belum lulus'];
+    $labels = ['partial' => 'sebagian ulang', 'repeat' => 'ulang', 'duplicate' => 'ganda', 'not_passed' => 'belum lulus', 'khatam' => 'khatam 30 juz'];
     $differs = $counted && abs($counted['counted'] - $counted['raw']) >= 0.05;
 @endphp
 <span title="Baris ayat baru yang dihitung capaian (ulangan tidak dihitung)">{{ $fmt($counted['counted'] ?? $record->lines_count) }}{{ $suffix ?? '' }}</span>

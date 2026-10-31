@@ -66,6 +66,7 @@ class RincianBarisCommand extends Command
             'partial' => 'sebagian ulang',
             'repeat' => 'ULANG (ayat sudah pernah lulus)',
             'duplicate' => 'GANDA (sama persis di tanggal ini)',
+            'khatam' => 'khatam 30 juz (dihitung penuh)',
         ];
         $surahs = $progress->surahs();
         $details = $progress->passedLineDetails($records, $start, now()->min($end->copy()->endOfDay()));
