@@ -45,9 +45,18 @@ class UsulHafalanAwalCommandTest extends TestCase
         $this->setor(15, 1, 99, '2026-08-13'); // kemungkinan muraja'ah hafalan lama
         $this->setor(16, 1, 24, '2026-08-21');
 
-        // Kelas 11 & 12: Juz 14 dihafal dari awal (Al-Hijr dulu) menurut aturan sekolah -> langsung bisa disimpan.
+        // Kelas 11 & 12 dari awal juz menurut aturan, tetapi setoran terbaca dari akhir juz (An-Nahl lalu
+        // Al-Hijr): tandai CEK ARAH & jangan disimpan -- murid yang benar-benar dari akhir juz akan diberi
+        // hafalan lama di bagian yang baru ia hafal, sehingga setorannya dihitung 0.
+        $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--simpan' => true, '--force' => true])
+            ->expectsOutputToContain('Juz 14 dari awal (aturan kelas) ! CEK ARAH: setoran dari akhir')
+            ->assertSuccessful();
+        $this->assertSame(0, StudentPriorHafalan::count(), 'Arah belum dicek: tidak disimpan.');
+
+        // Guru memastikan Juz 14 dari awal (setoran Al-Hijr itu muraja'ah) -> usulan bisa disimpan.
+        $this->student->update(['juz_orders' => [14 => 'asc']]);
         $this->artisan('tad:usul-hafalan-awal', ['--term' => 1, '--tahun' => '2026/2027', '--berubah' => true])
-            ->expectsOutputToContain('Al-Hijr 1-99; An-Nahl 1-24 | Juz 14 dari awal (aturan kelas)')
+            ->expectsOutputToContain('Al-Hijr 1-99; An-Nahl 1-24 | Juz 14 dari awal (diatur guru)')
             ->assertSuccessful();
         $this->assertSame(0, StudentPriorHafalan::count(), 'Tampil saja: belum disimpan.');
 

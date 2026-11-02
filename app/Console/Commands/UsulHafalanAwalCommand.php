@@ -89,10 +89,11 @@ class UsulHafalanAwalCommand extends Command
                 $assumed = $this->juzOrder($student, $juz);
                 $detected = $progress->detectedJuzOrders($records)[$juz] ?? null;
                 $manual = isset($student->juz_orders[$juz]) || isset($student->juz_orders[(string) $juz]);
-                // Arah dari guru atau aturan sekolah (Kelas 11 & 12: dari awal juz) sudah pasti; selain itu
-                // tandai bila setoran menunjukkan arah lain.
+                // Hanya arah yang diatur guru yang pasti. Aturan Kelas 11 & 12 (dari awal juz) tidak cukup: murid
+                // yang menghafal dari akhir juz jadi diberi hafalan lama di bagian yang baru
+                // akan ia hafal, dan setorannya dihitung 0 -- tandai bila setoran menunjukkan arah lain.
                 $ruled = $manual || HafalanProgressService::juz30FromNaba($student);
-                $checkDirection = ! $ruled && $detected !== null && $detected !== $assumed;
+                $checkDirection = ! $manual && $detected !== null && $detected !== $assumed;
                 $label = fn (string $o) => $o === HafalanOrder::DESC ? 'dari akhir' : 'dari awal';
                 if (! $checkDirection) {
                     $proposals[$student->id] = $ranges;
