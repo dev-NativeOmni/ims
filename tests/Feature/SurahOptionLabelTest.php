@@ -41,7 +41,7 @@ class SurahOptionLabelTest extends TestCase
         $this->student->update(['class_room_id' => $classRoom->id, 'tahfizh_level' => 'ummi']);
         foreach ([
             route('hafalan-targets.ummi', ['class_room_id' => $classRoom->id]),
-            route('spreadsheet-input.index', ['class_room_id' => $classRoom->id]),
+            route('ummi.input', ['class_room_id' => $classRoom->id]),
             route('tahfizh-exams.create'),
             route('tahfizh-exams.index'),
             route('murajaah-records.index'),

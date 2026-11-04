@@ -36,10 +36,17 @@ use Throwable;
 
 class HafalanTargetController extends Controller
 {
-    public function index(Request $request, AutoHafalanTargetService $autoTargets, AcademicCalendarService $calendar): View
+    public function index(Request $request, AutoHafalanTargetService $autoTargets, AcademicCalendarService $calendar): View|RedirectResponse
     {
         $visibleStudentIds = $this->visibleStudentIds($request->user());
         $activeProgram = $request->input('program', 'reguler');
+        // Target Ummi pindah ke menu Metode Ummi; pesan sukses ikut terbawa.
+        if ($activeProgram === 'ummi') {
+            $request->session()->reflash();
+
+            return redirect()->route('hafalan-targets.ummi', $request->only(['class_room_id', 'teacher_id']));
+        }
+
         // Program Reguler (Kelas 11 & 12): isian per bulan memakai tabel yang sama dengan Target Triwulan.
         $gridMonth = preg_match('/^\d{4}-\d{2}$/', (string) $request->input('month')) ? $request->input('month') : now()->format('Y-m');
         $grid = $activeProgram === 'reguler' ? $this->targetGrid($request, $autoTargets, $calendar, $gridMonth) : null;

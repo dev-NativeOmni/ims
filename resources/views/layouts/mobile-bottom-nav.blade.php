@@ -15,13 +15,13 @@
                 [
                     'label' => 'Hafalan',
                     'route' => 'hafalan-records.index',
-                    'active' => $routeIs('hafalan-records.*'),
+                    'active' => $routeIs(['hafalan-records.*', 'ummi.riwayat*']),
                     'icon' => 'book',
                 ],
                 [
                     'label' => 'Input',
                     'route' => 'spreadsheet-input.index',
-                    'active' => $routeIs('spreadsheet-input.*'),
+                    'active' => $routeIs(['spreadsheet-input.*', 'ummi.input*', 'ummi.murajaah']),
                     'icon' => 'table',
                 ],
             ];
@@ -90,7 +90,7 @@
                 [
                     'label' => 'Hafalan',
                     'route' => 'hafalan-records.index',
-                    'active' => $routeIs('hafalan-records.*'),
+                    'active' => $routeIs(['hafalan-records.*', 'ummi.riwayat*']),
                     'icon' => 'book',
                 ],
                 [
@@ -222,7 +222,7 @@
                 [
                     'label' => 'Tahfizh',
                     'route' => 'hafalan-records.index',
-                    'active' => $routeIs('hafalan-records.*'),
+                    'active' => $routeIs(['hafalan-records.*', 'ummi.riwayat*']),
                     'icon' => 'book',
                 ],
             ];

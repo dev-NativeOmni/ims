@@ -108,7 +108,7 @@ class AcademicCalendarTest extends TestCase
         $this->assertContains($this->classRoom->id, $classHolidays["{$year}-08-20"]);
         $this->assertArrayHasKey("{$year}-12-24", $classHolidays, 'Libur bulan lain tidak boleh ikut terhapus.');
 
-        $responseSpreadsheet = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
+        $responseSpreadsheet = $this->actingAs($this->teacherUser)->get(route('ummi.input', [
             'class_room_id' => $this->classRoom->id,
             'month' => "{$year}-08",
         ]));

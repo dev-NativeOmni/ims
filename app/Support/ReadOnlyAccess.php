@@ -40,7 +40,7 @@ class ReadOnlyAccess
      * pesan WhatsApp ke wali, pengaturan akun & ganti role.
      */
     private const BLOCKED_ROUTE_PATTERNS = [
-        '*.create', '*.edit', '*fast-input*', 'spreadsheet-input.*',
+        '*.create', '*.edit', '*fast-input*', 'spreadsheet-input.*', 'ummi.input*', 'ummi.murajaah',
         '*export*', '*download*', '*print*', '*.pdf', 'quran.pdf', '*ummi-card*',
         'reports.whatsapp', 'profile.*', 'password.*', 'role.switch*',
         // Akun & sistem (mis. daftar user memuat password): tidak untuk pengunjung walau melihat sebagai Super Admin.

@@ -20,6 +20,8 @@ class MurajaahRecordController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        $isUmmiSection = $request->routeIs('ummi.*');
+        $gradeTenIds = ClassRoom::gradeTenIds();
 
         $murajaahRecords = MurajaahRecord::query()
             ->with([
@@ -27,6 +29,9 @@ class MurajaahRecordController extends Controller
                 'teacher.user',
                 'surah',
             ])
+            // Muraja'ah kelas 10 ada di Riwayat Ummi.
+            ->when($isUmmiSection, fn ($query) => $query->whereHas('student', fn ($q) => $q->whereIn('class_room_id', $gradeTenIds)))
+            ->when(! $isUmmiSection, fn ($query) => $query->whereDoesntHave('student', fn ($q) => $q->whereIn('class_room_id', $gradeTenIds)))
             ->when($user->hasRole('teacher'), function ($query) use ($user) {
                 $query->whereHas('student', function ($q) use ($user) {
                     $q->where('teacher_id', $user->teacherProfile?->id);
@@ -51,25 +56,43 @@ class MurajaahRecordController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $formData = $this->formData($user);
+        $formData['classRooms'] = $formData['classRooms']
+            ->filter(fn (ClassRoom $c) => $c->isGradeTen() === $isUmmiSection)
+            ->values();
+
         return view('murajaah-records.index', array_merge(
             [
                 'murajaahRecords' => $murajaahRecords,
             ],
-            $this->formData($user)
+            $formData
         ));
     }
 
-    public function fastInput(Request $request): View
+    public function fastInput(Request $request): View|RedirectResponse
     {
         $user = $request->user();
         $this->authorize('create', MurajaahRecord::class);
 
         $formData = $this->formData($user);
-        $classRooms = $formData['classRooms'];
+        // Lembar Muraja'ah Ummi hanya Kelas 10 Program Tahfizh; Mode Muraja'ah tanpa kelas 10.
+        $classRooms = $request->routeIs('ummi.*')
+            ? $formData['classRooms']->filter(fn (ClassRoom $c) => $c->hasMandiriSheets())->values()
+            : $formData['classRooms']->reject(fn (ClassRoom $c) => $c->isGradeTen())->values();
 
-        $selectedClassId = $request->integer('class_room_id') ?: ($classRooms->first()?->id ?? 0);
+        // Tautan ke kelas 10, atau akun yang hanya membimbing Kelas 10 Program Tahfizh: ke Lembar Muraja'ah Ummi.
+        if (! $request->routeIs('ummi.*')) {
+            $mandiriClasses = $formData['classRooms']->filter(fn (ClassRoom $c) => $c->hasMandiriSheets());
+            if ($mandiriClasses->contains('id', $request->integer('class_room_id')) || ($classRooms->isEmpty() && $mandiriClasses->isNotEmpty())) {
+                return redirect()->route('ummi.murajaah', $request->query());
+            }
+        }
 
-        $students = Student::query()
+        $requestedClassId = $request->integer('class_room_id');
+        $selectedClassId = $classRooms->contains('id', $requestedClassId) ? $requestedClassId : ($classRooms->first()?->id ?? 0);
+
+        // Tanpa kelas di daftar: jangan jatuh ke semua murid.
+        $students = $selectedClassId === 0 ? collect() : Student::query()
             ->with(['classRoom.program'])
             ->where('status', 'active')
             ->when($selectedClassId > 0, function ($query) use ($selectedClassId) {
@@ -116,6 +139,12 @@ class MurajaahRecordController extends Controller
             'entries.*.ayah_end' => 'required|integer|min:1',
             'entries.*.score' => 'required|numeric|min:0|max:100',
         ]);
+
+        $blocked = Student::query()->with('classRoom.program')->whereIn('id', collect($request->input('entries', []))->pluck('student_id'))->get()
+            ->contains(fn (Student $s) => $s->classRoom?->isGradeTen() && ! $s->classRoom->hasMandiriSheets());
+        if ($blocked) {
+            abort(422, "Kelas 10 di luar Program Tahfizh tidak memakai lembar Muraja'ah.");
+        }
 
         $user = $request->user();
         $userTeacherId = $user->teacherProfile?->id;
@@ -218,7 +247,12 @@ class MurajaahRecordController extends Controller
     {
         $this->authorize('create', MurajaahRecord::class);
 
-        return view('murajaah-records.create', $this->formData($request->user()));
+        // Form biasa tanpa kelas 10: Kelas 10 Program Tahfizh memakai Lembar Muraja'ah di Input Ummi.
+        $formData = $this->formData($request->user());
+        $formData['classRooms'] = $formData['classRooms']->reject(fn (ClassRoom $c) => $c->isGradeTen())->values();
+        $formData['students'] = $formData['students']->reject(fn (Student $s) => (bool) $s->classRoom?->isGradeTen())->values();
+
+        return view('murajaah-records.create', $formData);
     }
 
     public function store(StoreMurajaahRecordRequest $request): RedirectResponse
@@ -226,6 +260,12 @@ class MurajaahRecordController extends Controller
         $this->authorize('create', MurajaahRecord::class);
 
         $validated = $request->validated();
+
+        $murajaahClass = Student::find($validated['student_id'])?->classRoom;
+        if ($murajaahClass?->isGradeTen() && ! $murajaahClass->hasMandiriSheets()) {
+            return back()->withInput()->withErrors(['student_id' => "Kelas 10 di luar Program Tahfizh tidak memakai lembar Muraja'ah."]);
+        }
+
         $surahStartId = (int) $validated['surah_id'];
         $surahEndId = (int) ($validated['surah_end_id'] ?? $surahStartId);
 

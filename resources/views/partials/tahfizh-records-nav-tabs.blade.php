@@ -1,4 +1,20 @@
 @props(['activeTab' => 'hafalan'])
+@if (request()->routeIs('ummi.*'))
+    {{-- Riwayat Metode Ummi: lembar sesuai Input Ummi. --}}
+    <div class="mb-5 sm:mb-6 flex flex-wrap items-center gap-2">
+        @foreach (\App\Models\ClassRoom::userHasMandiriClass(auth()->user()) ? [
+            'progres' => ['Progres Ummi', route('ummi.riwayat')],
+            'mandiri' => ['Setoran Mandiri', route('ummi.riwayat', ['lembar' => 'mandiri'])],
+            'murajaah' => ["Muraja'ah", route('ummi.riwayat.murajaah')],
+        ] : ['progres' => ['Progres Ummi', route('ummi.riwayat')]] as $key => [$label, $url])
+            <a href="{{ $url }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-bold transition {{ $activeTab === $key ? 'bg-emerald-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+        <a href="{{ route('ummi.input') }}" class="ml-auto px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white">+ Input Ummi</a>
+    </div>
+@else
 
 <div class="mb-5 sm:mb-6">
     <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm relative overflow-hidden border border-emerald-500/20">
@@ -58,3 +74,4 @@
         </div>
     </div>
 </div>
+@endif

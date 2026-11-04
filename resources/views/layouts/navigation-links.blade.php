@@ -1,6 +1,7 @@
 {{-- Isi menu didefinisikan di App\Support\SidebarMenu; file ini hanya merender. --}}
 @php
     $menuGroups = \App\Support\SidebarMenu::for(auth()->user());
+    $activeGroupKey = collect($menuGroups)->first(fn ($g) => $g['collapsible'] && $g['active'])['key'] ?? null;
 @endphp
 
 @foreach ($menuGroups as $group)
@@ -12,20 +13,23 @@
             @endforeach
         </div>
     @else
-        {{-- Grup aktif selalu terbuka; grup lain tertutup kecuali user pernah membukanya. --}}
+        {{-- Hanya satu grup terbuka: membuka grup lain menutup yang sebelumnya. Saat halaman dimuat,
+             grup halaman aktif yang terbuka; bila tidak ada, grup yang terakhir dibuka user. --}}
         <div class="mt-2"
              x-data="{
                  open: @js($group['active']),
-                 key: 'sidebar-group-{{ $group['key'] }}',
+                 key: @js($group['key']),
                  init() {
-                     if (this.open) return;
-                     try { this.open = localStorage.getItem(this.key) === '1'; } catch (e) {}
+                     if (this.open || @js($activeGroupKey !== null)) return;
+                     try { this.open = localStorage.getItem('sidebar-open-group') === this.key; } catch (e) {}
                  },
                  toggle() {
                      this.open = ! this.open;
-                     try { localStorage.setItem(this.key, this.open ? '1' : '0'); } catch (e) {}
+                     if (this.open) this.$dispatch('sidebar-group-opened', this.key);
+                     try { localStorage.setItem('sidebar-open-group', this.open ? this.key : ''); } catch (e) {}
                  },
-             }">
+             }"
+             @sidebar-group-opened.window="if ($event.detail !== key) open = false">
             <button type="button" @click="toggle()" :aria-expanded="open.toString()"
                     class="w-full flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl cursor-pointer transition-colors duration-150 {{ $group['active'] ? 'text-teal-700 dark:text-teal-400' : 'text-gray-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-white/5' }}">
                 @if ($group['icon'])

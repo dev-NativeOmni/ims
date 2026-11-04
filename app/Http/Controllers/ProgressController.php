@@ -57,6 +57,12 @@ class ProgressController extends Controller
                 ->orderBy('name')
                 ->get();
 
+            // Progress Ummi: hanya kelas Ummi.
+            $ummiClassIds = $request->routeIs('ummi.*') ? ClassRoom::ummiClassIds() : null;
+            if ($ummiClassIds) {
+                $filterStudents = $filterStudents->filter(fn (Student $s) => $ummiClassIds->contains($s->class_room_id))->values();
+            }
+
             $classRoomIds = $filterStudents
                 ->pluck('class_room_id')
                 ->filter()
@@ -65,6 +71,7 @@ class ProgressController extends Controller
 
             $classRooms = ClassRoom::query()
                 ->with('program')
+                ->when($ummiClassIds, fn ($q) => $q->whereIn('id', $ummiClassIds))
                 ->orderBy('name')
                 ->get();
 
@@ -81,6 +88,7 @@ class ProgressController extends Controller
             }
 
             $studentsQuery
+                ->when($ummiClassIds, fn (Builder $query) => $query->whereIn('class_room_id', $ummiClassIds))
                 ->when($request->filled('student_id'), function (Builder $query) use ($request) {
                     $query->where('id', (int) $request->input('student_id'));
                 })

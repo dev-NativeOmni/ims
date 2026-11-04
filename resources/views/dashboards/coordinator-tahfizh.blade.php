@@ -78,13 +78,13 @@
                     <x-heroicon-o-bolt class="w-4 h-4 text-amber-500" /> Akses Cepat Menu Tahfizh
                 </h3>
                 <div class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-                    <a href="{{ route('hafalan-records.create') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-emerald-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                    <a href="{{ route('hafalan-records.index') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-emerald-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
                         <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
                             <x-heroicon-o-plus-circle class="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                         <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Setoran</span>
                     </a>
-                    <a href="{{ route('murajaah-records.fast-input') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-teal-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
+                    <a href="{{ route('murajaah-records.index') }}" class="p-3 sm:p-4 rounded-2xl glass-liquid-inner hover:border-teal-500/40 hover:shadow-md hover:-translate-y-0.5 transition-all text-center group flex flex-col items-center">
                         <div class="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
                             <x-heroicon-o-arrow-path class="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>

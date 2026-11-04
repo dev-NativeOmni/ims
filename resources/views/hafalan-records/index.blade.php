@@ -1,8 +1,12 @@
+@php
+    $isUmmiSection = request()->routeIs('ummi.*');
+    $riwayatRoute = $isUmmiSection ? 'ummi.riwayat' : 'hafalan-records.index';
+@endphp
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
             <h2 class="font-bold text-lg sm:text-xl text-zinc-900 dark:text-white leading-tight">
-                Setoran Hafalan
+                {{ $isUmmiSection ? 'Riwayat Ummi' : 'Setoran Hafalan' }}
             </h2>
 
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5" x-data="{ active: {{ request()->boolean('bulk_edit') ? 'true' : 'false' }} }" @toggle-bulk-edit.window="active = !active">
@@ -18,18 +22,20 @@
                     </button>
                 @endif
                 <a
-                    href="{{ route('spreadsheet-input.index') }}"
+                    href="{{ route($isUmmiSection ? 'ummi.input' : 'spreadsheet-input.index', request('lembar') === 'mandiri' ? ['lembar' => 'mandiri'] : []) }}"
                     class="inline-flex items-center gap-1.5 justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[36px]"
                 >
                     <x-heroicon-o-table-cells class="w-4 h-4" />
                     <span>Input Spreadsheet</span>
                 </a>
+                @if ($isUmmiSection)
                 <a
-                    href="{{ route('hafalan-records.create') }}"
+                    href="{{ route('ummi.input.single') }}"
                     class="inline-flex items-center justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[36px]"
                 >
                     + Input Per Murid
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -53,7 +59,7 @@
         </form>
 
         <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4">
-            @include('partials.tahfizh-records-nav-tabs', ['activeTab' => 'hafalan'])
+            @include('partials.tahfizh-records-nav-tabs', ['activeTab' => ! $isUmmiSection ? 'hafalan' : (request('lembar') === 'mandiri' ? 'mandiri' : 'progres')])
 
             @if (session('success'))
                 <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-3 rounded-xl text-sm font-semibold">
@@ -110,21 +116,6 @@
                 </form>
             </div>
 
-            <!-- Hafalan Category Tabs (Scrollable on Mobile) -->
-            <div class="flex overflow-x-auto items-center gap-2 sm:gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-3 no-scrollbar -mx-1 px-1">
-                <a href="{{ route('hafalan-records.index', array_merge(request()->except('class_room_id', 'page'), ['category' => 'reguler'])) }}"
-                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center gap-1.5 shrink-0 {{ request('category', 'reguler') !== 'ummi' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                    <x-heroicon-o-book-open class="w-4 h-4" />
-                    <span>Hafalan Reguler (Juz 1–30)</span>
-                </a>
-                <a href="{{ route('hafalan-records.index', array_merge(request()->except('class_room_id', 'page'), ['category' => 'ummi'])) }}"
-                   class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition min-h-[36px] inline-flex items-center gap-1.5 shrink-0 {{ request('category') === 'ummi' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
-                    <x-heroicon-o-sparkles class="w-4 h-4" />
-                    <span>Hafalan Metode Ummi</span>
-                    <span class="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-amber-400 text-black ml-1.5">Mulai Kelas 10</span>
-                </a>
-            </div>
-
             @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                 <!-- Quick Class Filter Pills -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3 sm:p-4 space-y-2">
@@ -133,22 +124,22 @@
                             <x-heroicon-o-academic-cap class="w-3.5 h-3.5 text-indigo-500" /> Filter Kelas Fast-Access:
                         </span>
                         @if(request('class_room_id'))
-                            <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline">
+                            <a href="{{ route($riwayatRoute, request()->except('class_room_id', 'page')) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline">
                                 <x-heroicon-o-x-mark class="w-3 h-3" /> Hapus Filter Kelas
                             </a>
                         @endif
                     </div>
 
                     <div class="flex overflow-x-auto items-center gap-1.5 sm:gap-2 pb-1 no-scrollbar -mx-1 px-1">
-                        <a href="{{ route('hafalan-records.index', request()->except('class_room_id', 'page')) }}"
-                           class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ !request('class_room_id') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
+                        <a href="{{ route($riwayatRoute, request()->except('class_room_id', 'page')) }}"
+                           class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ !request('class_room_id') ? 'bg-indigo-600 text-white shadow-md' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
                             Semua Kelas
                         </a>
                         @foreach ($classRooms as $class)
                             @php
                                 $isSelected = (string) request('class_room_id') === (string) $class->id;
                             @endphp
-                            <a href="{{ route('hafalan-records.index', array_merge(request()->except('page'), ['class_room_id' => $class->id])) }}"
+                            <a href="{{ route($riwayatRoute, array_merge(request()->except('page'), ['class_room_id' => $class->id])) }}"
                                class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition cursor-pointer shrink-0 {{ $isSelected ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700' }}">
                                 {{ $class->name }}
                             </a>
@@ -158,8 +149,11 @@
 
                 <!-- Filter Section -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                    <form method="GET" action="{{ route('hafalan-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ request('category') === 'ummi' ? 'lg:grid-cols-5' : 'lg:grid-cols-4 xl:grid-cols-7' }} gap-2.5 sm:gap-3">
+                    <form method="GET" action="{{ route($riwayatRoute) }}" class="grid grid-cols-1 sm:grid-cols-2 {{ request('category') === 'ummi' ? 'lg:grid-cols-5' : 'lg:grid-cols-4 xl:grid-cols-7' }} gap-2.5 sm:gap-3">
                         <input type="hidden" name="category" value="{{ request('category', 'reguler') }}">
+                        @if (request('lembar') === 'mandiri')
+                            <input type="hidden" name="lembar" value="mandiri">
+                        @endif
 
                         @if ($teacherOptions->isNotEmpty())
                             <select name="teacher_id" onchange="this.form.class_room_id.value = ''; this.form.submit()" class="rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 shadow-sm">
@@ -229,7 +223,7 @@
                                 Filter
                             </button>
 
-                            <a href="{{ route('hafalan-records.index', ['category' => request('category', 'reguler')]) }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
+                            <a href="{{ route($riwayatRoute, $isUmmiSection ? request()->only('lembar') : ['category' => 'reguler']) }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
                                 Reset
                             </a>
                         </div>
@@ -470,11 +464,11 @@
 
                                 <!-- Action Bar Mobile -->
                                 <div class="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                                    <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail flex-1 inline-flex items-center justify-center gap-1">
+                                    <a href="{{ route('hafalan-records.show', $isUmmiSection ? [$record, 'from' => 'ummi'] : $record) }}" class="btn-action-detail flex-1 inline-flex items-center justify-center gap-1">
                                         <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5" />
                                         <span>Detail</span>
                                     </a>
-                                    <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit flex-1 inline-flex items-center justify-center gap-1">
+                                    <a href="{{ route('hafalan-records.edit', $isUmmiSection ? [$record, 'from' => 'ummi'] : $record) }}" class="btn-action-edit flex-1 inline-flex items-center justify-center gap-1">
                                         <x-heroicon-o-pencil-square class="w-3.5 h-3.5" />
                                         <span>Edit</span>
                                     </a>
@@ -920,11 +914,11 @@
 
                                         <td class="px-3 py-3.5">
                                             <div class="flex justify-end items-center gap-2">
-                                                <a href="{{ route('hafalan-records.show', $record) }}" class="btn-action-detail">
+                                                <a href="{{ route('hafalan-records.show', $isUmmiSection ? [$record, 'from' => 'ummi'] : $record) }}" class="btn-action-detail">
                                                     Detail
                                                 </a>
 
-                                                <a href="{{ route('hafalan-records.edit', $record) }}" class="btn-action-edit">
+                                                <a href="{{ route('hafalan-records.edit', $isUmmiSection ? [$record, 'from' => 'ummi'] : $record) }}" class="btn-action-edit">
                                                     Edit
                                                 </a>
 

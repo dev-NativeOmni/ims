@@ -96,7 +96,7 @@ class ClassScheduleTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', [
+        $response = $this->actingAs($this->teacherUser)->get(route('ummi.input', [
             'class_room_id' => $this->classRoom->id,
             'month' => "{$year}-08",
         ]));

@@ -56,8 +56,11 @@
                     }
                     loadRepeatHistory();
                     $watch('selectedStudent', () => loadRepeatHistory());
-                }">
+                ">
                     @csrf
+                    @if (request('from') === 'ummi')
+                        <input type="hidden" name="from" value="ummi">
+                    @endif
                     @method('PUT')
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -226,7 +229,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3">
-                        <a href="{{ route('hafalan-records.index') }}" class="text-sm text-gray-600 hover:underline">
+                        <a href="{{ route(request('from') === 'ummi' ? 'ummi.riwayat' : 'hafalan-records.index', request('from') === 'ummi' ? ['lembar' => 'mandiri'] : []) }}" class="text-sm text-gray-600 hover:underline">
                             Batal
                         </a>
 

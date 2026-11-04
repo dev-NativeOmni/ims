@@ -196,14 +196,16 @@ class NavigationMenuTest extends TestCase
         // Should see
         // Koordinator Keagamaan kini setara Koordinator Tahfizh & Tanse untuk Rapor Digital.
         $response->assertSee(route('digital-reports.index'));
-        $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('spreadsheet-input.index'));
-        $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
         $response->assertSee(route('adab.index'));
-        $response->assertSee(route('student-points.index'));
         $response->assertSee(route('system-notifications.index'));
+
+        // Halaman Tahfizh & Poin menolak role ini di middleware, jadi menunya tidak tampil.
+        $menu = collect(SidebarMenu::for($supervisorUser))->flatMap(fn ($group) => collect($group['items'])->pluck('url'));
+        foreach (['hafalan-records.index', 'spreadsheet-input.index', 'hafalan-targets.index', 'student-points.index'] as $routeName) {
+            $this->assertNotContains(route($routeName), $menu);
+        }
     }
 
     #[Test]
@@ -277,7 +279,6 @@ class NavigationMenuTest extends TestCase
 
         // Should see
         $response->assertSee(route('hafalan-records.index'));
-        $response->assertSee(route('spreadsheet-input.index'));
         $response->assertSee(route('hafalan-targets.index'));
         $response->assertSee(route('quran.mushaf'));
         $response->assertSee(route('progress.index'));
@@ -333,7 +334,7 @@ class NavigationMenuTest extends TestCase
         $groups = SidebarMenu::for($this->superAdmin);
 
         $this->assertSame(
-            ['utama', 'tahfizh', 'adab', 'ketahanan', 'laporan', 'data-master', 'pengaturan'],
+            ['utama', 'tahfizh', 'ummi', 'adab', 'ketahanan', 'laporan', 'data-master', 'pengaturan'],
             array_column($groups, 'key')
         );
 

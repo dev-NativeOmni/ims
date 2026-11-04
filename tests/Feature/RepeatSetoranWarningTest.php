@@ -62,7 +62,7 @@ class RepeatSetoranWarningTest extends TestCase
     #[Test]
     public function input_and_edit_forms_show_the_warning(): void
     {
-        $this->actingAs($this->teacherUser)->get(route('hafalan-records.create'))->assertOk()->assertSee('repeatWarningFor(item)', false);
+        $this->actingAs($this->teacherUser)->get(route('ummi.input.single'))->assertOk()->assertSee('repeatWarningFor(item)', false);
 
         $this->setor('2026-07-10', 1, 3);
         $record = HafalanRecord::query()->latest('id')->first();

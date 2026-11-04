@@ -178,7 +178,7 @@
 
             {{-- ═══════════════ QUICK ACTION RIBBON (FROSTED GLASS BUTTONS) ═══════════════ --}}
             <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
-                <a href="{{ url('/hafalan-records/create') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group border border-emerald-500/20">
+                <a href="{{ route('spreadsheet-input.index') }}" class="glass-liquid-card rounded-2xl p-3 sm:p-4.5 hover:border-emerald-500/40 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-center text-center sm:text-left gap-2.5 sm:gap-3.5 group border border-emerald-500/20">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition shadow-2xs">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     </div>

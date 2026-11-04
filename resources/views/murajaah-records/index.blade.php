@@ -6,7 +6,7 @@
             </h2>
 
             <div class="flex items-center gap-2">
-                <a href="{{ route('murajaah-records.fast-input') }}"
+                <a href="{{ route(request()->routeIs('ummi.*') ? 'ummi.murajaah' : 'murajaah-records.fast-input') }}"
                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-md transition duration-150 shrink-0 min-h-[38px]">
                     <x-heroicon-o-bolt class="w-4 h-4" />
                     <span>Input Murajaah Cepat</span>
@@ -34,7 +34,7 @@
             @if (!auth()->user()->hasAnyRole(['student', 'parent']))
                 <!-- Filter Section -->
                 <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-3.5 sm:p-5">
-                    <form method="GET" action="{{ route('murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
+                    <form method="GET" action="{{ route(request()->routeIs('ummi.*') ? 'ummi.riwayat.murajaah' : 'murajaah-records.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
                         <div class="sm:col-span-2 lg:col-span-2">
                             <label class="block text-[10px] sm:text-xs font-semibold uppercase text-zinc-400 dark:text-zinc-500 mb-1">Kelas</label>
                             <x-filter-toggle
@@ -80,7 +80,7 @@
                                 Filter
                             </button>
 
-                            <a href="{{ route('murajaah-records.index') }}"
+                            <a href="{{ route(request()->routeIs('ummi.*') ? 'ummi.riwayat.murajaah' : 'murajaah-records.index') }}"
                                class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider transition min-h-[38px]">
                                 Reset
                             </a>

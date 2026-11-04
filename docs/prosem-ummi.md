@@ -13,7 +13,7 @@ Permintaan sekolah, Oktober 2026. Kode utama: `app/Services/UmmiProsemService.ph
   - Urutan pemakaian untuk satu murid: Prosem kelas + musyrifnya, lalu Prosem kelasnya untuk semua halaqoh, lalu Prosem umum. Lihat `UmmiProsemService::resolveScope()`.
   - Murid tanpa Prosem tidak diberi target otomatis.
 - Jumlah TM satu baris = jumlah sebaran pekannya.
-- Halaman: **Target → tab Prosem Ummi** (`/prosem-ummi`). Pilih Kelas dan Halaqoh untuk melihat atau mengubah Prosem cakupan itu.
+- Halaman: **Metode Ummi → Prosem Ummi** (`/prosem-ummi`). Pilih Kelas dan Halaqoh untuk melihat atau mengubah Prosem cakupan itu.
   - Semua staf bisa melihat.
   - Super admin, admin, dan koordinator tahfizh bisa mengubah.
 - Impor satu halaqoh dari Google Sheet atau file Drive (Excel ikut diunduh). Tab yang dipakai adalah tab yang namanya memuat `--tab` (bawaan "prosem"):
@@ -58,7 +58,7 @@ Permintaan sekolah, Oktober 2026. Kode utama: `app/Services/UmmiProsemService.ph
 
 ## Alur Pembelajaran (timer)
 
-- Menu **Tahfizh → Alur Pembelajaran Ummi** (`/alur-pembelajaran`).
+- Menu **Metode Ummi → Alur Pembelajaran** (`/alur-pembelajaran`).
 - Sesi bawaan: Pembukaan 5, Muraja'ah 10, Ziyadah 10, Klasikal peraga & baca simak 40, Penutup 5. Totalnya 70 menit.
 - Durasi bisa diatur super admin, admin, dan koordinator tahfizh. Disimpan di setting `ummi_flow_minutes`.
 - Timer berjalan di browser (`resources/js/components/ummiFlowTimer.js`, logika di `resources/js/ummi-flow.js`, tes di `tests/js/ummi-flow.test.js`).

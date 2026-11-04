@@ -49,7 +49,7 @@
 <script>
     (() => {
         // Tautan ke halaman yang diblokir server (ReadOnlyAccess::BLOCKED_ROUTE_PATTERNS).
-        const blockedPath = /\/create(?:\/|$)|\/edit$|export|download|print|fast-input|whatsapp|^\/(?:spreadsheet-input|profile|users|superadmin|database-backups|audit-logs)(?:\/|$)/i;
+        const blockedPath = /\/create(?:\/|$)|\/edit$|export|download|print|fast-input|whatsapp|^\/(?:spreadsheet-input|ummi\/input|ummi\/murajaah|profile|users|superadmin|database-backups|audit-logs)(?:\/|$)/i;
         const isBlockedHref = (href) => {
             try {
                 const url = new URL(href, window.location.href);

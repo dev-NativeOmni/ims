@@ -427,6 +427,15 @@ Route::middleware(['auth'])->group(function () {
             ->name('spreadsheet-input.index');
         Route::post('/spreadsheet-input/save', [SpreadsheetInputController::class, 'save'])
             ->name('spreadsheet-input.save');
+
+        // Menu Metode Ummi: controller yang sama, mode dikunci dari nama route (routeIs('ummi.*')).
+        Route::prefix('ummi')->name('ummi.')->group(function () {
+            Route::get('/input', [SpreadsheetInputController::class, 'index'])->name('input');
+            Route::get('/input/satuan', [HafalanRecordController::class, 'create'])->name('input.single');
+            Route::get('/murajaah', [MurajaahRecordController::class, 'fastInput'])->name('murajaah');
+            Route::get('/riwayat', [HafalanRecordController::class, 'index'])->name('riwayat');
+            Route::get('/riwayat/murajaah', [MurajaahRecordController::class, 'index'])->name('riwayat.murajaah');
+        });
     });
 
     /*
@@ -456,6 +465,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/class-rooms/{class_room}/print-ummi-cards', [ClassRoomController::class, 'printUmmiCards'])
             ->name('class-rooms.print-ummi-cards');
+
+        Route::get('/ummi/progress', [ProgressController::class, 'index'])
+            ->name('ummi.progress');
 
         Route::get('/progress', [ProgressController::class, 'index'])
             ->name('progress.index');

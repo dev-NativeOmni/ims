@@ -195,7 +195,9 @@ class UpdateHafalanRecordRequest extends FormRequest
             $submittedAt = $this->input('submitted_at');
             $studentId = $this->input('student_id');
             $statuses = $this->input('statuses') ?: [];
-            $currentRecordId = $this->route('hafalanRecord')?->id ?? $this->route('hafalan_record');
+            // Parameter route resource bernama hafalan_record dan sudah berupa model, bukan id.
+            $routeRecord = $this->route('hafalan_record');
+            $currentRecordId = is_object($routeRecord) ? $routeRecord->id : $routeRecord;
 
             if ($submittedAt && $studentId) {
                 foreach ($surahIds as $idx => $surahId) {

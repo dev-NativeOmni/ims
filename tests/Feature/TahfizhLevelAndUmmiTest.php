@@ -166,7 +166,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'redirect_to' => 'hafalan',
         ]);
 
-        $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
+        $response->assertRedirect(route('ummi.riwayat'));
         $response->assertSessionHas('success');
 
         // TM otomatis: pertemuan Ummi pertama halaqoh ini di triwulan = TM 1 (bukan angka yang diposting).
@@ -204,7 +204,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'redirect_to' => 'hafalan',
         ]);
 
-        $response->assertRedirect(route('hafalan-records.index', ['category' => 'ummi']));
+        $response->assertRedirect(route('ummi.riwayat'));
         $response->assertSessionHas('success');
 
         // Both surahs must be attached to a single UmmiRecord "header" row for this session.
@@ -253,7 +253,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
         // The list page (which now edits inline) must render an editable form for this record,
         // not a link to a separate edit page.
-        $indexResponse = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+        $indexResponse = $this->actingAs($this->teacherUser)->get(route('ummi.riwayat'));
         $indexResponse->assertStatus(200);
         $indexResponse->assertSee('ummi-inline-edit-'.$ummiRecord->id, false);
 
@@ -303,7 +303,7 @@ class TahfizhLevelAndUmmiTest extends TestCase
             'disimak_ortu' => 'Ya',
         ]);
 
-        $response = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+        $response = $this->actingAs($this->teacherUser)->get(route('ummi.riwayat'));
 
         $response->assertStatus(200);
         $response->assertSee('Al-Fatihah');
@@ -532,15 +532,15 @@ class TahfizhLevelAndUmmiTest extends TestCase
 
     public function test_ummi_category_filters_out_non_grade_10_classes()
     {
-        // When visiting reguler category, all classes are visible
+        // Riwayat Setoran has no Grade 10 classes (they moved to the Metode Ummi menu)
         $responseReguler = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'reguler']));
         $responseReguler->assertStatus(200);
         $classesReguler = $responseReguler->viewData('classRooms');
-        $this->assertTrue($classesReguler->contains('name', 'Kelas X-A'));
+        $this->assertFalse($classesReguler->contains('name', 'Kelas X-A'));
         $this->assertTrue($classesReguler->contains('name', 'Kelas XI-A'));
 
         // When visiting ummi category, only Grade 10 classes are visible
-        $responseUmmi = $this->actingAs($this->teacherUser)->get(route('hafalan-records.index', ['category' => 'ummi']));
+        $responseUmmi = $this->actingAs($this->teacherUser)->get(route('ummi.riwayat'));
         $responseUmmi->assertStatus(200);
         $classesUmmi = $responseUmmi->viewData('classRooms');
         $this->assertTrue($classesUmmi->contains('name', 'Kelas X-A'));

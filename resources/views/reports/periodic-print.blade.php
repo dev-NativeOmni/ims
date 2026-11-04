@@ -278,12 +278,12 @@
                     @forelse ($studentReports as $idx => $r)
                         <tr>
                             <td class="py-2 px-3 text-center border-r border-zinc-200 font-semibold text-zinc-500">{{ $idx + 1 }}</td>
-                            <td class="py-2 px-3 border-r border-zinc-200 font-bold text-zinc-900">{{ $r['student_name'] }}</td>
+                            <td class="py-2 px-3 border-r border-zinc-200 font-bold text-zinc-900">{{ $r['student']->name }}</td>
                             <td class="py-2 px-3 border-r border-zinc-200 text-center font-semibold text-zinc-700">
-                                {{ $r['completed_targets'] }} / {{ $r['total_targets'] }} Target
+                                {{ (int) $r['capaian_baris'] }} / {{ (int) $r['target_baris'] }} Baris
                             </td>
                             <td class="py-2 px-3 text-center font-bold">
-                                @if ($r['completed_targets'] >= $r['total_targets'] && $r['total_targets'] > 0)
+                                @if ($r['is_tuntas'])
                                     <span class="text-teal-600 uppercase">TUNTAS</span>
                                 @else
                                     <span class="text-rose-600 uppercase">TIDAK TUNTAS</span>
@@ -306,6 +306,7 @@
         $printTargets = [];
         $printCompleted = [];
         $printKhatam = [];
+        $printMurajaah = [];
         foreach ($studentReports as $rep) {
             $parts = explode(' ', $rep['student']->name);
             $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
@@ -313,6 +314,7 @@
             $printTargets[] = (int) $rep['target_baris'];
             $printCompleted[] = (int) $rep['capaian_baris'];
             $printKhatam[] = ! empty($rep['khatam']);
+            $printMurajaah[] = (float) ($rep['murajaah_baris'] ?? 0);
         }
     @endphp
     <script>
@@ -352,6 +354,14 @@
                                 barPercentage: 0.6,
                                 order: 2
                             },
+                            ...(@json($showMurajaahChart ?? false) ? [{
+                                label: "Muraja'ah",
+                                data: @json($printMurajaah),
+                                backgroundColor: '#d946ef',
+                                borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+                                barPercentage: 0.6,
+                                order: 2
+                            }] : []),
                             {
                                 label: 'Target Setoran',
                                 type: 'line',

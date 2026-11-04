@@ -820,6 +820,10 @@ class ReportController extends Controller
         $selectedClassId = $request->integer('class_room_id', $classRooms->first()->id);
         $periodType = $request->input('period_type', 'monthly');
         $selectedMonth = $request->integer('month', date('n'));
+        // Nilai di luar 1-12 (mis. month=2026-11 diketik di URL): pakai bulan berjalan, bukan error 500.
+        if ($selectedMonth < 1 || $selectedMonth > 12) {
+            $selectedMonth = (int) date('n');
+        }
 
         $currentMonth = date('n');
         $defaultQuarter = 1;
@@ -1248,6 +1252,8 @@ class ReportController extends Controller
                 'monthly_capaian' => $monthlyCapaian,
                 'total_hafalan' => $studentHafalan->count(),
                 'total_murajaah' => $studentMurajaah->count(),
+                // Grafik Kelas 11 & 12 Program Tahfizh: batang terpisah, tidak masuk capaian/ketuntasan.
+                'murajaah_baris' => round((float) $studentMurajaah->sum('lines_count'), 1),
                 'avg_score' => $avgScore,
                 'latest_progress' => $latestProgressText,
                 'capaian_baris' => $capaianBaris,
@@ -1287,6 +1293,7 @@ class ReportController extends Controller
             'classRooms' => $classRooms,
             'selectedClass' => $selectedClass,
             'isGrade10' => $isGrade10,
+            'showMurajaahChart' => (bool) $selectedClass?->showsMurajaahChart(),
             'studentReports' => $studentReports,
             'groupedReports' => $groupedReports,
             'summary' => $summary,

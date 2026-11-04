@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\ReportController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +56,20 @@ class MurajaahRecord extends Model
     public function surah(): BelongsTo
     {
         return $this->belongsTo(Surah::class);
+    }
+
+    /** Baris muraja'ah: perhitungan yang sama dengan setoran (HafalanRecordSurah::lines_count). */
+    public function getLinesCountAttribute(): float
+    {
+        if (! $this->surah) {
+            return 0.0;
+        }
+
+        try {
+            return ReportController::calculateLines($this->surah->number, $this->ayah_start ?? 1, $this->ayah_end ?? 1, $this->surah->total_ayah);
+        } catch (\Throwable) {
+            return 0.0;
+        }
     }
 
     public function getAyahRangeAttribute(): string

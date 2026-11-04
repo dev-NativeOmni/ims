@@ -30,7 +30,7 @@ use Illuminate\Validation\Rule;
 
 class SpreadsheetInputController extends Controller
 {
-    public function index(Request $request, UserAccessService $accessService): View
+    public function index(Request $request, UserAccessService $accessService): View|RedirectResponse
     {
         Gate::authorize('create', HafalanRecord::class);
 
@@ -72,6 +72,24 @@ class SpreadsheetInputController extends Controller
             ->when($classRoomIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $classRoomIds))
             ->orderBy('name')
             ->get();
+
+        // Menu Metode Ummi hanya kelas Ummi; Input Setoran tanpa kelas 10.
+        $isUmmiSection = $request->routeIs('ummi.*');
+        if (! $isUmmiSection && $request->filled('class_room_id') && ClassRoom::find($request->integer('class_room_id'))?->isGradeTen()) {
+            return redirect()->route('ummi.input', $request->query());
+        }
+
+        if ($isUmmiSection) {
+            $ummiClassIds = ClassRoom::ummiClassIds();
+            $classRooms = $classRooms->filter(fn (ClassRoom $c) => $ummiClassIds->contains($c->id))->values();
+        } else {
+            $classRooms = $classRooms->reject(fn (ClassRoom $c) => $c->isGradeTen())->values();
+
+            // Semua murid akun ini di kelas 10 (mis. tombol Input di menu bawah HP): langsung ke Input Ummi.
+            if ($classRooms->isEmpty() && $classRoomIds->isNotEmpty()) {
+                return redirect()->route('ummi.input');
+            }
+        }
 
         $selectedClassId = $request->input('class_room_id');
         // Kelas terpilih harus termasuk daftar (mis. setelah ganti guru pengampu); kalau tidak, kelas pertama.
@@ -363,6 +381,15 @@ class SpreadsheetInputController extends Controller
             'attendancesMap' => $attendancesMap,
             // Kelas 10 Program Tahfizh: presensi murid Ummi mengikuti form Input Ummi saja.
             'isTahfizhProgram' => $selectedClass !== null && self::isTahfizhProgram($selectedClass),
+            'isUmmiSection' => $isUmmiSection,
+            'showMandiriSheet' => $isUmmiSection && $selectedClass?->hasMandiriSheets(),
+            // Peringatan untuk admin/koordinator: semua murid kelas 10 seharusnya berlevel Ummi.
+            'gradeTenNonUmmi' => $isUmmiSection && $request->user()->hasAnyRole(['super_admin', 'admin', 'coordinator_tahfizh'])
+                ? Student::query()->with('classRoom')->where('status', 'active')
+                    ->whereIn('class_room_id', ClassRoom::gradeTenIds())
+                    ->where(fn ($q) => $q->whereNull('tahfizh_level')->orWhere('tahfizh_level', '!=', 'ummi'))
+                    ->orderBy('name')->get()
+                : collect(),
             'hafalanRecordsMap' => $hafalanRecordsMap,
             'ummiRecordsMap' => $ummiRecordsMap,
             'lastHafalanMap' => $lastHafalanMap,
@@ -387,6 +414,20 @@ class SpreadsheetInputController extends Controller
         $visibleStudentIds = $accessService->visibleStudentIds($request->user());
 
         $classRoom = ClassRoom::find($classRoomId);
+
+        // Kelas 10 di luar Program Tahfizh: setorannya hanya hafalan Ummi. Lembar Ummi hanya untuk kelas Ummi.
+        $message = match (true) {
+            $type === 'hafalan' && $classRoom?->isGradeTen() && ! $classRoom->hasMandiriSheets() => 'Kelas 10 di luar Program Tahfizh hanya memakai Lembar Progres Ummi.',
+            $type === 'ummi' && ! ClassRoom::ummiClassIds()->contains($classRoomId) => 'Lembar Progres Ummi hanya untuk kelas metode Ummi.',
+            default => null,
+        };
+        if ($message !== null) {
+
+            return $request->wantsJson() || $request->ajax() || $request->isJson()
+                ? response()->json(['success' => false, 'message' => $message], 422)
+                : redirect()->back()->with('error', $message);
+        }
+
         $meetingFrequency = $classRoom?->program?->meeting_frequency ?? 'setiap hari';
         $isWeekly = ($meetingFrequency === 'seminggu sekali');
 
@@ -563,13 +604,15 @@ class SpreadsheetInputController extends Controller
             return redirect()->back()->with('error', 'Gagal menyimpan: '.$e->getMessage());
         }
 
+        $sheetRoute = $request->input('section') === 'ummi' ? 'ummi.input' : 'spreadsheet-input.index';
+
         if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
             $request->session()->flash('success', 'Perubahan data kelas berhasil disimpan.');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Perubahan data kelas berhasil disimpan.',
-                'redirect' => route('spreadsheet-input.index', [
+                'redirect' => route($sheetRoute, [
                     'class_room_id' => $classRoomId,
                     'month' => $validated['month'],
                     'week' => $request->input('week', 'all'),
@@ -578,7 +621,7 @@ class SpreadsheetInputController extends Controller
         }
 
         return redirect()
-            ->route('spreadsheet-input.index', [
+            ->route($sheetRoute, [
                 'class_room_id' => $classRoomId,
                 'month' => $validated['month'],
                 'week' => $request->input('week', 'all'),

@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-gray-900">
-                    Progress Murid
+                    {{ request()->routeIs('ummi.*') ? 'Progress Ummi' : 'Progress Murid' }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
                     Rekap progres hafalan berdasarkan ayat lulus, murajaah, target aktif, dan target terlambat.
@@ -43,7 +43,7 @@
 
             @if(!auth()->user()->hasAnyRole(['parent', 'student']))
                 <div class="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-3.5 sm:p-5 shadow-xs">
-                    <form method="GET" action="{{ route('progress.index') }}" class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+                    <form method="GET" action="{{ route(request()->routeIs('ummi.*') ? 'ummi.progress' : 'progress.index') }}" class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
                         <div>
                             <label for="q" class="mb-1 block text-xs sm:text-sm font-semibold text-gray-700">
                                 Cari
@@ -135,7 +135,7 @@
                                 Filter
                             </button>
 
-                            <a href="{{ route('progress.index') }}"
+                            <a href="{{ route(request()->routeIs('ummi.*') ? 'ummi.progress' : 'progress.index') }}"
                                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50">
                                 Reset
                             </a>

@@ -1,4 +1,5 @@
 @props(['activeTab' => 'spreadsheet'])
+@php($isUmmi = request()->routeIs('ummi.*'))
 
 <div class="mb-5 sm:mb-6">
     <div class="glass-liquid-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4.5 shadow-sm relative overflow-hidden border border-teal-500/20">
@@ -12,7 +13,7 @@
                 </div>
                 <div class="min-w-0">
                     <h2 class="text-sm sm:text-base font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                        <span>Pusat Input Setoran & Muraja'ah</span>
+                        <span>{{ $isUmmi ? 'Input Metode Ummi' : "Pusat Input Setoran & Muraja'ah" }}</span>
                     </h2>
                     <p class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate sm:whitespace-normal">
                         Pilih mode input yang paling sesuai dengan aktivitas bimbingan santri Anda
@@ -24,7 +25,7 @@
             <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none p-1 rounded-2xl glass-liquid-inner border border-zinc-200/60 dark:border-white/10 shrink-0 w-full lg:w-auto">
                 
                 {{-- Tab 1: Mode Spreadsheet --}}
-                <a href="{{ route('spreadsheet-input.index') }}"
+                <a href="{{ route($isUmmi ? 'ummi.input' : 'spreadsheet-input.index') }}"
                    class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'spreadsheet' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
@@ -34,8 +35,10 @@
                     <span>Mode Spreadsheet (Kelas)</span>
                 </a>
 
+                {{-- Mode Satuan hanya di Input Ummi; Input Setoran: Spreadsheet & Muraja'ah. --}}
+                @if ($isUmmi)
                 {{-- Tab 2: Mode Satuan --}}
-                <a href="{{ route('hafalan-records.create') }}"
+                <a href="{{ route($isUmmi ? 'ummi.input.single' : 'hafalan-records.create') }}"
                    class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'single' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
@@ -44,17 +47,20 @@
                     </svg>
                     <span>Mode Satuan (Per Santri)</span>
                 </a>
+                @endif
 
+                @if (! $isUmmi || \App\Models\ClassRoom::userHasMandiriClass(auth()->user()))
                 {{-- Tab 3: Mode Muraja'ah --}}
-                <a href="{{ route('murajaah-records.fast-input') }}"
+                <a href="{{ route($isUmmi ? 'ummi.murajaah' : 'murajaah-records.fast-input') }}"
                    class="flex-1 lg:flex-initial px-3 sm:px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 font-bold transition-all duration-200 shrink-0 select-none {{ $activeTab === 'murajaah' 
                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-500/25 ring-2 ring-teal-500/30' 
                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10' }}">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span>Mode Muraja'ah</span>
+                    <span>{{ $isUmmi ? "Lembar Muraja'ah" : "Mode Muraja'ah" }}</span>
                 </a>
+                @endif
 
             </div>
         </div>

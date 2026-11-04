@@ -109,6 +109,7 @@ class SpreadsheetInputTest extends TestCase
     #[Test]
     public function teacher_can_save_bulk_ummi_records_via_spreadsheet(): void
     {
+        $this->student->update(['tahfizh_level' => 'ummi']);
         $classRoom = $this->student->classRoom;
         $date = '2026-08-04';
 
@@ -409,6 +410,7 @@ class SpreadsheetInputTest extends TestCase
     #[Test]
     public function spreadsheet_ummi_saves_halaman_range_and_rejects_invalid_jilid(): void
     {
+        $this->student->update(['tahfizh_level' => 'ummi']);
         $classRoom = $this->student->classRoom;
         $date = '2026-08-04';
         $save = fn (array $cell) => $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
@@ -442,7 +444,7 @@ class SpreadsheetInputTest extends TestCase
             'student_id' => $this->student->id, 'class_room_id' => $classRoom->id, 'tanggal' => '2026-09-15', 'status' => 'izin',
         ])->assertOk();
 
-        $page = $this->actingAs($this->teacherUser)->get(route('spreadsheet-input.index', ['class_room_id' => $classRoom->id, 'month' => '2026-09']));
+        $page = $this->actingAs($this->teacherUser)->get(route('ummi.input', ['class_room_id' => $classRoom->id, 'month' => '2026-09']));
         $map = $page->viewData('attendancesMap');
         $this->assertTrue($page->viewData('isTahfizhProgram'));
         $this->assertArrayNotHasKey('2026-09-14', $map[$this->student->id] ?? []);
@@ -503,6 +505,7 @@ class SpreadsheetInputTest extends TestCase
     #[Test]
     public function spreadsheet_ummi_rejects_ayah_beyond_surah_length(): void
     {
+        $this->student->update(['tahfizh_level' => 'ummi']);
         $total = (int) $this->surah->total_ayah;
         $this->actingAs($this->teacherUser)->post(route('spreadsheet-input.save'), [
             'class_room_id' => $this->student->class_room_id,

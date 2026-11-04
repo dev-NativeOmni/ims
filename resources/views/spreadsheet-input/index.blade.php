@@ -2,9 +2,9 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-200 leading-tight">
-                Input Spreadsheet Perkembangan Kelas
+                {{ $isUmmiSection ? 'Input Ummi' : 'Input Spreadsheet Perkembangan Kelas' }}
             </h2>
-            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+            <a href="{{ route($isUmmiSection ? 'ummi.riwayat' : 'hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
                 <x-heroicon-m-arrow-left class="w-3.5 h-3.5 shrink-0" />
                 <span>Kembali ke List</span>
             </a>
@@ -15,7 +15,8 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('spreadsheetData', () => ({
-                tab: 'hafalan',
+                tab: @js($isUmmiSection && request('lembar') !== 'mandiri' || ($isUmmiSection && ! $showMandiriSheet) ? 'ummi' : 'hafalan'),
+                allowedSheets: @js($isUmmiSection ? ($showMandiriSheet ? ['ummi', 'hafalan'] : ['ummi']) : ['hafalan']),
                 selectedClass: '{{ $selectedClassId }}',
                 selectedMonth: '{{ $selectedMonth }}',
                 selectedMonthNum: '{{ explode('-', $selectedMonth)[1] ?? date('m') }}',
@@ -156,7 +157,7 @@
                     });
                 },
                 ummiBooks: @js(\App\Support\UmmiBook::BOOKS),
-                draftKey: 'tad_draft_spreadsheet_{{ $selectedClassId }}_{{ $selectedMonth }}',
+                draftKey: 'tad_draft_{{ $isUmmiSection ? 'ummi' : 'spreadsheet' }}_{{ $selectedClassId }}_{{ $selectedMonth }}',
                 hasDraftAvailable: false,
                 draftTimestamp: '',
                 saveDraftTimer: null,
@@ -194,8 +195,15 @@
                         if (!raw) return;
                         const parsed = JSON.parse(raw);
                         if (parsed && parsed.gridData) {
-                            this.gridData = parsed.gridData;
-                            if (parsed.tab) this.tab = parsed.tab;
+                            // Salin ke objek sel yang ada: tiap sel di layar memegang objeknya sendiri (x-data "cell"),
+                            // jadi mengganti gridData tidak mengubah tampilan.
+                            Object.entries(parsed.gridData).forEach(([studentId, row]) => {
+                                Object.entries(row.dates || {}).forEach(([date, savedCell]) => {
+                                    const cell = this.gridData[studentId]?.dates[date];
+                                    if (cell) Object.assign(cell, savedCell);
+                                });
+                            });
+                            if (parsed.tab && this.allowedSheets.includes(parsed.tab)) this.tab = parsed.tab;
                             this.isDirty = true;
                             window._hasUnsavedDraft = true;
                             this.hasDraftAvailable = false;
@@ -340,7 +348,7 @@
                         this.scrollToColumn(this.todayDate);
                     } else {
                         if (confirm('Tanggal hari ini (' + this.formatDateIndo(this.todayDate) + ') tidak ada dalam filter aktif saat ini. Buka lembar kerja bulan ini?')) {
-                            window.location.href = "{{ route('spreadsheet-input.index') }}?class_room_id=" + this.selectedClass + "&month=" + this.currentMonth + "&week=all&teacher_id={{ $selectedTeacherId }}";
+                            window.location.href = "{{ route($isUmmiSection ? 'ummi.input' : 'spreadsheet-input.index') }}?class_room_id=" + this.selectedClass + "&month=" + this.currentMonth + "&week=all&teacher_id={{ $selectedTeacherId }}";
                         }
                     }
                 },
@@ -519,9 +527,16 @@
             <!-- UNIFIED INPUT HUB TABS -->
             @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'spreadsheet'])
 
+            @if ($gradeTenNonUmmi->isNotEmpty())
+                <div class="rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 text-xs text-amber-800 dark:text-amber-200">
+                    <p class="font-bold">{{ $gradeTenNonUmmi->count() }} murid Kelas 10 belum berlevel Metode Ummi. Lembar Progres Ummi tidak bisa diisi untuk murid ini sampai levelnya diperbaiki di Data Murid:</p>
+                    <p class="mt-1">{{ $gradeTenNonUmmi->map(fn ($s) => $s->name.' ('.$s->classRoom?->name.')')->implode(', ') }}</p>
+                </div>
+            @endif
+
             <!-- FILTER PANEL -->
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-2xl p-4 sm:p-5">
-                <form method="GET" action="{{ route('spreadsheet-input.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ $showTeacherFilter ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-3.5 sm:gap-4 items-end">
+                <form method="GET" action="{{ route($isUmmiSection ? 'ummi.input' : 'spreadsheet-input.index') }}" class="grid grid-cols-1 sm:grid-cols-2 {{ $showTeacherFilter ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-3.5 sm:gap-4 items-end">
                     @if ($showTeacherFilter)
                         <div>
                             <label for="teacher_id" class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
@@ -695,12 +710,16 @@
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-3 sm:p-4 rounded-2xl shadow-sm">
                 <!-- Worksheet Tabs -->
                 <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
-                        <x-heroicon-o-book-open class="w-4 h-4" /> Lembar Setoran Al-Qur'an
-                    </button>
+                    @if ($isUmmiSection)
                     <button type="button" @click="tab = 'ummi'" :class="tab === 'ummi' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
                         <x-heroicon-o-sparkles class="w-4 h-4" /> Lembar Progres UMMI
                     </button>
+                    @endif
+                    @if (! $isUmmiSection || $showMandiriSheet)
+                    <button type="button" @click="tab = 'hafalan'" :class="tab === 'hafalan' ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <x-heroicon-o-book-open class="w-4 h-4" /> {{ $isUmmiSection ? 'Lembar Setoran Mandiri' : "Lembar Setoran Al-Qur'an" }}
+                    </button>
+                    @endif
                 </div>
 
                 <!-- Actions -->
@@ -744,6 +763,7 @@
                     <input type="hidden" name="class_room_id" :value="selectedClass">
                     <input type="hidden" name="month" :value="selectedMonth">
                     <input type="hidden" name="type" :value="tab">
+                    <input type="hidden" name="section" value="{{ $isUmmiSection ? 'ummi' : 'reguler' }}">
                     <input type="hidden" name="week" value="{{ $selectedWeek }}">
                     <input type="hidden" name="teacher_id" value="{{ $selectedTeacherId }}">
 

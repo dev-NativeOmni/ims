@@ -224,12 +224,14 @@
                     $names = [];
                     $khatams = [];
                     $capaians = [];
+                    $murajaahBaris = [];
                     $targets = [];
                     foreach ($studentReports as $rep) {
                         $parts = explode(' ', $rep['student']->name);
                         $shortName = count($parts) > 2 ? $parts[0] . ' ' . $parts[1] . '..' : $rep['student']->name;
                         $names[] = $shortName;
                         $capaians[] = (int) $rep['capaian_baris'];
+                        $murajaahBaris[] = (float) ($rep['murajaah_baris'] ?? 0);
                         $khatams[] = ! empty($rep['khatam']); // khatam 30 juz: batang emas
                         $targets[] = (int) $rep['target_baris'];
                     }
@@ -724,6 +726,29 @@
                                         }
                                     }
                                 }]),
+                                // Kelas 11 & 12 Program Tahfizh: muraja'ah batang sendiri, tidak ikut tumpukan capaian.
+                                ...(@json($showMurajaahChart ?? false) ? [{
+                                    label: "BARIS MURAJA'AH",
+                                    type: 'bar',
+                                    data: @json($murajaahBaris),
+                                    backgroundColor: '#d946ef',
+                                    hoverBackgroundColor: '#e879f9',
+                                    borderWidth: 0,
+                                    borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
+                                    borderSkipped: 'bottom',
+                                    barPercentage: 0.65,
+                                    categoryPercentage: 0.85,
+                                    stack: 'murajaah',
+                                    order: 2,
+                                    datalabels: {
+                                        display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+                                        anchor: 'end',
+                                        align: 'top',
+                                        offset: 2,
+                                        color: isDark ? '#f0abfc' : '#a21caf',
+                                        font: { family: 'Outfit, Inter, sans-serif', weight: 'bold', size: 10 },
+                                    },
+                                }] : []),
                                 {
                                     label: @json($isTermChart ? 'TARGET BARIS TERM' : 'TARGET BARIS'),
                                     type: 'line',

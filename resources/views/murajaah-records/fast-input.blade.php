@@ -12,7 +12,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <a href="{{ route('murajaah-records.index') }}"
+                <a href="{{ route(request()->routeIs('ummi.*') ? 'ummi.riwayat.murajaah' : 'murajaah-records.index') }}"
                    class="inline-flex items-center gap-1.5 justify-center px-3.5 py-2 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-xl font-bold text-xs hover:bg-gray-200 dark:hover:bg-zinc-700 transition">
                     <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
                     <span>Kembali ke List</span>
@@ -26,6 +26,12 @@
 
             <!-- UNIFIED INPUT HUB TABS -->
             @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'murajaah'])
+
+            @if ($classRooms->isEmpty())
+                <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 text-sm text-gray-600 dark:text-zinc-400">
+                    {{ request()->routeIs('ummi.*') ? "Lembar Muraja'ah hanya untuk Kelas 10 Program Tahfizh. Tidak ada kelas seperti itu di bimbingan Anda." : 'Belum ada kelas yang bisa dipilih.' }}
+                </div>
+            @endif
 
             <!-- Filter Bar & Action Header -->
             <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -254,7 +260,7 @@
             },
 
             changeClass() {
-                window.location.href = '{{ route('murajaah-records.fast-input') }}?class_room_id=' + this.selectedClassId;
+                window.location.href = '{{ route(request()->routeIs('ummi.*') ? 'ummi.murajaah' : 'murajaah-records.fast-input') }}?class_room_id=' + this.selectedClassId;
             },
 
             onSurahStartChange(row) {
@@ -367,7 +373,7 @@
                     const res = await r.json().catch(() => ({}));
                     if (r.ok && res.success) {
                         alert(res.message || 'Data murajaah berhasil disimpan.');
-                        window.location.href = '{{ route('murajaah-records.index') }}';
+                        window.location.href = '{{ route(request()->routeIs('ummi.*') ? 'ummi.riwayat.murajaah' : 'murajaah-records.index') }}';
                     } else {
                         const errMsg = res.message || (res.errors ? Object.values(res.errors).flat().join('\n') : 'Gagal menyimpan data pada server.');
                         alert(errMsg);

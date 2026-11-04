@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\ClassRoom;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 class SidebarMenu
 {
     private const ALL_STAFF = ['super_admin', 'admin', 'teacher', 'supervisor', 'coordinator_tahfizh'];
+
+    private const TAHFIZH_ROUTE_ROLES = ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh'];
 
     private const ICONS = [
         'home' => ['M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
@@ -75,22 +79,23 @@ class SidebarMenu
                 'items' => [
                     [
                         'label' => "Input Setoran & Muraja'ah", 'route' => 'spreadsheet-input.index', 'icon' => 'pencil',
-                        'roles' => self::ALL_STAFF,
+                        // Koordinator hanya memantau: HafalanRecordPolicy::create menolak perannya.
+                        'roles' => ['super_admin', 'admin', 'teacher'],
                         'active' => ['spreadsheet-input.*', 'hafalan-records.create', 'murajaah-records.fast-input', 'murajaah-records.create'],
                     ],
                     [
                         'label' => 'Riwayat Setoran', 'route' => 'hafalan-records.index', 'icon' => 'book',
-                        'roles' => self::ALL_STAFF,
+                        'roles' => self::TAHFIZH_ROUTE_ROLES,
                         'active' => ['hafalan-records.*', 'murajaah-records.*'],
                         'active_except' => ['hafalan-records.create', 'murajaah-records.fast-input', 'murajaah-records.create'],
                     ],
-                    ['label' => 'Ujian Tahfizh', 'route' => 'tahfizh-exams.index', 'icon' => 'document', 'roles' => self::ALL_STAFF, 'active' => ['tahfizh-exams.*']],
+                    ['label' => 'Ujian Tahfizh', 'route' => 'tahfizh-exams.index', 'icon' => 'document', 'roles' => self::TAHFIZH_ROUTE_ROLES, 'active' => ['tahfizh-exams.*']],
                     [
-                        'label' => 'Target Bulanan', 'route' => 'hafalan-targets.index', 'icon' => 'badge-check', 'roles' => self::ALL_STAFF,
-                        // Target Triwulan, Target Ummi & Prosem Ummi dibuka lewat tab di halaman ini.
-                        'active' => ['hafalan-targets.*', 'prosem-ummi.*'],
+                        'label' => 'Target Bulanan', 'route' => 'hafalan-targets.index', 'icon' => 'badge-check', 'roles' => self::TAHFIZH_ROUTE_ROLES,
+                        // Target Triwulan dibuka lewat tab di halaman ini.
+                        'active' => ['hafalan-targets.*'],
+                        'active_except' => ['hafalan-targets.ummi*'],
                     ],
-                    ['label' => 'Alur Pembelajaran Ummi', 'route' => 'ummi-flow.index', 'icon' => 'clock', 'roles' => ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'headmaster'], 'active' => ['ummi-flow.*']],
                     [
                         'label' => 'Progress', 'route' => 'progress.index', 'icon' => 'trending-up',
                         'roles' => [...self::ALL_STAFF, 'parent', 'student'],
@@ -101,6 +106,23 @@ class SidebarMenu
                         'roles' => [...self::ALL_STAFF, 'parent', 'student'],
                         'active' => ['quran.mushaf'],
                     ],
+                ],
+            ],
+            [
+                // Kelas 10 (metode Ummi). Mode ditentukan oleh menu, bukan tab di dalam halaman.
+                'key' => 'ummi',
+                'label' => 'Metode Ummi',
+                'icon' => 'academic-cap',
+                'requires' => 'ummi_students',
+                'items' => [
+                    ['label' => 'Alur Pembelajaran', 'route' => 'ummi-flow.index', 'icon' => 'clock', 'roles' => ['super_admin', 'admin', 'teacher', 'coordinator_tahfizh', 'headmaster'], 'active' => ['ummi-flow.*']],
+                    // Koordinator hanya memantau: HafalanRecordPolicy::create menolak perannya.
+                    ['label' => 'Input Ummi', 'route' => 'ummi.input', 'icon' => 'pencil', 'roles' => ['super_admin', 'admin', 'teacher'], 'active' => ['ummi.input*', 'ummi.murajaah']],
+                    ['label' => 'Riwayat Ummi', 'route' => 'ummi.riwayat', 'icon' => 'book', 'roles' => self::TAHFIZH_ROUTE_ROLES, 'active' => ['ummi.riwayat*']],
+                    ['label' => 'Target Ummi', 'route' => 'hafalan-targets.ummi', 'icon' => 'badge-check', 'roles' => self::TAHFIZH_ROUTE_ROLES, 'active' => ['hafalan-targets.ummi*']],
+                    // Kepala sekolah hanya melihat (UmmiProsemController::canEdit).
+                    ['label' => 'Prosem Ummi', 'route' => 'prosem-ummi.index', 'icon' => 'calendar', 'roles' => [...self::ALL_STAFF, 'headmaster'], 'active' => ['prosem-ummi.*']],
+                    ['label' => 'Progress Ummi', 'route' => 'ummi.progress', 'icon' => 'trending-up', 'roles' => self::ALL_STAFF, 'active' => ['ummi.progress']],
                 ],
             ],
             [
@@ -126,7 +148,7 @@ class SidebarMenu
                 'items' => [
                     [
                         'label' => 'Poin & Disiplin', 'route' => 'student-points.index', 'icon' => 'shield-check',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'tanse', 'parent', 'student', 'wali_kelas', 'pendamping_adab'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'tanse', 'parent', 'student', 'wali_kelas', 'pendamping_adab'],
                         'active' => ['student-points.*'],
                         'active_except' => ['student-points.chart'],
                     ],
@@ -158,7 +180,7 @@ class SidebarMenu
                     ],
                     [
                         'label' => 'Grafik Poin & Disiplin', 'route' => 'student-points.chart', 'icon' => 'chart-pie',
-                        'roles' => ['super_admin', 'admin', 'teacher', 'supervisor', 'headmaster', 'tanse', 'wali_kelas', 'pendamping_adab'],
+                        'roles' => ['super_admin', 'admin', 'teacher', 'headmaster', 'tanse', 'wali_kelas', 'pendamping_adab'],
                         'active' => ['student-points.chart'],
                     ],
                     ['label' => 'Pemantauan Wali Kelas', 'route' => 'wali-kelas.index', 'icon' => 'user-circle-group', 'roles' => ['wali_kelas'], 'active' => ['wali-kelas.index']],
@@ -219,6 +241,10 @@ class SidebarMenu
         $groups = [];
 
         foreach (self::definition() as $group) {
+            if (($group['requires'] ?? null) === 'ummi_students' && ! self::hasUmmiStudents($user)) {
+                continue;
+            }
+
             $items = [];
 
             foreach ($group['items'] as $item) {
@@ -260,6 +286,22 @@ class SidebarMenu
     public static function icon(string $name): array
     {
         return self::ICONS[$name] ?? [];
+    }
+
+    /** Guru tanpa murid Ummi tidak perlu grup Metode Ummi; role lain mengikuti daftar role tiap item. */
+    private static function hasUmmiStudents(User $user): bool
+    {
+        if (! $user->hasRole('teacher')) {
+            return true;
+        }
+
+        $teacherId = $user->teacherProfile?->id;
+
+        return $teacherId !== null && Student::query()
+            ->where('teacher_id', $teacherId)
+            ->where('status', 'active')
+            ->whereIn('class_room_id', ClassRoom::ummiClassIds())
+            ->exists();
     }
 
     private static function canSee(User $user, array $item): bool

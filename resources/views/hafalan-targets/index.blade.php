@@ -7,7 +7,7 @@
                     <span>Target Bulanan</span>
                 </h2>
                 <p class="text-sm text-gray-600">
-                    Pengisian target hafalan reguler per-murid dan target metode Ummi serentak per-Halaqah Musyrif.
+                    Pengisian target hafalan reguler per-murid. Target Ummi ada di menu Metode Ummi.
                 </p>
             </div>
 
@@ -40,21 +40,6 @@
             @endif
 
             @include('hafalan-targets.partials.period-tabs')
-
-            {{-- ═══════════════ PROGRAM MODE TOGGLE ═══════════════ --}}
-            <div class="flex items-center gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
-                <a href="{{ route('hafalan-targets.index', array_merge(request()->except('page'), ['program' => 'reguler'])) }}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition {{ $activeProgram === 'reguler' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                    <x-heroicon-o-book-open class="w-4 h-4" />
-                    <span>Program Reguler (Kelas 11 &amp; 12)</span>
-                </a>
-
-                <a href="{{ route('hafalan-targets.index', array_merge(request()->except('page'), ['program' => 'ummi'])) }}"
-                   class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition {{ $activeProgram === 'ummi' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                    <x-heroicon-o-bookmark class="w-4 h-4" />
-                    <span>Program Metode Ummi (Kelas 10 — Per-Halaqah Musyrif)</span>
-                </a>
-            </div>
 
             @if ($activeProgram === 'reguler')
                 {{-- Kelas 11 & 12: isian target per bulan, tabel yang sama dengan Target Triwulan (satu kolom bulan). --}}

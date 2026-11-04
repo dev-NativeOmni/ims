@@ -76,8 +76,8 @@ class HafalanRecordTeacherFilterTest extends TestCase
             ]);
         }
 
-        $filtered = $this->actingAs($this->superAdmin)->get(route('hafalan-records.index', [
-            'category' => 'ummi', 'teacher_id' => $this->teacherProfile->id,
+        $filtered = $this->actingAs($this->superAdmin)->get(route('ummi.riwayat', [
+            'teacher_id' => $this->teacherProfile->id,
         ]));
 
         $filtered->assertOk()->assertSee('Semua Guru Pengampu');

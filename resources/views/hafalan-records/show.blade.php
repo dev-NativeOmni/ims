@@ -6,7 +6,7 @@
             </h2>
 
             <a
-                href="{{ route('hafalan-records.edit', $hafalanRecord) }}"
+                href="{{ route('hafalan-records.edit', request('from') === 'ummi' ? [$hafalanRecord, 'from' => 'ummi'] : $hafalanRecord) }}"
                 class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
             >
                 Edit Setoran
@@ -92,7 +92,7 @@
             </div>
 
             <div class="flex justify-end">
-                <a href="{{ route('hafalan-records.index') }}" class="text-sm text-gray-600 hover:underline">
+                <a href="{{ route(request('from') === 'ummi' ? 'ummi.riwayat' : 'hafalan-records.index', request('from') === 'ummi' ? ['lembar' => 'mandiri'] : []) }}" class="text-sm text-gray-600 hover:underline">
                     Kembali ke daftar setoran
                 </a>
             </div>

@@ -30,9 +30,21 @@ use Illuminate\View\View;
 
 class HafalanRecordController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
+
+        // URL lama tab Ummi pindah ke menu Metode Ummi.
+        $isUmmiSection = $request->routeIs('ummi.*');
+        if (! $isUmmiSection && $request->query('category') === 'ummi') {
+            return redirect()->route('ummi.riwayat', $request->except('category'));
+        }
+
+        $isMandiri = $isUmmiSection && $request->query('lembar') === 'mandiri';
+        if ($isUmmiSection) {
+            $request->query->set('category', $isMandiri ? 'reguler' : 'ummi');
+        }
+
         $category = $request->query('category', 'reguler');
 
         if ($category === 'ummi') {
@@ -87,12 +99,16 @@ class HafalanRecordController extends Controller
                 ->paginate(20)
                 ->withQueryString();
         } else {
+            $gradeTenIds = ClassRoom::gradeTenIds();
             $hafalanRecords = HafalanRecord::query()
                 ->with([
                     'student.classRoom.program',
                     'teacher.user',
                     'surahs.surah',
                 ])
+                // Setoran kelas 10 ada di Riwayat Ummi (Setoran Mandiri), bukan Riwayat Setoran.
+                ->when($isMandiri, fn ($query) => $query->whereHas('student', fn ($q) => $q->whereIn('class_room_id', $gradeTenIds)))
+                ->when(! $isMandiri, fn ($query) => $query->whereDoesntHave('student', fn ($q) => $q->whereIn('class_room_id', $gradeTenIds)))
                 ->when($user->hasRole('teacher'), function ($query) use ($user) {
                     $query->whereHas('student', function ($q) use ($user) {
                         $q->where('teacher_id', $user->teacherProfile?->id);
@@ -144,6 +160,11 @@ class HafalanRecordController extends Controller
         }
 
         $formData = $this->formData($user, $category);
+        if ($isMandiri) {
+            $formData['classRooms'] = $formData['classRooms']->filter(fn (ClassRoom $c) => $c->isGradeTen())->values();
+        } elseif (! $isUmmiSection) {
+            $formData['classRooms'] = $formData['classRooms']->reject(fn (ClassRoom $c) => $c->isGradeTen())->values();
+        }
 
         // Pilihan guru pengampu: hanya guru yang punya murid di daftar (tab Ummi: murid Kelas 10).
         $classIds = $formData['classRooms']->pluck('id');
@@ -169,11 +190,22 @@ class HafalanRecordController extends Controller
         ));
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
         $this->authorize('create', HafalanRecord::class);
 
-        return view('hafalan-records.create', $this->formData($request->user()));
+        // Input Setoran hanya mode Spreadsheet & Muraja'ah; mode per murid hanya di Input Ummi.
+        if (! $request->routeIs('ummi.*')) {
+            return redirect()->route('spreadsheet-input.index');
+        }
+
+        $formData = $this->formData($request->user());
+
+        $ummiClassIds = ClassRoom::ummiClassIds();
+        $formData['classRooms'] = $formData['classRooms']->filter(fn (ClassRoom $c) => $ummiClassIds->contains($c->id))->values();
+        $formData['students'] = $formData['students']->filter(fn (Student $s) => $ummiClassIds->contains($s->class_room_id))->values();
+
+        return view('hafalan-records.create', $formData);
     }
 
     public function store(StoreHafalanRecordRequest $request): RedirectResponse
@@ -185,6 +217,12 @@ class HafalanRecordController extends Controller
         $teacherId = $validated['teacher_id'] ?? null;
         $notes = $validated['notes'] ?? null;
         $submittedAt = $validated['submitted_at'];
+
+        // Kelas 10 di luar Program Tahfizh: setorannya hanya hafalan Ummi.
+        $setoranClass = Student::find($studentId)?->classRoom;
+        if ($setoranClass?->isGradeTen() && ! $setoranClass->hasMandiriSheets()) {
+            return back()->withInput()->withErrors(['student_id' => 'Kelas 10 di luar Program Tahfizh hanya memakai Input Ummi.']);
+        }
 
         $surahIds = $validated['surah_ids'] ?? [];
         $ayahStarts = $validated['ayah_starts'] ?? [];
@@ -322,8 +360,7 @@ class HafalanRecordController extends Controller
             }
         });
 
-        return redirect()
-            ->route('hafalan-records.index')
+        return ($request->input('from') === 'ummi' ? redirect()->route('ummi.riwayat', ['lembar' => 'mandiri']) : redirect()->route('hafalan-records.index'))
             ->with('success', 'Data hafalan berhasil diperbarui.');
     }
 
@@ -333,8 +370,7 @@ class HafalanRecordController extends Controller
 
         $hafalanRecord->delete();
 
-        return redirect()
-            ->route('hafalan-records.index')
+        return (str_contains(url()->previous(), '/ummi/') ? redirect()->to(url()->previous()) : redirect()->route('hafalan-records.index'))
             ->with('success', 'Data hafalan berhasil dihapus.');
     }
 
@@ -422,7 +458,7 @@ class HafalanRecordController extends Controller
         app(UmmiTatapMukaService::class)->renumber([[$ummiRecord->student_id, $ummiRecord->tanggal]]);
 
         return redirect()
-            ->route('hafalan-records.index', ['category' => 'ummi'])
+            ->route('ummi.riwayat')
             ->with('success', 'Data progres UMMI berhasil dihapus.');
     }
 
@@ -444,8 +480,8 @@ class HafalanRecordController extends Controller
             }
         }
 
-        return redirect()
-            ->route('hafalan-records.index', ['category' => 'hafalan'])
+        // Dihapus dari tab Setoran Mandiri: tetap di Riwayat Ummi.
+        return (str_contains(url()->previous(), '/ummi/') ? redirect()->to(url()->previous()) : redirect()->route('hafalan-records.index', ['category' => 'hafalan']))
             ->with('success', "Berhasil menghapus {$count} data hafalan.");
     }
 
@@ -471,7 +507,7 @@ class HafalanRecordController extends Controller
         app(UmmiTatapMukaService::class)->renumber($touched);
 
         return redirect()
-            ->route('hafalan-records.index', ['category' => 'ummi'])
+            ->route('ummi.riwayat')
             ->with('success', "Berhasil menghapus {$count} data UMMI.");
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class ClassRoom extends Model
@@ -80,6 +81,68 @@ class ClassRoom extends Model
         $programName = strtolower((string) $this->program?->name);
 
         return str_contains($programName, 'tahfizh') || str_contains($programName, 'akselerasi');
+    }
+
+    /**
+     * Kelas 10 Program Tahfizh: selain Lembar Progres Ummi, punya lembar Setoran Mandiri & Muraja'ah.
+     * Kelas 10 di luar Program Tahfizh hanya Lembar Progres Ummi.
+     */
+    public function hasMandiriSheets(): bool
+    {
+        return $this->isGradeTen() && $this->isTahfizhProgram();
+    }
+
+    /** Id semua kelas 10. Dihitung di PHP karena isGradeTen() memakai pola nama kelas. */
+    public static function gradeTenIds(): Collection
+    {
+        return static::query()->get(['id', 'name', 'level'])
+            ->filter(fn (self $classRoom) => $classRoom->isGradeTen())
+            ->pluck('id')
+            ->values();
+    }
+
+    /** Kelas yang masuk menu Metode Ummi: kelas 10 + kelas lain yang punya murid berlevel Ummi. */
+    public static function ummiClassIds(): Collection
+    {
+        $ummiLevelClassIds = Student::query()
+            ->where('tahfizh_level', 'ummi')
+            ->whereNotNull('class_room_id')
+            ->distinct()
+            ->pluck('class_room_id');
+
+        return static::gradeTenIds()->merge($ummiLevelClassIds)->unique()->values();
+    }
+
+    /** Guru hanya melihat lembar Setoran Mandiri & Muraja'ah bila membimbing Kelas 10 Program Tahfizh. */
+    public static function userHasMandiriClass(User $user): bool
+    {
+        if (! $user->hasRole('teacher')) {
+            return true;
+        }
+
+        $classIds = Student::query()
+            ->where('teacher_id', $user->teacherProfile?->id)
+            ->where('status', 'active')
+            ->whereNotNull('class_room_id')
+            ->distinct()
+            ->pluck('class_room_id');
+
+        return static::query()->with('program')->whereIn('id', $classIds)->get()
+            ->contains(fn (self $classRoom) => $classRoom->hasMandiriSheets());
+    }
+
+    /**
+     * Batang muraja'ah di grafik: Kelas 11 & 12 Program Tahfizh saja. Lebih sempit dari isTahfizhProgram():
+     * nama program yang juga memuat "akselerasi" atau "reguler" bukan Program Tahfizh di sini.
+     */
+    public function showsMurajaahChart(): bool
+    {
+        $programName = strtolower((string) $this->program?->name);
+
+        return $this->isGradeElevenOrTwelve()
+            && str_contains($programName, 'tahfizh')
+            && ! str_contains($programName, 'akselerasi')
+            && ! str_contains($programName, 'reguler');
     }
 
     /** Kelas 11 atau 12 (dikenali dari nama atau tingkat kelas). */

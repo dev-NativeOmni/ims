@@ -58,7 +58,7 @@ class HafalanRecordTest extends TestCase
     #[Test]
     public function admin_can_view_create_hafalan_form(): void
     {
-        $response = $this->actingAs($this->admin)->get(route('hafalan-records.create'));
+        $response = $this->actingAs($this->admin)->get(route('ummi.input.single'));
 
         $response->assertStatus(200);
         $response->assertViewIs('hafalan-records.create');

@@ -2,9 +2,9 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-zinc-200 leading-tight">
-                Input Setoran Hafalan
+                {{ request()->routeIs('ummi.*') ? 'Input Ummi per Murid' : 'Input Setoran Hafalan' }}
             </h2>
-            <a href="{{ route('hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+            <a href="{{ route(request()->routeIs('ummi.*') ? 'ummi.riwayat' : 'hafalan-records.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
                 <x-heroicon-m-arrow-left class="w-3.5 h-3.5 shrink-0" />
                 <span>Kembali ke List</span>
             </a>
@@ -12,7 +12,7 @@
     </x-slot>
 
     <div class="py-8" x-data="{
-        method: '{{ old('method', request('method', 'reguler')) }}',
+        method: '{{ request()->routeIs('ummi.*') ? 'ummi' : 'reguler' }}',
         selectedClass: '',
         selectedStudent: '{{ old('student_id') }}',
         selectedDate: '{{ now()->format('Y-m-d') }}',
@@ -279,9 +279,9 @@
                 selectedClass = s.classId;
             }
         }
-        this.refreshTatapMuka();
-        this.loadRepeatHistory();
-        $watch('selectedStudent', () => this.loadRepeatHistory());
+        refreshTatapMuka();
+        loadRepeatHistory();
+        $watch('selectedStudent', () => loadRepeatHistory());
 
         $watch('selectedStudent', (val) => {
             if (val) {
@@ -294,14 +294,14 @@
 
         $watch('selectedClass', (val) => {
             fetchAttendances();
-            this.refreshTatapMuka();
+            refreshTatapMuka();
         });
 
         $watch('hafalans', (val) => {
             val.forEach(item => {
                 if (item.surah_id && item.ayah_start && item.ayah_end && parseInt(item.ayah_start) <= parseInt(item.ayah_end)) {
                     if (item.baris === undefined || item.baris === '') {
-                        item.baris = this.calculateLines(item.surah_id, item.ayah_start, item.ayah_end);
+                        item.baris = calculateLines(item.surah_id, item.ayah_start, item.ayah_end);
                     }
                 }
             });
@@ -311,7 +311,7 @@
             val.forEach(item => {
                 if (item.surah_id && item.ayah) {
                     if (item.baris === undefined || item.baris === '') {
-                        item.baris = this.calculateUmmiLines(item.surah_id, item.ayah);
+                        item.baris = calculateUmmiLines(item.surah_id, item.ayah);
                     }
                 }
             });
@@ -319,7 +319,7 @@
 
         $watch('selectedDate', (val) => {
             fetchAttendances();
-            this.refreshTatapMuka();
+            refreshTatapMuka();
         });
 
         if (selectedClass) {
@@ -327,44 +327,23 @@
         }
 
         window.addEventListener('beforeunload', (e) => {
-            if (this.isDirty) {
+            if (isDirty) {
                 e.preventDefault();
                 e.returnValue = '';
             }
         });
 
-        this.$nextTick(() => {
+        $nextTick(() => {
             let isReady = true;
-            this.$watch('selectedStudent', () => { if (isReady && this.selectedStudent) this.isDirty = true; });
-            this.$watch('hafalans', () => { if (isReady) this.isDirty = true; }, { deep: true });
-            this.$watch('ummiHafalans', () => { if (isReady) this.isDirty = true; }, { deep: true });
+            $watch('selectedStudent', () => { if (isReady && selectedStudent) isDirty = true; });
+            $watch('hafalans', () => { if (isReady) isDirty = true; }, { deep: true });
+            $watch('ummiHafalans', () => { if (isReady) isDirty = true; }, { deep: true });
         });
     ">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- UNIFIED INPUT HUB TABS -->
             @include('partials.tahfizh-input-nav-tabs', ['activeTab' => 'single'])
-
-            <!-- Tab Switcher Metode Setoran -->
-            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-xs font-bold uppercase text-gray-500 dark:text-zinc-400 px-2 tracking-wider">
-                    Pilih Metode Setoran:
-                </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button"
-                            @click="method = 'reguler'"
-                            :class="method === 'reguler' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'"
-                            class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <x-heroicon-o-book-open class="w-4 h-4" /> Reguler (Al-Qur'an)
-                    </button>
-                    <button type="button"
-                            @click="method = 'ummi'"
-                            :class="method === 'ummi' ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200'"
-                            class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <x-heroicon-o-sparkles class="w-4 h-4" /> Metode UMMI
-                    </button>
-                </div>
-            </div>
 
             <!-- Error list jika ada -->
             @if ($errors->any())
@@ -1084,7 +1063,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t dark:border-zinc-800">
-                        <a href="{{ route('hafalan-records.index', ['category' => 'ummi']) }}" class="px-4 py-2 text-sm text-gray-600 dark:text-zinc-400 hover:underline">
+                        <a href="{{ route('ummi.riwayat') }}" class="px-4 py-2 text-sm text-gray-600 dark:text-zinc-400 hover:underline">
                             Batal
                         </a>
                         {{-- Dikunci setelah diklik supaya tidak terkirim dua kali (setoran ganda). --}}

@@ -14,13 +14,13 @@
       ]
     },
     {
-      "menu_name": "Spreadsheet Input Massal (Spreadsheet Mode)",
+      "menu_name": "Input Setoran & Muraja'ah (Spreadsheet Input)",
       "route": "/spreadsheet-input",
-      "purpose": "Fitur unggulan input cepat berbasis tabel spreadsheet untuk mencatat setoran/murajaah/ummi seluruh murid dalam satu kelas sekaligus.",
+      "purpose": "Input setoran kelas 11 & 12 lewat Mode Spreadsheet (seluruh murid satu kelas sekaligus) atau Mode Muraja'ah. Kelas 10 memakai menu Metode Ummi.",
       "how_to_use": [
-        "1. Klik menu 'Spreadsheet Input' (/spreadsheet-input).",
+        "1. Klik menu 'Input Setoran & Muraja'ah' (/spreadsheet-input).",
         "2. Pilih Kelas dan Minggu/Tanggal pelaksanaan halaqoh.",
-        "3. Tentukan mode: 'Reguler Tahfizh' atau 'Metode Ummi'.",
+        "3. Pilih Mode Spreadsheet untuk setoran atau Mode Muraja'ah untuk muraja'ah.",
         "4. Isikan surah, ayat awal, ayat akhir, dan nilai langsung pada sel tabel murid.",
         "5. Klik tombol 'Simpan Semua Data' di bagian atas/bawah tabel."
       ]
@@ -49,11 +49,10 @@
     {
       "menu_name": "Kelola & Buat Target Hafalan",
       "route": "/hafalan-targets",
-      "purpose": "Menetapkan sasaran target hafalan murid per-Term (Reguler Surah / Ummi Jilid & Halaman).",
+      "purpose": "Menetapkan sasaran target hafalan murid Kelas 11 & 12 per-Term. Target Ummi ada di menu Metode Ummi.",
       "how_to_use": [
         "1. Pilih menu 'Target Hafalan' (/hafalan-targets).",
-        "2. Untuk buat target individu: Klik 'Tambah Target', pilih jenis (Reguler/Ummi), batas tanggal, dan target surah/jilid.",
-        "3. Untuk buat target massal sekelas: Gunakan tombol 'Bulk Target Reguler' atau 'Bulk Target Ummi'."
+        "2. Untuk Kelas 10: buka Metode Ummi > Target Ummi (/hafalan-targets/ummi-bulanan)."
       ]
     },
     {
@@ -64,6 +63,18 @@
         "1. Buka menu 'Laporan Periodik' (/reports/periodic).",
         "2. Filter berdasarkan Kelas atau Rentang Tanggal.",
         "3. Gunakan tombol 'Cetak Laporan' untuk mencetak berkas fisik."
+      ]
+    },
+    {
+      "menu_name": "Metode Ummi (Kelas 10)",
+      "route": "/ummi/input",
+      "purpose": "Semua pekerjaan Kelas 10 dalam satu grup menu: Alur Pembelajaran, Input Ummi, Riwayat Ummi, Target Ummi, Prosem Ummi, dan Progress Ummi. Grup ini hanya tampil bila Anda membimbing murid Ummi.",
+      "how_to_use": [
+        "1. Buka Metode Ummi > Input Ummi (/ummi/input), lalu pilih kelas.",
+        "2. Isi Lembar Progres Ummi (presensi, jilid, halaman, hafalan), lalu klik 'Simpan Perubahan Kelas'.",
+        "3. Khusus Kelas 10 Program Tahfizh: gunakan Lembar Setoran Mandiri dan Lembar Muraja'ah. Kelas 10 lain hanya memakai Lembar Progres Ummi.",
+        "4. Input per murid tersedia di Mode Satuan pada halaman yang sama.",
+        "5. Cek hasilnya di Metode Ummi > Riwayat Ummi (/ummi/riwayat)."
       ]
     }
   ]
