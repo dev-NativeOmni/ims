@@ -53,6 +53,13 @@ class Student extends Model
                 StudentClassHistory::record($student);
             }
         });
+        // Murid yang dihapus melepas akunnya: students.user_id unik juga untuk baris terhapus, jadi
+        // akun itu tidak bisa disambungkan ke data murid lain dan login/simpan akun berakhir error 500.
+        static::softDeleted(function (Student $student) {
+            if ($student->user_id) {
+                $student->forceFill(['user_id' => null])->saveQuietly();
+            }
+        });
     }
 
     public function classHistories(): HasMany
