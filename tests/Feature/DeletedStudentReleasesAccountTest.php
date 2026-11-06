@@ -11,7 +11,7 @@ use Tests\Feature\Concerns\SetsUpHafizPlusData;
 use Tests\TestCase;
 
 /**
- * Kasus nyata: akun murid dibuat di Kelola User (otomatis membuat data murid tanpa kelas), murid yang sama
+ * Kasus nyata: akun murid lama dengan data murid tanpa kelas (dulu dibuat otomatis Kelola User), murid yang sama
  * ditambahkan lagi di Data Murid, lalu data tanpa kelas dihapus. Baris terhapus dulu tetap memegang
  * user_id yang unik, sehingga login murid dan simpan akun berakhir error 500 (Duplicate entry).
  */
@@ -30,12 +30,11 @@ class DeletedStudentReleasesAccountTest extends TestCase
     {
         $roleStudent = Role::where('name', 'student')->first();
 
-        $this->actingAs($this->superAdmin)->post(route('users.store'), [
-            'name' => 'Wildan Zamorano', 'username' => 'zamorano', 'role_id' => $roleStudent->id,
-            'password' => 'rahasia123', 'status' => 'active',
-        ])->assertRedirect();
-        $account = User::where('username', 'zamorano')->firstOrFail();
-        $autoCreated = Student::where('user_id', $account->id)->firstOrFail();
+        // Data lama: akun murid dengan data murid tanpa kelas (dulu dibuat otomatis oleh Kelola User),
+        // lalu murid yang sama ditambahkan lagi di Data Murid.
+        $account = User::factory()->create(['role_id' => $roleStudent->id, 'username' => 'zamorano', 'status' => 'active']);
+        $account->roles()->sync([$roleStudent->id]);
+        $autoCreated = Student::create(['user_id' => $account->id, 'name' => 'Wildan Zamorano', 'status' => 'active']);
 
         $this->actingAs($this->superAdmin)->post(route('students.store'), [
             'class_room_id' => $this->student->class_room_id, 'teacher_id' => $this->teacherProfile->id,

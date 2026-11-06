@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -239,13 +240,50 @@ class UserController extends Controller
         $this->authorizeSuperAdmin();
 
         $roles = Role::orderBy('display_name')->get();
+        $studentRoleId = $roles->firstWhere('name', 'student')?->id;
+        $classRooms = ClassRoom::with('program')->orderBy('name')->get();
+        $teachers = TeacherProfile::with('user')
+            ->whereHas('user', fn ($q) => $q->where('status', 'active'))
+            ->get()
+            ->sortBy(fn (TeacherProfile $teacher) => $teacher->user?->name)
+            ->values();
+        $parents = ParentProfile::with(['user', 'students:id,name'])
+            ->whereHas('user', fn ($q) => $q->where('status', 'active'))
+            ->get()
+            ->sortBy(fn (ParentProfile $parent) => strtolower($parent->user?->name ?? ''))
+            ->values();
 
-        return view('users.create', compact('roles'));
+        return view('users.create', compact('roles', 'studentRoleId', 'classRooms', 'teachers', 'parents'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeSuperAdmin();
+
+        $requestedRoleIds = collect([$request->input('role_id')])
+            ->merge((array) $request->input('additional_role_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id);
+        $isStudent = Role::whereIn('id', $requestedRoleIds)->where('name', 'student')->exists();
+
+        // Akun murid langsung membuat data murid lengkap (kelas, guru pembimbing, orangtua lama/baru);
+        // dulu hanya data kosong tanpa kelas, yang lalu terduplikasi saat murid ditambahkan di Data Murid.
+        $studentRules = ! $isStudent ? [] : [
+            'student.class_room_id' => ['required', 'integer', Rule::exists('class_rooms', 'id')],
+            'student.teacher_id' => ['required', 'integer', Rule::exists('teacher_profiles', 'id')],
+            'student.student_number' => ['nullable', 'string', 'max:100', Rule::unique('students', 'student_number')],
+            'student.gender' => ['nullable', Rule::in(['male', 'female'])],
+            'parent_ids' => ['nullable', 'array'],
+            'parent_ids.*' => ['integer', Rule::exists('parent_profiles', 'id')],
+            'parent_relations' => ['nullable', 'array'],
+            'parent_relations.*' => ['nullable', 'string', 'max:50'],
+            'new_parents' => ['nullable', 'array'],
+            'new_parents.*.name' => ['required', 'string', 'max:255'],
+            'new_parents.*.username' => ['required', 'string', 'max:255', 'distinct', 'different:username', Rule::unique('users', 'username')],
+            'new_parents.*.password' => ['required', 'string', 'min:6'],
+            'new_parents.*.phone' => ['nullable', 'string', 'max:30'],
+            'new_parents.*.relation' => ['nullable', 'string', 'max:50'],
+        ];
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -255,12 +293,25 @@ class UserController extends Controller
             'additional_role_ids.*' => 'exists:roles,id',
             'password' => 'required|string|min:6',
             'status' => 'required|in:active,inactive',
+            ...$studentRules,
         ], [
             'username.unique' => 'Username ini sudah digunakan oleh pengguna lain. Silakan gunakan username yang berbeda.',
             'username.required' => 'Username tidak boleh kosong.',
+            'new_parents.*.username.unique' => 'Username orangtua ini sudah dipakai.',
+            'new_parents.*.username.distinct' => 'Username orangtua baru tidak boleh sama.',
+            'new_parents.*.username.different' => 'Username orangtua harus berbeda dari username murid.',
+        ], [
+            'student.class_room_id' => 'kelas',
+            'student.teacher_id' => 'guru pembimbing',
+            'student.student_number' => 'nomor induk',
+            'new_parents.*.name' => 'nama orangtua',
+            'new_parents.*.username' => 'username orangtua',
+            'new_parents.*.password' => 'password orangtua',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $linkedExisting = false;
+
+        DB::transaction(function () use ($validated, &$linkedExisting) {
             $user = User::create([
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -289,17 +340,71 @@ class UserController extends Controller
                 ParentProfile::create(['user_id' => $user->id]);
             }
             if (in_array('student', $assignedRoleNames, true)) {
-                Student::create([
-                    'user_id' => $user->id,
-                    'name' => $user->name,
-                    'status' => 'active',
-                ]);
+                $linkedExisting = $this->createStudentForAccount($user, $validated);
             }
         });
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User baru berhasil dibuat.');
+            ->with('success', $linkedExisting
+                ? 'User baru berhasil dibuat dan disambungkan ke data murid "'.$validated['name'].'" yang sudah ada di kelas itu.'
+                : 'User baru berhasil dibuat.');
+    }
+
+    /**
+     * Data murid untuk akun murid baru. Murid bernama sama di kelas yang sama yang belum punya akun
+     * dipakai ulang (bukan diduplikasi). Mengembalikan true bila memakai data yang sudah ada.
+     */
+    private function createStudentForAccount(User $user, array $validated): bool
+    {
+        $data = $validated['student'];
+        $classRoom = ClassRoom::findOrFail($data['class_room_id']);
+
+        $student = Student::query()
+            ->where('class_room_id', $classRoom->id)
+            ->whereNull('user_id')
+            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($user->name))])
+            ->first();
+        $linkedExisting = $student !== null;
+
+        $student ??= new Student([
+            'name' => $user->name,
+            'status' => 'active',
+            'tahfizh_level' => $classRoom->isGradeTen() ? 'ummi' : 'reguler',
+        ]);
+        $student->fill(array_filter([
+            'user_id' => $user->id,
+            'class_room_id' => $classRoom->id,
+            'teacher_id' => (int) $data['teacher_id'],
+            'student_number' => $data['student_number'] ?? null,
+            'gender' => $data['gender'] ?? null,
+        ], fn ($value) => $value !== null && $value !== ''))->save();
+
+        $parentRole = Role::where('name', 'parent')->first();
+        $relations = $validated['parent_relations'] ?? [];
+        $sync = collect($validated['parent_ids'] ?? [])
+            ->mapWithKeys(fn ($id) => [(int) $id => ['relation' => $relations[$id] ?? null]])
+            ->all();
+
+        foreach ($validated['new_parents'] ?? [] as $row) {
+            $parentUser = User::create([
+                'role_id' => $parentRole?->id,
+                'name' => $row['name'],
+                'username' => $row['username'],
+                'password' => Hash::make($row['password']),
+                'plain_password' => $row['password'],
+                'status' => 'active',
+            ]);
+            if ($parentRole) {
+                $parentUser->roles()->sync([$parentRole->id]);
+            }
+            $profile = ParentProfile::create(['user_id' => $parentUser->id, 'phone' => $row['phone'] ?? null]);
+            $sync[$profile->id] = ['relation' => $row['relation'] ?? null];
+        }
+
+        $student->parents()->syncWithoutDetaching($sync);
+
+        return $linkedExisting;
     }
 
     public function destroy(User $user): RedirectResponse

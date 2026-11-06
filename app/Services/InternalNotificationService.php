@@ -10,8 +10,17 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
+/**
+ * Notifikasi otomatis harian (notifications:generate, 06:00) untuk lonceng di header: guru untuk murid
+ * bimbingannya, orangtua & murid untuk dirinya. Admin/Super Admin tidak dibanjiri notifikasi seluruh sekolah.
+ * Hanya kejadian RECENT_DAYS hari terakhir supaya pemasangan pertama tidak memunculkan ratusan notifikasi lama.
+ */
 class InternalNotificationService
 {
+    private const RECIPIENT_ROLES = ['teacher', 'parent', 'student'];
+
+    private const RECENT_DAYS = 14;
+
     public function generateForAllActiveUsers(): int
     {
         $totalCreated = 0;
@@ -42,6 +51,10 @@ class InternalNotificationService
             'studentProfile',
         ]);
 
+        if (! $user->hasAnyRole(self::RECIPIENT_ROLES)) {
+            return 0;
+        }
+
         $created = 0;
 
         $created += $this->generateOverdueTargetNotifications($user);
@@ -61,8 +74,10 @@ class InternalNotificationService
                 'teacher.user',
                 'surah',
             ])
-            ->where('status', 'active')
+            // tad:sync-completed-targets (01:00) sudah mengubah target lewat tenggat menjadi 'missed'.
+            ->whereIn('status', ['active', 'missed'])
             ->whereDate('target_date', '<', today())
+            ->whereDate('target_date', '>=', today()->subDays(self::RECENT_DAYS))
             ->orderBy('target_date')
             ->get()
             ->each(function (HafalanTarget $target) use ($user, &$created) {
@@ -99,6 +114,7 @@ class InternalNotificationService
                 'repeat',
                 'needs_improvement',
             ])
+            ->where('hafalan_records.submitted_at', '>=', today()->subDays(self::RECENT_DAYS))
             ->orderByDesc('hafalan_records.submitted_at')
             ->limit(100)
             ->get()
@@ -137,6 +153,7 @@ class InternalNotificationService
                 'repeat',
                 'needs_improvement',
             ])
+            ->where('reviewed_at', '>=', today()->subDays(self::RECENT_DAYS))
             ->latest('reviewed_at')
             ->limit(100)
             ->get()
@@ -164,10 +181,6 @@ class InternalNotificationService
     {
         $query = HafalanTarget::query();
 
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return $query;
-        }
-
         if ($user->hasRole('teacher')) {
             return $query->where('teacher_id', $user->teacherProfile?->id ?? 0);
         }
@@ -186,10 +199,6 @@ class InternalNotificationService
             ->join('hafalan_records', 'hafalan_records.id', '=', 'hafalan_record_surahs.hafalan_record_id')
             ->whereNull('hafalan_records.deleted_at');
 
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return $query;
-        }
-
         if ($user->hasRole('teacher')) {
             return $query->where('hafalan_records.teacher_id', $user->teacherProfile?->id ?? 0);
         }
@@ -204,10 +213,6 @@ class InternalNotificationService
     private function visibleMurajaahRecordQuery(User $user): Builder
     {
         $query = MurajaahRecord::query();
-
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return $query;
-        }
 
         if ($user->hasRole('teacher')) {
             return $query->where('teacher_id', $user->teacherProfile?->id ?? 0);

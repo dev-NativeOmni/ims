@@ -20,7 +20,13 @@
 
             <!-- Form Create User -->
             <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl p-6">
-                <form method="POST" action="{{ route('users.store') }}" class="space-y-6">
+                <form method="POST" action="{{ route('users.store') }}" class="space-y-6"
+                      x-data="{
+                          roleId: @js((string) old('role_id', '')),
+                          extra: @js(array_map('strval', old('additional_role_ids', []))),
+                          studentRoleId: @js((string) $studentRoleId),
+                          get isStudent() { return this.studentRoleId !== '' && (this.roleId === this.studentRoleId || this.extra.includes(this.studentRoleId)); },
+                      }">
                     @csrf
 
                     <!-- Nama Lengkap -->
@@ -60,7 +66,7 @@
                     <!-- Peran Utama (Role Utama) -->
                     <div>
                         <label for="role_id" class="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">Peran Utama (Default Role)</label>
-                        <select name="role_id" id="role_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white" required>
+                        <select name="role_id" id="role_id" x-model="roleId" class="w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white" required>
                             <option value="">-- Pilih Peran Utama --</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}" @selected(old('role_id') == $role->id) class="dark:bg-zinc-900">
@@ -99,6 +105,7 @@
                                     <input type="checkbox" 
                                            name="additional_role_ids[]" 
                                            value="{{ $role->id }}"
+                                           x-model="extra"
                                            @checked(in_array($role->id, $assignedRoleIds))
                                            class="rounded border-zinc-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500">
                                     <span class="truncate">{{ $role->display_name }}</span>
@@ -106,6 +113,8 @@
                             @endforeach
                         </div>
                     </div>
+
+                    @include('users.partials.student-account-fields')
 
                     <!-- Status -->
                     <div>

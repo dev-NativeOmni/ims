@@ -165,6 +165,25 @@ class SystemNotificationController extends Controller
         ]);
     }
 
+    /**
+     * Klik notifikasi di lonceng header: tandai dibaca lalu langsung ke halaman tujuannya
+     * (hanya alamat di aplikasi ini); tanpa tujuan, ke halaman detail notifikasi.
+     */
+    public function open(Request $request, SystemNotification $systemNotification): RedirectResponse
+    {
+        $this->authorizeAccess($request, $systemNotification);
+
+        if ($systemNotification->user_id === $request->user()->id && $systemNotification->isUnread()) {
+            $systemNotification->markAsRead();
+        }
+
+        $target = (string) $systemNotification->action_url;
+
+        return str_starts_with($target, '/') && ! str_starts_with($target, '//')
+            ? redirect($target)
+            : redirect()->route('system-notifications.show', $systemNotification);
+    }
+
     public function edit(Request $request, SystemNotification $systemNotification): View
     {
         abort_unless($this->canManage($request->user()), 403);

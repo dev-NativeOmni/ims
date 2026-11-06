@@ -180,6 +180,9 @@
         <!-- Role badge & avatar pill button -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             @if ($user)
+                @include('layouts.partials.notification-bell')
+            @endif
+            @if ($user)
                 <button type="button" @click="sidebarOpen = true" class="hidden sm:flex items-center gap-2 py-1 px-2.5 rounded-full bg-white/70 dark:bg-white/5 border border-zinc-200/70 dark:border-white/10 hover:border-teal-500/30 transition-all text-left shadow-2xs cursor-pointer">
                     <span class="inline-block w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
                     <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-200 max-w-[130px] truncate">{{ $user->name }}</span>

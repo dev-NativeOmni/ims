@@ -179,6 +179,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{systemNotification}', [SystemNotificationController::class, 'show'])
                 ->name('show');
 
+            Route::get('/{systemNotification}/open', [SystemNotificationController::class, 'open'])
+                ->name('open');
+
             Route::patch('/{systemNotification}/mark-as-read', [SystemNotificationController::class, 'markAsRead'])
                 ->name('mark-as-read');
 
