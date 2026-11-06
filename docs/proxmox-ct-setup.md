@@ -2,6 +2,8 @@
 
 Panduan ini menjelaskan cara melakukan deployment **HafizPlus 2.0** pada **LXC Container (CT)** di server Proxmox VE sekolah Anda.
 
+> **Pemasangan baru saja.** Server production TAD (CT 100 `ims-server`) memakai aaPanel di `/www/wwwroot/ims.smaia7.sch.id`, bukan susunan di bawah. Untuk memperbarui aplikasi di server itu, ikuti [update-server.md](update-server.md).
+
 ---
 
 ## Langkah 1: Pembuatan LXC Container di Proxmox VE
@@ -38,7 +40,7 @@ apt update && apt install -y curl
 # Jalankan skrip setup otomatis (Buat file terlebih dahulu)
 nano setup-server.sh
 ```
-*Salin seluruh kode dari file [setup-server.sh](file:///c:/xampp/htdocs/hafizplus-2.0/docs/setup-server.sh) (tertera di bawah) ke dalam editor nano tersebut, simpan (Ctrl+O, Enter) dan keluar (Ctrl+X).*
+*Salin seluruh kode dari file [setup-server.sh](setup-server.sh) (tertera di bawah) ke dalam editor nano tersebut, simpan (Ctrl+O, Enter) dan keluar (Ctrl+X).*
 
 Kemudian jalankan:
 ```bash

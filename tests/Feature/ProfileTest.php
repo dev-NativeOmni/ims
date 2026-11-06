@@ -83,7 +83,8 @@ class ProfileTest extends TestCase
                 'password' => 'password',
             ]);
 
-        $response->assertStatus(403);
+        // Tidak ada route hapus akun mandiri; akun dihapus Admin/Super Admin lewat Kelola User.
+        $response->assertStatus(405);
         $this->assertNotNull($user->fresh());
     }
 

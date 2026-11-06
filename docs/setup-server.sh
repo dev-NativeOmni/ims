@@ -47,7 +47,8 @@ systemctl enable mariadb
 
 # 6. Buat Database dan User HafizPlus
 echo "--> Mengonfigurasi Database MariaDB..."
-DB_PASS="HafizPlusPass2026!" # Ganti password ini dengan password yang aman
+# Password acak tiap pemasangan (atau tentukan sendiri: DB_PASS=... ./setup-server.sh); catat dari keluaran di bawah.
+DB_PASS="${DB_PASS:-$(openssl rand -base64 18 | tr -d '/+=')}"
 mariadb -e "CREATE DATABASE IF NOT EXISTS hafizplus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 mariadb -e "CREATE USER IF NOT EXISTS 'hafizplus_user'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 mariadb -e "GRANT ALL PRIVILEGES ON hafizplus.* TO 'hafizplus_user'@'localhost';"

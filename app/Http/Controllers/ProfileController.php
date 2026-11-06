@@ -95,12 +95,4 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
-
-    /**
-     * Delete the user's account (Disabled: Only Admin / Super Admin can delete users via User Management).
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        abort(403, 'Penghapusan akun mandiri tidak diizinkan. Hubungi Admin atau Super Admin.');
-    }
 }

@@ -706,7 +706,6 @@
                 <form id="form-ummi" method="POST" action="{{ route('ummi-records.store') }}" @input="isDirty = true" @change="isDirty = true" @submit="if (isSaving) { $event.preventDefault(); return; } isSaving = true; isDirty = false" class="space-y-6">
                     @csrf
                     <input type="hidden" name="method" value="ummi">
-                    <input type="hidden" name="redirect_to" value="hafalan">
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Left Column -->
